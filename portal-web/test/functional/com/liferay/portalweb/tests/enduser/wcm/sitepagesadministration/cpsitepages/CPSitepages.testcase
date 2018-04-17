@@ -110,6 +110,9 @@
 	</command>
 
 	<command name="AddPageViaNavigationMenu" priority="4">
+
+		<property name="portal.acceptance" value="fiona" />
+
 		<var method="TestPropsUtil#get('portal.url')" name="portalURL" />
 
 		<execute macro="NavigationMenu#gotoAddPage" />
