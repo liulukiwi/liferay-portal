@@ -360,7 +360,8 @@
 		</execute>
 
 		<execute macro="LanguagePortlet#viewLanguageCurrent">
-			<var name="locale" value="nl-nl" />
+			<var name="language" value="en-us" />
+			<var name="portletName" value="LanguagePortlet" />
 		</execute>
 
 		<execute macro="Navigator#gotoSitePage">
