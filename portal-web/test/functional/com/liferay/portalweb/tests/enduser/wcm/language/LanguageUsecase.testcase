@@ -282,15 +282,18 @@
 		</execute>
 
 		<execute macro="LanguagePortlet#viewLanguageCurrent">
-			<var name="locale" value="en-us" />
+			<var name="language" value="en-us" />
+			<var name="portletName" value="LanguagePortlet" />
 		</execute>
 
 		<execute macro="LanguagePortlet#viewLanguagesAbsent">
 			<var name="missingLocales" value="fr-fr,hu-hu,iw-il,ja-jp,pt-br,zh-cn" />
+			<var name="portletName" value="LanguagePortlet" />
 		</execute>
 
 		<execute macro="LanguagePortlet#viewLanguagesPresent">
 			<var name="currentLocales" value="de-de,es-es" />
+			<var name="portletName" value="LanguagePortlet" />
 		</execute>
 	</command>
 
@@ -357,7 +360,8 @@
 		</execute>
 
 		<execute macro="LanguagePortlet#viewLanguageCurrent">
-			<var name="locale" value="nl-nl" />
+			<var name="language" value="en-us" />
+			<var name="portletName" value="LanguagePortlet" />
 		</execute>
 
 		<execute macro="Navigator#gotoSitePage">
@@ -446,15 +450,18 @@
 		</execute>
 
 		<execute macro="LanguagePortlet#viewLanguageCurrent">
-			<var name="locale" value="en-us" />
+			<var name="language" value="en-us" />
+			<var name="portletName" value="LanguagePortlet" />
 		</execute>
 
 		<execute macro="LanguagePortlet#viewLanguagesAbsent">
 			<var name="missingLocales" value="de-de,es-es,hu-hu,iw-il,ja-jp,pt-br" />
+			<var name="portletName" value="LanguagePortlet" />
 		</execute>
 
 		<execute macro="LanguagePortlet#viewLanguagesPresent">
 			<var name="currentLocales" value="fr-fr,zh-cn" />
+			<var name="portletName" value="LanguagePortlet" />
 		</execute>
 
 		<execute macro="Portlet#gotoPortletOptions">
@@ -501,15 +508,18 @@
 		</execute>
 
 		<execute macro="LanguagePortlet#viewLanguageCurrent">
-			<var name="locale" value="en-us" />
+			<var name="language" value="en-us" />
+			<var name="portletName" value="LanguagePortlet" />
 		</execute>
 
 		<execute macro="LanguagePortlet#viewLanguagesAbsent">
 			<var name="missingLocales" value="fr-fr,hu-hu,ja-jp,pt-br,zh-cn" />
+			<var name="portletName" value="LanguagePortlet" />
 		</execute>
 
 		<execute macro="LanguagePortlet#viewLanguagesPresent">
 			<var name="currentLocales" value="de-de,es-es" />
+			<var name="portletName" value="LanguagePortlet" />
 		</execute>
 
 		<execute macro="Portlet#gotoPortletOptions">
