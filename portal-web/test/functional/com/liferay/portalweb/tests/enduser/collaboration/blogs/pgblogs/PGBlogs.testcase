@@ -1628,6 +1628,8 @@
 	</command>
 
 	<command name="ViewBlogEntryViaEditedCustomURL">
+		<property name="portal.acceptance" value="fiona" />
+		
 		<description message="This is a usecase for LPS-66970" />
 
 		<execute macro="Navigator#gotoPage">
@@ -2084,6 +2086,8 @@
 	</command>
 
 	<command name="ViewBlogsEntryWithGuestPermissionsRemoved" priority="4">
+		<property name="portal.acceptance" value="fiona" />
+
 		<execute macro="Navigator#gotoPage">
 			<var name="pageName" value="Blogs Page" />
 		</execute>
@@ -2263,6 +2267,8 @@
 	</command>
 
 	<command name="ViewEntriesUsingCardADT" priority="4">
+		<property name="portal.acceptance" value="fiona" />
+
 		<execute macro="Navigator#gotoPage">
 			<var name="pageName" value="Blogs Page" />
 		</execute>
