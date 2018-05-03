@@ -238,6 +238,8 @@
 	</command>
 
 	<command name="editContentViaCardViewPG">
+		<execute function="MouseOver" locator1="Portlet#PORTLET_CONTENT" />
+
 		<execute macro="LexiconEntry#gotoEllipsisMenuItem">
 			<var name="menuItem" value="Edit" />
 		</execute>
@@ -525,6 +527,8 @@
 			<var name="portletTitleName" value="Blogs" />
 		</execute>
 
+		<execute function="MouseOver" locator1="Portlet#PORTLET_CONTENT" />
+		
 		<execute function="Click" locator1="Icon#BODY_VERTICAL_ELLIPSIS" />
 
 		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="Permissions">
