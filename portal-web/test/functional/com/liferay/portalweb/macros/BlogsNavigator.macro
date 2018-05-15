@@ -124,6 +124,8 @@
 					<var name="portletTitleName" value="Blogs" />
 				</execute>
 
+				<execute function="MouseOver" locator1="Portlet#PORTLET_CONTENT" />
+
 				<execute macro="PortletEntry#clickEditFromEllipsis" />
 			</else>
 		</if>
