@@ -2115,7 +2115,6 @@
 		</execute>
 
 		<execute macro="BlogsEntry#removeViewPermissionsPG">
-			<var name="entryTitle" value="Blogs Entry1 Title" />
 			<var name="roleTitle" value="Guest" />
 		</execute>
 
