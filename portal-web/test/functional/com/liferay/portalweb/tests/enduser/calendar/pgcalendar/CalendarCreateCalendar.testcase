@@ -208,6 +208,8 @@
 	</command>
 
 	<command name="ViewUserCanAddSiteCalendarsWithCalendarPermissions" priority="3">
+		<property name="portal.acceptance" value="fiona" />
+
 		<description message="This is a use case for LPS-56229." />
 
 		<execute macro="ProductMenu#gotoPortlet">

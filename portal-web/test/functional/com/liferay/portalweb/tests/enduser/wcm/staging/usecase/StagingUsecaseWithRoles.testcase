@@ -254,6 +254,8 @@
 	</command>
 
 	<command name="StagingDemoLocalLive2" priority="4">
+		<property name="portal.acceptance" value="fiona" />
+
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="Sites" />
 			<var name="panel" value="Control Panel" />
@@ -469,6 +471,8 @@
 	</command>
 
 	<command name="StagingDemoLocalLive3" priority="4">
+		<property name="portal.acceptance" value="fiona" />
+
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="Sites" />
 			<var name="panel" value="Control Panel" />
@@ -814,7 +818,7 @@
 	</command>
 
 	<command name="StagingDemoLocalLive4" priority="5">
-		<property name="portal.acceptance" value="false" />
+		<property name="portal.acceptance" value="fiona" />
 		<property name="testray.component.names" value="Training" />
 
 		<execute macro="ProductMenu#gotoPortlet">
@@ -1470,7 +1474,7 @@
 	</command>
 
 	<command name="StagingPublishPage" priority="5">
-		<property name="portal.acceptance" value="false" />
+		<property name="portal.acceptance" value="fiona" />
 		<property name="testray.component.names" value="Training" />
 
 		<execute macro="ProductMenu#gotoPortlet">
