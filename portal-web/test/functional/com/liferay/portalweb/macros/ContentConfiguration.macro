@@ -117,7 +117,7 @@
 	</command>
 
 	<command name="deleteMissingPages">
-		<execute function="Check" locator1="PagesConfiguration#PAGES_DELETE_MISSING_PAGES_CHECKBOX" />
+		<execute function="Check#checkHiddenToggleSwitch" locator1="PagesConfiguration#PAGES_DELETE_MISSING_PAGES_CHECKBOX" />
 	</command>
 
 	<command name="exportPermissions">
