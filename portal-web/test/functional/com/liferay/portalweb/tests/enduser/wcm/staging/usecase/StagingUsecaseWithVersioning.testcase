@@ -108,6 +108,8 @@
 	</command>
 
 	<command name="EnableAndDeleteSitePageVariationPage" priority="4">
+		<property name="portal.acceptance" value="fiona" />
+		
 		<execute macro="Staging#addSitePagesVariationPG">
 			<var name="copySitePagesVariationName" value="Main Variation" />
 			<var name="sitePagesVariationName" value="Test Site Pages Variation" />
@@ -313,7 +315,7 @@
 	</command>
 
 	<command name="StagingBlogsCP" priority="5">
-		<property name="portal.acceptance" value="quarantine" />
+		<property name="portal.acceptance" value="fiona" />
 		<property name="testray.component.names" value="Training" />
 
 		<execute macro="ProductMenu#gotoPortlet">
@@ -490,6 +492,8 @@
 	</command>
 
 	<command name="StagingLogo" priority="3">
+		<property name="portal.acceptance" value="fiona" />
+		
 		<execute macro="Page#viewDefaultLogoPG" />
 
 		<execute macro="Navigator#openSiteURL">
@@ -730,6 +734,8 @@
 	</command>
 
 	<command name="StagingPortletPublishContentCount" priority="4">
+		<property name="portal.acceptance" value="fiona" />
+		
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="Content" />
 			<var name="panel" value="Site Administration" />
@@ -862,6 +868,8 @@
 	</command>
 
 	<command name="StagingSiteVariationIncompletePage" priority="5">
+		<property name="portal.acceptance" value="fiona" />
+		
 		<execute macro="Staging#addSitePagesVariationPG">
 			<var name="sitePagesVariationName" value="Site Pages Variation Name" />
 		</execute>

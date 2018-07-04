@@ -104,7 +104,7 @@
 	</command>
 
 	<command name="DeleteLivePage" priority="5">
-		<property name="portal.acceptance" value="quarantine" />
+		<property name="portal.acceptance" value="fiona" />
 
 		<execute macro="ProductMenu#gotoSite">
 			<var name="site" value="Site Name" />
@@ -157,6 +157,8 @@
 	</command>
 
 	<command name="EditPublishTemplate" priority="4">
+		<property name="portal.acceptance" value="fiona" />
+
 		<execute macro="Navigator#gotoStagedSitePage">
 			<var name="pageName" value="Staging Test Page" />
 			<var name="siteName" value="Site Name" />
@@ -511,6 +513,8 @@
 	</command>
 
 	<command name="MoveToTheRecycleBinAndRestorePublishTemplate" priority="4">
+		<property name="portal.acceptance" value="fiona" />
+	
 		<execute macro="Navigator#openSiteURL">
 			<var name="siteName" value="Site Name" />
 		</execute>
@@ -609,7 +613,7 @@
 	</command>
 
 	<command name="PublishPortlet" priority="5">
-		<property name="portal.acceptance" value="false" />
+		<property name="portal.acceptance" value="fiona" />
 		<property name="testray.component.names" value="Training" />
 
 		<execute macro="ProductMenu#gotoSite">
@@ -678,6 +682,8 @@
 	</command>
 
 	<command name="SearchPublishTemplate" priority="4">
+		<property name="portal.acceptance" value="fiona" />
+
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="Publishing" />
 			<var name="panel" value="Site Administration" />
@@ -898,6 +904,8 @@
 	</command>
 
 	<command name="StagingPublishOnlySelectedPage" priority="4">
+		<property name="portal.acceptance" value="fiona" />
+		
 		<execute macro="ProductMenu#gotoSite">
 			<var name="site" value="Site Name" />
 		</execute>

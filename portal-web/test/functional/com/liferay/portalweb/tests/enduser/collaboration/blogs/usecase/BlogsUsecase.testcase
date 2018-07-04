@@ -917,6 +917,8 @@
 	</command>
 
 	<command name="StagingBlogs" priority="3">
+		<property name="portal.acceptance" value="fiona" />
+		
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="Sites" />
 			<var name="panel" value="Control Panel" />
@@ -1194,6 +1196,8 @@
 	</command>
 
 	<command name="StagingBlogsCP" priority="3">
+		<property name="portal.acceptance" value="fiona" />
+
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="Sites" />
 			<var name="panel" value="Control Panel" />

@@ -181,6 +181,8 @@
 	</command>
 
 	<command name="StagingBlogsRolesWorkflow" priority="4">
+		<property name="portal.acceptance" value="fiona" />
+		
 		<execute macro="Navigator#openSiteURL">
 			<var name="siteName" value="Site Name" />
 		</execute>
