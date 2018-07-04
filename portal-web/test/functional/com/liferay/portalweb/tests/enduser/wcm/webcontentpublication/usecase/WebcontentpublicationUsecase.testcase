@@ -820,6 +820,7 @@
 	</command>
 
 	<command name="AssetPublisherFilterAndOrderByFieldType" priority="5">
+		<property name="portal.acceptance" value="fiona" />
 		<property name="testray.component.names" value="Training" />
 
 		<execute macro="Navigator#openURL" />
