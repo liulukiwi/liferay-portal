@@ -1860,6 +1860,12 @@
 
 		<execute macro="PortletEntry#publish" />
 
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Content" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Web Content" />
+		</execute>
+
 		<execute macro="WebContent#viewTitle">
 			<var name="webContentTitle" value="Web Content Title" />
 		</execute>
