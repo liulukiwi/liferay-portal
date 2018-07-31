@@ -691,6 +691,8 @@
 	</command>
 
 	<command name="StagingPageLogo" priority="3">
+		<property name="portal.acceptance" value="fiona" />
+		
 		<execute macro="Page#viewDefaultLogoPG" />
 
 		<execute macro="Navigator#openSiteURL">
