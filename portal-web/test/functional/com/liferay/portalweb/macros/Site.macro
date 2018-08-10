@@ -415,7 +415,7 @@
 			<var name="portlet" value="Pages" />
 		</execute>
 
-		<execute function="Click" locator1="Icon#COG_PAGES" />
+		<execute function="Click" locator1="Icon#COG_PAGE" />
 
 		<execute macro="Panel#expandPanel">
 			<var name="panel" value="Logo" />
