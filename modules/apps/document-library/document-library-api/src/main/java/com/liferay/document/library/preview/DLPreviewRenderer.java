@@ -1,4 +1,3 @@
-<%--
 /**
  * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
@@ -12,13 +11,21 @@
  * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
  * details.
  */
---%>
 
-<c:choose>
-	<c:when test="<%= journalWebConfiguration.journalArticlesSearchWithIndex() %>">
-		<%@ include file="/article_search_results_index.jspf" %>
-	</c:when>
-	<c:otherwise>
-		<%@ include file="/article_search_results_database.jspf" %>
-	</c:otherwise>
-</c:choose>
+package com.liferay.document.library.preview;
+
+import java.io.IOException;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+/**
+ * @author Alejandro Tardín
+ */
+public interface DLPreviewRenderer {
+
+	public void render(HttpServletRequest request, HttpServletResponse response)
+		throws IOException, ServletException;
+
+}

@@ -27,7 +27,6 @@ import com.liferay.apio.architect.routes.ItemRoutes;
 import com.liferay.apio.architect.routes.NestedCollectionRoutes;
 import com.liferay.document.library.kernel.service.DLAppService;
 import com.liferay.dynamic.data.mapping.model.DDMForm;
-import com.liferay.dynamic.data.mapping.model.DDMFormField;
 import com.liferay.dynamic.data.mapping.model.DDMFormInstance;
 import com.liferay.dynamic.data.mapping.model.DDMFormInstanceRecord;
 import com.liferay.dynamic.data.mapping.model.DDMFormInstanceRecordVersion;
@@ -81,7 +80,7 @@ public class FormInstanceRecordNestedCollectionResource
 		).addCreator(
 			this::_addFormInstanceRecord, AcceptLocale.class,
 			ServiceContextWrapper.class,
-			_hasPermission.forAddingIn(FormInstanceIdentifier.class),
+			_hasPermission.forAddingIn(FormInstanceRecordIdentifier.class),
 			FormInstanceRecordForm::buildForm
 		).build();
 	}
@@ -171,14 +170,12 @@ public class FormInstanceRecordNestedCollectionResource
 
 		DDMForm ddmForm = ddmStructure.getDDMForm();
 
-		List<DDMFormField> ddmFormFields = ddmForm.getDDMFormFields();
-
 		DDMFormValues ddmFormValues = getDDMFormValues(
-			formInstanceRecordForm.getFieldValues(), ddmStructure.getDDMForm(),
+			formInstanceRecordForm.getFieldValues(), ddmForm,
 			acceptLocale.get());
 
 		_uploadFileHelper.linkFiles(
-			ddmFormFields, ddmFormValues.getDDMFormFieldValues());
+			ddmForm.getDDMFormFields(), ddmFormValues.getDDMFormFieldValues());
 
 		ServiceContext serviceContext = calculateServiceContextAttributes(
 			serviceContextWrapper, formInstanceRecordForm.isDraft());
@@ -231,9 +228,14 @@ public class FormInstanceRecordNestedCollectionResource
 
 		DDMStructure ddmStructure = ddmFormInstance.getStructure();
 
+		DDMForm ddmForm = ddmStructure.getDDMForm();
+
 		DDMFormValues ddmFormValues = getDDMFormValues(
-			formInstanceRecordForm.getFieldValues(), ddmStructure.getDDMForm(),
+			formInstanceRecordForm.getFieldValues(), ddmForm,
 			acceptLocale.get());
+
+		_uploadFileHelper.linkFiles(
+			ddmForm.getDDMFormFields(), ddmFormValues.getDDMFormFieldValues());
 
 		ServiceContext serviceContext = calculateServiceContextAttributes(
 			serviceContextWrapper, formInstanceRecordForm.isDraft());

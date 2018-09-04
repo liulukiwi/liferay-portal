@@ -134,9 +134,14 @@
 		<check name="JavaForLoopCheck" />
 		<check name="JavaHibernateSQLCheck" />
 		<check name="JavaIfStatementCheck" />
-		<check name="JavaIllegalImportsCheck" />
+		<check name="JavaIllegalImportsCheck">
+			<property name="enabled" value="false" />
+		</check>
 		<check name="JavaImportsCheck" />
 		<check name="JavaIndexableCheck" />
+		<check name="JavaInnerClassImportsCheck">
+			<property name="enabled" value="false" />
+		</check>
 		<check name="JavaInterfaceCheck" />
 		<check name="JavaIOExceptionCheck" />
 		<check name="JavaJSPDynamicIncludeCheck">
@@ -260,6 +265,9 @@
 	</source-processor>
 	<source-processor name="JSONSourceProcessor">
 		<check name="JSONIndentationCheck" />
+		<check name="JSONLineBreakCheck">
+			<property name="enabled" value="false" />
+		</check>
 		<check name="JSONPropertyOrderCheck" />
 		<check name="JSONValidationCheck" />
 		<check name="JSONWhitespaceCheck">
