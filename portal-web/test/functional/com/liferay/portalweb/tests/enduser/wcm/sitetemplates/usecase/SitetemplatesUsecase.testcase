@@ -292,6 +292,9 @@
 	</command>
 
 	<command name="SiteAdminCannotDeletePagesThatWereCreatedBySiteTemplates" priority="3">
+	
+	<property name="portal.acceptance" value="fiona" />
+
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="Users" />
 			<var name="panel" value="Control Panel" />
