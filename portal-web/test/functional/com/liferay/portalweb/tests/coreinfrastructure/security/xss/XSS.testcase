@@ -568,6 +568,61 @@ definition {
 		AssertAlertNotPresent();
 	}
 
+ 	@description = "This is a use case for LPS-71236 and LPS-71307."
+	@priority = "5"
+	test ViewWebContent {
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content",
+			panel = "Site Administration",
+			portlet = "Web content"
+		);
+
+		WebContentNavigator.gotoAddCP();
+
+		WebContent.addCP(
+			webContentContent = "WC WebContent Content",
+			webContentTitle = '''<script>alert(document.cookie)</script>'''
+		);
+
+		PortletEntry.publish();
+
+		WebContent.viewTitle(webContentTitle = "<script>alert(document.cookie)</script>");
+
+		Portlet.addPG(portletName = "Web Content Display");
+
+		WebContentDisplayPortlet.selectWebContent(
+			portletName = "Web Content Display",
+			webContentTitle = "<script>alert(document.cookie)</script>"
+		);
+
+		AssertAlertNotPresent();
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content",
+			panel = "Site Administration",
+			portlet = "Web Content"
+		);
+
+		WebContentNavigator.gotoEditCP(webContentTitle = "<script>alert(document.cookie)</script>");
+
+		WebContent.editCP(
+			webContentTitle = "<script>alert(document.cookie)</script>",
+			webContentTitleEdit = "WC WebContent Title"
+		);
+
+		WebContent.addSmallImageViaURL(imageSourceURL = '''<img src="http://url.to.file.which/not.exist" onerror=alert(document.cookie);>''');
+
+		PortletEntry.publish();
+
+		LexiconEntry.changeDisplayStyle(displayStyle = "cards");
+
+		AssertAlertNotPresent();
+	}
+
 	@priority = "5"
 	test ViewWiki {
 		Navigator.openURL();
