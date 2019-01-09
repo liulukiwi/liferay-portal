@@ -571,6 +571,8 @@ definition {
  	@description = "This is a use case for LPS-71236 and LPS-71307."
 	@priority = "5"
 	test ViewWebContent {
+		property portal.acceptance = "fiona";
+
 		Navigator.openURL();
 
 		ProductMenu.gotoPortlet(
