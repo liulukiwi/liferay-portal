@@ -693,6 +693,8 @@ definition {
 
 	@priority = "4"
 	test AddWebContentWithImageField {
+		property portal.acceptance = "fiona";
+
 		property test.name.skip.portal.instance = "WebContentWithCustomStructures#AddWebContentWithImageField";
 		property testray.component.names = "Web Content Administration";
 
