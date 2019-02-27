@@ -1251,6 +1251,8 @@ definition {
 
 	@priority = "5"
 	test EditOrganizationSite {
+		property portal.acceptance = "fiona";
+
 		property portal.acceptance = "true";
 		property testray.component.names = "Training";
 
