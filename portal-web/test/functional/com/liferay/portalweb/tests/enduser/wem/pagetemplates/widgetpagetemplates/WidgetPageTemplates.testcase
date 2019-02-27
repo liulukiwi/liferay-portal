@@ -282,6 +282,8 @@ definition {
 
 	@priority = "5"
 	test ImportLAR {
+		property portal.acceptance = "fiona";
+
 		property testray.component.names = "Training";
 
 		ProductMenu.gotoSite(site = "Global");

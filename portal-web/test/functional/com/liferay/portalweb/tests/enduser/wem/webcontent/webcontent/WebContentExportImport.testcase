@@ -28,6 +28,8 @@ definition {
 	@description = "This is a use case for LPS-82492."
 	@priority = "5"
 	test AddCreatedStructureForImportedTemplate {
+		property portal.acceptance = "fiona";
+
 		property testray.component.names = "Training";
 
 		WebContent.openWebContentAdmin(siteURLKey = "test-site-name");
@@ -86,6 +88,8 @@ definition {
 	@description = "This is a use case for LPS-82492."
 	@priority = "5"
 	test AddWebContentFromImportedStructureAndTemplate {
+		property portal.acceptance = "fiona";
+
 		property testray.component.names = "Training";
 
 		WebContent.openWebContentAdmin(siteURLKey = "test-site-name");
@@ -223,6 +227,8 @@ definition {
 
 	@priority = "5"
 	test ImportAndUseGlobalStructureAndTemplate {
+		property portal.acceptance = "fiona";
+
 		property testray.component.names = "Training";
 
 		WebContent.openWebContentAdmin(siteURLKey = "global");
@@ -451,6 +457,8 @@ definition {
 
 	@priority = "5"
 	test MoveImportedWebContentArticlesToFolders {
+		property portal.acceptance = "fiona";
+
 		property testray.component.names = "Training,Web Content Administration";
 
 		JSONLayout.addPublicLayout(
