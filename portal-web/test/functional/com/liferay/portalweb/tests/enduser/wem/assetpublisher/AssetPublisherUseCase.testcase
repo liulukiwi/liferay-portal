@@ -1991,6 +1991,8 @@ definition {
 
 	@priority = "3"
 	test ViewRelatedAssetViaDMPortlet {
+		property portal.acceptance = "fiona";
+
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
 			panel = "Site Administration",
