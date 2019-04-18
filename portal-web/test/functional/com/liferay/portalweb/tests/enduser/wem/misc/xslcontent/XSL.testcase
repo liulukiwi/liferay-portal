@@ -66,6 +66,7 @@ definition {
 
 	@priority = "4"
 	test AddXSL {
+		property portal.acceptance = "fiona";
 		property test.name.skip.portal.instance = "XSL#AddXSL";
 
 		ProductMenu.gotoSite(site = "Site Name");
@@ -183,6 +184,7 @@ definition {
 
 	@priority = "4"
 	test ConfigurePortletWithCorruptXML {
+		property portal.acceptance = "fiona";
 		property ignore.errors = "must be terminated by the matching end-tag";
 		property test.name.skip.portal.instance = "XSL#ConfigurePortletWithCorruptXML";
 
@@ -399,6 +401,7 @@ definition {
 
 	@priority = "4"
 	test ConfigurePortletWithIncorrectVersionXmlAndXsl {
+		property portal.acceptance = "fiona";
 		property test.name.skip.portal.instance = "XSL#ConfigurePortletWithIncorrectVersionXmlAndXsl";
 
 		ProductMenu.gotoSite(site = "Site Name");
