@@ -1991,6 +1991,9 @@ definition {
 
 	@priority = "3"
 	test ViewRelatedAssetViaDMPortlet {
+		property osgi.module.configuration.file.names = "com.liferay.document.library.document.conversion.internal.configuration.OpenOfficeConfiguration";
+		property osgi.module.configurations = "serverEnabled=&quot;true&quot;";
+
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
 			panel = "Site Administration",
