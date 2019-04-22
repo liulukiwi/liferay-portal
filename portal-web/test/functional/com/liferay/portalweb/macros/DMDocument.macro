@@ -1756,15 +1756,15 @@ definition {
 			value1 = "${dmDocumentTitle}"
 		);
 
+		AssertElementPresent(
+			locator1 = "DocumentsAndMediaDocument#DOCUMENT_INFO_THUMBNAIL"
+		);
+		
 		Click(locator1 = "Icon#INFO");
 
 		AssertTextEquals(
 			locator1 = "DocumentsAndMediaDocument#DOCUMENT_INFO_RELATED_ASSETS_TITLE",
 			value1 = "${assetTitle}"
-		);
-
-		AssertElementPresent(
-			locator1 = "DocumentsAndMediaDocument#DOCUMENT_INFO_THUMBNAIL"
 		);
 
 		AssertTextEquals(
