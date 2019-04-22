@@ -453,6 +453,7 @@ definition {
 
 	@priority = "4"
 	test RolesOrganizationSearch {
+		property portal.acceptance = "fiona";
 		property osgi.module.configuration.file.names = "com.liferay.document.library.document.conversion.internal.configuration.OpenOfficeConfiguration";
 		property osgi.module.configurations = "serverEnabled=&quot;true&quot;";
 		property osgi.module.configuration.file.names = "com.liferay.portal.search.web.internal.configuration.SearchWebConfiguration.config";
