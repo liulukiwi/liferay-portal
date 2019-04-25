@@ -424,6 +424,20 @@ definition {
 		property osgi.module.configurations = "classicSearchPortletInFrontPage=&quot;true&quot;";
 
 		ProductMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Control Panel",
+			portlet = "System Settings");
+
+		SystemSettings.gotoConfiguration(
+			configurationCategory = "Connectors",
+			configurationName = "OpenOffice Integration",
+			configurationScope = "System Scope");
+
+		FormFields.enableCheckbox(fieldName = "serverEnabled");
+
+		SystemSettings.saveConfiguration();
+
+		ProductMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Roles");

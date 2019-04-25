@@ -1786,6 +1786,20 @@ definition {
 	@priority = "3"
 	test ViewRelatedAssetViaDMPortlet {
 		ProductMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Control Panel",
+			portlet = "System Settings");
+
+		SystemSettings.gotoConfiguration(
+			configurationCategory = "Connectors",
+			configurationName = "OpenOffice Integration",
+			configurationScope = "System Scope");
+
+		FormFields.enableCheckbox(fieldName = "serverEnabled");
+
+		SystemSettings.saveConfiguration();
+
+		ProductMenu.gotoPortlet(
 			category = "Site Builder",
 			panel = "Site Administration",
 			portlet = "Pages");
