@@ -420,6 +420,8 @@ definition {
 
 	@priority = "4"
 	test RolesOrganizationSearch {
+		property portal.acceptance = "fiona";
+
 		property osgi.module.configuration.file.names = "com.liferay.portal.search.web.internal.configuration.SearchWebConfiguration.config";
 		property osgi.module.configurations = "classicSearchPortletInFrontPage=&quot;true&quot;";
 
