@@ -207,7 +207,7 @@ definition {
 	@description = "User can delete display pages."
 	@priority = "5"
 	test DeleteDisplayPage {
-		property portal.acceptance = "true";
+		property portal.acceptance = "fiona";
 
 		task ("Delete the display page") {
 			DisplayPageTemplatesAdmin.openDisplayPagesAdmin(siteURLKey = "test-site-name");
@@ -219,6 +219,128 @@ definition {
 			DisplayPageTemplatesAdmin.viewDisplayPageNotPresent(displayPageName = "DisplayPage Name");
 		}
 	}
+
+	test DeleteDisplayPage2 {
+		property portal.acceptance = "fiona";
+
+		task ("Delete the display page") {
+			DisplayPageTemplatesAdmin.openDisplayPagesAdmin(siteURLKey = "test-site-name");
+
+			DisplayPageTemplatesAdmin.deleteDisplayPage(displayPageName = "Display Page Name");
+		}
+
+		task ("Assert the display page was deleted") {
+			DisplayPageTemplatesAdmin.viewDisplayPageNotPresent(displayPageName = "DisplayPage Name");
+		}
+	}
+
+	test DeleteDisplayPage3 {
+		property portal.acceptance = "fiona";
+
+		task ("Delete the display page") {
+			DisplayPageTemplatesAdmin.openDisplayPagesAdmin(siteURLKey = "test-site-name");
+
+			DisplayPageTemplatesAdmin.deleteDisplayPage(displayPageName = "Display Page Name");
+		}
+
+		task ("Assert the display page was deleted") {
+			DisplayPageTemplatesAdmin.viewDisplayPageNotPresent(displayPageName = "DisplayPage Name");
+		}
+	}
+
+	test DeleteDisplayPage4 {
+		property portal.acceptance = "fiona";
+
+		task ("Delete the display page") {
+			DisplayPageTemplatesAdmin.openDisplayPagesAdmin(siteURLKey = "test-site-name");
+
+			DisplayPageTemplatesAdmin.deleteDisplayPage(displayPageName = "Display Page Name");
+		}
+
+		task ("Assert the display page was deleted") {
+			DisplayPageTemplatesAdmin.viewDisplayPageNotPresent(displayPageName = "DisplayPage Name");
+		}
+	}
+
+	test DeleteDisplayPage5 {
+		property portal.acceptance = "fiona";
+
+		task ("Delete the display page") {
+			DisplayPageTemplatesAdmin.openDisplayPagesAdmin(siteURLKey = "test-site-name");
+
+			DisplayPageTemplatesAdmin.deleteDisplayPage(displayPageName = "Display Page Name");
+		}
+
+		task ("Assert the display page was deleted") {
+			DisplayPageTemplatesAdmin.viewDisplayPageNotPresent(displayPageName = "DisplayPage Name");
+		}
+	}
+
+	test DeleteDisplayPage6 {
+		property portal.acceptance = "fiona";
+
+		task ("Delete the display page") {
+			DisplayPageTemplatesAdmin.openDisplayPagesAdmin(siteURLKey = "test-site-name");
+
+			DisplayPageTemplatesAdmin.deleteDisplayPage(displayPageName = "Display Page Name");
+		}
+
+		task ("Assert the display page was deleted") {
+			DisplayPageTemplatesAdmin.viewDisplayPageNotPresent(displayPageName = "DisplayPage Name");
+		}
+	}
+
+		test DeleteDisplayPage7 {
+		property portal.acceptance = "fiona";
+
+		task ("Delete the display page") {
+			DisplayPageTemplatesAdmin.openDisplayPagesAdmin(siteURLKey = "test-site-name");
+
+			DisplayPageTemplatesAdmin.deleteDisplayPage(displayPageName = "Display Page Name");
+		}
+
+		task ("Assert the display page was deleted") {
+			DisplayPageTemplatesAdmin.viewDisplayPageNotPresent(displayPageName = "DisplayPage Name");
+		}
+
+		test DeleteDisplayPage8 {
+		property portal.acceptance = "fiona";
+
+		task ("Delete the display page") {
+			DisplayPageTemplatesAdmin.openDisplayPagesAdmin(siteURLKey = "test-site-name");
+
+			DisplayPageTemplatesAdmin.deleteDisplayPage(displayPageName = "Display Page Name");
+		}
+
+		task ("Assert the display page was deleted") {
+			DisplayPageTemplatesAdmin.viewDisplayPageNotPresent(displayPageName = "DisplayPage Name");
+		}
+
+		test DeleteDisplayPage9 {
+		property portal.acceptance = "fiona";
+
+		task ("Delete the display page") {
+			DisplayPageTemplatesAdmin.openDisplayPagesAdmin(siteURLKey = "test-site-name");
+
+			DisplayPageTemplatesAdmin.deleteDisplayPage(displayPageName = "Display Page Name");
+		}
+
+		task ("Assert the display page was deleted") {
+			DisplayPageTemplatesAdmin.viewDisplayPageNotPresent(displayPageName = "DisplayPage Name");
+		}
+
+		test DeleteDisplayPage10 {
+		property portal.acceptance = "fiona";
+
+		task ("Delete the display page") {
+			DisplayPageTemplatesAdmin.openDisplayPagesAdmin(siteURLKey = "test-site-name");
+
+			DisplayPageTemplatesAdmin.deleteDisplayPage(displayPageName = "Display Page Name");
+		}
+
+		task ("Assert the display page was deleted") {
+			DisplayPageTemplatesAdmin.viewDisplayPageNotPresent(displayPageName = "DisplayPage Name");
+		}
 
 	@description = "User can edit a display page. This includes adding and removing fragments and includes editing text in fragment editable fields."
 	@priority = "5"
