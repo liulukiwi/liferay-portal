@@ -86,7 +86,7 @@ definition {
 
 		task ("Navigate to the Navigation Menu widget") {
 			Navigator.gotoSitePage(
-				pageName = "Test Page Name",
+				pageName = "Site Page",
 				siteName = "Test Site Name");
 		}
 
