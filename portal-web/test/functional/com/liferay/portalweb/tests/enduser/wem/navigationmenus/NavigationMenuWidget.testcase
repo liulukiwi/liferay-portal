@@ -31,6 +31,8 @@ definition {
 	@description = "This is a test for LPS-75059. A user can add a link to a navigation menu."
 	@priority = "4"
 	test AddURLNavigationMenu {
+		property portal.acceptance = "fiona";
+
 		task ("Add a page to the site") {
 			JSONLayout.addPublicLayout(
 				groupName = "Test Site Name",

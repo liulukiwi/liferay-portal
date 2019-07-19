@@ -76,6 +76,8 @@ definition {
 	@description = "This is a test for LPS-87134. Assert Pages Hierarchy is the default navigation in the Navigation Menu widget. If this fails we need to either report this as a bug or adjust the rest of the tests in this testcase to set pages hierarchy as the default in the Navigation Menu widget."
 	@priority = "3"
 	test AssertPagesHierarchyNavigationIsDefault {
+		property portal.acceptance = "fiona";
+
 		task ("Add a page to the site") {
 			JSONLayout.addPublicLayout(
 				groupName = "Test Site Name",
