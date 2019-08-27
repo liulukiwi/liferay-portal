@@ -19,6 +19,8 @@ definition {
 
 		Click.clickNoMouseOver(locator1 = "FragmentEditor#FRAGMENTS_EDITOR_FLOATING_TOOLBAR_CONFIGURATION");
 
+		SelectFrameTop();
+
 		Check.checkToggleSwitch(
 			checkboxName = "${checkboxName}",
 			locator1 = "Fragment#FRAGMENT_CHECKBOX");
