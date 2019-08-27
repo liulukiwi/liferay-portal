@@ -5,6 +5,8 @@ definition {
 			fragment_name = "${fragmentName}",
 			locator1 = "PageEditor#SECTION_NAME");
 
+		SelectFrameTop();
+
 		Click(locator1 = "FragmentEditor#FRAGMENTS_EDITOR_FLOATING_TOOLBAR_CONFIGURATION");
 
 		FormFields.editText(
@@ -16,6 +18,8 @@ definition {
 		Click(
 			fragment_name = "${fragmentName}",
 			locator1 = "PageEditor#SECTION_NAME");
+
+		SelectFrameTop();
 
 		Click(locator1 = "FragmentEditor#FRAGMENTS_EDITOR_FLOATING_TOOLBAR_CONFIGURATION");
 
