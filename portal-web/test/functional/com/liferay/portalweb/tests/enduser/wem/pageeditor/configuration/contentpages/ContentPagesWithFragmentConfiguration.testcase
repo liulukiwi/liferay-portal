@@ -149,7 +149,9 @@ definition {
 			fragmentName = "Text Fragment Example");
 
 		task ("Change the configuration value in the toolbar") {
-			PageEditorConfiguration.changeConfigSelection(optionValue = "dark");
+			PageEditorConfiguration.changeConfigSelection(
+				fragmentName = "Text Fragment Example",
+				optionValue = "dark");
 		}
 
 		task ("Assert value is changed") {
@@ -161,7 +163,9 @@ definition {
 		}
 
 		task ("Retore the configuration value in the toolbar") {
-			PageEditorConfiguration.restoreConfigSelectionValue(defaultValue = "light");
+			PageEditorConfiguration.restoreConfigSelectionValue(
+				defaultValue = "light",
+				fragmentName = "Text Fragment Example");
 		}
 
 		task ("Assert default value is displayed") {
