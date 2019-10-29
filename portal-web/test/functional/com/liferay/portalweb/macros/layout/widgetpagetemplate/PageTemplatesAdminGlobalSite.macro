@@ -103,6 +103,8 @@ definition {
 	}
 
 	macro viewCP {
+		Navigator.gotoNavTab(navTab = "Page Templates");
+
 		AssertTextEquals.assertPartialText(
 			key_pageTemplateName = "${pageTemplateName}",
 			locator1 = "PageTemplates#PAGE_TEMPLATE_TABLE_NAME",
@@ -169,6 +171,8 @@ definition {
 
 	macro viewPG {
 		var key_pageTemplateName = "${pageTemplateName}";
+
+		Navigator.gotoNavTab(navTab = "Page Templates");
 
 		AssertClick.assertPartialTextClickAt(
 			locator1 = "PageTemplates#PAGE_TEMPLATE_TABLE_NAME",
