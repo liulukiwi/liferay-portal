@@ -109,6 +109,10 @@ definition {
 			PageEditor.removeFragment(fragmentName = "Button");
 		}
 
+		task ("Go to Section Builder") {
+			PageEditor.gotoTab(tabName = "Section Builder");
+		}
+
 		task ("Add a basic component") {
 			PageEditor.addFragment(
 				collectionName = "Basic Components",
@@ -166,6 +170,10 @@ definition {
 			PageEditor.removeFragment(fragmentName = "Card");
 		}
 
+		task ("Go to Section Builder") {
+			PageEditor.gotoTab(tabName = "Section Builder");
+		}
+
 		task ("Add a basic component") {
 			PageEditor.addFragment(
 				collectionName = "Basic Components",
@@ -217,6 +225,10 @@ definition {
 
 		task ("Remove the fragment") {
 			PageEditor.removeFragment(fragmentName = "Heading");
+		}
+
+		task ("Go to Section Builder") {
+			PageEditor.gotoTab(tabName = "Section Builder");
 		}
 
 		task ("Add a basic component") {
@@ -272,6 +284,10 @@ definition {
 			PageEditor.removeFragment(fragmentName = "Image");
 		}
 
+		task ("Go to Section Builder") {
+			PageEditor.gotoTab(tabName = "Section Builder");
+		}
+
 		task ("Add a basic component") {
 			PageEditor.addFragment(
 				collectionName = "Basic Components",
@@ -321,6 +337,10 @@ definition {
 
 		task ("Remove the fragment") {
 			PageEditor.removeFragment(fragmentName = "Paragraph");
+		}
+
+		task ("Go to Section Builder") {
+			PageEditor.gotoTab(tabName = "Section Builder");
 		}
 
 		task ("Add a basic component") {
@@ -374,6 +394,10 @@ definition {
 			PageEditor.removeFragment(fragmentName = "Separator");
 		}
 
+		task ("Go to Section Builder") {
+			PageEditor.gotoTab(tabName = "Section Builder");
+		}
+
 		task ("Add a basic component") {
 			PageEditor.addFragment(
 				collectionName = "Basic Components",
@@ -418,6 +442,10 @@ definition {
 
 		task ("Remove the fragment") {
 			PageEditor.removeFragment(fragmentName = "Spacer");
+		}
+
+		task ("Go to Section Builder") {
+			PageEditor.gotoTab(tabName = "Section Builder");
 		}
 
 		task ("Add a basic component") {
