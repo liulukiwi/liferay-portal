@@ -15,6 +15,10 @@ definition {
 			LexiconEntry.gotoAddMenuItem(menuItem = "${menuItem}");
 		}
 
+		if ("${menuItem}" == "Content Page Template") {
+			LexiconCard.clickCard(card = "Blank");
+		}
+
 		PortletEntry.inputName(name = "${pageTemplateName}");
 
 		Button.clickSave();
