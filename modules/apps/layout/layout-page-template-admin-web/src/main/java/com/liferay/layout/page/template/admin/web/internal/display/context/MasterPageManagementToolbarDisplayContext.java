@@ -151,7 +151,7 @@ public class MasterPageManagementToolbarDisplayContext
 
 	@Override
 	public String getSearchContainerId() {
-		return "masterPages";
+		return "masterLayouts";
 	}
 
 	@Override
