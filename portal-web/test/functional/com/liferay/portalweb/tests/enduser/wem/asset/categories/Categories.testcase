@@ -37,6 +37,8 @@ definition {
 
 	@priority = "4"
 	test AddCategories {
+		property portal.acceptance = "fiona";
+
 		JSONCategory.addCategory(
 			groupName = "Test Site Name",
 			title = "Category Name 1",
@@ -74,6 +76,8 @@ definition {
 	@description = "Ensure that a user can add a category."
 	@priority = "4"
 	test AddCategory {
+		property portal.acceptance = "fiona";
+
 		JSONCategory.addCategory(
 			groupName = "Test Site Name",
 			title = "Category Name 1",
@@ -88,6 +92,8 @@ definition {
 
 	@priority = "3"
 	test AddCategoryProperties {
+		property portal.acceptance = "fiona";
+
 		JSONCategory.addCategory(
 			groupName = "Test Site Name",
 			title = "Category Name 1",
@@ -434,6 +440,8 @@ definition {
 
 	@priority = "3"
 	test CannotAddCategoryWithNullTitle {
+	property portal.acceptance = "fiona";
+
 		Category.addWithNullTitleCP(vocabularyName = "Vocabulary Name");
 	}
 

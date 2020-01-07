@@ -885,6 +885,8 @@ definition {
 
 	@priority = "4"
 	test ViewContentNotLostWithBlankTitle {
+		property portal.acceptance = "fiona";
+
 		property testray.component.names = "Web Content Administration";
 
 		WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
@@ -896,6 +898,8 @@ definition {
 
 	@priority = "3"
 	test ViewDisplayStyleCP {
+		property portal.acceptance = "fiona";
+
 		property testray.component.names = "Web Content Administration";
 
 		WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
@@ -912,6 +916,8 @@ definition {
 
 	@priority = "4"
 	test ViewMultipleCategoriesViaWebContent {
+		property portal.acceptance = "fiona";
+
 		property testray.component.names = "Categories,Web Content Administration";
 
 		JSONCategory.addVocabulary(
