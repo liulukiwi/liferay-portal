@@ -77,7 +77,7 @@ definition {
 	@description = "User can add a display page with fragments."
 	@priority = "5"
 	test AddDisplayPage {
-		property portal.acceptance = "true";
+		property portal.acceptance = "fiona";
 
 		task ("Add a fragment") {
 			PageEditor.addFragment(

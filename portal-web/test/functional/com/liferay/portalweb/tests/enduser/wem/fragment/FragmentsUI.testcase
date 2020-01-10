@@ -110,7 +110,7 @@ definition {
 	@description = "Edit a fragment and assert the edits persist."
 	@priority = "5"
 	test EditFragment {
-		property portal.acceptance = "true";
+		property portal.acceptance = "fiona";
 		property testray.component.names = "Training";
 
 		task ("Publish the section fragment") {
