@@ -417,6 +417,11 @@
 	<td>//section[contains(@class,'container')]</td>
 	<td></td>
 </tr>
+<tr>
+	<td>PORTLET_INHERITED_FROM_CUSTOM_MASTERS</td>
+	<td>//div[@data-onclick='null']//*[contains(@class,'{key_portletName}')]</td>
+	<td></td>
+</tr>
 </tbody>
 </table>
 </body>
