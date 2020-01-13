@@ -32,6 +32,7 @@ definition {
 	@priority = "5"
 	test AddNavigationMenuEntriesAllTypes {
 		property portal.acceptance = "true";
+		property test.name.skip.portal.instance = "NavigationMenus#AddNavigationMenuEntriesAllTypes";
 
 		task ("Add a page to the site") {
 			JSONLayout.addPublicLayout(
