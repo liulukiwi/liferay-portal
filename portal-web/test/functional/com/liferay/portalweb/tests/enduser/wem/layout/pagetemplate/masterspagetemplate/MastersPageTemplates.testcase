@@ -35,7 +35,11 @@ definition {
 		task ("Add a custom masters with Button fragment") {
 			MastersPageTemplatesAdmin.openMastersAdmin(siteURLKey = "test-site-name");
 
-			MastersPageTemplatesAdmin.addMasters(masterLayoutName = "Custom Masters Page Template");
+			MastersPageTemplatesAdmin.addMasters(masterLayoutName = "Masters 1");
+
+			MastersPageTemplatesAdmin.gotoMastersEllipsisItem(
+				item = "Edit",
+				masterLayoutName = "Masters 1");
 
 			PageEditor.addFragment(
 				collectionName = "Basic Components",
@@ -48,7 +52,7 @@ definition {
 			SitePages.openPagesAdmin(siteURLKey = "test-site-name");
 
 			ContentPages.addPage(
-				masterLayoutName = "Custom Masters Page Template",
+				masterLayoutName = "Masters 1",
 				pageName = "Test Page Name");
 		}
 
@@ -64,15 +68,13 @@ definition {
 	test CanDuplicateMastersPageTemplate {
 		MastersPageTemplatesAdmin.openMastersAdmin(siteURLKey = "test-site-name");
 
-		MastersPageTemplatesAdmin.addMasters(masterLayoutName = "Masters Template Page Name");
-
-		PageEditor.clickPublish();
+		MastersPageTemplatesAdmin.addMasters(masterLayoutName = "Masters 2");
 
 		MastersPageTemplatesAdmin.gotoMastersEllipsisItem(
 			item = "Make a Copy",
-			masterLayoutName = "Masters Template Page Name");
+			masterLayoutName = "Masters 2");
 
-		MastersPageTemplatesAdmin.viewMastersPresent(masterLayoutName = "Masters Template Page Name (Copy)");
+		MastersPageTemplatesAdmin.viewMastersPresent(masterLayoutName = "Masters 2 (Copy)");
 	}
 
 	@description = "This is for LPS-103687. Validate if the Blank page template can not be deleted."
@@ -117,86 +119,60 @@ definition {
 		}
 	}
 
-	@description = "This is for LPS-102200. Can't edit master page template elements from page editor directly."
-	@priority = "5"
-	test CannotEditMasterPageTemplateViaPageEditor {
-		MastersPageTemplatesAdmin.openMastersAdmin(siteURLKey = "test-site-name");
-
-		MastersPageTemplatesAdmin.addMasters(masterLayoutName = "Masters Template Page Name");
-
-		PageEditor.clickPublish();
-
-		MastersPageTemplatesAdmin.gotoMastersEllipsisItem(
-			item = "Edit",
-			masterLayoutName = "Masters Template Page Name");
-
-		PageEditor.addFragment(
-			collectionName = "Basic Components",
-			fragmentName = "Button");
-
-		PageEditor.addWidget(portletName = "Asset Publisher");
-
-		PageEditor.clickPublish();
-
-		SitePages.openPagesAdmin(siteURLKey = "test-site-name");
-
-		ContentPages.addPage(
-			masterLayoutName = "Masters Template Page Name",
-			pageName = "Test Content Page Name");
-
-		AssertElementNotPresent(
-			key_fragmentName = "Button",
-			locator1 = "Fragment#FRAGMENT_HEADER");
-
-		AssertElementNotPresent(
-			key_fragmentName = "Asset Publisher",
-			locator1 = "Fragment#FRAGMENT_HEADER");
-	}
-
-	@description = "This is for LPS-102200. Can edit master page template elements from  "Look and Feel" of page editor."
+	@description = "This is for LPS-102200. Can edit master page template elements from  "Look and Feel" of page editor but not from page editor directly."
 	@priority = "5"
 	test EditMasterPageTemplateViaPageEditorLookAndFeel {
-		MastersPageTemplatesAdmin.openMastersAdmin(siteURLKey = "test-site-name");
+		task ("Can't edit master page template elements from page editor directly") {
+			MastersPageTemplatesAdmin.openMastersAdmin(siteURLKey = "test-site-name");
 
-		MastersPageTemplatesAdmin.addMasters(masterLayoutName = "Masters Template Page Name");
+			MastersPageTemplatesAdmin.addMasters(masterLayoutName = "Masters 3");
 
-		PageEditor.clickPublish();
+			MastersPageTemplatesAdmin.gotoMastersEllipsisItem(
+				item = "Edit",
+				masterLayoutName = "Masters 3");
 
-		MastersPageTemplatesAdmin.gotoMastersEllipsisItem(
-			item = "Edit",
-			masterLayoutName = "Masters Template Page Name");
+			PageEditor.addFragment(
+				collectionName = "Basic Components",
+				fragmentName = "Button");
 
-		PageEditor.addFragment(
-			collectionName = "Basic Components",
-			fragmentName = "Button");
+			PageEditor.addWidget(portletName = "Asset Publisher");
 
-		PageEditor.addWidget(portletName = "Asset Publisher");
+			PageEditor.clickPublish();
 
-		PageEditor.clickPublish();
+			SitePages.openPagesAdmin(siteURLKey = "test-site-name");
 
-		SitePages.openPagesAdmin(siteURLKey = "test-site-name");
+			ContentPages.addPage(
+				masterLayoutName = "Masters 3",
+				pageName = "Test Content Page Name");
 
-		ContentPages.addPage(
-			masterLayoutName = "Masters Template Page Name",
-			pageName = "Test Content Page Name");
+			AssertElementPresent(
+				key_fragmentName = "button",
+				locator1 = "PageEditor#FRAGMENT_INHERITED_FROM_CUSTOM_MASTERS");
 
-		PageEditor.gotoTab(tabName = "Look and Feel");
+			AssertElementPresent(
+				key_portletName = "AssetPublisher",
+				locator1 = "PageEditor#PORTLET_INHERITED_FROM_CUSTOM_MASTERS");
+		}
 
-		Click(
-			key_text = "Edit Master",
-			locator1 = "Button#ANY");
+		task ("Can edit master page template elements from  Look and Feel of page editor") {
+			PageEditor.gotoTab(tabName = "Look and Feel");
 
-		PageEditor.viewFragment(fragmentName = "Button");
+			Click(
+				key_text = "Edit Master",
+				locator1 = "Button#ANY");
 
-		PageEditor.viewFragment(fragmentName = "Asset Publisher");
+			PageEditor.viewFragment(fragmentName = "Button");
 
-		PageEditor.addWidget(portletName = "Web Content Display");
+			PageEditor.viewFragment(fragmentName = "Asset Publisher");
 
-		MastersPageTemplates.clickPublishMaster();
+			PageEditor.addWidget(portletName = "Web Content Display");
 
-		WebContentDisplayPortlet.viewDefaultMessage();
+			MastersPageTemplates.clickPublishMaster();
 
-		AssertVisible(locator1 = "PageEditor#FRAGMENT_SIDEBAR");
+			WebContentDisplayPortlet.viewDefaultMessage();
+
+			AssertVisible(locator1 = "PageEditor#FRAGMENT_SIDEBAR");
+		}
 	}
 
 	@description = "This is a test for LPS-102566. The new fragments can only be add into Drop Zone in a page based on custom master and the fragments inherited from the custom master are not editable."
@@ -205,7 +181,11 @@ definition {
 		task ("Add a custom masters with Button fragment") {
 			MastersPageTemplatesAdmin.openMastersAdmin(siteURLKey = "test-site-name");
 
-			MastersPageTemplatesAdmin.addMasters(masterLayoutName = "Custom Masters Page Template");
+			MastersPageTemplatesAdmin.addMasters(masterLayoutName = "Masters 4");
+
+			MastersPageTemplatesAdmin.gotoMastersEllipsisItem(
+				item = "Edit",
+				masterLayoutName = "Masters 4");
 
 			PageEditor.addFragment(
 				collectionName = "Basic Components",
@@ -218,12 +198,12 @@ definition {
 			SitePages.openPagesAdmin(siteURLKey = "test-site-name");
 
 			ContentPages.addPage(
-				masterLayoutName = "Custom Masters Page Template",
+				masterLayoutName = "Masters 4",
 				pageName = "Test Page Name");
 
 			AssertElementPresent(
 				key_fragmentName = "button",
-				locator1 = "PageEditor#FRAGMENT_CHANGELESS");
+				locator1 = "PageEditor#FRAGMENT_INHERITED_FROM_CUSTOM_MASTERS");
 		}
 
 		task ("Add a Heading fragment to drop zone") {
@@ -245,16 +225,14 @@ definition {
 		task ("Add a custom masters without elements") {
 			MastersPageTemplatesAdmin.openMastersAdmin(siteURLKey = "test-site-name");
 
-			MastersPageTemplatesAdmin.addMasters(masterLayoutName = "Custom Masters Page Template");
-
-			PageEditor.clickPublish();
+			MastersPageTemplatesAdmin.addMasters(masterLayoutName = "Masters 5");
 		}
 
 		task ("Add a page based on custom masters") {
 			SitePages.openPagesAdmin(siteURLKey = "test-site-name");
 
 			ContentPages.addPage(
-				masterLayoutName = "Custom Masters Page Template",
+				masterLayoutName = "Masters 5",
 				pageName = "Test Page Name");
 
 			PageEditor.clickPublish();
@@ -268,7 +246,7 @@ definition {
 			Navigator.gotoNavNested(navNested = "Page Template Collection");
 
 			PageTemplatesAdmin.addPageTemplate(
-				masterLayoutName = "Custom Masters Page Template",
+				masterLayoutName = "Masters 5",
 				pageTemplateName = "Page Template Name");
 
 			PageEditor.clickPublish();
@@ -279,7 +257,7 @@ definition {
 
 			DisplayPageTemplatesAdmin.addDisplayPage(
 				displayPageName = "Display Page Name",
-				masterLayoutName = "Custom Masters Page Template");
+				masterLayoutName = "Masters 5");
 
 			PageEditor.clickPublish();
 		}
@@ -289,7 +267,7 @@ definition {
 
 			MastersPageTemplatesAdmin.gotoMastersEllipsisItem(
 				item = "Edit",
-				masterLayoutName = "Custom Masters Page Template");
+				masterLayoutName = "Masters 5");
 
 			PageEditor.addFragment(
 				collectionName = "Basic Components",

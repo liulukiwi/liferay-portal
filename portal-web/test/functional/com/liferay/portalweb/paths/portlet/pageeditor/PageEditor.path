@@ -403,11 +403,6 @@
 </tr>
 <!--BASED_ON_CUSTOM_MASTERS-->
 <tr>
-	<td>FRAGMENT_CHANGELESS</td>
-	<td>//div[@data-onclick='null' and //*[contains(@class,'component-${key_fragmentName}')]]</td>
-	<td></td>
-</tr>
-<tr>
 	<td>FRAGMENT_INHERITED_FROM_CUSTOM_MASTERS</td>
 	<td>//div[@data-onclick='null']//*[contains(@class,'component-${key_fragmentName}')]</td>
 	<td></td>
@@ -415,6 +410,11 @@
 <tr>
 	<td>OUTSIDE_OF_DROP_ZONE</td>
 	<td>//section[contains(@class,'container')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PORTLET_INHERITED_FROM_CUSTOM_MASTERS</td>
+	<td>//div[@data-onclick='null']//*[contains(@class,'{key_portletName}')]</td>
 	<td></td>
 </tr>
 </tbody>
