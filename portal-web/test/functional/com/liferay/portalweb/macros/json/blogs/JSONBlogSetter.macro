@@ -1,0 +1,11 @@
+definition {
+
+	macro setServiceContext {
+		if (!(isSet(serviceContext))) {
+			var serviceContext = JSONServiceContextUtil.setServiceContext(groupName = "${groupName}");
+		}
+
+		return "${serviceContext}";
+	}
+
+}
