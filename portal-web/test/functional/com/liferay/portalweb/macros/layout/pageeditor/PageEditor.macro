@@ -114,7 +114,7 @@ definition {
 
 		PageEditor.expandFragmentCollection(collectionName = "${collectionName}");
 
-		DragAndDrop(
+		DragAndDrop.javaScriptDragAndDropToObject(
 			fragmentName = "${fragmentName}",
 			locator1 = "PageEditor#SECTION_BUILDER_FRAGMENTS",
 			locator2 = "PageEditor#FRAGMENT_DROP_TARGET",
