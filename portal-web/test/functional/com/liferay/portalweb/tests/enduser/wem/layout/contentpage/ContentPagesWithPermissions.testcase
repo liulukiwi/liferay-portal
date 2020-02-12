@@ -100,8 +100,7 @@ definition {
 
 		AssetPublisherPortlet.configureManualAssetSelectionPG(
 			assetTitle = "Blogs Entry Title",
-			assetType = "Blogs Entry",
-			contentPage = "true");
+			assetType = "Blogs Entry");
 
 		ContentPagesNavigator.openEditContentPage(
 			pageName = "Test Content Page Name",
@@ -255,9 +254,7 @@ definition {
 
 		PageEditor.addWidget(portletName = "Web Content Display");
 
-		WebContentDisplayPortlet.selectWebContent(
-			contentPage = "true",
-			webContentTitle = "WC WebContent Title 2");
+		WebContentDisplayPortlet.selectWebContent(webContentTitle = "WC WebContent Title 2");
 
 		Navigator.openWithAppendToBaseURL(urlAppend = "web/test-site-name/test-content-page-name");
 
@@ -267,8 +264,7 @@ definition {
 
 		AssetPublisherPortlet.configureManualAssetSelectionPG(
 			assetTitle = "WC WebContent Title 3",
-			assetType = "Basic Web Content",
-			contentPage = "true");
+			assetType = "Basic Web Content");
 
 		Navigator.openWithAppendToBaseURL(urlAppend = "web/test-site-name/test-content-page-name");
 
@@ -380,9 +376,7 @@ definition {
 
 		PageEditor.addWidget(portletName = "Web Content Display");
 
-		WebContentDisplayPortlet.selectWebContent(
-			contentPage = "true",
-			webContentTitle = "WC WebContent Title 2");
+		WebContentDisplayPortlet.selectWebContent(webContentTitle = "WC WebContent Title 2");
 
 		Navigator.openWithAppendToBaseURL(urlAppend = "web/test-site-name/test-content-page-name");
 
@@ -522,9 +516,7 @@ definition {
 
 		PageEditor.addWidget(portletName = "Web Content Display");
 
-		WebContentDisplayPortlet.selectWebContent(
-			contentPage = "true",
-			webContentTitle = "WC WebContent Title 2");
+		WebContentDisplayPortlet.selectWebContent(webContentTitle = "WC WebContent Title 2");
 
 		Navigator.openWithAppendToBaseURL(urlAppend = "web/test-site-name/test-content-page-name");
 
@@ -534,8 +526,7 @@ definition {
 
 		AssetPublisherPortlet.configureManualAssetSelectionPG(
 			assetTitle = "WC WebContent Title 3",
-			assetType = "Basic Web Content",
-			contentPage = "true");
+			assetType = "Basic Web Content");
 
 		Navigator.openWithAppendToBaseURL(urlAppend = "web/test-site-name/test-content-page-name");
 
@@ -832,9 +823,7 @@ definition {
 
 		PageEditor.addWidget(portletName = "Web Content Display");
 
-		WebContentDisplayPortlet.selectWebContent(
-			contentPage = "true",
-			webContentTitle = "WC WebContent Title");
+		WebContentDisplayPortlet.selectWebContent(webContentTitle = "WC WebContent Title");
 
 		Navigator.openWithAppendToBaseURL(urlAppend = "web/test-site-name/test-content-page-name");
 
@@ -844,8 +833,7 @@ definition {
 
 		AssetPublisherPortlet.configureManualAssetSelectionPG(
 			assetTitle = "WC WebContent Title",
-			assetType = "Basic Web Content",
-			contentPage = "true");
+			assetType = "Basic Web Content");
 
 		ContentPagesNavigator.openEditContentPage(
 			pageName = "Test Content Page Name",
