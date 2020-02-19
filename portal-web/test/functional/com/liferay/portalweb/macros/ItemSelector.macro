@@ -21,9 +21,21 @@ definition {
 			locator1 = "TextInput#URL",
 			value1 = "${imageSourceURL}");
 
-		AssertElementPresent.pauseAssertVisible(
-			imageSourceURL = "${imageSourceURL}",
-			locator1 = "ItemSelector#URL_IMAGE_SOURCE");
+		if ("${type}" == "Audio") {
+			AssertTextEquals(
+				locator1 = "TextInput#URL",
+				value1 = "${imageSourceURL}");
+		}
+		else if ("${type}" == "Video") {
+			AssertTextEquals(
+				locator1 = "TextInput#URL",
+				value1 = "${imageSourceURL}");
+		}
+		else {
+			AssertElementPresent.pauseAssertVisible(
+				imageSourceURL = "${imageSourceURL}",
+				locator1 = "ItemSelector#URL_IMAGE_SOURCE");
+		}
 
 		AssertClick(
 			locator1 = "Button#ADD",
