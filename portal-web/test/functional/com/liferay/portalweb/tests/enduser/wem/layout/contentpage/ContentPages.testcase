@@ -348,7 +348,7 @@ definition {
 
 		// Ignore test until POSHI-48 is resolved
 
-		property portal.acceptance = "true";
+		property portal.acceptance = "fiona";
 
 		task ("Add a content page") {
 			SitePages.openPagesAdmin(siteURLKey = "test-site-name");
@@ -517,7 +517,7 @@ definition {
 
 		// Ignore test until POSHI-48 is resolved
 
-		property portal.acceptance = "true";
+		property portal.acceptance = "fiona";
 		property testray.component.names = "Training";
 
 		task ("Add a content page") {
