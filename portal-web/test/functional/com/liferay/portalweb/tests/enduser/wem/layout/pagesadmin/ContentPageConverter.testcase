@@ -49,8 +49,6 @@ definition {
 			menuItem = "Convert to content page...",
 			pageName = "Test Page Name");
 
-		Pause(locator1 = "3000");
-
 		Button.clickPublish();
 
 		AssertElementPresent(
