@@ -322,7 +322,7 @@ definition {
 
 	@priority = "5"
 	test AddWebContent {
-		property portal.acceptance = "true";
+		property portal.acceptance = "fiona";
 		property testray.component.names = "Web Content Display";
 
 		Navigator.gotoSitePage(
