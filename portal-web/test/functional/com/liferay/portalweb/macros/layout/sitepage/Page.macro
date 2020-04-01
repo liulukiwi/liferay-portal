@@ -524,12 +524,6 @@ definition {
 	}
 
 	macro viewChildPageDropdown {
-		ClickNoError(locator1 = "Home#${viewChildPageDropdown}");
-
-		if (isSet(javaScriptPage)) {
-			AssertConfirm.waitForConfirmation(value1 = "${javaScriptPage}");
-		}
-
 		MouseOver.mouseOverClickNavigation(locator1 = "Home#PAGE_2");
 
 		var key_childPageName = "${childPageName}";
