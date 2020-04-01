@@ -888,6 +888,7 @@ definition {
 	@ignore = "true"
 	@priority = "4"
 	test SitesDemoSiteManagement {
+		property portal.acceptance = "fiona";
 		property portal.release = "false";
 		property portal.upstream = "quarantine";
 		property test.name.skip.portal.instance = "SitesUsecase#SitesDemoSiteManagement";
