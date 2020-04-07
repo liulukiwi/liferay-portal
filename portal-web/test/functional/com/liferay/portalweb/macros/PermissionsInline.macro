@@ -166,8 +166,6 @@ definition {
 			menuItem = "Permissions",
 			pageName = "${pageName}");
 
-		Pause(locator1 = "5000");
-
 		IFrame.selectPermissionsFrame();
 	}
 
