@@ -733,6 +733,12 @@ definition {
 
 		WebContentNavigator.gotoAddCP();
 
+		if ((IsElementPresent(locator1 = "Panel#PANEL_EXPANDED")) && (IsVisible(locator1 = "Panel#PANEL_EXPANDED"))) {
+			AssertClick(
+				locator1 = "Panel#PANEL_EXPANDED",
+				value1 = "Basic Information");
+		}
+
 		WebContent.addWithTagCP(
 			tagNameList = "first tag,second tag",
 			webContentContent = "Web Content Content",
