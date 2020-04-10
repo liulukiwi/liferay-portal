@@ -34,8 +34,7 @@ definition {
 
 		// Quarantine test until LRQA-56860 is resolved
 
-		property portal.acceptance = "true";
-		property portal.upstream = "quarantine";
+		property portal.acceptance = "fiona";
 
 		task ("Add a section fragment to the fragment collection via JSON") {
 			var htmlSnippet = FragmentsAPI.getFragmentFileContent(fileName = "checkbox_configuration.html");
