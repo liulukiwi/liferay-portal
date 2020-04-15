@@ -107,7 +107,7 @@ definition {
 	@description = "This is a test for LPS-95045. A user should be able to add an image fragment and change the image in the fragment."
 	@priority = "5"
 	test AddContentPageWithImageFragment {
-		property portal.acceptance = "true";
+		property portal.acceptance = "fiona";
 
 		JSONLayout.addPublicLayout(
 			groupName = "Test Site Name",
