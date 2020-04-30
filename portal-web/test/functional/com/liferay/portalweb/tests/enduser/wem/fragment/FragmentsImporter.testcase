@@ -65,6 +65,8 @@ definition {
 	@description = "This is a test case for LPS-101256. The fragment composition could be exported and imported."
 	@priority = "4"
 	test ExportFragmentCompositionAndImport {
+		property portal.acceptance = "fiona";
+
 		task ("Add a fragment collection") {
 			FragmentsAdmin.addCollection(
 				collectionDescription = "Collection Description",
@@ -234,6 +236,8 @@ definition {
 	@description = "This is a test case for LPS-101256. The fragment replacing HTML,CSS,JS,JSON in dependencies survives after importing."
 	@priority = "4"
 	test ImportFragmentWithHTMLCSSJSJSONReplaced {
+		property portal.acceptance = "fiona";
+
 		task ("Navigate to the fragment import screen") {
 			FragmentsAdminNavigator.gotoImportCollection();
 		}
