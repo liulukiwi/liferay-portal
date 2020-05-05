@@ -373,7 +373,7 @@ definition {
 			withSection = "true");
 
 		AssertElementPresent(
-			key_elementHeader = "/div[contains(@class,'page-editor__topper')][1]/div[contains(.,'Modify Text')]//li[contains(@class,'title')]",
+			key_elementHeader = "/div[contains(.,'Modify Text')]//li[contains(@class,'title')]",
 			key_position = "1",
 			locator1 = "PageEditor#SECTION_CONTAINER_NESTED_ELEMENT");
 	}
