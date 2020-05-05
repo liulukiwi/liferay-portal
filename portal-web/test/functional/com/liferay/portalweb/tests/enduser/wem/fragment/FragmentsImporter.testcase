@@ -234,6 +234,8 @@ definition {
 	@description = "This is a test case for LPS-101256. Can duplicate fragment in layout elements in composition."
 	@priority = "4"
 	test ImportFragmentWithDupicateFragmentComposition {
+		property portal.acceptance = "fiona";
+
 		task ("Navigate to the fragment import screen") {
 			FragmentsAdminNavigator.gotoImportCollection();
 		}
@@ -337,6 +339,8 @@ definition {
 	@description = "This is a test case for LPS-101256. Can edit inline content of fragment in composition."
 	@priority = "4"
 	test ImportFragmentWithInlineContentEdited {
+		property portal.acceptance = "fiona";
+
 		task ("Navigate to the fragment import screen") {
 			FragmentsAdminNavigator.gotoImportCollection();
 		}
