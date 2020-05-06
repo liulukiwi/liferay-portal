@@ -1826,12 +1826,14 @@ definition {
 			searchTerm = "Drools");
 	}
 
-	macro viewHomePage {
+	macro viewDefaultPage {
 		Navigator.openURL();
 
-		// Assert the Home page is a widget page in the default site when upgrade from 7.2
+		// Assert the Home/Welcome page is a widget page in the default site when upgrade from 7.2/7.1/7.0
 
-		AssertVisible(locator1 = "Icon#EDIT_PENCIL");
+		AssertElementNotPresent(locator1 = "Icon#EDIT_PENCIL");
+
+		AssertVisible(locator1 = "ControlMenu#ADD");
 	}
 
 	macro viewInstanceSettings {
@@ -2721,16 +2723,6 @@ definition {
 		SignOut.signOut();
 
 		SignIn.signIn();
-	}
-
-	macro viewWelcomePage {
-		Navigator.openURL();
-
-		// Assert the Welcome page is a widget page in the default site when upgrade from 7.1 and 7.0
-
-		AssertNotVisible(locator1 = "Icon#EDIT_PENCIL");
-
-		AssertVisible(locator1 = "ControlMenu#ADD");
 	}
 
 }
