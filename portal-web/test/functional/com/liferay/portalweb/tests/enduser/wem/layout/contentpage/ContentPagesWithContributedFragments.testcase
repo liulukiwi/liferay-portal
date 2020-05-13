@@ -141,6 +141,8 @@ definition {
 	@description = "This is a use case for LPS-111274. The selected Tabs fragment should always stay selected when click on the tabs of it."
 	@priority = "5"
 	test ClickTabsFragmentTabAndViewHeader {
+		property portal.acceptance = "fiona";
+
 		SitePages.openPagesAdmin(siteURLKey = "test-site-name");
 
 		ContentPages.addPage(pageName = "Test Page Name");
@@ -165,6 +167,8 @@ definition {
 	@description = "This is a use case for LPS-111274. The light blue frame is shown when hover on unmapped editable field of selected fragments but the dark blue frame is shown when click on unmapped editable field of selected fragments."
 	@priority = "5"
 	test ClickUnmappedEditableFieldAndMouseOver {
+		property portal.acceptance = "fiona";
+
 		SitePages.openPagesAdmin(siteURLKey = "test-site-name");
 
 		ContentPages.addPage(pageName = "Test Page Name");
