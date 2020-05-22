@@ -95,7 +95,7 @@ definition {
 
 	@priority = "5"
 	test AddMembersSiteUser {
-		property portal.acceptance = "true";
+		property portal.acceptance = "fiona";
 		property testray.component.names = "Site Administration,Users and Organizations";
 
 		JSONUser.addUser(
@@ -362,7 +362,7 @@ definition {
 
 	@priority = "5"
 	test RemoveMember {
-		property portal.acceptance = "true";
+		property portal.acceptance = "fiona";
 		property testray.component.names = "Site Administration,Users and Organizations";
 
 		JSONUser.addUser(

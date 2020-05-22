@@ -454,7 +454,7 @@ definition {
 
 	@priority = "4"
 	test OnlySiteAdminCanModifyPageAssociatedWithSiteTemplate {
-		property portal.acceptance = "true";
+		property portal.acceptance = "fiona";
 
 		SiteTemplates.addCP(siteTemplateName = "Site Template Name");
 
