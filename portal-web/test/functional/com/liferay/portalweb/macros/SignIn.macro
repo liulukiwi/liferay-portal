@@ -94,7 +94,7 @@ definition {
 
 		LexiconEntry.gotoAdd();
 
-		Pause(locator1 = "3000");
+		WaitForElementPresent(locator1 = "//script[contains(@src,'/o/js/resolved-module/frontend-taglib-clay@3.4.3/bridge/clay-alert/src/ClayToast.js')]");
 
 		Type(
 			locator1 = "TextInput#WEB_ID",
@@ -110,7 +110,7 @@ definition {
 
 		Button.clickSave();
 
-		Pause(locator1 = "3000");
+		WaitForElementPresent(locator1 = "//script[contains(@src,'/o/js/resolved-module/frontend-taglib-clay@3.4.3/bridge/clay-alert/src/ClayToast.js')]");
 
 		Alert.viewSuccessMessage();
 
