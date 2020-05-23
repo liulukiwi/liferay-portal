@@ -94,7 +94,7 @@ definition {
 
 		LexiconEntry.gotoAdd();
 
-		WaitForElementPresent(locator1 = "//script[contains(@src,'/o/js/resolved-module/frontend-taglib-clay@3.4.3/bridge/clay-alert/src/ClayToast.js')]");
+		WaitForElementPresent(locator1 = "//script[contains(@src,'/o/js/resolved-module/frontend-taglib-clay@3.5.1/management_toolbar/ManagementToolbar.es.js')]");
 
 		Type(
 			locator1 = "TextInput#WEB_ID",
