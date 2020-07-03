@@ -289,7 +289,7 @@ definition {
 			collectionName = "Layout Elements",
 			fragmentName = "Row");
 
-		Click(	
+		Click(
 			key_position = "3",
 			locator1 = "PageEditor#ROW_COLUMN_RESIZER");
 
