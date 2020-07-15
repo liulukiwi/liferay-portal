@@ -275,11 +275,11 @@ definition {
 				value1 = "${webContentText}");
 		}
 
-		if (isSet(webContentTextBox)) {
+		if (isSet(webContentRichText)) {
 			Type(
 				key_fieldName = "${textBoxFieldName}",
-				locator1 = "DDMField#TEXT_BOX",
-				value1 = "${webContentTextBox}");
+				locator1 = "DDMField#RICH_TEXT",
+				value1 = "${webContentRichText}");
 		}
 
 		if (isSet(templateName)) {
@@ -314,6 +314,19 @@ definition {
 		AssertClick(
 			locator1 = "Button#PUBLISH",
 			value1 = "Publish");
+
+		SelectFrame(value1 = "relative=top");
+	}
+
+	macro addTextToRichText {
+		SelectFrame.selectFrameNoLoading(
+			key_fieldLabel = "${fieldName}",
+			locator1 = "CKEditor#BODY_FIELD_IFRAME_WEB_CONTENT_ARTICLE");
+
+		Type(
+			key_fieldName = "${fieldName}",
+			locator1 = "CKEditor#BODY",
+			value1 = "${webContentRichText}");
 
 		SelectFrame(value1 = "relative=top");
 	}
@@ -500,10 +513,6 @@ definition {
 
 		PortletEntry.inputTitle(title = "${webContentTitle}");
 
-		if (isSet(webContentBoolean)) {
-			Check(locator1 = "DDMField#BOOLEAN");
-		}
-
 		if (isSet(webContentColor)) {
 			Click(
 				key_fieldName = "Color",
@@ -518,13 +527,6 @@ definition {
 			Type(
 				locator1 = "TextInput#DDM",
 				value1 = "${webContentDate}");
-		}
-
-		if (isSet(webContentDecimal)) {
-			Type(
-				key_fieldName = "Decimal",
-				locator1 = "TextInput#DDM",
-				value1 = "${webContentDecimal}");
 		}
 
 		if (isSet(webContentDocumentsAndMedia)) {
@@ -561,10 +563,14 @@ definition {
 		}
 
 		if (isSet(webContentSourceHTML)) {
-			Click(locator1 = "CKEditor#TOOLBAR_SOURCE_BUTTON");
+			Click(
+				key_editor = "HTML",
+				locator1 = "AlloyEditor#EDITOR");
 
-			Type(
-				locator1 = "CKEditor#BODY_FIELD_SOURCE_ON_2",
+			Click(locator1 = "Button#EDITOR_SWITCH");
+
+			Type.typeAceEditor(
+				locator1 = "TextArea#ACE_EDITOR",
 				value1 = "${webContentSourceHTML}");
 		}
 
@@ -599,13 +605,6 @@ definition {
 				uploadFileName = "${webContentImageUnderDocumentsAndMedia}");
 		}
 
-		if (isSet(webContentInteger)) {
-			Type(
-				key_fieldName = "Integer",
-				locator1 = "TextInput#DDM",
-				value1 = "${webContentInteger}");
-		}
-
 		if (isSet(linkedPageName)) {
 			var key_pageName = "${linkedPageName}";
 
@@ -625,7 +624,7 @@ definition {
 
 		if (isSet(webContentNumber)) {
 			Type(
-				key_fieldName = "Number",
+				key_fieldName = "Numeric",
 				locator1 = "TextInput#DDM",
 				value1 = "${webContentNumber}");
 		}
@@ -676,36 +675,31 @@ definition {
 				value1 = "${webContentText}");
 		}
 
-		if (isSet(webContentTextBox)) {
-			if (isSet(fieldName)) {
-				Type(
-					key_fieldName = "${fieldName}",
-					locator1 = "DDMField#TEXT_BOX",
-					value1 = "${webContentTextBox}");
+		if (isSet(webContentRichText)) {
+			if (!(isSet(fieldName))) {
+				fieldName = "Rich Text";
 			}
-			else {
-				Type(
-					key_fieldName = "TextBox",
-					locator1 = "DDMField#TEXT_BOX",
-					value1 = "${webContentTextBox}");
-			}
+
+			WebContent.addTextToRichText(
+				fieldName = "${fieldName}",
+				webContentRichText = "${webContentRichText}");
 		}
 
 		if (isSet(webContentTextBox2)) {
 			Type(
 				key_fieldName = "${fieldName2}",
-				locator1 = "DDMField#TEXT_BOX",
+				locator1 = "DDMField#RICH_TEXT",
 				value1 = "${webContentTextBox2}");
 		}
 
-		if (isSet(webContentTextBoxList)) {
+		if (isSet(webContentRichTextList)) {
 			var count = "1";
 
-			for (var webContentTextBox : list "${webContentTextBoxList}") {
+			for (var webContentRichText : list "${webContentRichTextList}") {
 				Type(
 					key_fieldName = "heading${count}",
-					locator1 = "DDMField#TEXT_BOX",
-					value1 = "${webContentTextBox}");
+					locator1 = "DDMField#RICH_TEXT",
+					value1 = "${webContentRichText}");
 
 				var count = ${count} + 1;
 			}
@@ -719,6 +713,8 @@ definition {
 		}
 
 		if (isSet(templateName)) {
+			Panel.expandPanel(panel = "Default Template");
+
 			if (IsTextNotEqual(locator1 = "WCEditWebContent#SELECTED_TEMPLATE", value1 = "${templateName}")) {
 				WebContent.selectTemplateCP(
 					structureName = "${structureName}",
@@ -2257,18 +2253,18 @@ definition {
 				value1 = "${webContentText}");
 		}
 
-		if (isSet(webContentTextBox)) {
+		if (isSet(webContentRichText)) {
 			if (isSet(fieldName)) {
 				AssertTextEquals(
 					key_fieldName = "${fieldName}",
-					locator1 = "DDMField#TEXT_BOX",
-					value1 = "${webContentTextBox}");
+					locator1 = "DDMField#RICH_TEXT",
+					value1 = "${webContentRichText}");
 			}
 			else {
 				AssertTextEquals(
 					key_fieldName = "TextBox",
-					locator1 = "DDMField#TEXT_BOX",
-					value1 = "${webContentTextBox}");
+					locator1 = "DDMField#RICH_TEXT",
+					value1 = "${webContentRichText}");
 			}
 		}
 
@@ -2276,18 +2272,18 @@ definition {
 			var key_fieldName = "${fieldName2}";
 
 			AssertTextEquals(
-				locator1 = "DDMField#TEXT_BOX",
+				locator1 = "DDMField#RICH_TEXT",
 				value1 = "${webContentTextBox2}");
 		}
 
-		if (isSet(webContentTextBoxList)) {
+		if (isSet(webContentRichTextList)) {
 			var count = "1";
 
-			for (var webContentTextBox : list "${webContentTextBoxList}") {
+			for (var webContentRichText : list "${webContentRichTextList}") {
 				AssertTextEquals(
 					key_fieldName = "heading${count}",
-					locator1 = "DDMField#TEXT_BOX",
-					value1 = "${webContentTextBox}");
+					locator1 = "DDMField#RICH_TEXT",
+					value1 = "${webContentRichText}");
 
 				var count = ${count} + 1;
 			}
