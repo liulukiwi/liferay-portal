@@ -608,7 +608,7 @@ definition {
 		if (isSet(webContentNumber)) {
 			Type(
 				key_fieldName = "Numeric",
-				locator1 = "TextInput#DDM",
+				locator1 = "TextInput#DE_DDM",
 				value1 = "${webContentNumber}");
 		}
 
@@ -654,7 +654,7 @@ definition {
 		if (isSet(webContentText)) {
 			Type(
 				key_fieldName = "Text",
-				locator1 = "TextInput#DDM",
+				locator1 = "TextInput#DE_DDM",
 				value1 = "${webContentText}");
 		}
 
