@@ -83,67 +83,6 @@ definition {
 		}
 	}
 
-	@description = "This is a use case for LPS-82492."
-	@priority = "5"
-	test AddWebContentFromImportedStructureAndTemplate {
-		property portal.acceptance = "true";
-		property testray.component.names = "Training";
-
-		WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
-
-		LAR.importPortlet(
-			larFileName = "frontPage-structures.lar",
-			uploadFrom = "dependencies");
-
-		Refresh();
-
-		NavItem.gotoStructures();
-
-		for (var structureName : list "3 Columns with Images,Footer Content,1 Column Banner") {
-			WebContentStructures.viewCP(structureName = "${structureName}");
-		}
-
-		WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
-
-		LAR.importPortlet(
-			larFileName = "space-templates.lar",
-			uploadFrom = "dependencies");
-
-		for (var templateName : list "3 Columns with Images Template,Footer Content Template,1 Column Banner Template,News,Events") {
-			Navigator.gotoNavItem(navItem = "Templates");
-
-			WebContentTemplates.viewCP(
-				templateDescription = "",
-				templateName = "${templateName}");
-
-			WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
-		}
-
-		WebContentNavigator.gotoAddWithStructureCP(structureName = "1 Column Banner");
-
-		WebContent.addWithStructureCP(
-			description = "The Structured Banner for the S.P.A.C.E. FrontPage",
-			fieldName = "BannerTitle",
-			fieldName2 = "BannerHeading",
-			webContentImage = "Spaceport.jpg",
-			webContentRichText = "Space Program Academy of Continuing Education",
-			webContentTextBox2 = "Dare to dream out of this world",
-			webContentTitle = "S.P.A.C.E. Banner");
-
-		PortletEntry.publish();
-
-		WebContent.viewTitle(webContentTitle = "S.P.A.C.E. Banner");
-
-		WebContent.viewWithStructureCP(
-			description = "The Structured Banner for the S.P.A.C.E. FrontPage",
-			fieldName = "BannerTitle",
-			fieldName2 = "BannerHeading",
-			webContentImage = "Spaceport.jpg",
-			webContentRichText = "Space Program Academy of Continuing Education",
-			webContentTextBox2 = "Dare to dream out of this world",
-			webContentTitle = "S.P.A.C.E. Banner");
-	}
-
 	@priority = "4"
 	test ExportLARWithNestedWebContent {
 		property testray.component.names = "Web Content Administration";
