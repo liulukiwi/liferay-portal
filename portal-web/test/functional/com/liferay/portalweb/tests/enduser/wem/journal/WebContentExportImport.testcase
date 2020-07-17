@@ -39,9 +39,8 @@ definition {
 		WebContentStructures.addCP(structureName = "Content List");
 
 		DataEngine.addField(
-			field = "Web Content",
 			fieldFieldLabel = "Web Content",
-			fieldName = "contents");
+			fieldType = "Web Content");
 
 		DynamicDataMapping.editFieldTip(
 			fieldFieldLabel = "Web Content",
@@ -96,9 +95,8 @@ definition {
 			structureName = "WC Structure Name");
 
 		DataEngine.addField(
-			field = "Text",
 			fieldFieldLabel = "Text",
-			fieldName = "Text");
+			fieldType = "Text");
 
 		DynamicDataMapping.addFieldNested(
 			field = "Web Content",
@@ -164,9 +162,8 @@ definition {
 			structureName = "Structure Name");
 
 		DataEngine.addField(
-			field = "Text",
 			fieldFieldLabel = "Text",
-			fieldName = "TestName");
+			fieldType = "Text");
 
 		WebContentStructures.saveCP(structureName = "Structure Name");
 
@@ -217,7 +214,6 @@ definition {
 
 		DataEngine.addField(
 			fieldFieldLabel = "Text",
-			fieldName = "Text",
 			fieldType = "Text");
 
 		WebContentStructures.saveCP(structureName = "Global WC Structure Name");
@@ -271,9 +267,8 @@ definition {
 			structureName = "WC Structure Name");
 
 		DataEngine.addField(
-			field = "Text",
 			fieldFieldLabel = "Text",
-			fieldName = "Text");
+			fieldType = "Text");
 
 		WebContentStructures.saveCP(structureName = "WC Structure Name");
 
@@ -359,9 +354,8 @@ definition {
 			structureName = "Test Structure");
 
 		DataEngine.addField(
-			field = "Link to Page",
 			fieldFieldLabel = "Link to Page",
-			fieldName = "LinkToPage");
+			fieldType = "Link to Page");
 
 		WebContentStructures.saveCP(structureName = "Test Structure");
 
@@ -545,9 +539,8 @@ definition {
 			structureName = "WC Structure Name");
 
 		DataEngine.addField(
-			field = "Text",
 			fieldFieldLabel = "Text",
-			fieldName = "Text");
+			fieldType = "Text");
 
 		DynamicDataMapping.editFieldPredefinedValue(
 			field = "Text",
