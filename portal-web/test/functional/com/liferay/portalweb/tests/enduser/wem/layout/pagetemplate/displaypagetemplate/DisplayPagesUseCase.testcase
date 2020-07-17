@@ -369,9 +369,8 @@ definition {
 			structureName = "WC Structure Name");
 
 		DataEngine.addField(
-			field = "Image",
 			fieldFieldLabel = "Image",
-			fieldName = "Image");
+			fieldType = "Image");
 
 		WebContentStructures.saveCP(structureName = "WC Structure Name");
 
@@ -456,9 +455,8 @@ definition {
 			structureName = "WC Structure Name");
 
 		DataEngine.addField(
-			field = "Image",
 			fieldFieldLabel = "Image",
-			fieldName = "Image");
+			fieldType = "Image");
 
 		WebContentStructures.saveCP(structureName = "WC Structure Name");
 
@@ -779,9 +777,8 @@ definition {
 			structureName = "WC Structure Name");
 
 		DataEngine.addField(
-			field = "Text Box",
 			fieldFieldLabel = "Content",
-			fieldName = "Content");
+			fieldType = "Rich Text");
 
 		WebContentStructures.saveCP(structureName = "WC Structure Name");
 
