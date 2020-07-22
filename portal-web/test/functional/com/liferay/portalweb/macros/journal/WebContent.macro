@@ -1607,7 +1607,7 @@ definition {
 			locator1 = "TextInput#TITLE",
 			value1 = "${webContentTitle}");
 
-		var key_fieldData = "${fieldData}";	
+		var key_fieldData = "${fieldData}";
 		var key_fieldName = "${fieldName}";
 		var key_fieldFieldLabel = "${fieldFieldLabel}";
 
