@@ -26,6 +26,8 @@ definition {
 
 	@priority = "4"
 	test FlashPortletSmoke {
+		property portal.acceptance = "fiona";
+
 		var appName = "Flash";
 
 		Navigator.gotoPage(pageName = "Test Page");

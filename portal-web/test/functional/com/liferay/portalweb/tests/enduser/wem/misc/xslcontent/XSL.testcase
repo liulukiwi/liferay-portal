@@ -66,6 +66,7 @@ definition {
 	@priority = "4"
 	test AddXSL {
 		property test.name.skip.portal.instance = "XSL#AddXSL";
+		property portal.acceptance = "fiona";
 
 		Navigator.openSiteURL(siteName = "Site Name");
 
@@ -178,6 +179,7 @@ definition {
 	test ConfigurePortletWithCorruptXML {
 		property ignore.errors = "must be terminated by the matching end-tag";
 		property test.name.skip.portal.instance = "XSL#ConfigurePortletWithCorruptXML";
+		property portal.acceptance = "fiona";
 
 		Navigator.openSiteURL(siteName = "Site Name");
 
@@ -280,6 +282,7 @@ definition {
 	test ConfigurePortletWithCorruptXSL {
 		property ignore.errors = "must be terminated by the matching end-tag";
 		property test.name.skip.portal.instance = "XSL#ConfigurePortletWithCorruptXSL";
+		property portal.acceptance = "fiona";
 
 		Navigator.openSiteURL(siteName = "Site Name");
 
@@ -381,6 +384,7 @@ definition {
 	@priority = "4"
 	test ConfigurePortletWithIncorrectVersionXmlAndXsl {
 		property test.name.skip.portal.instance = "XSL#ConfigurePortletWithIncorrectVersionXmlAndXsl";
+		property portal.acceptance = "fiona";
 
 		Navigator.openSiteURL(siteName = "Site Name");
 
@@ -484,6 +488,7 @@ definition {
 	@priority = "4"
 	test ViewXSLDefaultContent {
 		property test.name.skip.portal.instance = "XSL#ViewXSLDefaultContent";
+		property portal.acceptance = "fiona";
 
 		Navigator.gotoSitePage(
 			pageName = "Test Page Name",
