@@ -1861,6 +1861,8 @@ definition {
 	@description = "This is a use case for LPS-116989. Can resize the item configuration panel."
 	@priority = "4"
 	test ResizeConfigurationPanelAndCheckRestore {
+		property portal.acceptance = "fiona";
+
 		ContentPagesNavigator.openEditContentPage(
 			pageName = "Content Page Name",
 			siteName = "Test Site Name");
