@@ -164,6 +164,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>DE_DDM</td>
+	<td>//div[@data-field-name='${key_fieldName}']//input</td>
+	<td></td>
+</tr>
+<tr>
 	<td>EMAIL</td>
 	<td>//div[label[contains(.,'Email')]]/input[@type='text']</td>
 	<td></td>

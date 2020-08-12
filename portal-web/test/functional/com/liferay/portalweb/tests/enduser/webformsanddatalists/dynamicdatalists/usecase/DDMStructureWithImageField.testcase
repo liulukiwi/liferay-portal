@@ -20,10 +20,9 @@ definition {
 			structureDescription = "WC Structure Description",
 			structureName = "WC Structure Name");
 
-		DynamicDataMapping.addField(
-			field = "Image",
+		DataEngine.addField(
 			fieldFieldLabel = "Image",
-			fieldName = "image");
+			fieldType = "Image");
 
 		WebContentStructures.saveCP(structureName = "WC Structure Name");
 

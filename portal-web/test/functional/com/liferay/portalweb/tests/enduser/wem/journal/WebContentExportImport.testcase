@@ -38,16 +38,15 @@ definition {
 
 		WebContentStructures.addCP(structureName = "Content List");
 
-		DynamicDataMapping.addField(
-			field = "Web Content",
+		DataEngine.addField(
 			fieldFieldLabel = "Web Content",
-			fieldName = "contents");
+			fieldType = "Web Content");
 
-		DynamicDataMapping.editFieldTip(
+		DataEngine.editFieldTip(
 			fieldFieldLabel = "Web Content",
-			fieldTip = "Choose as many content pieces as you would like to feature.");
+			fieldHelp = "Choose as many content pieces as you would like to feature.");
 
-		DynamicDataMapping.editFieldRepeatable(fieldFieldLabel = "Web Content");
+		DataEngine.editFieldRepeatable(fieldFieldLabel = "Web Content");
 
 		WebContentStructures.saveCP(structureName = "Content List");
 
@@ -83,67 +82,6 @@ definition {
 		}
 	}
 
-	@description = "This is a use case for LPS-82492."
-	@priority = "5"
-	test AddWebContentFromImportedStructureAndTemplate {
-		property portal.acceptance = "true";
-		property testray.component.names = "Training";
-
-		WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
-
-		LAR.importPortlet(
-			larFileName = "frontPage-structures.lar",
-			uploadFrom = "dependencies");
-
-		Refresh();
-
-		NavItem.gotoStructures();
-
-		for (var structureName : list "3 Columns with Images,Footer Content,1 Column Banner") {
-			WebContentStructures.viewCP(structureName = "${structureName}");
-		}
-
-		WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
-
-		LAR.importPortlet(
-			larFileName = "space-templates.lar",
-			uploadFrom = "dependencies");
-
-		for (var templateName : list "3 Columns with Images Template,Footer Content Template,1 Column Banner Template,News,Events") {
-			Navigator.gotoNavItem(navItem = "Templates");
-
-			WebContentTemplates.viewCP(
-				templateDescription = "",
-				templateName = "${templateName}");
-
-			WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
-		}
-
-		WebContentNavigator.gotoAddWithStructureCP(structureName = "1 Column Banner");
-
-		WebContent.addWithStructureCP(
-			description = "The Structured Banner for the S.P.A.C.E. FrontPage",
-			fieldName = "BannerTitle",
-			fieldName2 = "BannerHeading",
-			webContentImage = "Spaceport.jpg",
-			webContentTextBox = "Space Program Academy of Continuing Education",
-			webContentTextBox2 = "Dare to dream out of this world",
-			webContentTitle = "S.P.A.C.E. Banner");
-
-		PortletEntry.publish();
-
-		WebContent.viewTitle(webContentTitle = "S.P.A.C.E. Banner");
-
-		WebContent.viewWithStructureCP(
-			description = "The Structured Banner for the S.P.A.C.E. FrontPage",
-			fieldName = "BannerTitle",
-			fieldName2 = "BannerHeading",
-			webContentImage = "Spaceport.jpg",
-			webContentTextBox = "Space Program Academy of Continuing Education",
-			webContentTextBox2 = "Dare to dream out of this world",
-			webContentTitle = "S.P.A.C.E. Banner");
-	}
-
 	@priority = "4"
 	test ExportLARWithNestedWebContent {
 		property testray.component.names = "Web Content Administration";
@@ -156,15 +94,14 @@ definition {
 			structureDescription = "WC Structure Description",
 			structureName = "WC Structure Name");
 
-		DynamicDataMapping.addField(
-			field = "Text",
+		DataEngine.addField(
 			fieldFieldLabel = "Text",
-			fieldName = "Text");
+			fieldType = "Text");
 
-		DynamicDataMapping.addFieldNested(
-			field = "Web Content",
+		DataEngine.addFieldNested(
 			fieldFieldLabel = "Web Content",
-			fieldName = "webContent");
+			fieldName = "Text",
+			fieldType = "Web Content");
 
 		WebContentStructures.saveCP(structureName = "WC Structure Name");
 
@@ -194,7 +131,6 @@ definition {
 		WebContentNavigator.gotoAddWithStructureCP(structureName = "WC Structure Name");
 
 		WebContent.addWithStructureCP(
-			fieldName = "webContent",
 			structureName = "WC Structure Name",
 			templateName = "WC Template Name",
 			webContentSelectWCFile = "Basic WebContent Title",
@@ -224,10 +160,9 @@ definition {
 			structureDescription = "Structure Description",
 			structureName = "Structure Name");
 
-		DynamicDataMapping.addField(
-			field = "Text",
+		DataEngine.addField(
 			fieldFieldLabel = "Text",
-			fieldName = "TestName");
+			fieldType = "Text");
 
 		WebContentStructures.saveCP(structureName = "Structure Name");
 
@@ -268,34 +203,54 @@ definition {
 
 	@priority = "5"
 	test ImportAndUseGlobalStructureAndTemplate {
-		property portal.acceptance = "true";
-		property testray.component.names = "Training";
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "global");
+
+		NavItem.gotoStructures();
+
+		WebContentStructures.addCP(
+			structureDescription = "Global WC Structure Description",
+			structureName = "Global WC Structure Name");
+
+		DataEngine.addField(
+			fieldFieldLabel = "Text",
+			fieldType = "Text");
+
+		WebContentStructures.saveCP(structureName = "Global WC Structure Name");
 
 		WebContentNavigator.openWebContentAdmin(siteURLKey = "global");
 
-		LAR.importPortlet(
-			larFileName = "structure-templates.lar",
-			uploadFrom = "dependencies");
+		NavItem.gotoTemplates();
+
+		WebContentTemplates.addCP(
+			structureName = "Global WC Structure Name",
+			templateDescription = "Global WC Template Description",
+			templateFieldNames = "Text",
+			templateName = "Global WC Template Name");
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "global");
+
+		LAR.exportPortlet(larFileName = "structure-templates.lar");
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "global");
+
+		LAR.importPortlet(larFileName = "structure-templates.lar");
 
 		WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
 
-		WebContentNavigator.gotoAddWithStructureCP(structureName = "3 Column with Images");
+		WebContentNavigator.gotoAddWithStructureCP(structureName = "Global WC Structure Name");
 
 		WebContent.addWithStructureCP(
-			fieldName = "title",
-			webContentTextBox = "Green Waste",
-			webContentTextBoxList = "Mowed Lawns,Mulched Branches,Compost Bin",
-			webContentTitle = "Agricultural Science Front Page");
+			webContentText = "Green Waste",
+			webContentTitle = "Web Content Title");
 
 		PortletEntry.publish();
 
-		WebContent.viewTitle(webContentTitle = "Agricultural Science Front Page");
+		WebContent.viewTitle(webContentTitle = "Web Content Title");
 
 		WebContent.viewWithStructureCP(
-			fieldName = "title",
-			webContentTextBox = "Green Waste",
-			webContentTextBoxList = "Mowed Lawns,Mulched Branches,Compost Bin",
-			webContentTitle = "Agricultural Science Front Page");
+			fieldName = "text",
+			webContentText = "Green Waste",
+			webContentTitle = "Web Content Title");
 	}
 
 	@priority = "4"
@@ -310,10 +265,9 @@ definition {
 			structureDescription = "WC Structure Description",
 			structureName = "WC Structure Name");
 
-		DynamicDataMapping.addField(
-			field = "Text",
+		DataEngine.addField(
 			fieldFieldLabel = "Text",
-			fieldName = "Text");
+			fieldType = "Text");
 
 		WebContentStructures.saveCP(structureName = "WC Structure Name");
 
@@ -398,10 +352,9 @@ definition {
 			structureDescription = "Test Structure Description",
 			structureName = "Test Structure");
 
-		DynamicDataMapping.addField(
-			field = "Link to Page",
+		DataEngine.addField(
 			fieldFieldLabel = "Link to Page",
-			fieldName = "LinkToPage");
+			fieldType = "Link to Page");
 
 		WebContentStructures.saveCP(structureName = "Test Structure");
 
@@ -542,20 +495,18 @@ definition {
 			structureDescription = "WC Structure Description",
 			structureName = "WC Structure Name");
 
-		DynamicDataMapping.addField(
-			field = "Text",
+		DataEngine.addField(
 			fieldFieldLabel = "Text",
-			fieldName = "Text");
+			fieldType = "Text");
 
-		DynamicDataMapping.editFieldPredefinedValue(
-			field = "Text",
-			fieldFieldLabel = "Text",
-			fieldName = "Text",
-			fieldPredefinedValue = "(Enter Text Here)");
-
-		DynamicDataMapping.editFieldRequired(fieldFieldLabel = "Text");
+		DataEngine.editFieldRequired(fieldFieldLabel = "Text");
 
 		WebContentStructures.saveCP(structureName = "WC Structure Name");
+
+		WebContentStructures.editStructureDefaultValuesCP(
+			editStructureFieldNames = "Text",
+			fieldPredefinedValue = "(Enter Text Here)",
+			structureName = "WC Structure Name");
 
 		WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
 
