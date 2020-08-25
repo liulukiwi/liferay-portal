@@ -39,7 +39,7 @@ definition {
 		Click(locator1 = "CKEditor#TOOLBAR_SOURCE_BUTTON");
 
 		Type(
-			locator1 = "CKEditor#BODY_FIELD_SOURCE_ON_2",
+			locator1 = "CKEditor#BODY_FIELD_SOURCE_ON_3",
 			value1 = "${content}");
 	}
 
