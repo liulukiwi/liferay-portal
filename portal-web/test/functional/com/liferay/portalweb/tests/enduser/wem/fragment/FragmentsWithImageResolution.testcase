@@ -668,6 +668,8 @@ definition {
 	@description = "This is a test for LPS-113806. View auto image resolution when viewport is greater than image resolution and image resolution is greater than original image."
 	@priority = "4"
 	test ViewAutoImageResolutionWhenViewportIsGreaterThanImageResolutionAndImageResolutionIsGreaterThanOriginalImage {
+		property portal.acceptance = "fiona";
+
 		task ("Add an Image Resolution with 600px Max Width") {
 			ApplicationsMenu.gotoPortlet(
 				category = "Configuration",
