@@ -695,6 +695,8 @@ definition {
 
 			Button.clickSaveAsDraft();
 
+			Alert.viewSuccessMessage();
+
 			PortletEntry.publish();
 		}
 
@@ -704,6 +706,8 @@ definition {
 			WebContentNavigator.gotoEditCP(webContentTitle = "Web Content Complex Title 1");
 
 			Button.clickSaveAsDraft();
+
+			Alert.viewSuccessMessage();
 
 			Click(locator1 = "Icon#ANGLE_LEFT_BACK");
 
