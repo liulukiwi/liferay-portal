@@ -753,17 +753,19 @@ definition {
 
 			WebContentNavigator.gotoEditCP(webContentTitle = "Web Content Complex Title 1");
 
-			for (var fieldName : list "ItemUFComunicado,ItemDoParagrafoBanner,ListaDDI,Item,Estado") {
-				DDLRecord.deleteRepeatableField(
-					fieldName = "${fieldName}",
-					fieldNumber = "2");
+			for (var fieldName : list "ItemUFComunicado,ItemDoParagrafoBanner,ListaDDI,ItensDeGenero") {
+				Click(locator1 = "//div[contains(@data-field-name,'${fieldName}')]//button[contains(@class,'ddm-form-field-repeatable-delete-button')]");
 
-				AssertElementNotPresent(locator1 = "//div[@data-fieldname='${fieldName}'][2]//a[contains(@class,'ddm-repeatable-add-button')]/../div//input");
+				AssertElementNotPresent(locator1 = "xpath=(//div[@data-field-name='${fieldName}']//button[contains(@class,'ddm-form-field-repeatable-add-button')])[2]");
 			}
 
-			Click(locator1 = "//div[contains(@data-fieldname,'ItemPais')]/a[contains(@class,'ddm-repeatable-delete-button') and not(contains(@hidden,'hidden'))]");
+			Click(locator1 = "xpath=(//div[contains(@data-field-name,'ItemPais')]//button[contains(@class,'ddm-form-field-repeatable-delete-button')])[2]");
 
-			AssertElementNotPresent(locator1 = "xpath=(//div[@data-fieldname='ItemPais'][2]/a[contains(@class,'ddm-repeatable-add-button')]/../div/label[contains(.,'País')])");
+			AssertElementNotPresent(locator1 = "xpath=(//div[@data-field-name='ItemPais']/button[contains(@class,'ddm-form-field-repeatable-add-button')])");
+
+			Click(locator1 = "//div[contains(@data-field-name,'Estado')]//button[contains(@class,'ddm-form-field-repeatable-delete-button')]");
+
+			AssertElementNotPresent(locator1 = "xpath=(//div[@data-field-name='ItemPais']/button[contains(@class,'ddm-form-field-repeatable-add-button')])");
 
 			PortletEntry.publish();
 		}
