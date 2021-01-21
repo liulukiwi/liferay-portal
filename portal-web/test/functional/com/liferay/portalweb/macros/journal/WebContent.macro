@@ -2079,9 +2079,9 @@ definition {
 	}
 
 	macro viewRepeatedField {
-		AssertElementPresent(locator1 = "xpath=(//div[@data-fieldname='${fieldName}'][1]//a[contains(@class,'ddm-repeatable-add-button')]/../div)");
+		AssertElementPresent(locator1 = "xpath=(//div[@data-field-name='${fieldName}']//button[contains(@class,'ddm-form-field-repeatable-add-button')])");
 
-		AssertElementPresent(locator1 = "xpath=(//div[@data-fieldname='${fieldName}'][2]//a[contains(@class,'ddm-repeatable-add-button')]/../div)");
+		AssertElementPresent(locator1 = "xpath=(//div[@data-field-name='${fieldName}']//button[contains(@class,'ddm-form-field-repeatable-add-button')])[2]");
 	}
 
 	macro viewRTLLayout {

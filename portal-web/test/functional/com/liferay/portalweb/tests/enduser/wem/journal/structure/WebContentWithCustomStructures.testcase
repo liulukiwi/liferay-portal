@@ -737,22 +737,17 @@ definition {
 
 			WebContentNavigator.gotoEditCP(webContentTitle = "Web Content Complex Title 1");
 
-			for (var fieldName : list "ItemUFComunicado,ListaDDI,Item,Estado") {
-				DDLRecord.addRepeatableField(fieldName = "${fieldName}");
+			for (var fieldName : list "ItemUFComunicado,ItemDoParagrafoBanner,ListaDDI,ItensDeGenero,ItemPais,Estado") {
+				Click(locator1 = "//div[contains(@data-field-name,'${fieldName}')]//button[contains(@class,'ddm-form-field-repeatable-add-button')]");
 			}
 
-			Click(locator1 = "//div[contains(@data-fieldname,'ItemDoParagrafoBanner')]/a[contains(@class,'ddm-repeatable-add-button')]");
-
-			Click(locator1 = "//div[contains(@data-fieldname,'ItemPais')]/a[contains(@class,'ddm-repeatable-add-button')]");
-
-			for (var fieldName : list "ItemUFComunicado,ItemDoParagrafoBanner,ListaDDI,Item,Estado") {
+			for (var fieldName : list "ItemUFComunicado,ItemDoParagrafoBanner,ListaDDI,ItensDeGenero,ItemPais,Estado") {
 				WebContent.viewRepeatedField(fieldName = "${fieldName}");
 			}
 
-			AssertElementPresent(locator1 = "xpath=(//div[@data-fieldname='ItemPais'][2]/a[contains(@class,'ddm-repeatable-add-button')]/../div/label[contains(.,'País')])");
-
 			PortletEntry.publish();
 		}
+
 		task ("Remove duplicates") {
 			WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
 
