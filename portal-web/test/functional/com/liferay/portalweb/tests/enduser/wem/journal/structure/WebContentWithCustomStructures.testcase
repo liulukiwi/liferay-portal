@@ -777,7 +777,9 @@ definition {
 
 			WebContentNavigator.gotoEditStructure(structureName = "WC Structure Name");
 
-			DynamicDataMapping.editFieldIndexable(fieldFieldLabel = "Label UF Comunicado");
+			DataEngine.editFieldSearchable(
+				fieldFieldLabel = "Label UF Comunicado",
+				searchableType = "Disable");
 
 			WebContentStructures.saveCP();
 
