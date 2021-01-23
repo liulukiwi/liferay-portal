@@ -659,6 +659,8 @@ definition {
 	@description = "This is a use case for LRQA-61632."
 	@priority = "3"
 	test AddWCWithSecondComplexStructure {
+		property portal.acceptance = "fiona";
+
 		task ("Add a widget page and WCD to widget page") {
 			JSONLayout.addPublicLayout(
 				groupName = "Test Site Name",
