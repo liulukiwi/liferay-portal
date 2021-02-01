@@ -50,6 +50,7 @@ definition {
 	@description = "This is a test for LPS-126656. Upgrade 7.3 to Master with a Web Content, a Structure, a WC Template and a page with Web Content Display and Asset Publisher"
 	@priority = "5"
 	test ViewAndEditWebContentWCStructureWCTemplateWCDAndAssetPublisher735 {
+		property portal.acceptance = "fiona";
 		property data.archive.type = "data-archive-web-content-with-fields";
 		property database.types = "mariadb,mysql,postgresql";
 		property portal.version = "7.3.5";
