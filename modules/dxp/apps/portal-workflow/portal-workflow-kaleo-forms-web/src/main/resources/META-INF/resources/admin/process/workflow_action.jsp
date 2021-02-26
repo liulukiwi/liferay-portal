@@ -42,17 +42,17 @@ String backURL = (String)row.getParameter("backURL");
 
 	<liferay-ui:icon
 		message="edit"
-		onClick='<%= "javascript:" + renderResponse.getNamespace() + "editWorkflow('" + editURL + "');" %>'
+		onClick='<%= "javascript:" + liferayPortletResponse.getNamespace() + "editWorkflow('" + editURL + "');" %>'
 		url="javascript:;"
 	/>
 
 	<liferay-ui:icon
 		message="choose"
-		onClick='<%= "Liferay.fire('" + renderResponse.getNamespace() + "chooseWorkflow', {name: '" + HtmlUtil.escapeJS(workflowDefinition.getName()) + "', title: '" + HtmlUtil.escapeJS(workflowDefinition.getTitle(themeDisplay.getLanguageId())) + "', version: '" + workflowDefinition.getVersion() + "'});" %>'
+		onClick='<%= "Liferay.fire('" + liferayPortletResponse.getNamespace() + "chooseWorkflow', {name: '" + HtmlUtil.escapeJS(workflowDefinition.getName()) + "', title: '" + HtmlUtil.escapeJS(workflowDefinition.getTitle(themeDisplay.getLanguageId())) + "', version: '" + workflowDefinition.getVersion() + "'});" %>'
 		url="javascript:;"
 	/>
 
-	<portlet:actionURL name="deactivateWorkflowDefinition" var="deactivateWorkflowDefinition">
+	<portlet:actionURL name="/kaleo_forms_admin/deactivate_workflow_definition" var="deactivateWorkflowDefinition">
 		<portlet:param name="tabs1" value="published" />
 		<portlet:param name="redirect" value="<%= backURL %>" />
 		<portlet:param name="historyKey" value="workflow" />

@@ -98,8 +98,9 @@ public class CalendarServiceUpgrade implements UpgradeStepRegistrator {
 		registry.register(
 			"3.0.0", "3.0.1",
 			new UpgradeDiscussionSubscriptionClassName(
-				_subscriptionLocalService, CalendarBooking.class.getName(),
-				UpgradeDiscussionSubscriptionClassName.DeletionMode.ADD_NEW));
+				_classNameLocalService, _subscriptionLocalService,
+				CalendarBooking.class.getName(),
+				UpgradeDiscussionSubscriptionClassName.DeletionMode.UPDATE));
 
 		registry.register(
 			"3.0.1", "4.0.0",
@@ -113,7 +114,8 @@ public class CalendarServiceUpgrade implements UpgradeStepRegistrator {
 		registry.register(
 			"4.0.0", "4.0.1",
 			new UpgradeDiscussionSubscriptionClassName(
-				_subscriptionLocalService, CalendarBooking.class.getName(),
+				_classNameLocalService, _subscriptionLocalService,
+				CalendarBooking.class.getName(),
 				UpgradeDiscussionSubscriptionClassName.DeletionMode.
 					DELETE_OLD));
 
@@ -130,6 +132,16 @@ public class CalendarServiceUpgrade implements UpgradeStepRegistrator {
 				}
 
 			});
+
+		registry.register(
+			"4.1.0", "4.1.1",
+			new com.liferay.calendar.internal.upgrade.v4_1_1.
+				UpgradeCalendarNotificationTemplate());
+
+		registry.register(
+			"4.1.1", "4.1.2",
+			new com.liferay.calendar.internal.upgrade.v4_1_2.
+				UpgradeCalendarNotificationTemplate());
 	}
 
 	@Reference

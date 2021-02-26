@@ -50,8 +50,8 @@ public class LayoutPageTemplateEntryServiceImpl
 
 	/**
 	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
-	 *             #addLayoutPageTemplateEntry(long, long, long, long,
-	 *             String, long, int, ServiceContext)}
+	 *             #addLayoutPageTemplateEntry(long, long, long, long, String,
+	 *             long, int, ServiceContext)}
 	 */
 	@Deprecated
 	@Override
@@ -186,6 +186,14 @@ public class LayoutPageTemplateEntryServiceImpl
 
 		return layoutPageTemplateEntryLocalService.
 			deleteLayoutPageTemplateEntry(layoutPageTemplateEntryId);
+	}
+
+	@Override
+	public LayoutPageTemplateEntry fetchDefaultLayoutPageTemplateEntry(
+		long groupId, int type, int status) {
+
+		return layoutPageTemplateEntryPersistence.fetchByG_T_D_S_First(
+			groupId, type, true, status, null);
 	}
 
 	@Override
@@ -599,6 +607,21 @@ public class LayoutPageTemplateEntryServiceImpl
 
 		return layoutPageTemplateEntryPersistence.filterCountByG_L_T(
 			groupId, layoutPageTemplateCollectionId, type);
+	}
+
+	@Override
+	public LayoutPageTemplateEntry getLayoutPageTemplateEntry(
+			long groupId, String layoutPageTemplateEntryKey)
+		throws PortalException {
+
+		LayoutPageTemplateEntry layoutPageTemplateEntry =
+			layoutPageTemplateEntryLocalService.getLayoutPageTemplateEntry(
+				groupId, layoutPageTemplateEntryKey);
+
+		_layoutPageTemplateEntryModelResourcePermission.check(
+			getPermissionChecker(), layoutPageTemplateEntry, ActionKeys.VIEW);
+
+		return layoutPageTemplateEntry;
 	}
 
 	@Override

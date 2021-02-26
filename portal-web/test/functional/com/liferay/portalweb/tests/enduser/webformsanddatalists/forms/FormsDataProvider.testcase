@@ -20,18 +20,35 @@ definition {
 		if ("${testPortalInstance}" == "true") {
 			PortalInstances.tearDownCP();
 		}
+		else {
+			Navigator.openURL();
+
+			ProductMenu.gotoPortlet(
+				category = "Content &amp; Data",
+				portlet = "Forms");
+
+			FormsAdmin.teardownForms();
+
+			Navigator.gotoNavItem(navItem = "Data Providers");
+
+			FormsAdmin.teardownDataProviders();
+
+			Page.tearDownCP();
+		}
 	}
 
 	@priority = "5"
 	test ConfigureAutocompleteWithTextField {
+		property portal.acceptance = "true";
+		property portal.upstream = "true";
 		property test.name.skip.portal.instance = "FormsDataProvider#ConfigureAutocompleteWithTextField";
+
 		var portalURL = PropsUtil.get("portal.url");
 
 		Navigator.openURL();
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Forms");
 
 		Navigator.gotoNavItem(navItem = "Data Providers");
@@ -58,7 +75,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Forms");
 
 		FormsAdminNavigator.gotoAddForm();
@@ -67,7 +83,9 @@ definition {
 
 		Form.editDescription();
 
-		Form.gotoAddField(fieldType = "Text Field");
+		Form.addTextField(fieldPositionNumber = "1");
+
+		var fieldNameTextFieldAuto = FormFields.getFieldName();
 
 		Form.editFieldLabelMetal(fieldValue = "Text Field With Autocomplete");
 
@@ -75,7 +93,7 @@ definition {
 
 		Form.enableAutocompleteConfiguration();
 
-		Form.editFieldDataProvider(
+		Form.editTextFieldDataProvider(
 			dataProvider = "Country Names",
 			dataProviderOutput = "Countries A2");
 
@@ -87,18 +105,17 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Forms");
 
 		LexiconEntry.gotoEntryMenuItem(
 			menuItem = "Edit",
 			rowEntry = "Created Form Name");
 
-		FormsAdminNavigator.gotoEditField(fieldName = "Text Field With Autocomplete");
+		FormsAdminNavigator.gotoEditField(fieldName = "${fieldNameTextFieldAuto}");
 
 		Form.gotoAutocompleteTab();
 
-		Form.editFieldDataProvider(
+		Form.editTextFieldDataProvider(
 			dataProvider = "Country Names",
 			dataProviderOutput = "Countries Full Name");
 
@@ -108,7 +125,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
-			panel = "Site Administration",
 			portlet = "Pages");
 
 		SitePages.addPublicPage(pageName = "Form Page");
@@ -127,37 +143,37 @@ definition {
 
 		Navigator.gotoPage(pageName = "Form Page");
 
+		FormPortlet.waitFormRenderer(text = "Submit");
+
 		FormFields.editTextWithDataProvider(
-			fieldName = "TextFieldWithAutocomplete",
-			fieldValue = "United");
+			fieldName = "${fieldNameTextFieldAuto}",
+			fieldValue = "Bra");
 
-		FormFields.selectAutoCompleteOption(autocompleteOption = "United States");
+		FormFields.selectAutoCompleteOption(autocompleteOption = "Brazil");
 
-		FormPortlet.submit();
+		FormPortlet.submitSuccessfully();
 
 		Navigator.openURL();
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Forms");
 
 		FormsAdminNavigator.gotoViewEntries();
 
 		FormsAdmin.viewFormTableEntry(
 			fieldLabel = "Text Field With Autocomplete",
-			fieldValue = "United States Virgin Islands");
+			fieldValue = "Brazil");
 
 		Navigator.openURL();
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Forms");
 
 		FormsAdminNavigator.gotoEditFormByName();
 
-		FormsAdminNavigator.gotoEditField(fieldName = "Text Field With Autocomplete");
+		FormsAdminNavigator.gotoEditField(fieldName = "${fieldNameTextFieldAuto}");
 
 		Form.gotoAutocompleteTab();
 
@@ -166,11 +182,12 @@ definition {
 			key_radioOption = "From Data Provider",
 			locator1 = "FormFields#RADIO_OPTION_LABEL");
 
-		Click(locator1 = "FormFields#SWITCHER_TEXTFIELD");
+		Form.disableAutocompleteSwitcherTextField();
 
-		Form.gotoAdvancedTab();
-
-		Form.gotoAutocompleteTab();
+		AssertNotVisible(
+			key_fieldName = "dataSourceType",
+			key_radioOption = "From Data Provider",
+			locator1 = "FormFields#RADIO_OPTION_LABEL");
 
 		Form.closeSidebar();
 
@@ -178,25 +195,29 @@ definition {
 
 		Navigator.gotoPage(pageName = "Form Page");
 
+		FormPortlet.waitFormRenderer(text = "Submit");
+
 		FormFields.editText(
-			fieldName = "TextFieldWithAutocomplete",
-			fieldValue = "Un");
+			fieldName = "${fieldNameTextFieldAuto}",
+			fieldValue = "Br");
 
 		AssertElementNotPresent(
-			key_autocompleteOption = "United States",
+			key_autocompleteOption = "Brazil",
 			locator1 = "FormFields#AUTOCOMPLETE_OPTION");
 	}
 
 	@priority = "5"
 	test ConfigureWithSelectField {
+		property portal.acceptance = "true";
+		property portal.upstream = "true";
 		property test.name.skip.portal.instance = "FormsDataProvider#ConfigureWithSelectField";
+
 		var portalURL = PropsUtil.get("portal.url");
 
 		Navigator.openURL();
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Forms");
 
 		Navigator.gotoNavItem(navItem = "Data Providers");
@@ -219,7 +240,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Forms");
 
 		FormsAdminNavigator.gotoAddForm();
@@ -228,7 +248,11 @@ definition {
 
 		Form.editDescription();
 
-		Form.gotoAddField(fieldType = "Select from List");
+		Form.gotoAddField(
+			fieldPositionNumber = "1",
+			fieldType = "Select from List");
+
+		var fieldNameDataProvider = FormFields.getFieldName();
 
 		Form.editFieldLabelMetal(fieldValue = "Data Provider Select Field");
 
@@ -242,7 +266,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
-			panel = "Site Administration",
 			portlet = "Pages");
 
 		SitePages.addPublicPage(pageName = "Form Page");
@@ -261,12 +284,14 @@ definition {
 
 		Navigator.gotoPage(pageName = "Form Page");
 
+		FormPortlet.waitFormRenderer(text = "Submit");
+
 		FormFields.viewSelectLabel(
 			fieldLabel = "Data Provider Select Field",
-			fieldName = "DataProviderSelectField");
+			fieldName = "${fieldNameDataProvider}");
 
 		FormFields.selectSelectOption(
-			fieldName = "Select Field",
+			fieldName = "${fieldNameDataProvider}",
 			selectOption = "United States");
 
 		FormPortlet.submitSuccessfully();
@@ -275,7 +300,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Forms");
 
 		FormsAdminNavigator.gotoViewEntries();
@@ -288,14 +312,16 @@ definition {
 	@description = "This is a use case for LPS-75682."
 	@priority = "5"
 	test ViewDataRetrievedForGuestUser {
+		property portal.acceptance = "true";
+		property portal.upstream = "true";
 		property test.name.skip.portal.instance = "FormsDataProvider#ViewDataRetrievedForGuestUser";
+
 		var portalURL = PropsUtil.get("portal.url");
 
 		Navigator.openURL();
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Forms");
 
 		Navigator.gotoNavItem(navItem = "Data Providers");
@@ -320,7 +346,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Forms");
 
 		FormsAdminNavigator.gotoAddForm();
@@ -329,7 +354,11 @@ definition {
 
 		Form.editDescription();
 
-		Form.gotoAddField(fieldType = "Select from List");
+		Form.gotoAddField(
+			fieldPositionNumber = "1",
+			fieldType = "Select from List");
+
+		var fieldNameCountries = FormFields.getFieldName();
 
 		Form.editFieldLabelMetal(fieldValue = "Countries");
 
@@ -343,6 +372,12 @@ definition {
 
 		Form.save();
 
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			portlet = "Forms");
+
+		FormsAdminNavigator.gotoEditFormByName();
+
 		Form.publishForm();
 
 		FormsAdminNavigator.gotoPublishCopyURLLink();
@@ -354,7 +389,7 @@ definition {
 		Navigator.openSpecificURL(url = "${publishedFormPublicURL}");
 
 		FormFields.viewSelectOptionsList(
-			fieldName = "Countries",
+			fieldName = "${fieldNameCountries}",
 			selectOption = "Afghanistan");
 
 		User.logoutPG();
@@ -362,8 +397,10 @@ definition {
 		Navigator.openSpecificURL(url = "${publishedFormPublicURL}");
 
 		FormFields.viewSelectOptionsList(
-			fieldName = "Countries",
+			fieldName = "${fieldNameCountries}",
 			selectOption = "Afghanistan");
+
+		User.loginUserPG();
 	}
 
 }

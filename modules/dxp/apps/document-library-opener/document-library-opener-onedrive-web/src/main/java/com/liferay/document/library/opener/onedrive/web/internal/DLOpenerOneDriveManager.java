@@ -138,8 +138,9 @@ public class DLOpenerOneDriveManager {
 					DLOpenerOneDriveConstants.ONE_DRIVE_REFERENCE_TYPE,
 					fileEntry);
 		}
-		catch (GraphServiceException gse) {
-			throw GraphServiceExceptionPortalExceptionMapper.map(gse);
+		catch (GraphServiceException graphServiceException) {
+			throw GraphServiceExceptionPortalExceptionMapper.map(
+				graphServiceException);
 		}
 	}
 
@@ -147,9 +148,7 @@ public class DLOpenerOneDriveManager {
 			long userId, FileEntry fileEntry)
 		throws PortalException {
 
-		String oneDriveFileId = _getOneDriveFileId(fileEntry);
-
-		if (Validator.isNull(oneDriveFileId)) {
+		if (Validator.isNull(_getOneDriveFileId(fileEntry))) {
 			throw new IllegalArgumentException(
 				StringBundler.concat(
 					"File entry ", fileEntry.getFileEntryId(),
@@ -192,8 +191,9 @@ public class DLOpenerOneDriveManager {
 
 			return sharingLink.webUrl;
 		}
-		catch (GraphServiceException gse) {
-			throw GraphServiceExceptionPortalExceptionMapper.map(gse);
+		catch (GraphServiceException graphServiceException) {
+			throw GraphServiceExceptionPortalExceptionMapper.map(
+				graphServiceException);
 		}
 	}
 
@@ -243,9 +243,7 @@ public class DLOpenerOneDriveManager {
 			long userId, FileEntry fileEntry)
 		throws PortalException {
 
-		String oneDriveFileId = _getOneDriveFileId(fileEntry);
-
-		if (Validator.isNull(oneDriveFileId)) {
+		if (Validator.isNull(_getOneDriveFileId(fileEntry))) {
 			throw new IllegalArgumentException(
 				StringBundler.concat(
 					"File entry ", fileEntry.getFileEntryId(),
@@ -321,11 +319,12 @@ public class DLOpenerOneDriveManager {
 				return FileUtil.createTempFile(is);
 			}
 		}
-		catch (GraphServiceException gse) {
-			throw GraphServiceExceptionPortalExceptionMapper.map(gse);
+		catch (GraphServiceException graphServiceException) {
+			throw GraphServiceExceptionPortalExceptionMapper.map(
+				graphServiceException);
 		}
-		catch (IOException ioe) {
-			throw new PortalException(ioe);
+		catch (IOException ioException) {
+			throw new PortalException(ioException);
 		}
 	}
 
@@ -363,8 +362,9 @@ public class DLOpenerOneDriveManager {
 
 			return driveItem.name;
 		}
-		catch (GraphServiceException gse) {
-			throw GraphServiceExceptionPortalExceptionMapper.map(gse);
+		catch (GraphServiceException graphServiceException) {
+			throw GraphServiceExceptionPortalExceptionMapper.map(
+				graphServiceException);
 		}
 	}
 

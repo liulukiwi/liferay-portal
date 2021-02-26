@@ -19,7 +19,7 @@
 <%
 JournalFeedsDisplayContext journalFeedsDisplayContext = new JournalFeedsDisplayContext(renderRequest, renderResponse);
 
-JournalFeedsManagementToolbarDisplayContext journalFeedsManagementToolbarDisplayContext = new JournalFeedsManagementToolbarDisplayContext(liferayPortletRequest, liferayPortletResponse, request, journalFeedsDisplayContext);
+JournalFeedsManagementToolbarDisplayContext journalFeedsManagementToolbarDisplayContext = new JournalFeedsManagementToolbarDisplayContext(request, liferayPortletRequest, liferayPortletResponse, journalFeedsDisplayContext);
 
 portletDisplay.setShowBackIcon(true);
 portletDisplay.setURLBack(journalFeedsDisplayContext.getRedirect());
@@ -29,10 +29,10 @@ renderResponse.setTitle(LanguageUtil.get(request, "feeds"));
 
 <clay:navigation-bar
 	inverted="<%= true %>"
-	navigationItems='<%= journalDisplayContext.getNavigationBarItems("feeds") %>'
+	navigationItems='<%= journalDisplayContext.getNavigationItems("feeds") %>'
 />
 
-<clay:management-toolbar
+<clay:management-toolbar-v2
 	displayContext="<%= journalFeedsManagementToolbarDisplayContext %>"
 />
 
@@ -40,7 +40,7 @@ renderResponse.setTitle(LanguageUtil.get(request, "feeds"));
 	<portlet:param name="redirect" value="<%= currentURL %>" />
 </portlet:actionURL>
 
-<aui:form action="<%= deleteFeedsURL %>" cssClass="container-fluid-1280" method="post" name="fm">
+<aui:form action="<%= deleteFeedsURL %>" cssClass="container-fluid container-fluid-max-xl" method="post" name="fm">
 	<liferay-ui:search-container
 		id="feeds"
 		searchContainer="<%= journalFeedsDisplayContext.getFeedsSearchContainer() %>"
@@ -66,11 +66,10 @@ renderResponse.setTitle(LanguageUtil.get(request, "feeds"));
 				editURL = editFeedURL.toString();
 			}
 
-			Map<String, Object> rowData = new HashMap<>();
-
-			rowData.put("actions", journalFeedsManagementToolbarDisplayContext.getAvailableActions(feed));
-
-			row.setData(rowData);
+			row.setData(
+				HashMapBuilder.<String, Object>put(
+					"actions", journalFeedsManagementToolbarDisplayContext.getAvailableActions(feed)
+				).build());
 			%>
 
 			<c:choose>

@@ -43,12 +43,23 @@ public class LayoutSEOEntryServiceWrapper
 	}
 
 	@Override
+	public com.liferay.layout.seo.model.LayoutSEOEntry updateCustomMetaTags(
+			long groupId, boolean privateLayout, long layoutId,
+			com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _layoutSEOEntryService.updateCustomMetaTags(
+			groupId, privateLayout, layoutId, serviceContext);
+	}
+
+	@Override
 	public com.liferay.layout.seo.model.LayoutSEOEntry updateLayoutSEOEntry(
 			long groupId, boolean privateLayout, long layoutId,
 			boolean canonicalURLEnabled,
 			java.util.Map<java.util.Locale, String> canonicalURLMap,
 			boolean openGraphDescriptionEnabled,
 			java.util.Map<java.util.Locale, String> openGraphDescriptionMap,
+			java.util.Map<java.util.Locale, String> openGraphImageAltMap,
 			long openGraphImageFileEntryId, boolean openGraphTitleEnabled,
 			java.util.Map<java.util.Locale, String> openGraphTitleMap,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
@@ -57,8 +68,9 @@ public class LayoutSEOEntryServiceWrapper
 		return _layoutSEOEntryService.updateLayoutSEOEntry(
 			groupId, privateLayout, layoutId, canonicalURLEnabled,
 			canonicalURLMap, openGraphDescriptionEnabled,
-			openGraphDescriptionMap, openGraphImageFileEntryId,
-			openGraphTitleEnabled, openGraphTitleMap, serviceContext);
+			openGraphDescriptionMap, openGraphImageAltMap,
+			openGraphImageFileEntryId, openGraphTitleEnabled, openGraphTitleMap,
+			serviceContext);
 	}
 
 	@Override

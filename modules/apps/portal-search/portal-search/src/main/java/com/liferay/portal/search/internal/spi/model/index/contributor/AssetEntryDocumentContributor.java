@@ -14,10 +14,12 @@
 
 package com.liferay.portal.search.internal.spi.model.index.contributor;
 
-import com.liferay.asset.kernel.AssetRendererFactoryRegistryUtil;
 import com.liferay.asset.kernel.model.AssetEntry;
 import com.liferay.asset.kernel.model.AssetRendererFactory;
 import com.liferay.asset.kernel.service.AssetEntryLocalService;
+import com.liferay.asset.util.AssetRendererFactoryLookup;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.BaseModel;
 import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.search.DocumentContributor;
@@ -26,6 +28,8 @@ import com.liferay.portal.kernel.service.ClassNameLocalService;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocalizationUtil;
 import com.liferay.view.count.service.ViewCountEntryLocalService;
+
+import java.text.ParseException;
 
 import java.util.Date;
 
@@ -36,14 +40,15 @@ import org.osgi.service.component.annotations.Reference;
  * @author Michael C. Han
  */
 @Component(immediate = true, service = DocumentContributor.class)
-public class AssetEntryDocumentContributor implements DocumentContributor {
+public class AssetEntryDocumentContributor
+	implements DocumentContributor<AssetEntry> {
 
 	@Override
-	public void contribute(Document document, BaseModel baseModel) {
+	public void contribute(Document document, BaseModel<AssetEntry> baseModel) {
 		String className = document.get(Field.ENTRY_CLASS_NAME);
 
 		AssetRendererFactory<?> assetRendererFactory =
-			AssetRendererFactoryRegistryUtil.getAssetRendererFactoryByClassName(
+			_assetRendererFactoryLookup.getAssetRendererFactoryByClassName(
 				className);
 
 		if ((assetRendererFactory == null) ||
@@ -52,10 +57,32 @@ public class AssetEntryDocumentContributor implements DocumentContributor {
 			return;
 		}
 
-		long classPK = GetterUtil.getLong(document.get(Field.ENTRY_CLASS_PK));
+		AssetEntry assetEntry = null;
 
-		AssetEntry assetEntry = _assetEntryLocalService.fetchEntry(
-			className, classPK);
+		Date displayDate = new Date();
+
+		try {
+			displayDate = document.getDate(Field.DISPLAY_DATE);
+		}
+		catch (ParseException parseException) {
+			if (_log.isWarnEnabled()) {
+				_log.warn("Unable to parse data ", parseException);
+			}
+		}
+
+		if (displayDate.getTime() > System.currentTimeMillis()) {
+			String uuid = GetterUtil.getString(document.get(Field.UUID));
+
+			long groupId = GetterUtil.getLong(document.get(Field.GROUP_ID));
+
+			assetEntry = _assetEntryLocalService.fetchEntry(groupId, uuid);
+		}
+		else {
+			long classPK = GetterUtil.getLong(
+				document.get(Field.ENTRY_CLASS_PK));
+
+			assetEntry = _assetEntryLocalService.fetchEntry(className, classPK);
+		}
 
 		if (assetEntry == null) {
 			return;
@@ -101,8 +128,14 @@ public class AssetEntryDocumentContributor implements DocumentContributor {
 		document.addKeyword("visible", assetEntry.isVisible());
 	}
 
+	private static final Log _log = LogFactoryUtil.getLog(
+		AssetEntryDocumentContributor.class);
+
 	@Reference
 	private AssetEntryLocalService _assetEntryLocalService;
+
+	@Reference
+	private AssetRendererFactoryLookup _assetRendererFactoryLookup;
 
 	@Reference
 	private ClassNameLocalService _classNameLocalService;

@@ -30,7 +30,7 @@ import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
  */
 public class AddressLocalServiceUtil {
 
-	/**
+	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify this class directly. Add custom service methods to <code>com.liferay.portal.service.impl.AddressLocalServiceImpl</code> and rerun ServiceBuilder to regenerate this class.
@@ -38,6 +38,10 @@ public class AddressLocalServiceUtil {
 
 	/**
 	 * Adds the address to the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect AddressLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param address the address
 	 * @return the address that was added
@@ -48,6 +52,13 @@ public class AddressLocalServiceUtil {
 		return getService().addAddress(address);
 	}
 
+	/**
+	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link
+	 #addAddress(String, long, String, long, String, String,
+	 String, String, String, String, String, long, long, long,
+	 boolean, boolean, String, ServiceContext)}
+	 */
+	@Deprecated
 	public static com.liferay.portal.kernel.model.Address addAddress(
 			long userId, String className, long classPK, String street1,
 			String street2, String street3, String city, String zip,
@@ -58,6 +69,29 @@ public class AddressLocalServiceUtil {
 		return getService().addAddress(
 			userId, className, classPK, street1, street2, street3, city, zip,
 			regionId, countryId, typeId, mailing, primary, serviceContext);
+	}
+
+	public static com.liferay.portal.kernel.model.Address addAddress(
+			String externalReferenceCode, long userId, String className,
+			long classPK, String name, String description, String street1,
+			String street2, String street3, String city, String zip,
+			long regionId, long countryId, long typeId, boolean mailing,
+			boolean primary, String phoneNumber, ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().addAddress(
+			externalReferenceCode, userId, className, classPK, name,
+			description, street1, street2, street3, city, zip, regionId,
+			countryId, typeId, mailing, primary, phoneNumber, serviceContext);
+	}
+
+	public static com.liferay.portal.kernel.model.Address copyAddress(
+			long addressId, String className, long classPK,
+			ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().copyAddress(
+			addressId, className, classPK, serviceContext);
 	}
 
 	/**
@@ -73,7 +107,21 @@ public class AddressLocalServiceUtil {
 	}
 
 	/**
+	 * @throws PortalException
+	 */
+	public static com.liferay.portal.kernel.model.PersistedModel
+			createPersistedModel(java.io.Serializable primaryKeyObj)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().createPersistedModel(primaryKeyObj);
+	}
+
+	/**
 	 * Deletes the address from the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect AddressLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param address the address
 	 * @return the address that was removed
@@ -86,6 +134,10 @@ public class AddressLocalServiceUtil {
 
 	/**
 	 * Deletes the address with the primary key from the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect AddressLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param addressId the primary key of the address
 	 * @return the address that was removed
@@ -104,6 +156,10 @@ public class AddressLocalServiceUtil {
 		getService().deleteAddresses(companyId, className, classPK);
 	}
 
+	public static void deleteCountryAddresses(long countryId) {
+		getService().deleteCountryAddresses(countryId);
+	}
+
 	/**
 	 * @throws PortalException
 	 */
@@ -113,6 +169,16 @@ public class AddressLocalServiceUtil {
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return getService().deletePersistedModel(persistedModel);
+	}
+
+	public static void deleteRegionAddresses(long regionId) {
+		getService().deleteRegionAddresses(regionId);
+	}
+
+	public static <T> T dslQuery(
+		com.liferay.petra.sql.dsl.query.DSLQuery dslQuery) {
+
+		return getService().dslQuery(dslQuery);
 	}
 
 	public static com.liferay.portal.kernel.dao.orm.DynamicQuery
@@ -207,6 +273,21 @@ public class AddressLocalServiceUtil {
 	}
 
 	/**
+	 * Returns the address with the matching external reference code and company.
+	 *
+	 * @param companyId the primary key of the company
+	 * @param externalReferenceCode the address's external reference code
+	 * @return the matching address, or <code>null</code> if a matching address could not be found
+	 */
+	public static com.liferay.portal.kernel.model.Address
+		fetchAddressByReferenceCode(
+			long companyId, String externalReferenceCode) {
+
+		return getService().fetchAddressByReferenceCode(
+			companyId, externalReferenceCode);
+	}
+
+	/**
 	 * Returns the address with the matching UUID and company.
 	 *
 	 * @param uuid the address's UUID
@@ -283,6 +364,16 @@ public class AddressLocalServiceUtil {
 		return getService().getAddresses(companyId, className, classPK);
 	}
 
+	public static java.util.List<com.liferay.portal.kernel.model.Address>
+		getAddresses(
+			long companyId, String className, long classPK, int start, int end,
+			com.liferay.portal.kernel.util.OrderByComparator
+				<com.liferay.portal.kernel.model.Address> orderByComparator) {
+
+		return getService().getAddresses(
+			companyId, className, classPK, start, end, orderByComparator);
+	}
+
 	/**
 	 * Returns the number of addresses.
 	 *
@@ -290,6 +381,12 @@ public class AddressLocalServiceUtil {
 	 */
 	public static int getAddressesCount() {
 		return getService().getAddressesCount();
+	}
+
+	public static int getAddressesCount(
+		long companyId, String className, long classPK) {
+
+		return getService().getAddressesCount(companyId, className, classPK);
 	}
 
 	public static com.liferay.portal.kernel.dao.orm.ExportActionableDynamicQuery
@@ -316,6 +413,9 @@ public class AddressLocalServiceUtil {
 		return getService().getOSGiServiceIdentifier();
 	}
 
+	/**
+	 * @throws PortalException
+	 */
 	public static com.liferay.portal.kernel.model.PersistedModel
 			getPersistedModel(java.io.Serializable primaryKeyObj)
 		throws com.liferay.portal.kernel.exception.PortalException {
@@ -323,8 +423,23 @@ public class AddressLocalServiceUtil {
 		return getService().getPersistedModel(primaryKeyObj);
 	}
 
+	public static com.liferay.portal.kernel.search.BaseModelSearchResult
+		<com.liferay.portal.kernel.model.Address> searchAddresses(
+				long companyId, String className, long classPK, String keywords,
+				java.util.LinkedHashMap<String, Object> params, int start,
+				int end, com.liferay.portal.kernel.search.Sort sort)
+			throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().searchAddresses(
+			companyId, className, classPK, keywords, params, start, end, sort);
+	}
+
 	/**
 	 * Updates the address in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect AddressLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param address the address
 	 * @return the address that was updated
@@ -344,6 +459,18 @@ public class AddressLocalServiceUtil {
 		return getService().updateAddress(
 			addressId, street1, street2, street3, city, zip, regionId,
 			countryId, typeId, mailing, primary);
+	}
+
+	public static com.liferay.portal.kernel.model.Address updateAddress(
+			long addressId, String name, String description, String street1,
+			String street2, String street3, String city, String zip,
+			long regionId, long countryId, long typeId, boolean mailing,
+			boolean primary, String phoneNumber)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().updateAddress(
+			addressId, name, description, street1, street2, street3, city, zip,
+			regionId, countryId, typeId, mailing, primary, phoneNumber);
 	}
 
 	public static AddressLocalService getService() {

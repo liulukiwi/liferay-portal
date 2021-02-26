@@ -21,6 +21,8 @@ import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.MembershipRequestConstants;
 import com.liferay.portal.kernel.model.User;
@@ -208,7 +210,11 @@ public class InviteMembersUserNotificationHandler
 				"<a href=\"", userDisplayURL, "\">", HtmlUtil.escape(userName),
 				"</a>");
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
+
 			return StringPool.BLANK;
 		}
 	}
@@ -236,6 +242,9 @@ public class InviteMembersUserNotificationHandler
 
 		_userNotificationEventLocalService = userNotificationEventLocalService;
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		InviteMembersUserNotificationHandler.class);
 
 	private GroupLocalService _groupLocalService;
 	private MemberRequestLocalService _memberRequestLocalService;

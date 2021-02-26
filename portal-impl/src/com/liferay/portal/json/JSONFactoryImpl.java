@@ -35,6 +35,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import org.jabsorb.serializer.MarshallException;
 
@@ -57,8 +58,8 @@ public class JSONFactoryImpl implements JSONFactory {
 			_jsonSerializer.registerSerializer(new LiferaySerializer());
 			_jsonSerializer.registerSerializer(new LocaleSerializer());
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 	}
 
@@ -69,12 +70,13 @@ public class JSONFactoryImpl implements JSONFactory {
 
 			return JSONML.toString(jsonArray);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isWarnEnabled()) {
-				_log.warn(e, e);
+				_log.warn(exception, exception);
 			}
 
-			throw new IllegalStateException("Unable to convert to XML", e);
+			throw new IllegalStateException(
+				"Unable to convert to XML", exception);
 		}
 	}
 
@@ -85,12 +87,13 @@ public class JSONFactoryImpl implements JSONFactory {
 
 			return JSONML.toString(jsonObject);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isWarnEnabled()) {
-				_log.warn(e, e);
+				_log.warn(exception, exception);
 			}
 
-			throw new IllegalStateException("Unable to convert to XML", e);
+			throw new IllegalStateException(
+				"Unable to convert to XML", exception);
 		}
 	}
 
@@ -101,12 +104,13 @@ public class JSONFactoryImpl implements JSONFactory {
 
 			return jsonArray.toString();
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isWarnEnabled()) {
-				_log.warn(e, e);
+				_log.warn(exception, exception);
 			}
 
-			throw new IllegalStateException("Unable to convert to JSONML", e);
+			throw new IllegalStateException(
+				"Unable to convert to JSONML", exception);
 		}
 	}
 
@@ -117,12 +121,13 @@ public class JSONFactoryImpl implements JSONFactory {
 
 			return jsonObject.toString();
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isWarnEnabled()) {
-				_log.warn(e, e);
+				_log.warn(exception, exception);
 			}
 
-			throw new IllegalStateException("Unable to convert to JSONML", e);
+			throw new IllegalStateException(
+				"Unable to convert to JSONML", exception);
 		}
 	}
 
@@ -165,6 +170,11 @@ public class JSONFactoryImpl implements JSONFactory {
 	}
 
 	@Override
+	public JSONObject createJSONObject(Map<?, ?> map) {
+		return new JSONObjectImpl(map);
+	}
+
+	@Override
 	public JSONObject createJSONObject(String json) throws JSONException {
 		return new JSONObjectImpl(json);
 	}
@@ -175,8 +185,8 @@ public class JSONFactoryImpl implements JSONFactory {
 	}
 
 	@Override
-	public Object deserialize(JSONObject jsonObj) {
-		return deserialize(jsonObj.toString());
+	public Object deserialize(JSONObject jsonObject) {
+		return deserialize(jsonObject.toString());
 	}
 
 	@Override
@@ -184,12 +194,13 @@ public class JSONFactoryImpl implements JSONFactory {
 		try {
 			return _jsonSerializer.fromJSON(json);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isWarnEnabled()) {
-				_log.warn(e, e);
+				_log.warn(exception, exception);
 			}
 
-			throw new IllegalStateException("Unable to deserialize object", e);
+			throw new IllegalStateException(
+				"Unable to deserialize object", exception);
 		}
 	}
 
@@ -216,12 +227,13 @@ public class JSONFactoryImpl implements JSONFactory {
 
 			return jsonDeserializer.deserialize(json);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isWarnEnabled()) {
-				_log.warn(e, e);
+				_log.warn(exception, exception);
 			}
 
-			throw new IllegalStateException("Unable to deserialize object", e);
+			throw new IllegalStateException(
+				"Unable to deserialize object", exception);
 		}
 	}
 
@@ -284,12 +296,13 @@ public class JSONFactoryImpl implements JSONFactory {
 		try {
 			return _jsonSerializer.toJSON(object);
 		}
-		catch (MarshallException me) {
+		catch (MarshallException marshallException) {
 			if (_log.isWarnEnabled()) {
-				_log.warn(me, me);
+				_log.warn(marshallException, marshallException);
 			}
 
-			throw new IllegalStateException("Unable to serialize object", me);
+			throw new IllegalStateException(
+				"Unable to serialize object", marshallException);
 		}
 	}
 

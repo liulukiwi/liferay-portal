@@ -57,13 +57,7 @@ definition {
 		if ("${browserType}" == "chrome") {
 			MetalComponent.waitForManagementBar();
 		}
-
-		if ("${browserType}" == "internetexplorer") {
-			Click(locator1 = "Button#PLUS_IE");
-		}
-		else {
-			Click(locator1 = "Button#PLUS");
-		}
+		Click(locator1 = "Button#PLUS");
 	}
 
 	macro gotoAddDropdownMenuItem {
@@ -91,6 +85,8 @@ definition {
 	macro gotoEllipsisMenuItem {
 		Click.waitForMenuToggleJSClick(locator1 = "Icon#BODY_VERTICAL_ELLIPSIS");
 
+		WaitForLiferayEvent.initializeLiferayEventLog();
+
 		MenuItem.click(menuItem = "${menuItem}");
 	}
 
@@ -103,8 +99,8 @@ definition {
 	macro gotoEntry {
 		if (IsElementPresent(locator1 = "Icon#DISPLAY_STYLE_ACTIVE", key_displayStyle = "cards")) {
 			AssertClick(
-				key_cardText = "${rowEntry}",
-				locator1 = "Card#SPECIFIC_LARGE_TEXT",
+				key_card = "${rowEntry}",
+				locator1 = "Card#CARD_TITLE_LINK",
 				value1 = "${rowEntry}");
 		}
 		else {
@@ -139,21 +135,18 @@ definition {
 		MenuItem.clickNoError(menuItem = "${menuItem}");
 	}
 
-	macro gotoFragmentEllipsisMenuItem {
-		Click.waitForMenuToggleJSClick(locator1 = "Icon#FRAGMENT_VERTICAL_ELLIPSIS");
+	macro gotoFragmentPageContentEllipsisMenuItem {
+		Click.waitForMenuToggleJSClick(
+			key_rowEntry = "${rowEntry}",
+			locator1 = "Icon#FRAGMENT_PAGE_CONTENT_VERTICAL_ELLIPSIS");
 
-		MenuItem.click(menuItem = "${menuItem}");
+		Click(
+			key_menuItem = "${menuItem}",
+			locator1 = "MenuItem#DROPDOWN_MENU_ITEM");
 	}
 
 	macro gotoHeaderMenuItem {
-		var browserType = PropsUtil.get("browser.type");
-
-		if ("${browserType}" == "internetexplorer") {
-			Click.clickNoMouseOver(locator1 = "Icon#HEADER_VERTICAL_ELLIPSIS_IE");
-		}
-		else {
-			Click(locator1 = "Icon#HEADER_VERTICAL_ELLIPSIS");
-		}
+		Click(locator1 = "Icon#HEADER_VERTICAL_ELLIPSIS");
 
 		MenuItem.click(menuItem = "${menuItem}");
 	}
@@ -167,11 +160,12 @@ definition {
 	macro openEntryMenu {
 		var browserType = PropsUtil.get("browser.type");
 
-		if ("${browserType}" == "internetexplorer") {
+		if ("${browserType}" == "safari") {
 			Click.waitForMenuToggleJSClick(
 				key_rowEntry = "${rowEntry}",
-				locator1 = "Icon#ROW_VERTICAL_ELLIPSIS_IE");
+				locator1 = "Icon#ROW_VERTICAL_ELLIPSIS_SAFARI");
 		}
+
 		else {
 			Click.waitForMenuToggleJSClick(
 				key_rowEntry = "${rowEntry}",
@@ -189,6 +183,13 @@ definition {
 		AssertElementPresent(
 			key_displayStyle = "${displayStyle}",
 			locator1 = "Icon#CURRENT_DISPLAY_STYLE_ACTIVE");
+	}
+
+	macro viewEntryContent {
+		AssertElementPresent(
+			key_rowAny = "${rowAny}",
+			key_rowEntry = "${rowEntry}",
+			locator1 = "ContentRow#ENTRY_CONTENT_ENTRY_ANY");
 	}
 
 	macro viewEntryName {

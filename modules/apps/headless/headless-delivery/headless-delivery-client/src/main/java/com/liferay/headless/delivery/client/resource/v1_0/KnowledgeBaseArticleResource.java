@@ -15,12 +15,15 @@
 package com.liferay.headless.delivery.client.resource.v1_0;
 
 import com.liferay.headless.delivery.client.dto.v1_0.KnowledgeBaseArticle;
+import com.liferay.headless.delivery.client.dto.v1_0.Rating;
 import com.liferay.headless.delivery.client.http.HttpInvoker;
 import com.liferay.headless.delivery.client.pagination.Page;
 import com.liferay.headless.delivery.client.pagination.Pagination;
+import com.liferay.headless.delivery.client.problem.Problem;
 import com.liferay.headless.delivery.client.serdes.v1_0.KnowledgeBaseArticleSerDes;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.logging.Level;
@@ -44,6 +47,14 @@ public interface KnowledgeBaseArticleResource {
 
 	public HttpInvoker.HttpResponse deleteKnowledgeBaseArticleHttpResponse(
 			Long knowledgeBaseArticleId)
+		throws Exception;
+
+	public void deleteKnowledgeBaseArticleBatch(
+			String callbackURL, Object object)
+		throws Exception;
+
+	public HttpInvoker.HttpResponse deleteKnowledgeBaseArticleBatchHttpResponse(
+			String callbackURL, Object object)
 		throws Exception;
 
 	public KnowledgeBaseArticle getKnowledgeBaseArticle(
@@ -74,6 +85,13 @@ public interface KnowledgeBaseArticleResource {
 			KnowledgeBaseArticle knowledgeBaseArticle)
 		throws Exception;
 
+	public void putKnowledgeBaseArticleBatch(String callbackURL, Object object)
+		throws Exception;
+
+	public HttpInvoker.HttpResponse putKnowledgeBaseArticleBatchHttpResponse(
+			String callbackURL, Object object)
+		throws Exception;
+
 	public void deleteKnowledgeBaseArticleMyRating(Long knowledgeBaseArticleId)
 		throws Exception;
 
@@ -82,35 +100,28 @@ public interface KnowledgeBaseArticleResource {
 				Long knowledgeBaseArticleId)
 		throws Exception;
 
-	public com.liferay.headless.delivery.client.dto.v1_0.Rating
-			getKnowledgeBaseArticleMyRating(Long knowledgeBaseArticleId)
+	public Rating getKnowledgeBaseArticleMyRating(Long knowledgeBaseArticleId)
 		throws Exception;
 
 	public HttpInvoker.HttpResponse getKnowledgeBaseArticleMyRatingHttpResponse(
 			Long knowledgeBaseArticleId)
 		throws Exception;
 
-	public com.liferay.headless.delivery.client.dto.v1_0.Rating
-			postKnowledgeBaseArticleMyRating(
-				Long knowledgeBaseArticleId,
-				com.liferay.headless.delivery.client.dto.v1_0.Rating rating)
+	public Rating postKnowledgeBaseArticleMyRating(
+			Long knowledgeBaseArticleId, Rating rating)
 		throws Exception;
 
 	public HttpInvoker.HttpResponse
 			postKnowledgeBaseArticleMyRatingHttpResponse(
-				Long knowledgeBaseArticleId,
-				com.liferay.headless.delivery.client.dto.v1_0.Rating rating)
+				Long knowledgeBaseArticleId, Rating rating)
 		throws Exception;
 
-	public com.liferay.headless.delivery.client.dto.v1_0.Rating
-			putKnowledgeBaseArticleMyRating(
-				Long knowledgeBaseArticleId,
-				com.liferay.headless.delivery.client.dto.v1_0.Rating rating)
+	public Rating putKnowledgeBaseArticleMyRating(
+			Long knowledgeBaseArticleId, Rating rating)
 		throws Exception;
 
 	public HttpInvoker.HttpResponse putKnowledgeBaseArticleMyRatingHttpResponse(
-			Long knowledgeBaseArticleId,
-			com.liferay.headless.delivery.client.dto.v1_0.Rating rating)
+			Long knowledgeBaseArticleId, Rating rating)
 		throws Exception;
 
 	public void putKnowledgeBaseArticleSubscribe(Long knowledgeBaseArticleId)
@@ -132,15 +143,15 @@ public interface KnowledgeBaseArticleResource {
 	public Page<KnowledgeBaseArticle>
 			getKnowledgeBaseArticleKnowledgeBaseArticlesPage(
 				Long parentKnowledgeBaseArticleId, Boolean flatten,
-				String search, String filterString, Pagination pagination,
-				String sortString)
+				String search, List<String> aggregations, String filterString,
+				Pagination pagination, String sortString)
 		throws Exception;
 
 	public HttpInvoker.HttpResponse
 			getKnowledgeBaseArticleKnowledgeBaseArticlesPageHttpResponse(
 				Long parentKnowledgeBaseArticleId, Boolean flatten,
-				String search, String filterString, Pagination pagination,
-				String sortString)
+				String search, List<String> aggregations, String filterString,
+				Pagination pagination, String sortString)
 		throws Exception;
 
 	public KnowledgeBaseArticle postKnowledgeBaseArticleKnowledgeBaseArticle(
@@ -157,13 +168,15 @@ public interface KnowledgeBaseArticleResource {
 	public Page<KnowledgeBaseArticle>
 			getKnowledgeBaseFolderKnowledgeBaseArticlesPage(
 				Long knowledgeBaseFolderId, Boolean flatten, String search,
-				String filterString, Pagination pagination, String sortString)
+				List<String> aggregations, String filterString,
+				Pagination pagination, String sortString)
 		throws Exception;
 
 	public HttpInvoker.HttpResponse
 			getKnowledgeBaseFolderKnowledgeBaseArticlesPageHttpResponse(
 				Long knowledgeBaseFolderId, Boolean flatten, String search,
-				String filterString, Pagination pagination, String sortString)
+				List<String> aggregations, String filterString,
+				Pagination pagination, String sortString)
 		throws Exception;
 
 	public KnowledgeBaseArticle postKnowledgeBaseFolderKnowledgeBaseArticle(
@@ -177,15 +190,26 @@ public interface KnowledgeBaseArticleResource {
 				KnowledgeBaseArticle knowledgeBaseArticle)
 		throws Exception;
 
+	public void postKnowledgeBaseFolderKnowledgeBaseArticleBatch(
+			Long knowledgeBaseFolderId, String callbackURL, Object object)
+		throws Exception;
+
+	public HttpInvoker.HttpResponse
+			postKnowledgeBaseFolderKnowledgeBaseArticleBatchHttpResponse(
+				Long knowledgeBaseFolderId, String callbackURL, Object object)
+		throws Exception;
+
 	public Page<KnowledgeBaseArticle> getSiteKnowledgeBaseArticlesPage(
-			Long siteId, Boolean flatten, String search, String filterString,
+			Long siteId, Boolean flatten, String search,
+			List<String> aggregations, String filterString,
 			Pagination pagination, String sortString)
 		throws Exception;
 
 	public HttpInvoker.HttpResponse
 			getSiteKnowledgeBaseArticlesPageHttpResponse(
 				Long siteId, Boolean flatten, String search,
-				String filterString, Pagination pagination, String sortString)
+				List<String> aggregations, String filterString,
+				Pagination pagination, String sortString)
 		throws Exception;
 
 	public KnowledgeBaseArticle postSiteKnowledgeBaseArticle(
@@ -194,6 +218,15 @@ public interface KnowledgeBaseArticleResource {
 
 	public HttpInvoker.HttpResponse postSiteKnowledgeBaseArticleHttpResponse(
 			Long siteId, KnowledgeBaseArticle knowledgeBaseArticle)
+		throws Exception;
+
+	public void postSiteKnowledgeBaseArticleBatch(
+			Long siteId, String callbackURL, Object object)
+		throws Exception;
+
+	public HttpInvoker.HttpResponse
+			postSiteKnowledgeBaseArticleBatchHttpResponse(
+				Long siteId, String callbackURL, Object object)
 		throws Exception;
 
 	public void putSiteKnowledgeBaseArticleSubscribe(Long siteId)
@@ -255,8 +288,8 @@ public interface KnowledgeBaseArticleResource {
 		private Map<String, String> _headers = new LinkedHashMap<>();
 		private String _host = "localhost";
 		private Locale _locale;
-		private String _login = "test@liferay.com";
-		private String _password = "test";
+		private String _login = "";
+		private String _password = "";
 		private Map<String, String> _parameters = new LinkedHashMap<>();
 		private int _port = 8080;
 		private String _scheme = "http";
@@ -279,6 +312,17 @@ public interface KnowledgeBaseArticleResource {
 			_logger.fine("HTTP response message: " + httpResponse.getMessage());
 			_logger.fine(
 				"HTTP response status code: " + httpResponse.getStatusCode());
+
+			try {
+				return;
+			}
+			catch (Exception e) {
+				_logger.log(
+					Level.WARNING,
+					"Unable to process HTTP response: " + content, e);
+
+				throw new Problem.ProblemException(Problem.toDTO(content));
+			}
 		}
 
 		public HttpInvoker.HttpResponse deleteKnowledgeBaseArticleHttpResponse(
@@ -309,8 +353,68 @@ public interface KnowledgeBaseArticleResource {
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port +
-						"/o/headless-delivery/v1.0/knowledge-base-articles/{knowledgeBaseArticleId}",
-				knowledgeBaseArticleId);
+						"/o/headless-delivery/v1.0/knowledge-base-articles/{knowledgeBaseArticleId}");
+
+			httpInvoker.path("knowledgeBaseArticleId", knowledgeBaseArticleId);
+
+			httpInvoker.userNameAndPassword(
+				_builder._login + ":" + _builder._password);
+
+			return httpInvoker.invoke();
+		}
+
+		public void deleteKnowledgeBaseArticleBatch(
+				String callbackURL, Object object)
+			throws Exception {
+
+			HttpInvoker.HttpResponse httpResponse =
+				deleteKnowledgeBaseArticleBatchHttpResponse(
+					callbackURL, object);
+
+			String content = httpResponse.getContent();
+
+			_logger.fine("HTTP response content: " + content);
+
+			_logger.fine("HTTP response message: " + httpResponse.getMessage());
+			_logger.fine(
+				"HTTP response status code: " + httpResponse.getStatusCode());
+		}
+
+		public HttpInvoker.HttpResponse
+				deleteKnowledgeBaseArticleBatchHttpResponse(
+					String callbackURL, Object object)
+			throws Exception {
+
+			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+			if (_builder._locale != null) {
+				httpInvoker.header(
+					"Accept-Language", _builder._locale.toLanguageTag());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
+			}
+
+			httpInvoker.httpMethod(HttpInvoker.HttpMethod.DELETE);
+
+			if (callbackURL != null) {
+				httpInvoker.parameter(
+					"callbackURL", String.valueOf(callbackURL));
+			}
+
+			httpInvoker.path(
+				_builder._scheme + "://" + _builder._host + ":" +
+					_builder._port +
+						"/o/headless-delivery/v1.0/knowledge-base-articles/batch");
 
 			httpInvoker.userNameAndPassword(
 				_builder._login + ":" + _builder._password);
@@ -341,7 +445,7 @@ public interface KnowledgeBaseArticleResource {
 					Level.WARNING,
 					"Unable to process HTTP response: " + content, e);
 
-				throw e;
+				throw new Problem.ProblemException(Problem.toDTO(content));
 			}
 		}
 
@@ -373,8 +477,9 @@ public interface KnowledgeBaseArticleResource {
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port +
-						"/o/headless-delivery/v1.0/knowledge-base-articles/{knowledgeBaseArticleId}",
-				knowledgeBaseArticleId);
+						"/o/headless-delivery/v1.0/knowledge-base-articles/{knowledgeBaseArticleId}");
+
+			httpInvoker.path("knowledgeBaseArticleId", knowledgeBaseArticleId);
 
 			httpInvoker.userNameAndPassword(
 				_builder._login + ":" + _builder._password);
@@ -407,7 +512,7 @@ public interface KnowledgeBaseArticleResource {
 					Level.WARNING,
 					"Unable to process HTTP response: " + content, e);
 
-				throw e;
+				throw new Problem.ProblemException(Problem.toDTO(content));
 			}
 		}
 
@@ -443,8 +548,9 @@ public interface KnowledgeBaseArticleResource {
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port +
-						"/o/headless-delivery/v1.0/knowledge-base-articles/{knowledgeBaseArticleId}",
-				knowledgeBaseArticleId);
+						"/o/headless-delivery/v1.0/knowledge-base-articles/{knowledgeBaseArticleId}");
+
+			httpInvoker.path("knowledgeBaseArticleId", knowledgeBaseArticleId);
 
 			httpInvoker.userNameAndPassword(
 				_builder._login + ":" + _builder._password);
@@ -477,7 +583,7 @@ public interface KnowledgeBaseArticleResource {
 					Level.WARNING,
 					"Unable to process HTTP response: " + content, e);
 
-				throw e;
+				throw new Problem.ProblemException(Problem.toDTO(content));
 			}
 		}
 
@@ -513,8 +619,69 @@ public interface KnowledgeBaseArticleResource {
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port +
-						"/o/headless-delivery/v1.0/knowledge-base-articles/{knowledgeBaseArticleId}",
-				knowledgeBaseArticleId);
+						"/o/headless-delivery/v1.0/knowledge-base-articles/{knowledgeBaseArticleId}");
+
+			httpInvoker.path("knowledgeBaseArticleId", knowledgeBaseArticleId);
+
+			httpInvoker.userNameAndPassword(
+				_builder._login + ":" + _builder._password);
+
+			return httpInvoker.invoke();
+		}
+
+		public void putKnowledgeBaseArticleBatch(
+				String callbackURL, Object object)
+			throws Exception {
+
+			HttpInvoker.HttpResponse httpResponse =
+				putKnowledgeBaseArticleBatchHttpResponse(callbackURL, object);
+
+			String content = httpResponse.getContent();
+
+			_logger.fine("HTTP response content: " + content);
+
+			_logger.fine("HTTP response message: " + httpResponse.getMessage());
+			_logger.fine(
+				"HTTP response status code: " + httpResponse.getStatusCode());
+		}
+
+		public HttpInvoker.HttpResponse
+				putKnowledgeBaseArticleBatchHttpResponse(
+					String callbackURL, Object object)
+			throws Exception {
+
+			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+			httpInvoker.body(object.toString(), "application/json");
+
+			if (_builder._locale != null) {
+				httpInvoker.header(
+					"Accept-Language", _builder._locale.toLanguageTag());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
+			}
+
+			httpInvoker.httpMethod(HttpInvoker.HttpMethod.PUT);
+
+			if (callbackURL != null) {
+				httpInvoker.parameter(
+					"callbackURL", String.valueOf(callbackURL));
+			}
+
+			httpInvoker.path(
+				_builder._scheme + "://" + _builder._host + ":" +
+					_builder._port +
+						"/o/headless-delivery/v1.0/knowledge-base-articles/batch");
 
 			httpInvoker.userNameAndPassword(
 				_builder._login + ":" + _builder._password);
@@ -537,6 +704,17 @@ public interface KnowledgeBaseArticleResource {
 			_logger.fine("HTTP response message: " + httpResponse.getMessage());
 			_logger.fine(
 				"HTTP response status code: " + httpResponse.getStatusCode());
+
+			try {
+				return;
+			}
+			catch (Exception e) {
+				_logger.log(
+					Level.WARNING,
+					"Unable to process HTTP response: " + content, e);
+
+				throw new Problem.ProblemException(Problem.toDTO(content));
+			}
 		}
 
 		public HttpInvoker.HttpResponse
@@ -568,8 +746,9 @@ public interface KnowledgeBaseArticleResource {
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port +
-						"/o/headless-delivery/v1.0/knowledge-base-articles/{knowledgeBaseArticleId}/my-rating",
-				knowledgeBaseArticleId);
+						"/o/headless-delivery/v1.0/knowledge-base-articles/{knowledgeBaseArticleId}/my-rating");
+
+			httpInvoker.path("knowledgeBaseArticleId", knowledgeBaseArticleId);
 
 			httpInvoker.userNameAndPassword(
 				_builder._login + ":" + _builder._password);
@@ -577,8 +756,8 @@ public interface KnowledgeBaseArticleResource {
 			return httpInvoker.invoke();
 		}
 
-		public com.liferay.headless.delivery.client.dto.v1_0.Rating
-				getKnowledgeBaseArticleMyRating(Long knowledgeBaseArticleId)
+		public Rating getKnowledgeBaseArticleMyRating(
+				Long knowledgeBaseArticleId)
 			throws Exception {
 
 			HttpInvoker.HttpResponse httpResponse =
@@ -602,7 +781,7 @@ public interface KnowledgeBaseArticleResource {
 					Level.WARNING,
 					"Unable to process HTTP response: " + content, e);
 
-				throw e;
+				throw new Problem.ProblemException(Problem.toDTO(content));
 			}
 		}
 
@@ -635,8 +814,9 @@ public interface KnowledgeBaseArticleResource {
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port +
-						"/o/headless-delivery/v1.0/knowledge-base-articles/{knowledgeBaseArticleId}/my-rating",
-				knowledgeBaseArticleId);
+						"/o/headless-delivery/v1.0/knowledge-base-articles/{knowledgeBaseArticleId}/my-rating");
+
+			httpInvoker.path("knowledgeBaseArticleId", knowledgeBaseArticleId);
 
 			httpInvoker.userNameAndPassword(
 				_builder._login + ":" + _builder._password);
@@ -644,10 +824,8 @@ public interface KnowledgeBaseArticleResource {
 			return httpInvoker.invoke();
 		}
 
-		public com.liferay.headless.delivery.client.dto.v1_0.Rating
-				postKnowledgeBaseArticleMyRating(
-					Long knowledgeBaseArticleId,
-					com.liferay.headless.delivery.client.dto.v1_0.Rating rating)
+		public Rating postKnowledgeBaseArticleMyRating(
+				Long knowledgeBaseArticleId, Rating rating)
 			throws Exception {
 
 			HttpInvoker.HttpResponse httpResponse =
@@ -671,14 +849,13 @@ public interface KnowledgeBaseArticleResource {
 					Level.WARNING,
 					"Unable to process HTTP response: " + content, e);
 
-				throw e;
+				throw new Problem.ProblemException(Problem.toDTO(content));
 			}
 		}
 
 		public HttpInvoker.HttpResponse
 				postKnowledgeBaseArticleMyRatingHttpResponse(
-					Long knowledgeBaseArticleId,
-					com.liferay.headless.delivery.client.dto.v1_0.Rating rating)
+					Long knowledgeBaseArticleId, Rating rating)
 			throws Exception {
 
 			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
@@ -707,8 +884,9 @@ public interface KnowledgeBaseArticleResource {
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port +
-						"/o/headless-delivery/v1.0/knowledge-base-articles/{knowledgeBaseArticleId}/my-rating",
-				knowledgeBaseArticleId);
+						"/o/headless-delivery/v1.0/knowledge-base-articles/{knowledgeBaseArticleId}/my-rating");
+
+			httpInvoker.path("knowledgeBaseArticleId", knowledgeBaseArticleId);
 
 			httpInvoker.userNameAndPassword(
 				_builder._login + ":" + _builder._password);
@@ -716,10 +894,8 @@ public interface KnowledgeBaseArticleResource {
 			return httpInvoker.invoke();
 		}
 
-		public com.liferay.headless.delivery.client.dto.v1_0.Rating
-				putKnowledgeBaseArticleMyRating(
-					Long knowledgeBaseArticleId,
-					com.liferay.headless.delivery.client.dto.v1_0.Rating rating)
+		public Rating putKnowledgeBaseArticleMyRating(
+				Long knowledgeBaseArticleId, Rating rating)
 			throws Exception {
 
 			HttpInvoker.HttpResponse httpResponse =
@@ -743,14 +919,13 @@ public interface KnowledgeBaseArticleResource {
 					Level.WARNING,
 					"Unable to process HTTP response: " + content, e);
 
-				throw e;
+				throw new Problem.ProblemException(Problem.toDTO(content));
 			}
 		}
 
 		public HttpInvoker.HttpResponse
 				putKnowledgeBaseArticleMyRatingHttpResponse(
-					Long knowledgeBaseArticleId,
-					com.liferay.headless.delivery.client.dto.v1_0.Rating rating)
+					Long knowledgeBaseArticleId, Rating rating)
 			throws Exception {
 
 			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
@@ -779,8 +954,9 @@ public interface KnowledgeBaseArticleResource {
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port +
-						"/o/headless-delivery/v1.0/knowledge-base-articles/{knowledgeBaseArticleId}/my-rating",
-				knowledgeBaseArticleId);
+						"/o/headless-delivery/v1.0/knowledge-base-articles/{knowledgeBaseArticleId}/my-rating");
+
+			httpInvoker.path("knowledgeBaseArticleId", knowledgeBaseArticleId);
 
 			httpInvoker.userNameAndPassword(
 				_builder._login + ":" + _builder._password);
@@ -803,6 +979,17 @@ public interface KnowledgeBaseArticleResource {
 			_logger.fine("HTTP response message: " + httpResponse.getMessage());
 			_logger.fine(
 				"HTTP response status code: " + httpResponse.getStatusCode());
+
+			try {
+				return;
+			}
+			catch (Exception e) {
+				_logger.log(
+					Level.WARNING,
+					"Unable to process HTTP response: " + content, e);
+
+				throw new Problem.ProblemException(Problem.toDTO(content));
+			}
 		}
 
 		public HttpInvoker.HttpResponse
@@ -837,8 +1024,9 @@ public interface KnowledgeBaseArticleResource {
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port +
-						"/o/headless-delivery/v1.0/knowledge-base-articles/{knowledgeBaseArticleId}/subscribe",
-				knowledgeBaseArticleId);
+						"/o/headless-delivery/v1.0/knowledge-base-articles/{knowledgeBaseArticleId}/subscribe");
+
+			httpInvoker.path("knowledgeBaseArticleId", knowledgeBaseArticleId);
 
 			httpInvoker.userNameAndPassword(
 				_builder._login + ":" + _builder._password);
@@ -861,6 +1049,17 @@ public interface KnowledgeBaseArticleResource {
 			_logger.fine("HTTP response message: " + httpResponse.getMessage());
 			_logger.fine(
 				"HTTP response status code: " + httpResponse.getStatusCode());
+
+			try {
+				return;
+			}
+			catch (Exception e) {
+				_logger.log(
+					Level.WARNING,
+					"Unable to process HTTP response: " + content, e);
+
+				throw new Problem.ProblemException(Problem.toDTO(content));
+			}
 		}
 
 		public HttpInvoker.HttpResponse
@@ -895,8 +1094,9 @@ public interface KnowledgeBaseArticleResource {
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port +
-						"/o/headless-delivery/v1.0/knowledge-base-articles/{knowledgeBaseArticleId}/unsubscribe",
-				knowledgeBaseArticleId);
+						"/o/headless-delivery/v1.0/knowledge-base-articles/{knowledgeBaseArticleId}/unsubscribe");
+
+			httpInvoker.path("knowledgeBaseArticleId", knowledgeBaseArticleId);
 
 			httpInvoker.userNameAndPassword(
 				_builder._login + ":" + _builder._password);
@@ -907,14 +1107,15 @@ public interface KnowledgeBaseArticleResource {
 		public Page<KnowledgeBaseArticle>
 				getKnowledgeBaseArticleKnowledgeBaseArticlesPage(
 					Long parentKnowledgeBaseArticleId, Boolean flatten,
-					String search, String filterString, Pagination pagination,
+					String search, List<String> aggregations,
+					String filterString, Pagination pagination,
 					String sortString)
 			throws Exception {
 
 			HttpInvoker.HttpResponse httpResponse =
 				getKnowledgeBaseArticleKnowledgeBaseArticlesPageHttpResponse(
-					parentKnowledgeBaseArticleId, flatten, search, filterString,
-					pagination, sortString);
+					parentKnowledgeBaseArticleId, flatten, search, aggregations,
+					filterString, pagination, sortString);
 
 			String content = httpResponse.getContent();
 
@@ -924,13 +1125,23 @@ public interface KnowledgeBaseArticleResource {
 			_logger.fine(
 				"HTTP response status code: " + httpResponse.getStatusCode());
 
-			return Page.of(content, KnowledgeBaseArticleSerDes::toDTO);
+			try {
+				return Page.of(content, KnowledgeBaseArticleSerDes::toDTO);
+			}
+			catch (Exception e) {
+				_logger.log(
+					Level.WARNING,
+					"Unable to process HTTP response: " + content, e);
+
+				throw new Problem.ProblemException(Problem.toDTO(content));
+			}
 		}
 
 		public HttpInvoker.HttpResponse
 				getKnowledgeBaseArticleKnowledgeBaseArticlesPageHttpResponse(
 					Long parentKnowledgeBaseArticleId, Boolean flatten,
-					String search, String filterString, Pagination pagination,
+					String search, List<String> aggregations,
+					String filterString, Pagination pagination,
 					String sortString)
 			throws Exception {
 
@@ -981,8 +1192,10 @@ public interface KnowledgeBaseArticleResource {
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port +
-						"/o/headless-delivery/v1.0/knowledge-base-articles/{parentKnowledgeBaseArticleId}/knowledge-base-articles",
-				parentKnowledgeBaseArticleId);
+						"/o/headless-delivery/v1.0/knowledge-base-articles/{parentKnowledgeBaseArticleId}/knowledge-base-articles");
+
+			httpInvoker.path(
+				"parentKnowledgeBaseArticleId", parentKnowledgeBaseArticleId);
 
 			httpInvoker.userNameAndPassword(
 				_builder._login + ":" + _builder._password);
@@ -1016,7 +1229,7 @@ public interface KnowledgeBaseArticleResource {
 					Level.WARNING,
 					"Unable to process HTTP response: " + content, e);
 
-				throw e;
+				throw new Problem.ProblemException(Problem.toDTO(content));
 			}
 		}
 
@@ -1053,8 +1266,10 @@ public interface KnowledgeBaseArticleResource {
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port +
-						"/o/headless-delivery/v1.0/knowledge-base-articles/{parentKnowledgeBaseArticleId}/knowledge-base-articles",
-				parentKnowledgeBaseArticleId);
+						"/o/headless-delivery/v1.0/knowledge-base-articles/{parentKnowledgeBaseArticleId}/knowledge-base-articles");
+
+			httpInvoker.path(
+				"parentKnowledgeBaseArticleId", parentKnowledgeBaseArticleId);
 
 			httpInvoker.userNameAndPassword(
 				_builder._login + ":" + _builder._password);
@@ -1065,14 +1280,14 @@ public interface KnowledgeBaseArticleResource {
 		public Page<KnowledgeBaseArticle>
 				getKnowledgeBaseFolderKnowledgeBaseArticlesPage(
 					Long knowledgeBaseFolderId, Boolean flatten, String search,
-					String filterString, Pagination pagination,
-					String sortString)
+					List<String> aggregations, String filterString,
+					Pagination pagination, String sortString)
 			throws Exception {
 
 			HttpInvoker.HttpResponse httpResponse =
 				getKnowledgeBaseFolderKnowledgeBaseArticlesPageHttpResponse(
-					knowledgeBaseFolderId, flatten, search, filterString,
-					pagination, sortString);
+					knowledgeBaseFolderId, flatten, search, aggregations,
+					filterString, pagination, sortString);
 
 			String content = httpResponse.getContent();
 
@@ -1082,14 +1297,23 @@ public interface KnowledgeBaseArticleResource {
 			_logger.fine(
 				"HTTP response status code: " + httpResponse.getStatusCode());
 
-			return Page.of(content, KnowledgeBaseArticleSerDes::toDTO);
+			try {
+				return Page.of(content, KnowledgeBaseArticleSerDes::toDTO);
+			}
+			catch (Exception e) {
+				_logger.log(
+					Level.WARNING,
+					"Unable to process HTTP response: " + content, e);
+
+				throw new Problem.ProblemException(Problem.toDTO(content));
+			}
 		}
 
 		public HttpInvoker.HttpResponse
 				getKnowledgeBaseFolderKnowledgeBaseArticlesPageHttpResponse(
 					Long knowledgeBaseFolderId, Boolean flatten, String search,
-					String filterString, Pagination pagination,
-					String sortString)
+					List<String> aggregations, String filterString,
+					Pagination pagination, String sortString)
 			throws Exception {
 
 			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
@@ -1139,8 +1363,9 @@ public interface KnowledgeBaseArticleResource {
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port +
-						"/o/headless-delivery/v1.0/knowledge-base-folders/{knowledgeBaseFolderId}/knowledge-base-articles",
-				knowledgeBaseFolderId);
+						"/o/headless-delivery/v1.0/knowledge-base-folders/{knowledgeBaseFolderId}/knowledge-base-articles");
+
+			httpInvoker.path("knowledgeBaseFolderId", knowledgeBaseFolderId);
 
 			httpInvoker.userNameAndPassword(
 				_builder._login + ":" + _builder._password);
@@ -1173,7 +1398,7 @@ public interface KnowledgeBaseArticleResource {
 					Level.WARNING,
 					"Unable to process HTTP response: " + content, e);
 
-				throw e;
+				throw new Problem.ProblemException(Problem.toDTO(content));
 			}
 		}
 
@@ -1210,8 +1435,73 @@ public interface KnowledgeBaseArticleResource {
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port +
-						"/o/headless-delivery/v1.0/knowledge-base-folders/{knowledgeBaseFolderId}/knowledge-base-articles",
-				knowledgeBaseFolderId);
+						"/o/headless-delivery/v1.0/knowledge-base-folders/{knowledgeBaseFolderId}/knowledge-base-articles");
+
+			httpInvoker.path("knowledgeBaseFolderId", knowledgeBaseFolderId);
+
+			httpInvoker.userNameAndPassword(
+				_builder._login + ":" + _builder._password);
+
+			return httpInvoker.invoke();
+		}
+
+		public void postKnowledgeBaseFolderKnowledgeBaseArticleBatch(
+				Long knowledgeBaseFolderId, String callbackURL, Object object)
+			throws Exception {
+
+			HttpInvoker.HttpResponse httpResponse =
+				postKnowledgeBaseFolderKnowledgeBaseArticleBatchHttpResponse(
+					knowledgeBaseFolderId, callbackURL, object);
+
+			String content = httpResponse.getContent();
+
+			_logger.fine("HTTP response content: " + content);
+
+			_logger.fine("HTTP response message: " + httpResponse.getMessage());
+			_logger.fine(
+				"HTTP response status code: " + httpResponse.getStatusCode());
+		}
+
+		public HttpInvoker.HttpResponse
+				postKnowledgeBaseFolderKnowledgeBaseArticleBatchHttpResponse(
+					Long knowledgeBaseFolderId, String callbackURL,
+					Object object)
+			throws Exception {
+
+			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+			httpInvoker.body(object.toString(), "application/json");
+
+			if (_builder._locale != null) {
+				httpInvoker.header(
+					"Accept-Language", _builder._locale.toLanguageTag());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
+			}
+
+			httpInvoker.httpMethod(HttpInvoker.HttpMethod.POST);
+
+			if (callbackURL != null) {
+				httpInvoker.parameter(
+					"callbackURL", String.valueOf(callbackURL));
+			}
+
+			httpInvoker.path(
+				_builder._scheme + "://" + _builder._host + ":" +
+					_builder._port +
+						"/o/headless-delivery/v1.0/knowledge-base-folders/{knowledgeBaseFolderId}/knowledge-base-articles/batch");
+
+			httpInvoker.path("knowledgeBaseFolderId", knowledgeBaseFolderId);
 
 			httpInvoker.userNameAndPassword(
 				_builder._login + ":" + _builder._password);
@@ -1221,13 +1511,14 @@ public interface KnowledgeBaseArticleResource {
 
 		public Page<KnowledgeBaseArticle> getSiteKnowledgeBaseArticlesPage(
 				Long siteId, Boolean flatten, String search,
-				String filterString, Pagination pagination, String sortString)
+				List<String> aggregations, String filterString,
+				Pagination pagination, String sortString)
 			throws Exception {
 
 			HttpInvoker.HttpResponse httpResponse =
 				getSiteKnowledgeBaseArticlesPageHttpResponse(
-					siteId, flatten, search, filterString, pagination,
-					sortString);
+					siteId, flatten, search, aggregations, filterString,
+					pagination, sortString);
 
 			String content = httpResponse.getContent();
 
@@ -1237,14 +1528,23 @@ public interface KnowledgeBaseArticleResource {
 			_logger.fine(
 				"HTTP response status code: " + httpResponse.getStatusCode());
 
-			return Page.of(content, KnowledgeBaseArticleSerDes::toDTO);
+			try {
+				return Page.of(content, KnowledgeBaseArticleSerDes::toDTO);
+			}
+			catch (Exception e) {
+				_logger.log(
+					Level.WARNING,
+					"Unable to process HTTP response: " + content, e);
+
+				throw new Problem.ProblemException(Problem.toDTO(content));
+			}
 		}
 
 		public HttpInvoker.HttpResponse
 				getSiteKnowledgeBaseArticlesPageHttpResponse(
 					Long siteId, Boolean flatten, String search,
-					String filterString, Pagination pagination,
-					String sortString)
+					List<String> aggregations, String filterString,
+					Pagination pagination, String sortString)
 			throws Exception {
 
 			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
@@ -1294,8 +1594,9 @@ public interface KnowledgeBaseArticleResource {
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port +
-						"/o/headless-delivery/v1.0/sites/{siteId}/knowledge-base-articles",
-				siteId);
+						"/o/headless-delivery/v1.0/sites/{siteId}/knowledge-base-articles");
+
+			httpInvoker.path("siteId", siteId);
 
 			httpInvoker.userNameAndPassword(
 				_builder._login + ":" + _builder._password);
@@ -1327,7 +1628,7 @@ public interface KnowledgeBaseArticleResource {
 					Level.WARNING,
 					"Unable to process HTTP response: " + content, e);
 
-				throw e;
+				throw new Problem.ProblemException(Problem.toDTO(content));
 			}
 		}
 
@@ -1363,8 +1664,72 @@ public interface KnowledgeBaseArticleResource {
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port +
-						"/o/headless-delivery/v1.0/sites/{siteId}/knowledge-base-articles",
-				siteId);
+						"/o/headless-delivery/v1.0/sites/{siteId}/knowledge-base-articles");
+
+			httpInvoker.path("siteId", siteId);
+
+			httpInvoker.userNameAndPassword(
+				_builder._login + ":" + _builder._password);
+
+			return httpInvoker.invoke();
+		}
+
+		public void postSiteKnowledgeBaseArticleBatch(
+				Long siteId, String callbackURL, Object object)
+			throws Exception {
+
+			HttpInvoker.HttpResponse httpResponse =
+				postSiteKnowledgeBaseArticleBatchHttpResponse(
+					siteId, callbackURL, object);
+
+			String content = httpResponse.getContent();
+
+			_logger.fine("HTTP response content: " + content);
+
+			_logger.fine("HTTP response message: " + httpResponse.getMessage());
+			_logger.fine(
+				"HTTP response status code: " + httpResponse.getStatusCode());
+		}
+
+		public HttpInvoker.HttpResponse
+				postSiteKnowledgeBaseArticleBatchHttpResponse(
+					Long siteId, String callbackURL, Object object)
+			throws Exception {
+
+			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+			httpInvoker.body(object.toString(), "application/json");
+
+			if (_builder._locale != null) {
+				httpInvoker.header(
+					"Accept-Language", _builder._locale.toLanguageTag());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
+			}
+
+			httpInvoker.httpMethod(HttpInvoker.HttpMethod.POST);
+
+			if (callbackURL != null) {
+				httpInvoker.parameter(
+					"callbackURL", String.valueOf(callbackURL));
+			}
+
+			httpInvoker.path(
+				_builder._scheme + "://" + _builder._host + ":" +
+					_builder._port +
+						"/o/headless-delivery/v1.0/sites/{siteId}/knowledge-base-articles/batch");
+
+			httpInvoker.path("siteId", siteId);
 
 			httpInvoker.userNameAndPassword(
 				_builder._login + ":" + _builder._password);
@@ -1385,6 +1750,17 @@ public interface KnowledgeBaseArticleResource {
 			_logger.fine("HTTP response message: " + httpResponse.getMessage());
 			_logger.fine(
 				"HTTP response status code: " + httpResponse.getStatusCode());
+
+			try {
+				return;
+			}
+			catch (Exception e) {
+				_logger.log(
+					Level.WARNING,
+					"Unable to process HTTP response: " + content, e);
+
+				throw new Problem.ProblemException(Problem.toDTO(content));
+			}
 		}
 
 		public HttpInvoker.HttpResponse
@@ -1417,8 +1793,9 @@ public interface KnowledgeBaseArticleResource {
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port +
-						"/o/headless-delivery/v1.0/sites/{siteId}/knowledge-base-articles/subscribe",
-				siteId);
+						"/o/headless-delivery/v1.0/sites/{siteId}/knowledge-base-articles/subscribe");
+
+			httpInvoker.path("siteId", siteId);
 
 			httpInvoker.userNameAndPassword(
 				_builder._login + ":" + _builder._password);
@@ -1439,6 +1816,17 @@ public interface KnowledgeBaseArticleResource {
 			_logger.fine("HTTP response message: " + httpResponse.getMessage());
 			_logger.fine(
 				"HTTP response status code: " + httpResponse.getStatusCode());
+
+			try {
+				return;
+			}
+			catch (Exception e) {
+				_logger.log(
+					Level.WARNING,
+					"Unable to process HTTP response: " + content, e);
+
+				throw new Problem.ProblemException(Problem.toDTO(content));
+			}
 		}
 
 		public HttpInvoker.HttpResponse
@@ -1471,8 +1859,9 @@ public interface KnowledgeBaseArticleResource {
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port +
-						"/o/headless-delivery/v1.0/sites/{siteId}/knowledge-base-articles/unsubscribe",
-				siteId);
+						"/o/headless-delivery/v1.0/sites/{siteId}/knowledge-base-articles/unsubscribe");
+
+			httpInvoker.path("siteId", siteId);
 
 			httpInvoker.userNameAndPassword(
 				_builder._login + ":" + _builder._password);

@@ -23,6 +23,7 @@ import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portlet.announcements.model.impl.AnnouncementsDeliveryImpl;
 import com.liferay.users.admin.constants.UsersAdminPortletKeys;
 
@@ -68,6 +69,13 @@ public class UpdateAnnouncementsDeliveriesMVCActionCommand
 				user.getUserId(), announcementsDelivery.getType(),
 				announcementsDelivery.isEmail(), announcementsDelivery.isSms());
 		}
+
+		String redirect = _portal.escapeRedirect(
+			ParamUtil.getString(actionRequest, "redirect"));
+
+		if (Validator.isNotNull(redirect)) {
+			sendRedirect(actionRequest, actionResponse, redirect);
+		}
 	}
 
 	protected List<AnnouncementsDelivery> getAnnouncementsDeliveries(
@@ -78,15 +86,12 @@ public class UpdateAnnouncementsDeliveriesMVCActionCommand
 		for (String type : AnnouncementsEntryConstants.TYPES) {
 			boolean email = ParamUtil.getBoolean(
 				actionRequest, "announcementsType" + type + "Email");
-			boolean sms = ParamUtil.getBoolean(
-				actionRequest, "announcementsType" + type + "Sms");
 
 			AnnouncementsDelivery announcementsDelivery =
 				new AnnouncementsDeliveryImpl();
 
 			announcementsDelivery.setType(type);
 			announcementsDelivery.setEmail(email);
-			announcementsDelivery.setSms(sms);
 
 			announcementsDeliveries.add(announcementsDelivery);
 		}

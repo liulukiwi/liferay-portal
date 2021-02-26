@@ -46,8 +46,8 @@ public abstract class BaseWorkspaceGitRepository
 
 			return fileContent.trim();
 		}
-		catch (IOException ioe) {
-			throw new RuntimeException(ioe);
+		catch (IOException ioException) {
+			throw new RuntimeException(ioException);
 		}
 	}
 
@@ -82,6 +82,7 @@ public abstract class BaseWorkspaceGitRepository
 
 			_historicalLocalGitCommits.add(
 				GitCommitFactory.newLocalGitCommit(
+					commitJSONObject.getString("emailAddress"),
 					gitWorkingDirectory, commitJSONObject.getString("message"),
 					commitJSONObject.getString("sha"),
 					commitJSONObject.getLong("commitTime")));

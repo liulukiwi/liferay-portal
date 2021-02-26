@@ -17,7 +17,10 @@ package com.liferay.headless.form.client.dto.v1_0;
 import com.liferay.headless.form.client.function.UnsafeSupplier;
 import com.liferay.headless.form.client.serdes.v1_0.FormStructureSerDes;
 
+import java.io.Serializable;
+
 import java.util.Date;
+import java.util.Map;
 import java.util.Objects;
 
 import javax.annotation.Generated;
@@ -27,7 +30,11 @@ import javax.annotation.Generated;
  * @generated
  */
 @Generated("")
-public class FormStructure {
+public class FormStructure implements Cloneable, Serializable {
+
+	public static FormStructure toDTO(String json) {
+		return FormStructureSerDes.toDTO(json);
+	}
 
 	public String[] getAvailableLanguages() {
 		return availableLanguages;
@@ -134,6 +141,28 @@ public class FormStructure {
 
 	protected String description;
 
+	public Map<String, String> getDescription_i18n() {
+		return description_i18n;
+	}
+
+	public void setDescription_i18n(Map<String, String> description_i18n) {
+		this.description_i18n = description_i18n;
+	}
+
+	public void setDescription_i18n(
+		UnsafeSupplier<Map<String, String>, Exception>
+			description_i18nUnsafeSupplier) {
+
+		try {
+			description_i18n = description_i18nUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected Map<String, String> description_i18n;
+
 	public FormPage[] getFormPages() {
 		return formPages;
 	}
@@ -215,6 +244,28 @@ public class FormStructure {
 
 	protected String name;
 
+	public Map<String, String> getName_i18n() {
+		return name_i18n;
+	}
+
+	public void setName_i18n(Map<String, String> name_i18n) {
+		this.name_i18n = name_i18n;
+	}
+
+	public void setName_i18n(
+		UnsafeSupplier<Map<String, String>, Exception>
+			name_i18nUnsafeSupplier) {
+
+		try {
+			name_i18n = name_i18nUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected Map<String, String> name_i18n;
+
 	public Long getSiteId() {
 		return siteId;
 	}
@@ -235,6 +286,11 @@ public class FormStructure {
 	}
 
 	protected Long siteId;
+
+	@Override
+	public FormStructure clone() throws CloneNotSupportedException {
+		return (FormStructure)super.clone();
+	}
 
 	@Override
 	public boolean equals(Object object) {

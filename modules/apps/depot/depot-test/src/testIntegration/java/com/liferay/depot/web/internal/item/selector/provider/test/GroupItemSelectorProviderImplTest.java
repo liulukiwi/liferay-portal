@@ -86,14 +86,50 @@ public class GroupItemSelectorProviderImplTest {
 	}
 
 	@Test
+	public void testGetGroupsCountStaging() throws Exception {
+		DepotEntry depotEntry = _addDepotEntry();
+
+		_depotEntryGroupRelLocalService.addDepotEntryGroupRel(
+			depotEntry.getDepotEntryId(), _group.getGroupId());
+
+		GroupTestUtil.enableLocalStaging(_group);
+
+		Group stagingGroup = _group.getStagingGroup();
+
+		Assert.assertEquals(
+			1,
+			_groupItemSelectorProvider.getGroupsCount(
+				stagingGroup.getCompanyId(), stagingGroup.getGroupId(), null));
+	}
+
+	@Test
+	public void testGetGroupsStaging() throws Exception {
+		DepotEntry depotEntry = _addDepotEntry();
+
+		_depotEntryGroupRelLocalService.addDepotEntryGroupRel(
+			depotEntry.getDepotEntryId(), _group.getGroupId());
+
+		GroupTestUtil.enableLocalStaging(_group);
+
+		Group stagingGroup = _group.getStagingGroup();
+
+		List<Group> groups = _groupItemSelectorProvider.getGroups(
+			stagingGroup.getCompanyId(), stagingGroup.getGroupId(), null, 0,
+			20);
+
+		Assert.assertEquals(groups.toString(), 1, groups.size());
+	}
+
+	@Test
 	public void testGetIcon() {
-		Assert.assertEquals("repository", _groupItemSelectorProvider.getIcon());
+		Assert.assertEquals("books", _groupItemSelectorProvider.getIcon());
 	}
 
 	@Test
 	public void testGetLabel() {
 		Assert.assertEquals(
-			"Repository", _groupItemSelectorProvider.getLabel(LocaleUtil.US));
+			"Asset Library",
+			_groupItemSelectorProvider.getLabel(LocaleUtil.US));
 	}
 
 	private DepotEntry _addDepotEntry() throws Exception {
@@ -121,7 +157,10 @@ public class GroupItemSelectorProviderImplTest {
 	@DeleteAfterTestRun
 	private Group _group;
 
-	@Inject(filter = "group.type=depot", type = GroupItemSelectorProvider.class)
+	@Inject(
+		filter = "component.name=com.liferay.depot.web.internal.item.selector.provider.DepotGroupItemSelectorProvider",
+		type = GroupItemSelectorProvider.class
+	)
 	private GroupItemSelectorProvider _groupItemSelectorProvider;
 
 }

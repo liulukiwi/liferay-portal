@@ -57,15 +57,7 @@ definition {
 	}
 
 	macro gotoAccountSettings {
-		Click(locator1 = "UserBar#USER_AVATAR_IMAGE");
-
-		if (IsElementNotPresent(locator1 = "UserBar#USER_AVATAR_DROPDOWN_PORTAL_OPEN")) {
-			Click(locator1 = "UserBar#USER_AVATAR_IMAGE");
-		}
-
-		var key_dropdownItem = "Account Settings";
-
-		Click(locator1 = "UserBar#USER_AVATAR_DROPDOWN_ITEM");
+		UserBar.gotoDropdownItem(dropdownItem = "Account Settings");
 	}
 
 	macro gotoBack {
@@ -109,11 +101,15 @@ definition {
 	macro gotoNavTab {
 		var key_tab = "${navTab}";
 
-		AssertClick.assertPartialTextClickAt(
-			locator1 = "NavTab#TAB_LINK",
-			value1 = "${navTab}");
+		if (IsElementNotPresent(locator1 = "NavTab#ACTIVE_TAB_LINK")) {
+			AssertClick.assertPartialTextClickAt(
+				locator1 = "NavTab#TAB_LINK",
+				value1 = "${navTab}");
+		}
 
 		AssertElementPresent(locator1 = "NavTab#ACTIVE_TAB_LINK");
+
+		WaitForLiferayEvent.initializeLiferayEventLog();
 	}
 
 	macro gotoNavUnderline {
@@ -127,11 +123,7 @@ definition {
 	}
 
 	macro gotoNotifications {
-		Click(locator1 = "UserBar#USER_AVATAR_IMAGE");
-
-		var key_dropdownItem = "Notifications";
-
-		Click(locator1 = "UserBar#USER_AVATAR_DROPDOWN_ITEM");
+		UserBar.gotoDropdownItem(dropdownItem = "Notifications");
 	}
 
 	@summary = "Navigate to the page named '${pageName}'"
@@ -164,6 +156,14 @@ definition {
 		Navigator._gotoPage(pageName = "${pageName}");
 	}
 
+	macro gotoSidebarTab {
+		var key_tabName = "${tabName}";
+
+		Click.clickNoMouseOver(locator1 = "Sidebar#TAB");
+
+		AssertElementPresent(locator1 = "Sidebar#ACTIVE_TAB");
+	}
+
 	macro gotoSitePage {
 		Navigator.openSiteURL(
 			baseURL = "${baseURL}",
@@ -192,6 +192,8 @@ definition {
 		ProductMenuHelper.openProductMenu();
 
 		Click(locator1 = "Link#STAGING");
+
+		WaitForLiferayEvent.initializeLiferayEventLog();
 	}
 
 	macro openNodePort {
@@ -244,6 +246,21 @@ definition {
 		}
 
 		Open(locator1 = "${baseURL}/group/guest");
+	}
+
+	macro openSitePage {
+		var siteNameURL = StringUtil.replace("${siteName}", " ", "-");
+		var siteNameURL = StringUtil.lowerCase("${siteNameURL}");
+		var baseURL = "${baseURL}";
+
+		if (contains("${baseURL}", "{baseURL}")) {
+			var baseURL = PropsUtil.get("portal.url");
+		}
+
+		var pageNameURL = StringUtil.replace("${pageName}", " ", "-");
+		var pageNameURL = StringUtil.lowerCase("${pageNameURL}");
+
+		Open(locator1 = "${baseURL}/web/${siteNameURL}/${pageNameURL}");
 	}
 
 	macro openSiteURL {
@@ -304,6 +321,16 @@ definition {
 
 	macro selectSpecificWindow {
 		SelectWindow(locator1 = "title=${windowTitle}");
+	}
+
+	macro viewNoNavTab {
+		AssertElementNotPresent(
+			key_tab = "${navTab}",
+			locator1 = "NavTab#TAB_LINK");
+
+		AssertElementNotPresent(
+			key_tab = "${navTab}",
+			locator1 = "NavTab#ACTIVE_TAB_LINK");
 	}
 
 }

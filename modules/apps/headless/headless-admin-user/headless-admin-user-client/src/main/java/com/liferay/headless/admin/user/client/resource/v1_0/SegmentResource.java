@@ -18,11 +18,13 @@ import com.liferay.headless.admin.user.client.dto.v1_0.Segment;
 import com.liferay.headless.admin.user.client.http.HttpInvoker;
 import com.liferay.headless.admin.user.client.pagination.Page;
 import com.liferay.headless.admin.user.client.pagination.Pagination;
+import com.liferay.headless.admin.user.client.problem.Problem;
 import com.liferay.headless.admin.user.client.serdes.v1_0.SegmentSerDes;
 
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.Generated;
@@ -98,8 +100,8 @@ public interface SegmentResource {
 		private Map<String, String> _headers = new LinkedHashMap<>();
 		private String _host = "localhost";
 		private Locale _locale;
-		private String _login = "test@liferay.com";
-		private String _password = "test";
+		private String _login = "";
+		private String _password = "";
 		private Map<String, String> _parameters = new LinkedHashMap<>();
 		private int _port = 8080;
 		private String _scheme = "http";
@@ -123,7 +125,16 @@ public interface SegmentResource {
 			_logger.fine(
 				"HTTP response status code: " + httpResponse.getStatusCode());
 
-			return Page.of(content, SegmentSerDes::toDTO);
+			try {
+				return Page.of(content, SegmentSerDes::toDTO);
+			}
+			catch (Exception e) {
+				_logger.log(
+					Level.WARNING,
+					"Unable to process HTTP response: " + content, e);
+
+				throw new Problem.ProblemException(Problem.toDTO(content));
+			}
 		}
 
 		public HttpInvoker.HttpResponse getSiteSegmentsPageHttpResponse(
@@ -161,8 +172,9 @@ public interface SegmentResource {
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port +
-						"/o/headless-admin-user/v1.0/sites/{siteId}/segments",
-				siteId);
+						"/o/headless-admin-user/v1.0/sites/{siteId}/segments");
+
+			httpInvoker.path("siteId", siteId);
 
 			httpInvoker.userNameAndPassword(
 				_builder._login + ":" + _builder._password);
@@ -186,7 +198,16 @@ public interface SegmentResource {
 			_logger.fine(
 				"HTTP response status code: " + httpResponse.getStatusCode());
 
-			return Page.of(content, SegmentSerDes::toDTO);
+			try {
+				return Page.of(content, SegmentSerDes::toDTO);
+			}
+			catch (Exception e) {
+				_logger.log(
+					Level.WARNING,
+					"Unable to process HTTP response: " + content, e);
+
+				throw new Problem.ProblemException(Problem.toDTO(content));
+			}
 		}
 
 		public HttpInvoker.HttpResponse
@@ -218,8 +239,10 @@ public interface SegmentResource {
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port +
-						"/o/headless-admin-user/v1.0/sites/{siteId}/user-accounts/{userAccountId}/segments",
-				siteId, userAccountId);
+						"/o/headless-admin-user/v1.0/sites/{siteId}/user-accounts/{userAccountId}/segments");
+
+			httpInvoker.path("siteId", siteId);
+			httpInvoker.path("userAccountId", userAccountId);
 
 			httpInvoker.userNameAndPassword(
 				_builder._login + ":" + _builder._password);

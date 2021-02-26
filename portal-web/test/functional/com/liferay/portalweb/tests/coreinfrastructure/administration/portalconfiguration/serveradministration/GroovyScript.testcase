@@ -38,6 +38,15 @@ definition {
 			language = "Groovy",
 			script = "${script}");
 
+		AssertTextEquals.assertPartialText(
+			locator1 = "ServerAdministrationScript#OUTPUT_FIELD",
+			value1 = '''<div class="embedded-html-test"> Test Embedded HTML </div>''');
+
+		ServerAdministration.executeScript(
+			htmlOutput = "true",
+			language = "Groovy",
+			script = "${script}");
+
 		AssertTextEquals(
 			locator1 = "//div[@class='embedded-html-test']",
 			value1 = "Test Embedded HTML");
@@ -45,6 +54,7 @@ definition {
 
 	@priority = "5"
 	test ExecuteScriptWithLiferayClasses {
+		property portal.acceptance = "true";
 		property test.name.skip.portal.instance = "GroovyScript#ExecuteScriptWithLiferayClasses";
 
 		ServerAdministration.openServerAdmin();
@@ -98,6 +108,7 @@ definition {
 
 	@priority = "5"
 	test ExecuteSimpleScript {
+		property portal.acceptance = "true";
 		property test.name.skip.portal.instance = "GroovyScript#ExecuteSimpleScript";
 
 		ServerAdministration.openServerAdmin();

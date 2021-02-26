@@ -27,6 +27,8 @@ import com.liferay.document.library.kernel.service.DLFolderLocalServiceUtil;
 import com.liferay.document.library.kernel.service.DLTrashServiceUtil;
 import com.liferay.document.library.test.util.DLAppTestUtil;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.BaseModel;
 import com.liferay.portal.kernel.model.ClassedModel;
 import com.liferay.portal.kernel.model.Group;
@@ -133,7 +135,13 @@ public class DLFileShortcutTrashHandlerTest
 		try {
 			super.testTrashParentAndBaseModel();
 		}
-		catch (com.liferay.trash.kernel.exception.TrashEntryException tee) {
+		catch (com.liferay.trash.kernel.exception.TrashEntryException
+					trashEntryException) {
+
+			if (_log.isDebugEnabled()) {
+				_log.debug(trashEntryException, trashEntryException);
+			}
+
 			throw new TrashEntryException();
 		}
 	}
@@ -144,7 +152,13 @@ public class DLFileShortcutTrashHandlerTest
 		try {
 			super.testTrashParentAndRestoreParentAndBaseModel();
 		}
-		catch (com.liferay.trash.kernel.exception.RestoreEntryException ree) {
+		catch (com.liferay.trash.kernel.exception.RestoreEntryException
+					restoreEntryException) {
+
+			if (_log.isDebugEnabled()) {
+				_log.debug(restoreEntryException, restoreEntryException);
+			}
+
 			throw new RestoreEntryException();
 		}
 	}
@@ -309,6 +323,9 @@ public class DLFileShortcutTrashHandlerTest
 			initialBaseModelsCount + 1,
 			getNotInTrashBaseModelsCount(parentBaseModel));
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		DLFileShortcutTrashHandlerTest.class);
 
 	private final WhenIsAssetable _whenIsAssetable =
 		new DefaultWhenIsAssetable();

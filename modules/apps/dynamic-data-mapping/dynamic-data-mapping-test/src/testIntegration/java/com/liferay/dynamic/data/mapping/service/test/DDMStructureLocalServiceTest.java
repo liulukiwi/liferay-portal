@@ -15,6 +15,7 @@
 package com.liferay.dynamic.data.mapping.service.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.dynamic.data.mapping.constants.DDMStructureConstants;
 import com.liferay.dynamic.data.mapping.exception.InvalidParentStructureException;
 import com.liferay.dynamic.data.mapping.exception.RequiredStructureException;
 import com.liferay.dynamic.data.mapping.exception.StructureDefinitionException;
@@ -27,7 +28,6 @@ import com.liferay.dynamic.data.mapping.model.DDMForm;
 import com.liferay.dynamic.data.mapping.model.DDMFormField;
 import com.liferay.dynamic.data.mapping.model.DDMFormRule;
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
-import com.liferay.dynamic.data.mapping.model.DDMStructureConstants;
 import com.liferay.dynamic.data.mapping.model.DDMTemplate;
 import com.liferay.dynamic.data.mapping.service.DDMDataProviderInstanceLinkLocalServiceUtil;
 import com.liferay.dynamic.data.mapping.service.DDMDataProviderInstanceLocalServiceUtil;
@@ -61,6 +61,7 @@ import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
+import com.liferay.portal.search.test.util.SearchTestRule;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 
@@ -101,7 +102,7 @@ public class DDMStructureLocalServiceTest extends BaseDDMServiceTestCase {
 		addStructure(
 			_classNameId, null, "Test Structure",
 			read("ddm-structure-required-element-attribute.xsd"),
-			StorageType.JSON.getValue(), DDMStructureConstants.TYPE_DEFAULT);
+			StorageType.DEFAULT.getValue(), DDMStructureConstants.TYPE_DEFAULT);
 	}
 
 	@Test(expected = StructureDuplicateElementException.class)
@@ -109,7 +110,7 @@ public class DDMStructureLocalServiceTest extends BaseDDMServiceTestCase {
 		addStructure(
 			_classNameId, null, "Test Structure",
 			read("ddm-structure-duplicate-element-name.xsd"),
-			StorageType.JSON.getValue(), DDMStructureConstants.TYPE_DEFAULT);
+			StorageType.DEFAULT.getValue(), DDMStructureConstants.TYPE_DEFAULT);
 	}
 
 	@Test(expected = StructureDuplicateElementException.class)
@@ -119,12 +120,12 @@ public class DDMStructureLocalServiceTest extends BaseDDMServiceTestCase {
 		DDMStructure parentStructure = addStructure(
 			_classNameId, null, "Test Parent Structure",
 			read("ddm-structure-duplicate-element-name.xsd"),
-			StorageType.JSON.getValue(), DDMStructureConstants.TYPE_DEFAULT);
+			StorageType.DEFAULT.getValue(), DDMStructureConstants.TYPE_DEFAULT);
 
 		addStructure(
 			parentStructure.getStructureId(), _classNameId, null,
 			"Test Structure", read("ddm-structure-duplicate-element-name.xsd"),
-			StorageType.JSON.getValue(), DDMStructureConstants.TYPE_DEFAULT);
+			StorageType.DEFAULT.getValue(), DDMStructureConstants.TYPE_DEFAULT);
 	}
 
 	@Test(expected = StructureDuplicateStructureKeyException.class)
@@ -133,12 +134,12 @@ public class DDMStructureLocalServiceTest extends BaseDDMServiceTestCase {
 
 		addStructure(
 			_classNameId, structureKey, "Test Structure 1",
-			read("test-structure.xsd"), StorageType.JSON.getValue(),
+			read("test-structure.xsd"), StorageType.DEFAULT.getValue(),
 			DDMStructureConstants.TYPE_DEFAULT);
 
 		addStructure(
 			_classNameId, structureKey, "Test Structure 2",
-			read("test-structure.xsd"), StorageType.JSON.getValue(),
+			read("test-structure.xsd"), StorageType.DEFAULT.getValue(),
 			DDMStructureConstants.TYPE_DEFAULT);
 	}
 
@@ -147,21 +148,21 @@ public class DDMStructureLocalServiceTest extends BaseDDMServiceTestCase {
 		addStructure(
 			_classNameId, null, "Test Structure",
 			read("ddm-structure-invalid-element-attribute.xsd"),
-			StorageType.JSON.getValue(), DDMStructureConstants.TYPE_DEFAULT);
+			StorageType.DEFAULT.getValue(), DDMStructureConstants.TYPE_DEFAULT);
 	}
 
 	@Test(expected = StructureDefinitionException.class)
 	public void testAddStructureWithoutDefinition() throws Exception {
 		addStructure(
 			_classNameId, null, "Test Structure", StringPool.BLANK,
-			StorageType.JSON.getValue(), DDMStructureConstants.TYPE_DEFAULT);
+			StorageType.DEFAULT.getValue(), DDMStructureConstants.TYPE_DEFAULT);
 	}
 
 	@Test(expected = StructureNameException.class)
 	public void testAddStructureWithoutName() throws Exception {
 		addStructure(
 			_classNameId, null, StringPool.BLANK, read("test-structure.xsd"),
-			StorageType.JSON.getValue(), DDMStructureConstants.TYPE_DEFAULT);
+			StorageType.DEFAULT.getValue(), DDMStructureConstants.TYPE_DEFAULT);
 	}
 
 	@Test
@@ -184,7 +185,7 @@ public class DDMStructureLocalServiceTest extends BaseDDMServiceTestCase {
 		ddmForm.addDDMFormField(ddmFormField);
 
 		DDMStructure structure = ddmStructureTestHelper.addStructure(
-			ddmForm, StorageType.JSON.getValue());
+			ddmForm, StorageType.DEFAULT.getValue());
 
 		DDMDataProviderInstanceLink dataProviderInstanceLink =
 			DDMDataProviderInstanceLinkLocalServiceUtil.
@@ -228,7 +229,7 @@ public class DDMStructureLocalServiceTest extends BaseDDMServiceTestCase {
 		ddmForm.addDDMFormField(ddmFormField);
 
 		DDMStructure structure = ddmStructureTestHelper.addStructure(
-			ddmForm, StorageType.JSON.getValue());
+			ddmForm, StorageType.DEFAULT.getValue());
 
 		DDMDataProviderInstanceLink dataProviderInstanceLink =
 			DDMDataProviderInstanceLinkLocalServiceUtil.
@@ -263,12 +264,12 @@ public class DDMStructureLocalServiceTest extends BaseDDMServiceTestCase {
 
 		actions.add(action);
 
-		DDMFormRule ddmFormRule = new DDMFormRule("TRUE", actions);
+		DDMFormRule ddmFormRule = new DDMFormRule(actions, "TRUE");
 
 		ddmForm.addDDMFormRule(ddmFormRule);
 
 		DDMStructure structure = ddmStructureTestHelper.addStructure(
-			ddmForm, StorageType.JSON.getValue());
+			ddmForm, StorageType.DEFAULT.getValue());
 
 		List<DDMDataProviderInstanceLink> dataProviderInstanceLinks =
 			DDMDataProviderInstanceLinkLocalServiceUtil.
@@ -345,7 +346,7 @@ public class DDMStructureLocalServiceTest extends BaseDDMServiceTestCase {
 		parentDDMForm.addDDMFormField(nameDDMFormField);
 
 		DDMStructure parentStructure = ddmStructureTestHelper.addStructure(
-			parentDDMForm, StorageType.JSON.toString());
+			parentDDMForm, StorageType.DEFAULT.toString());
 
 		DDMForm childDDMForm = DDMFormTestUtil.createDDMForm();
 
@@ -359,7 +360,7 @@ public class DDMStructureLocalServiceTest extends BaseDDMServiceTestCase {
 			parentStructure.getStructureId(), parentStructure.getClassNameId(),
 			null, "Child Structure", StringPool.BLANK, childDDMForm,
 			DDMUtil.getDefaultDDMFormLayout(childDDMForm),
-			StorageType.JSON.toString(), DDMStructureConstants.TYPE_DEFAULT);
+			StorageType.DEFAULT.toString(), DDMStructureConstants.TYPE_DEFAULT);
 
 		Map<String, DDMFormField> childFullHierarchyDDMFormFieldsMap =
 			childStructure.getFullHierarchyDDMFormFieldsMap(true);
@@ -426,13 +427,13 @@ public class DDMStructureLocalServiceTest extends BaseDDMServiceTestCase {
 	public void testSearchByAnyStatus() throws Exception {
 		addStructure(
 			0, _classNameId, null, StringUtil.randomString(), StringPool.BLANK,
-			read("test-structure.xsd"), StorageType.JSON.getValue(),
+			read("test-structure.xsd"), StorageType.DEFAULT.getValue(),
 			DDMStructureConstants.TYPE_DEFAULT,
 			WorkflowConstants.STATUS_APPROVED);
 
 		addStructure(
 			0, _classNameId, null, StringUtil.randomString(), StringPool.BLANK,
-			read("test-structure.xsd"), StorageType.JSON.getValue(),
+			read("test-structure.xsd"), StorageType.DEFAULT.getValue(),
 			DDMStructureConstants.TYPE_DEFAULT, WorkflowConstants.STATUS_DRAFT);
 
 		List<DDMStructure> structures = DDMStructureLocalServiceUtil.search(
@@ -481,13 +482,13 @@ public class DDMStructureLocalServiceTest extends BaseDDMServiceTestCase {
 	public void testSearchByDraftStatus() throws Exception {
 		addStructure(
 			0, _classNameId, null, StringUtil.randomString(), StringPool.BLANK,
-			read("test-structure.xsd"), StorageType.JSON.getValue(),
+			read("test-structure.xsd"), StorageType.DEFAULT.getValue(),
 			DDMStructureConstants.TYPE_DEFAULT,
 			WorkflowConstants.STATUS_APPROVED);
 
 		addStructure(
 			0, _classNameId, null, StringUtil.randomString(), StringPool.BLANK,
-			read("test-structure.xsd"), StorageType.JSON.getValue(),
+			read("test-structure.xsd"), StorageType.DEFAULT.getValue(),
 			DDMStructureConstants.TYPE_DEFAULT, WorkflowConstants.STATUS_DRAFT);
 
 		List<DDMStructure> structures = DDMStructureLocalServiceUtil.search(
@@ -598,7 +599,7 @@ public class DDMStructureLocalServiceTest extends BaseDDMServiceTestCase {
 
 		List<DDMStructure> structures = DDMStructureLocalServiceUtil.search(
 			TestPropsValues.getCompanyId(), new long[] {group.getGroupId()},
-			_classNameId, null, null, StorageType.JSON.toString(),
+			_classNameId, null, null, StorageType.DEFAULT.toString(),
 			DDMStructureConstants.TYPE_DEFAULT,
 			WorkflowConstants.STATUS_APPROVED, true, QueryUtil.ALL_POS,
 			QueryUtil.ALL_POS, null);
@@ -610,13 +611,13 @@ public class DDMStructureLocalServiceTest extends BaseDDMServiceTestCase {
 	public void testSearchByType() throws Exception {
 		addStructure(
 			0, _classNameId, null, StringUtil.randomString(), StringPool.BLANK,
-			read("test-structure.xsd"), StorageType.JSON.getValue(),
+			read("test-structure.xsd"), StorageType.DEFAULT.getValue(),
 			DDMStructureConstants.TYPE_DEFAULT,
 			WorkflowConstants.STATUS_APPROVED);
 
 		addStructure(
 			0, _classNameId, null, StringUtil.randomString(), StringPool.BLANK,
-			read("test-structure.xsd"), StorageType.JSON.getValue(),
+			read("test-structure.xsd"), StorageType.DEFAULT.getValue(),
 			DDMStructureConstants.TYPE_FRAGMENT,
 			WorkflowConstants.STATUS_APPROVED);
 
@@ -680,7 +681,7 @@ public class DDMStructureLocalServiceTest extends BaseDDMServiceTestCase {
 
 		addStructure(
 			0, _classNameId, null, StringUtil.randomString(), StringPool.BLANK,
-			read("test-structure.xsd"), StorageType.JSON.getValue(),
+			read("test-structure.xsd"), StorageType.DEFAULT.getValue(),
 			DDMStructureConstants.TYPE_FRAGMENT,
 			WorkflowConstants.STATUS_APPROVED);
 
@@ -763,7 +764,7 @@ public class DDMStructureLocalServiceTest extends BaseDDMServiceTestCase {
 		ddmForm.setDDMFormFields(ddmFormFields);
 
 		DDMStructure structure = ddmStructureTestHelper.addStructure(
-			ddmForm, StorageType.JSON.getValue());
+			ddmForm, StorageType.DEFAULT.getValue());
 
 		List<DDMDataProviderInstanceLink> dataProviderInstanceLinks =
 			DDMDataProviderInstanceLinkLocalServiceUtil.
@@ -824,7 +825,7 @@ public class DDMStructureLocalServiceTest extends BaseDDMServiceTestCase {
 		actions.add(action1);
 		actions.add(action2);
 
-		DDMFormRule ddmFormRule1 = new DDMFormRule("TRUE", actions);
+		DDMFormRule ddmFormRule1 = new DDMFormRule(actions, "TRUE");
 
 		ddmForm.addDDMFormRule(ddmFormRule1);
 
@@ -832,12 +833,12 @@ public class DDMStructureLocalServiceTest extends BaseDDMServiceTestCase {
 
 		actions.add(action1);
 
-		DDMFormRule ddmFormRule2 = new DDMFormRule("FALSE", actions);
+		DDMFormRule ddmFormRule2 = new DDMFormRule(actions, "FALSE");
 
 		ddmForm.addDDMFormRule(ddmFormRule2);
 
 		DDMStructure structure = ddmStructureTestHelper.addStructure(
-			ddmForm, StorageType.JSON.getValue());
+			ddmForm, StorageType.DEFAULT.getValue());
 
 		List<DDMDataProviderInstanceLink> dataProviderInstanceLinks =
 			DDMDataProviderInstanceLinkLocalServiceUtil.
@@ -882,7 +883,7 @@ public class DDMStructureLocalServiceTest extends BaseDDMServiceTestCase {
 		DDMForm ddmForm = DDMFormTestUtil.createDDMForm("Field1");
 
 		DDMStructure structure = ddmStructureTestHelper.addStructure(
-			ddmForm, StorageType.JSON.getValue());
+			ddmForm, StorageType.DEFAULT.getValue());
 
 		DDMStructure structureAfterUpdate = updateStructure(structure);
 
@@ -902,7 +903,7 @@ public class DDMStructureLocalServiceTest extends BaseDDMServiceTestCase {
 		DDMFormTestUtil.setIndexTypeProperty(ddmForm, "text");
 
 		DDMStructure structure = ddmStructureTestHelper.addStructure(
-			ddmForm, StorageType.JSON.getValue());
+			ddmForm, StorageType.DEFAULT.getValue());
 
 		DDMStructure structureAfterUpdate = updateStructure(structure);
 
@@ -923,7 +924,7 @@ public class DDMStructureLocalServiceTest extends BaseDDMServiceTestCase {
 		DDMFormTestUtil.setIndexTypeProperty(ddmForm, "none");
 
 		DDMStructure structure = ddmStructureTestHelper.addStructure(
-			ddmForm, StorageType.JSON.getValue());
+			ddmForm, StorageType.DEFAULT.getValue());
 
 		DDMStructure structureAfterUpdate = updateStructure(structure);
 
@@ -941,23 +942,26 @@ public class DDMStructureLocalServiceTest extends BaseDDMServiceTestCase {
 	public void testValidateParentStructure() throws Exception {
 		DDMStructure structure1 = addStructure(
 			0, _classNameId, null, "Test Structure 1", null,
-			read("ddm-structure-text-field.xsd"), StorageType.JSON.getValue(),
-			DDMStructureConstants.TYPE_DEFAULT);
+			read("ddm-structure-text-field.xsd"),
+			StorageType.DEFAULT.getValue(), DDMStructureConstants.TYPE_DEFAULT);
 
 		DDMStructure structure2 = addStructure(
 			structure1.getStructureId(), _classNameId, null, "Test Structure 2",
 			null, read("ddm-structure-radio-field.xsd"),
-			StorageType.JSON.getValue(), DDMStructureConstants.TYPE_DEFAULT);
+			StorageType.DEFAULT.getValue(), DDMStructureConstants.TYPE_DEFAULT);
 
 		DDMStructure structure3 = addStructure(
 			structure2.getStructureId(), _classNameId, null, "Test Structure 3",
 			null, read("ddm-structure-select-field.xsd"),
-			StorageType.JSON.getValue(), DDMStructureConstants.TYPE_DEFAULT);
+			StorageType.DEFAULT.getValue(), DDMStructureConstants.TYPE_DEFAULT);
 
 		structure1.setParentStructureId(structure3.getStructureId());
 
 		updateStructure(structure1);
 	}
+
+	@Rule
+	public SearchTestRule searchTestRule = new SearchTestRule();
 
 	protected DDMStructure copyStructure(DDMStructure structure)
 		throws Exception {

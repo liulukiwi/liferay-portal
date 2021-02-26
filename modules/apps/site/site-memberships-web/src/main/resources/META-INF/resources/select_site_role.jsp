@@ -17,17 +17,17 @@
 <%@ include file="/init.jsp" %>
 
 <%
-SelectSiteRolesDisplayContext selectSiteRolesDisplayContext = new SelectSiteRolesDisplayContext(request, renderRequest, renderResponse);
+SelectRolesDisplayContext selectRolesDisplayContext = new SelectRolesDisplayContext(request, renderRequest, renderResponse);
 %>
 
 <clay:management-toolbar
-	displayContext="<%= new SelectSiteRolesManagementToolbarDisplayContext(liferayPortletRequest, liferayPortletResponse, request, selectSiteRolesDisplayContext) %>"
+	managementToolbarDisplayContext="<%= new SelectRolesManagementToolbarDisplayContext(request, liferayPortletRequest, liferayPortletResponse, selectRolesDisplayContext) %>"
 />
 
-<aui:form cssClass="container-fluid-1280 portlet-site-memberships-assign-site-roles" name="fm">
+<aui:form cssClass="container-fluid container-fluid-max-xl portlet-site-memberships-assign-roles" name="fm">
 	<liferay-ui:search-container
-		id="siteRoles"
-		searchContainer="<%= selectSiteRolesDisplayContext.getRoleSearchSearchContainer() %>"
+		id="roles"
+		searchContainer="<%= selectRolesDisplayContext.getRoleSearchSearchContainer() %>"
 	>
 		<liferay-ui:search-container-row
 			className="com.liferay.portal.kernel.model.Role"
@@ -37,25 +37,20 @@ SelectSiteRolesDisplayContext selectSiteRolesDisplayContext = new SelectSiteRole
 		>
 
 			<%
-			Map<String, Object> data = new HashMap<String, Object>();
-
-			data.put("id", role.getRoleId());
+			Map<String, Object> data = HashMapBuilder.<String, Object>put(
+				"id", role.getRoleId()
+			).build();
 			%>
 
 			<c:choose>
-				<c:when test='<%= Objects.equals(selectSiteRolesDisplayContext.getDisplayStyle(), "icon") %>'>
-
-					<%
-					row.setCssClass("entry-card lfr-asset-item");
-					%>
-
+				<c:when test='<%= Objects.equals(selectRolesDisplayContext.getDisplayStyle(), "icon") %>'>
 					<liferay-ui:search-container-column-text>
 						<clay:vertical-card
-							verticalCard="<%= new SelectSiteRoleVerticalCard(role, renderRequest) %>"
+							verticalCard="<%= new SelectRoleVerticalCard(role, renderRequest) %>"
 						/>
 					</liferay-ui:search-container-column-text>
 				</c:when>
-				<c:when test='<%= Objects.equals(selectSiteRolesDisplayContext.getDisplayStyle(), "descriptive") %>'>
+				<c:when test='<%= Objects.equals(selectRolesDisplayContext.getDisplayStyle(), "descriptive") %>'>
 					<liferay-ui:search-container-column-text
 						colspan="<%= 2 %>"
 					>
@@ -74,9 +69,9 @@ SelectSiteRolesDisplayContext selectSiteRolesDisplayContext = new SelectSiteRole
 						</h6>
 					</liferay-ui:search-container-column-text>
 				</c:when>
-				<c:when test='<%= Objects.equals(selectSiteRolesDisplayContext.getDisplayStyle(), "list") %>'>
+				<c:when test='<%= Objects.equals(selectRolesDisplayContext.getDisplayStyle(), "list") %>'>
 					<liferay-ui:search-container-column-text
-						cssClass="table-cell-content"
+						cssClass="table-cell-expand"
 						name="title"
 						truncate="<%= true %>"
 					>
@@ -86,7 +81,7 @@ SelectSiteRolesDisplayContext selectSiteRolesDisplayContext = new SelectSiteRole
 					</liferay-ui:search-container-column-text>
 
 					<liferay-ui:search-container-column-text
-						cssClass="table-cell-content"
+						cssClass="table-cell-expand"
 						name="description"
 						value="<%= HtmlUtil.escape(role.getDescription(locale)) %>"
 					/>
@@ -100,7 +95,7 @@ SelectSiteRolesDisplayContext selectSiteRolesDisplayContext = new SelectSiteRole
 		</liferay-ui:search-container-row>
 
 		<liferay-ui:search-iterator
-			displayStyle="<%= selectSiteRolesDisplayContext.getDisplayStyle() %>"
+			displayStyle="<%= selectRolesDisplayContext.getDisplayStyle() %>"
 			markupView="lexicon"
 		/>
 	</liferay-ui:search-container>
@@ -109,6 +104,6 @@ SelectSiteRolesDisplayContext selectSiteRolesDisplayContext = new SelectSiteRole
 <aui:script>
 	Liferay.Util.selectEntityHandler(
 		'#<portlet:namespace />fm',
-		'<%= HtmlUtil.escapeJS(selectSiteRolesDisplayContext.getEventName()) %>'
+		'<%= HtmlUtil.escapeJS(selectRolesDisplayContext.getEventName()) %>'
 	);
 </aui:script>

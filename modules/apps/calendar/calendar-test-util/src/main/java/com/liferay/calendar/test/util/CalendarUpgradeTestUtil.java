@@ -49,11 +49,11 @@ public class CalendarUpgradeTestUtil {
 
 		return registry.callService(
 			upgradeClassName,
-			(UpgradeStepRegistrator upgradeStepRegistror) -> {
+			(UpgradeStepRegistrator upgradeStepRegistrator) -> {
 				SearchRegistry searchRegistry = new SearchRegistry(
 					upgradeStepClassName);
 
-				upgradeStepRegistror.register(searchRegistry);
+				upgradeStepRegistrator.register(searchRegistry);
 
 				return searchRegistry.getUpgradeStep();
 			});
@@ -76,15 +76,6 @@ public class CalendarUpgradeTestUtil {
 
 		public UpgradeProcess getUpgradeStep() {
 			return _upgradeStep;
-		}
-
-		@Override
-		public void register(
-			String bundleSymbolicName, String fromSchemaVersionString,
-			String toSchemaVersionString, UpgradeStep... upgradeSteps) {
-
-			register(
-				fromSchemaVersionString, toSchemaVersionString, upgradeSteps);
 		}
 
 		@Override

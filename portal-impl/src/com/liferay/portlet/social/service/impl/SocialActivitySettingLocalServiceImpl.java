@@ -153,11 +153,11 @@ public class SocialActivitySettingLocalServiceImpl
 
 			return jsonObject.getBoolean("enabled");
 		}
-		catch (JSONException jsone) {
+		catch (JSONException jsonException) {
 			_log.error(
 				"Unable to create JSON object from " +
 					activitySetting.getValue(),
-				jsone);
+				jsonException);
 
 			return false;
 		}
@@ -348,7 +348,11 @@ public class SocialActivitySettingLocalServiceImpl
 					jsonObject = JSONFactoryUtil.createJSONObject(
 						activitySetting.getValue());
 				}
-				catch (Exception e) {
+				catch (Exception exception) {
+					if (_log.isDebugEnabled()) {
+						_log.debug(exception, exception);
+					}
+
 					jsonObject = JSONFactoryUtil.createJSONObject();
 				}
 

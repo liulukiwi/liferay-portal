@@ -14,7 +14,7 @@
 
 package com.liferay.document.library.repository.search.internal;
 
-import com.liferay.document.library.repository.search.util.KeywordsUtil;
+import com.liferay.document.library.repository.search.internal.util.KeywordsUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.log.Log;
@@ -75,15 +75,19 @@ public class LuceneRepositorySearchQueryTermBuilder
 			try {
 				query = queryParser.parse(value);
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(exception, exception);
+				}
+
 				query = queryParser.parse(KeywordsUtil.escape(value));
 			}
 
 			translateQuery(
 				booleanQuery, searchContext, query, BooleanClause.Occur.SHOULD);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 	}
 

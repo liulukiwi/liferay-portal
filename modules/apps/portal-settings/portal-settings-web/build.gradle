@@ -1,6 +1,6 @@
 buildCSS {
 	imports = [
-		new File(npmInstall.nodeModulesDir, "clay-css/src/scss")
+		new File(npmInstall.nodeModulesDir, "@clayui/css/src/scss")
 	]
 }
 
@@ -17,17 +17,19 @@ dependencies {
 	compileOnly project(":apps:configuration-admin:configuration-admin-api")
 	compileOnly project(":apps:dynamic-data-mapping:dynamic-data-mapping-taglib")
 	compileOnly project(":apps:frontend-taglib:frontend-taglib")
+	compileOnly project(":apps:frontend-taglib:frontend-taglib-clay")
 	compileOnly project(":apps:map:map-api")
 	compileOnly project(":apps:map:map-taglib")
 	compileOnly project(":apps:petra:petra-content")
 	compileOnly project(":apps:portal-settings:portal-settings-api")
 	compileOnly project(":apps:portal-settings:portal-settings-lang")
-	compileOnly project(":apps:portal:portal-upgrade-api")
 	compileOnly project(":apps:staging:staging-taglib")
 	compileOnly project(":apps:static:osgi:osgi-util")
 	compileOnly project(":apps:static:portal-configuration:portal-configuration-metatype-api")
+	compileOnly project(":apps:static:portal:portal-upgrade-api")
 	compileOnly project(":apps:users-admin:users-admin-api")
 	compileOnly project(":apps:users-admin:users-admin-web")
 	compileOnly project(":core:petra:petra-lang")
+	compileOnly project(":core:petra:petra-sql-dsl-api")
 	compileOnly project(":core:petra:petra-string")
 }

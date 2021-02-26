@@ -19,12 +19,17 @@ import com.liferay.jenkins.results.parser.failure.message.generator.GenericFailu
 import com.liferay.jenkins.results.parser.failure.message.generator.RebaseFailureMessageGenerator;
 import com.liferay.jenkins.results.parser.failure.message.generator.SourceFormatFailureMessageGenerator;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.dom4j.Element;
 
 /**
  * @author Cesar Polanco
  */
-public class SourceFormatBuild extends DefaultTopLevelBuild {
+public class SourceFormatBuild
+	extends DefaultTopLevelBuild
+	implements PortalBranchInformationBuild, PullRequestBuild {
 
 	@Override
 	public String getBaseGitRepositoryName() {
@@ -33,12 +38,29 @@ public class SourceFormatBuild extends DefaultTopLevelBuild {
 
 	@Override
 	public String getBaseGitRepositorySHA(String gitRepositoryName) {
-		return _pullRequest.getUpstreamBranchSHA();
+		if (_baseGitRepositorySHA != null) {
+			return _baseGitRepositorySHA;
+		}
+
+		String consoleText = getConsoleText();
+
+		for (String line : consoleText.split("\\s*\\n\\s*")) {
+			Matcher matcher = _gitHubUpstreamBranchShaPattern.matcher(line);
+
+			if (matcher.find()) {
+				_baseGitRepositorySHA = matcher.group("sha");
+
+				return _baseGitRepositorySHA;
+			}
+		}
+
+		throw new RuntimeException(
+			"Unable to find Source Format Base Git Repository SHA");
 	}
 
 	@Override
 	public String getBranchName() {
-		return _pullRequest.getUpstreamBranchName();
+		return _pullRequest.getUpstreamRemoteGitBranchName();
 	}
 
 	@Override
@@ -46,8 +68,29 @@ public class SourceFormatBuild extends DefaultTopLevelBuild {
 		return new Element[] {getFailureMessageElement()};
 	}
 
+	@Override
+	public Job.BuildProfile getBuildProfile() {
+		return Job.BuildProfile.DXP;
+	}
+
+	@Override
+	public BranchInformation getPortalBaseBranchInformation() {
+		return null;
+	}
+
+	@Override
+	public BranchInformation getPortalBranchInformation() {
+		return new PullRequestBranchInformation(this, _pullRequest);
+	}
+
+	@Override
 	public PullRequest getPullRequest() {
 		return _pullRequest;
+	}
+
+	@Override
+	public String getTestSuiteName() {
+		return _NAME_TEST_SUITE;
 	}
 
 	@Override
@@ -62,15 +105,6 @@ public class SourceFormatBuild extends DefaultTopLevelBuild {
 			getBaseBranchDetailsElement(),
 			Dom4JUtil.getNewElement("h4", null, "Sender Branch:"),
 			getSenderBranchDetailsElement());
-
-		String upstreamBranchName = _pullRequest.getUpstreamBranchName();
-
-		if (upstreamBranchName.contains("-private")) {
-			Dom4JUtil.addToElement(
-				detailsElement,
-				Dom4JUtil.getNewElement("h4", null, "Companion Branch:"),
-				getCompanionBranchDetailsElement());
-		}
 
 		String result = getResult();
 		int successCount = 0;
@@ -104,6 +138,74 @@ public class SourceFormatBuild extends DefaultTopLevelBuild {
 			"html", null, getResultElement(), detailsElement);
 	}
 
+	public static class PullRequestBranchInformation
+		extends DefaultBranchInformation {
+
+		@Override
+		public String getOriginName() {
+			return _pullRequest.getSenderUsername();
+		}
+
+		@Override
+		public Integer getPullRequestNumber() {
+			String pullRequestNumber = _pullRequest.getNumber();
+
+			if ((pullRequestNumber == null) ||
+				!pullRequestNumber.matches("\\d+")) {
+
+				pullRequestNumber = "0";
+			}
+
+			return Integer.valueOf(pullRequestNumber);
+		}
+
+		@Override
+		public String getReceiverUsername() {
+			return _pullRequest.getReceiverUsername();
+		}
+
+		@Override
+		public String getRepositoryName() {
+			return _pullRequest.getGitRepositoryName();
+		}
+
+		@Override
+		public String getSenderBranchName() {
+			return _pullRequest.getSenderBranchName();
+		}
+
+		@Override
+		public String getSenderBranchSHA() {
+			return _pullRequest.getSenderSHA();
+		}
+
+		@Override
+		public String getSenderUsername() {
+			return _pullRequest.getSenderUsername();
+		}
+
+		@Override
+		public String getUpstreamBranchName() {
+			return _pullRequest.getUpstreamRemoteGitBranchName();
+		}
+
+		@Override
+		public String getUpstreamBranchSHA() {
+			return _pullRequest.getUpstreamBranchSHA();
+		}
+
+		protected PullRequestBranchInformation(
+			Build build, PullRequest pullRequest) {
+
+			super(build, "portal");
+
+			_pullRequest = pullRequest;
+		}
+
+		private final PullRequest _pullRequest;
+
+	}
+
 	protected SourceFormatBuild(String url) {
 		this(url, null);
 	}
@@ -116,13 +218,10 @@ public class SourceFormatBuild extends DefaultTopLevelBuild {
 
 	@Override
 	protected FailureMessageGenerator[] getFailureMessageGenerators() {
-
-		// Skip JavaParser
-
 		return new FailureMessageGenerator[] {
 			new RebaseFailureMessageGenerator(),
 			new SourceFormatFailureMessageGenerator(),
-
+			//
 			new GenericFailureMessageGenerator()
 		};
 	}
@@ -150,13 +249,14 @@ public class SourceFormatBuild extends DefaultTopLevelBuild {
 			Dom4JUtil.getNewAnchorElement(senderCommitURL, senderSHA));
 	}
 
-	@Override
-	protected String getTestSuiteName() {
-		return _NAME_TEST_SUITE;
-	}
-
 	private static final String _NAME_TEST_SUITE = "sf";
 
+	private static final Pattern _gitHubUpstreamBranchShaPattern =
+		Pattern.compile(
+			"\\[beanshell\\] GITHUB_UPSTREAM_BRANCH_SHA=" +
+				"(?<sha>[0-9a-f]{7,40})");
+
+	private String _baseGitRepositorySHA;
 	private PullRequest _pullRequest;
 
 }

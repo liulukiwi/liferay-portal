@@ -41,6 +41,7 @@ import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.cache.CacheField;
 import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
@@ -52,6 +53,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -83,6 +85,12 @@ public class DDMStructureImpl extends DDMStructureBaseImpl {
 		}
 
 		return fullHierarchyDDMForm;
+	}
+
+	@Override
+	public DDMStructureLayout fetchDDMStructureLayout() {
+		return DDMStructureLayoutLocalServiceUtil.fetchStructureLayout(
+			getGroupId(), getClassNameId(), getStructureKey());
 	}
 
 	@Override
@@ -153,6 +161,17 @@ public class DDMStructureImpl extends DDMStructureBaseImpl {
 	}
 
 	@Override
+	public long getDefaultDDMStructureLayoutId() {
+		DDMStructureLayout ddmStructureLayout = fetchDDMStructureLayout();
+
+		if (ddmStructureLayout != null) {
+			return ddmStructureLayout.getStructureLayoutId();
+		}
+
+		return 0;
+	}
+
+	@Override
 	public String getDefaultLanguageId() {
 		DDMForm ddmForm = _getDDMForm();
 
@@ -186,18 +205,15 @@ public class DDMStructureImpl extends DDMStructureBaseImpl {
 
 	@Override
 	public Set<String> getFieldNames() {
-		List<DDMFormField> ddmFormFields = getDDMFormFields(false);
-
-		return SetUtil.fromList(getDDMFormFieldNames(ddmFormFields));
+		return SetUtil.fromList(getDDMFormFieldNames(getDDMFormFields(false)));
 	}
 
 	@Override
 	public String getFieldProperty(String fieldName, String property)
 		throws PortalException {
 
-		DDMFormField ddmFormField = _getDDMFormField(fieldName);
-
-		return BeanPropertiesUtil.getString(ddmFormField, property);
+		return BeanPropertiesUtil.getString(
+			_getDDMFormField(fieldName), property);
 	}
 
 	@Override
@@ -244,8 +260,8 @@ public class DDMStructureImpl extends DDMStructureBaseImpl {
 		try {
 			return createFullHierarchyDDMForm();
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 
 		return new DDMForm();
@@ -269,10 +285,27 @@ public class DDMStructureImpl extends DDMStructureBaseImpl {
 	}
 
 	@Override
+	public String getName(Locale locale, boolean useDefault) {
+		String name = super.getName(locale, useDefault);
+
+		if (Validator.isNull(name)) {
+			return super.getName(getDefaultLanguageId(), useDefault);
+		}
+
+		return name;
+	}
+
+	@Override
 	public List<String> getRootFieldNames() {
 		DDMForm ddmForm = getFullHierarchyDDMForm();
 
-		return getDDMFormFieldNames(ddmForm.getDDMFormFields());
+		List<DDMFormField> ddmFormFields = ddmForm.getDDMFormFields();
+
+		ddmFormFields.removeIf(
+			ddmFormField -> GetterUtil.getBoolean(
+				ddmFormField.getProperty("upgradedStructure")));
+
+		return getDDMFormFieldNames(ddmFormFields);
 	}
 
 	@Override
@@ -379,8 +412,8 @@ public class DDMStructureImpl extends DDMStructureBaseImpl {
 				return parentDDMStructure.hasField(fieldName);
 			}
 		}
-		catch (PortalException pe) {
-			_log.error(pe, pe);
+		catch (PortalException portalException) {
+			_log.error(portalException, portalException);
 		}
 
 		return false;
@@ -416,8 +449,9 @@ public class DDMStructureImpl extends DDMStructureBaseImpl {
 					prepareLocalizedDefinitionForImport(
 						this, defaultImportLocale));
 		}
-		catch (Exception e) {
-			throw new LocaleException(LocaleException.TYPE_EXPORT_IMPORT, e);
+		catch (Exception exception) {
+			throw new LocaleException(
+				LocaleException.TYPE_EXPORT_IMPORT, exception);
 		}
 	}
 
@@ -501,6 +535,14 @@ public class DDMStructureImpl extends DDMStructureBaseImpl {
 						builder.build());
 
 			_ddmForm = ddmFormDeserializerDeserializeResponse.getDDMForm();
+
+			for (DDMFormField ddmFormField : _ddmForm.getDDMFormFields()) {
+				if (_isFieldSet(ddmFormField) &&
+					ListUtil.isEmpty(ddmFormField.getNestedDDMFormFields())) {
+
+					_setNestedDDMFormFields(ddmFormField);
+				}
+			}
 		}
 
 		return _ddmForm;
@@ -522,8 +564,8 @@ public class DDMStructureImpl extends DDMStructureBaseImpl {
 				return parentDDMStructure.getDDMFormField(fieldName);
 			}
 		}
-		catch (PortalException pe) {
-			_log.error(pe, pe);
+		catch (PortalException portalException) {
+			_log.error(portalException, portalException);
 		}
 
 		throw new StructureFieldException("Unable to find field " + fieldName);
@@ -551,6 +593,34 @@ public class DDMStructureImpl extends DDMStructureBaseImpl {
 		}
 
 		return targetDDMFormField;
+	}
+
+	private boolean _isFieldSet(DDMFormField ddmFormField) {
+		if (Objects.equals(ddmFormField.getType(), "fieldset")) {
+			return true;
+		}
+
+		return false;
+	}
+
+	private void _setNestedDDMFormFields(DDMFormField ddmFormField) {
+		if (Validator.isNotNull(ddmFormField.getProperty("ddmStructureId"))) {
+			try {
+				DDMStructure ddmStructure =
+					DDMStructureLocalServiceUtil.getStructure(
+						GetterUtil.getLong(
+							ddmFormField.getProperty("ddmStructureId")));
+
+				DDMForm ddmForm = ddmStructure.getDDMForm();
+
+				ddmFormField.setNestedDDMFormFields(ddmForm.getDDMFormFields());
+			}
+			catch (PortalException portalException) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(portalException, portalException);
+				}
+			}
+		}
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(

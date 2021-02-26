@@ -15,9 +15,9 @@
 package com.liferay.portal.setup;
 
 import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.events.EventsProcessorUtil;
-import com.liferay.portal.kernel.dao.jdbc.DataAccess;
 import com.liferay.portal.kernel.dao.jdbc.DataSourceFactoryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
@@ -48,6 +48,7 @@ import java.sql.Connection;
 
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -81,7 +82,11 @@ public class SetupWizardUtil {
 
 			return defaultUser.getTimeZoneId();
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
+
 			return PropsValues.COMPANY_DEFAULT_TIME_ZONE;
 		}
 	}
@@ -189,6 +194,8 @@ public class SetupWizardUtil {
 		_updateAdminUser(
 			httpServletRequest, httpServletResponse, unicodeProperties);
 
+		_updateCompanyWebId(httpServletRequest, unicodeProperties);
+
 		HttpSession session = httpServletRequest.getSession();
 
 		session.setAttribute(
@@ -202,11 +209,8 @@ public class SetupWizardUtil {
 		HttpServletRequest httpServletRequest, String name,
 		String defaultValue) {
 
-		name = _PROPERTIES_PREFIX.concat(
-			name
-		).concat(
-			StringPool.DOUBLE_DASH
-		);
+		name = StringBundler.concat(
+			_PROPERTIES_PREFIX, name, StringPool.DOUBLE_DASH);
 
 		return ParamUtil.getString(httpServletRequest, name, defaultValue);
 	}
@@ -220,8 +224,8 @@ public class SetupWizardUtil {
 			}
 		}
 
-		return StringUtil.replace(
-			unicodeProperties.toString(), _NULL_HOLDER, StringPool.BLANK);
+		return StringUtil.removeSubstring(
+			unicodeProperties.toString(), _NULL_HOLDER);
 	}
 
 	private static boolean _isDatabaseConfigured(
@@ -305,16 +309,15 @@ public class SetupWizardUtil {
 		}
 
 		DataSource dataSource = null;
-		Connection connection = null;
 
 		try {
 			dataSource = DataSourceFactoryUtil.initDataSource(
 				driverClassName, url, userName, password, jndiName);
 
-			connection = dataSource.getConnection();
+			try (Connection connection = dataSource.getConnection()) {
+			}
 		}
 		finally {
-			DataAccess.cleanUp(connection);
 			DataSourceFactoryUtil.destroyDataSource(dataSource);
 		}
 	}
@@ -369,9 +372,13 @@ public class SetupWizardUtil {
 
 		int index = emailAddress.indexOf(CharPool.AT);
 
+		String companyDefaultWebId = emailAddress.substring(index + 1);
+
+		PropsValues.COMPANY_DEFAULT_WEB_ID = companyDefaultWebId;
+
 		unicodeProperties.put(
-			PropsKeys.COMPANY_DEFAULT_WEB_ID,
-			emailAddress.substring(index + 1));
+			PropsKeys.COMPANY_DEFAULT_WEB_ID, companyDefaultWebId);
+
 		unicodeProperties.put(
 			PropsKeys.DEFAULT_ADMIN_EMAIL_ADDRESS_PREFIX,
 			emailAddress.substring(0, index));
@@ -400,6 +407,8 @@ public class SetupWizardUtil {
 		String languageId = ParamUtil.getString(
 			httpServletRequest, "companyLocale", getDefaultLanguageId());
 
+		PropsValues.COMPANY_DEFAULT_LOCALE = languageId;
+
 		unicodeProperties.put(PropsKeys.COMPANY_DEFAULT_LOCALE, languageId);
 
 		String timeZoneId = ParamUtil.getString(
@@ -413,6 +422,37 @@ public class SetupWizardUtil {
 
 		SetupWizardSampleDataUtil.updateCompany(
 			company, companyName, languageId, timeZoneId);
+
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
+
+		themeDisplay.setCompany(company);
+	}
+
+	private static void _updateCompanyWebId(
+			HttpServletRequest httpServletRequest,
+			UnicodeProperties unicodeProperties)
+		throws Exception {
+
+		String companyDefaultWebId = unicodeProperties.get(
+			PropsKeys.COMPANY_DEFAULT_WEB_ID);
+
+		if (Validator.isNull(companyDefaultWebId)) {
+			return;
+		}
+
+		Company company = CompanyLocalServiceUtil.getCompanyById(
+			PortalInstances.getDefaultCompanyId());
+
+		if (Objects.equals(companyDefaultWebId, company.getWebId())) {
+			return;
+		}
+
+		company.setWebId(companyDefaultWebId);
+		company.setMx(companyDefaultWebId);
+
+		company = CompanyLocalServiceUtil.updateCompany(company);
 
 		ThemeDisplay themeDisplay =
 			(ThemeDisplay)httpServletRequest.getAttribute(
@@ -436,8 +476,8 @@ public class SetupWizardUtil {
 				return true;
 			}
 		}
-		catch (IOException ioe) {
-			_log.error(ioe, ioe);
+		catch (IOException ioException) {
+			_log.error(ioException, ioException);
 		}
 
 		return false;

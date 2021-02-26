@@ -19,6 +19,8 @@ import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.atom.AtomRequestContext;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
@@ -82,7 +84,11 @@ public class AtomUtil {
 
 			portletTitle = company.getName();
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
+
 			return null;
 		}
 
@@ -104,7 +110,11 @@ public class AtomUtil {
 		try {
 			company = getCompany();
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
+
 			return StringPool.BLANK;
 		}
 
@@ -209,5 +219,7 @@ public class AtomUtil {
 	private static final String _PAGER = AtomUtil.class.getName() + ".pager";
 
 	private static final String _USER = AtomUtil.class.getName() + ".user";
+
+	private static final Log _log = LogFactoryUtil.getLog(AtomUtil.class);
 
 }

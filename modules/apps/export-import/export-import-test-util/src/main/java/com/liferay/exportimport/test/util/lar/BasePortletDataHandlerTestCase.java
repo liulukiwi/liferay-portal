@@ -189,7 +189,7 @@ public abstract class BasePortletDataHandlerTestCase {
 				try {
 					return TestPropsValues.getUserId();
 				}
-				catch (Exception e) {
+				catch (Exception exception) {
 					return 0;
 				}
 			});
@@ -559,15 +559,15 @@ public abstract class BasePortletDataHandlerTestCase {
 
 			return bundleContext.getService(iterator.next());
 		}
-		catch (Exception e) {
-			throw new RuntimeException(e);
+		catch (Exception exception) {
+			throw new RuntimeException(exception);
 		}
 	}
 
 	protected abstract String getPortletId();
 
 	protected String getSchemaVersion() {
-		return "1.0.0";
+		return "4.0.0";
 	}
 
 	protected List<StagedModel> getStagedModels() {

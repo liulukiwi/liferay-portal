@@ -15,13 +15,14 @@
 package com.liferay.documentum.repository.search;
 
 import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 
 import java.text.DateFormat;
@@ -72,19 +73,16 @@ public class DQLParameterValueUtil {
 
 				value = dqlSimpleDateFormat.format(date);
 			}
-			catch (ParseException pe) {
+			catch (ParseException parseException) {
 				if (_log.isWarnEnabled()) {
 					_log.warn(
-						"Unable to parse date " + value + " for field " +
-							field);
+						"Unable to parse date " + value + " for field " + field,
+						parseException);
 				}
 			}
 
-			return "DATE('".concat(
-				value
-			).concat(
-				"', 'yyyy/mm/dd hh:mi:ss')"
-			);
+			return StringBundler.concat(
+				"DATE('", value, "', 'yyyy/mm/dd hh:mi:ss')");
 		}
 
 		if (wildcard) {

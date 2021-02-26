@@ -42,6 +42,7 @@ import com.liferay.portal.kernel.servlet.taglib.ui.MenuItem;
 import com.liferay.portal.kernel.servlet.taglib.ui.URLMenuItem;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.Constants;
+import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.JavaConstants;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.PortalUtil;
@@ -109,9 +110,9 @@ public class DLOpenerGoogleDriveDLViewFileVersionDisplayContext
 
 		Menu menu = super.getMenu();
 
-		if (_isCheckedOutInGoogleDrive()) {
-			FileEntry fileEntry = fileVersion.getFileEntry();
+		FileEntry fileEntry = fileVersion.getFileEntry();
 
+		if (_isCheckedOutInGoogleDrive()) {
 			if (fileEntry.hasLock()) {
 				List<MenuItem> menuItems = menu.getMenuItems();
 
@@ -124,15 +125,17 @@ public class DLOpenerGoogleDriveDLViewFileVersionDisplayContext
 			return menu;
 		}
 
-		_addEditInGoogleDocsUIItem(
-			menu.getMenuItems(),
-			_createEditInGoogleDocsMenuItem(Constants.CHECKOUT));
+		if (!_isCheckedOutByAnotherUser(fileEntry)) {
+			_addEditInGoogleDocsUIItem(
+				menu.getMenuItems(),
+				_createEditInGoogleDocsMenuItem(Constants.CHECKOUT));
+		}
 
 		return menu;
 	}
 
 	/**
-	 * @see com.liferay.frontend.image.editor.integration.document.library.internal.display.context.ImageEditorDLViewFileVersionDisplayContext#_addEditWithImageEditorUIItem
+	 * @see com.liferay.sharing.document.library.internal.display.context.SharingDLViewFileVersionDisplayContext#_addSharingUIItem(List, BaseUIItem)
 	 */
 	private <T extends BaseUIItem> List<T> _addEditInGoogleDocsUIItem(
 		List<T> uiItems, T editInGoogleDocsUIItem) {
@@ -162,6 +165,7 @@ public class DLOpenerGoogleDriveDLViewFileVersionDisplayContext
 
 		URLMenuItem urlMenuItem = new URLMenuItem();
 
+		urlMenuItem.setKey("#edit-in-google-drive");
 		urlMenuItem.setLabel(LanguageUtil.get(_resourceBundle, _getLabelKey()));
 		urlMenuItem.setMethod(HttpMethods.POST);
 		urlMenuItem.setURL(_getActionURL(cmd));
@@ -227,6 +231,14 @@ public class DLOpenerGoogleDriveDLViewFileVersionDisplayContext
 		return liferayPortletResponse.getNamespace();
 	}
 
+	private boolean _isCheckedOutByAnotherUser(FileEntry fileEntry) {
+		if (fileEntry.isCheckedOut() && !fileEntry.hasLock()) {
+			return true;
+		}
+
+		return false;
+	}
+
 	private boolean _isCheckedOutInGoogleDrive() throws PortalException {
 		FileEntry fileEntry = fileVersion.getFileEntry();
 
@@ -269,13 +281,17 @@ public class DLOpenerGoogleDriveDLViewFileVersionDisplayContext
 						javaScriptUIItem.setOnClick(
 							StringBundler.concat(
 								"window.location.href = '",
-								_getActionURL(Constants.CHECKIN), "'"));
+								HtmlUtil.escapeJS(
+									_getActionURL(Constants.CHECKIN)),
+								"'"));
 					}
 					else {
 						javaScriptUIItem.setOnClick(
 							StringBundler.concat(
 								_getNamespace(), "showVersionDetailsDialog('",
-								_getActionURL(Constants.CHECKIN), "');"));
+								HtmlUtil.escapeJS(
+									_getActionURL(Constants.CHECKIN)),
+								"');"));
 					}
 				}
 			}

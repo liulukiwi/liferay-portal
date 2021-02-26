@@ -14,9 +14,9 @@
 
 package com.liferay.product.navigation.control.menu.theme.contributor.internal.servlet.taglib;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.servlet.taglib.DynamicInclude;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.url.builder.AbsolutePortalURLBuilder;
 import com.liferay.portal.url.builder.AbsolutePortalURLBuilderFactory;
@@ -57,7 +57,7 @@ public class ProductNavigationControlMenuTopHeadDynamicInclude
 
 		PrintWriter printWriter = httpServletResponse.getWriter();
 
-		StringBundler sb = new StringBundler(6);
+		StringBundler sb = new StringBundler(3);
 
 		sb.append("<link data-senna-track=\"permanent\" href=\"");
 
@@ -73,12 +73,6 @@ public class ProductNavigationControlMenuTopHeadDynamicInclude
 			).build());
 
 		sb.append("\" rel=\"stylesheet\" type = \"text/css\" />\n");
-		sb.append("<script data-senna-track=\"permanent\" src=\"");
-		sb.append(
-			absolutePortalURLBuilder.forModule(
-				_bundle, "/product_navigation_control_menu.js"
-			).build());
-		sb.append("\" type=\"text/javascript\"></script>");
 
 		printWriter.println(sb.toString());
 	}

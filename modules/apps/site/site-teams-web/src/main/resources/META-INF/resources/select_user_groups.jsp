@@ -17,32 +17,31 @@
 <%@ include file="/init.jsp" %>
 
 <%
-SelectUserGroupsDisplayContext selectUserGroupsDisplayContext = new SelectUserGroupsDisplayContext(renderRequest, renderResponse, request);
+SelectUserGroupsDisplayContext selectUserGroupsDisplayContext = new SelectUserGroupsDisplayContext(request, renderRequest, renderResponse);
 %>
 
 <clay:management-toolbar
-	displayContext="<%= new SelectUserGroupsManagementToolbarDisplayContext(liferayPortletRequest, liferayPortletResponse, request, selectUserGroupsDisplayContext) %>"
+	managementToolbarDisplayContext="<%= new SelectUserGroupsManagementToolbarDisplayContext(request, liferayPortletRequest, liferayPortletResponse, selectUserGroupsDisplayContext) %>"
 />
 
-<aui:form cssClass="container-fluid-1280" name="selectUserGroupFm">
+<aui:form cssClass="container-fluid container-fluid-max-xl" name="selectUserGroupFm">
 	<liferay-ui:search-container
 		id="userGroups"
 		searchContainer="<%= selectUserGroupsDisplayContext.getUserGroupSearchContainer() %>"
 	>
 		<liferay-ui:search-container-row
 			className="com.liferay.portal.kernel.model.UserGroup"
-			cssClass="selectable"
 			escapedModel="<%= true %>"
 			keyProperty="userGroupId"
 			modelVar="userGroup"
 		>
 
 			<%
-			LinkedHashMap<String, Object> userParams = new LinkedHashMap<String, Object>();
-
-			userParams.put("usersUserGroups", Long.valueOf(userGroup.getUserGroupId()));
-
-			int usersCount = UserLocalServiceUtil.searchCount(company.getCompanyId(), StringPool.BLANK, WorkflowConstants.STATUS_ANY, userParams);
+			int usersCount = UserLocalServiceUtil.searchCount(
+				company.getCompanyId(), StringPool.BLANK, WorkflowConstants.STATUS_ANY,
+				LinkedHashMapBuilder.<String, Object>put(
+					"usersUserGroups", Long.valueOf(userGroup.getUserGroupId())
+				).build());
 			%>
 
 			<c:choose>
@@ -68,14 +67,14 @@ SelectUserGroupsDisplayContext selectUserGroupsDisplayContext = new SelectUserGr
 				</c:when>
 				<c:otherwise>
 					<liferay-ui:search-container-column-text
-						cssClass="table-cell-content"
+						cssClass="table-cell-expand"
 						name="name"
 						orderable="<%= true %>"
 						property="name"
 					/>
 
 					<liferay-ui:search-container-column-text
-						cssClass="table-cell-content"
+						cssClass="table-cell-expand"
 						name="description"
 						orderable="<%= true %>"
 						property="description"
@@ -101,11 +100,11 @@ SelectUserGroupsDisplayContext selectUserGroupsDisplayContext = new SelectUserGr
 		'<portlet:namespace />userGroups'
 	);
 
-	searchContainer.on('rowToggled', function(event) {
+	searchContainer.on('rowToggled', (event) => {
 		Liferay.Util.getOpener().Liferay.fire(
 			'<%= HtmlUtil.escapeJS(selectUserGroupsDisplayContext.getEventName()) %>',
 			{
-				data: event.elements.allSelectedElements.getDOMNodes()
+				data: event.elements.allSelectedElements.getDOMNodes(),
 			}
 		);
 	});

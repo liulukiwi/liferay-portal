@@ -91,6 +91,7 @@
 					(JournalArticle.version < tempJournalArticle.version)
 			LEFT JOIN
 				JournalArticleLocalization ON
+					(1 = ?) AND
 					(JournalArticle.companyId = JournalArticleLocalization.companyId) AND
 					(JournalArticle.id_ = JournalArticleLocalization.articlePK)
 			WHERE
@@ -200,6 +201,8 @@
 						JournalArticleLocalization.companyId, JournalArticleLocalization.articlePK, JournalArticleLocalization.title
 					FROM
 						JournalArticleLocalization
+					WHERE
+						1 = ?
 					GROUP BY
 						JournalArticleLocalization.companyId, JournalArticleLocalization.articlePK, JournalArticleLocalization.title
 				) JournalArticleLocalization ON
@@ -245,14 +248,8 @@
 					(JournalArticle.articleId = tempJournalArticle.articleId) AND
 					(JournalArticle.version < tempJournalArticle.version)
 			LEFT JOIN
-				(
-					SELECT
-						JournalArticleLocalization.companyId, JournalArticleLocalization.articlePK, JournalArticleLocalization.title, JournalArticleLocalization.languageId
-					FROM
-						JournalArticleLocalization
-					GROUP BY
-						JournalArticleLocalization.companyId, JournalArticleLocalization.articlePK, JournalArticleLocalization.title, JournalArticleLocalization.languageId
-				) JournalArticleLocalization ON
+				JournalArticleLocalization ON
+					(1 = ?) AND
 					(JournalArticle.companyId = JournalArticleLocalization.companyId) AND
 					(JournalArticle.id_ = JournalArticleLocalization.articlePK) AND
 					(JournalArticleLocalization.languageId = ?)
@@ -277,14 +274,8 @@
 					(JournalArticle.articleId = tempJournalArticle.articleId) AND
 					(JournalArticle.version < tempJournalArticle.version)
 			LEFT JOIN
-				(
-					SELECT
-						JournalArticleLocalization.companyId, JournalArticleLocalization.articlePK, JournalArticleLocalization.title, JournalArticleLocalization.languageId
-					FROM
-						JournalArticleLocalization
-					GROUP BY
-						JournalArticleLocalization.companyId, JournalArticleLocalization.articlePK, JournalArticleLocalization.title, JournalArticleLocalization.languageId
-				) JournalArticleLocalization ON
+				JournalArticleLocalization ON
+					(1 = ?) AND
 					(JournalArticle.companyId = JournalArticleLocalization.companyId) AND
 					(JournalArticle.id_ = JournalArticleLocalization.articlePK) AND
 					(JournalArticleLocalization.languageId = ?)
@@ -315,6 +306,8 @@
 						JournalArticleLocalization.companyId, JournalArticleLocalization.articlePK, JournalArticleLocalization.title
 					FROM
 						JournalArticleLocalization
+					WHERE
+						1 = ?
 					GROUP BY
 						JournalArticleLocalization.companyId, JournalArticleLocalization.articlePK, JournalArticleLocalization.title
 				) JournalArticleLocalization ON
@@ -343,14 +336,8 @@
 					(JournalArticle.articleId = tempJournalArticle.articleId) AND
 					(JournalArticle.version < tempJournalArticle.version)
 			LEFT JOIN
-				(
-					SELECT
-						JournalArticleLocalization.companyId, JournalArticleLocalization.articlePK, JournalArticleLocalization.title, JournalArticleLocalization.languageId
-					FROM
-						JournalArticleLocalization
-					GROUP BY
-						JournalArticleLocalization.companyId, JournalArticleLocalization.articlePK, JournalArticleLocalization.title, JournalArticleLocalization.languageId
-				) JournalArticleLocalization ON
+				JournalArticleLocalization ON
+					(1 = ?) AND
 					(JournalArticle.companyId = JournalArticleLocalization.companyId) AND
 					(JournalArticle.id_ = JournalArticleLocalization.articlePK) AND
 					(JournalArticleLocalization.languageId = ?)
@@ -382,6 +369,8 @@
 						JournalArticleLocalization.companyId, JournalArticleLocalization.articlePK, JournalArticleLocalization.title
 					FROM
 						JournalArticleLocalization
+					WHERE
+						1 = ?
 					GROUP BY
 						JournalArticleLocalization.companyId, JournalArticleLocalization.articlePK, JournalArticleLocalization.title
 				) JournalArticleLocalization ON
@@ -410,14 +399,8 @@
 					(JournalArticle.articleId = tempJournalArticle.articleId) AND
 					(JournalArticle.version < tempJournalArticle.version)
 			LEFT JOIN
-				(
-					SELECT
-						JournalArticleLocalization.companyId, JournalArticleLocalization.articlePK, JournalArticleLocalization.title, JournalArticleLocalization.languageId
-					FROM
-						JournalArticleLocalization
-					GROUP BY
-						JournalArticleLocalization.companyId, JournalArticleLocalization.articlePK, JournalArticleLocalization.title, JournalArticleLocalization.languageId
-				) JournalArticleLocalization ON
+				JournalArticleLocalization ON
+					(1 = ?) AND
 					(JournalArticle.companyId = JournalArticleLocalization.companyId) AND
 					(JournalArticle.id_ = JournalArticleLocalization.articlePK) AND
 					(JournalArticleLocalization.languageId = ?)
@@ -450,8 +433,11 @@
 					FROM
 						JournalArticleLocalization
 					WHERE
-						(LOWER(JournalArticleLocalization.title) LIKE ? [$AND_OR_NULL_CHECK$]) [$AND_OR_CONNECTOR$]
-						(JournalArticleLocalization.description LIKE ? [$AND_OR_NULL_CHECK$])
+						(1 = ?) AND
+						(
+							(LOWER(JournalArticleLocalization.title) LIKE ? [$AND_OR_NULL_CHECK$]) [$AND_OR_CONNECTOR$]
+							(JournalArticleLocalization.description LIKE ? [$AND_OR_NULL_CHECK$])
+						)
 					GROUP BY
 						JournalArticleLocalization.companyId, JournalArticleLocalization.articlePK, JournalArticleLocalization.title, JournalArticleLocalization.description
 				) JournalArticleLocalization ON

@@ -16,6 +16,8 @@ package com.liferay.wiki.web.internal.trash;
 
 import com.liferay.document.library.kernel.model.DLFileEntry;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.ContainerModel;
 import com.liferay.portal.kernel.model.LayoutConstants;
 import com.liferay.portal.kernel.model.SystemEvent;
@@ -146,7 +148,10 @@ public class WikiPageTrashHandler extends BaseWikiTrashHandler {
 					return parentPage;
 				}
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(exception, exception);
+				}
 			}
 		}
 
@@ -243,7 +248,8 @@ public class WikiPageTrashHandler extends BaseWikiTrashHandler {
 
 	@Override
 	public List<TrashedModel> getTrashModelTrashedModels(
-			long classPK, int start, int end, OrderByComparator obc)
+			long classPK, int start, int end,
+			OrderByComparator<?> orderByComparator)
 		throws PortalException {
 
 		List<TrashedModel> trashedModels = new ArrayList<>();
@@ -252,7 +258,8 @@ public class WikiPageTrashHandler extends BaseWikiTrashHandler {
 
 		List<WikiPage> pages = _wikiPageLocalService.getChildren(
 			page.getNodeId(), true, page.getTitle(),
-			WorkflowConstants.STATUS_IN_TRASH, start, end, obc);
+			WorkflowConstants.STATUS_IN_TRASH, start, end,
+			(OrderByComparator<WikiPage>)orderByComparator);
 
 		for (WikiPage curPage : pages) {
 			trashedModels.add(curPage);
@@ -386,19 +393,20 @@ public class WikiPageTrashHandler extends BaseWikiTrashHandler {
 				containerModelId, originalTitle);
 
 		if (duplicatePageResource != null) {
-			RestoreEntryException ree = new RestoreEntryException(
-				RestoreEntryException.DUPLICATE);
+			RestoreEntryException restoreEntryException =
+				new RestoreEntryException(RestoreEntryException.DUPLICATE);
 
 			WikiPage duplicatePage = _wikiPageLocalService.getLatestPage(
 				duplicatePageResource.getResourcePrimKey(),
 				WorkflowConstants.STATUS_ANY, false);
 
-			ree.setDuplicateEntryId(duplicatePage.getResourcePrimKey());
-			ree.setOldName(duplicatePage.getTitle());
+			restoreEntryException.setDuplicateEntryId(
+				duplicatePage.getResourcePrimKey());
+			restoreEntryException.setOldName(duplicatePage.getTitle());
 
-			ree.setTrashEntryId(trashEntryId);
+			restoreEntryException.setTrashEntryId(trashEntryId);
 
-			throw ree;
+			throw restoreEntryException;
 		}
 
 		List<WikiPage> pages = _wikiPageLocalService.getDependentPages(
@@ -454,6 +462,9 @@ public class WikiPageTrashHandler extends BaseWikiTrashHandler {
 		return _wikiPageModelResourcePermission.contains(
 			permissionChecker, classPK, actionId);
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		WikiPageTrashHandler.class);
 
 	@Reference
 	private Portal _portal;

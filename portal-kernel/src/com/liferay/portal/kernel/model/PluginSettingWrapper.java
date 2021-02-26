@@ -206,6 +206,18 @@ public class PluginSettingWrapper
 	}
 
 	/**
+	 * Returns <code>true</code> if the user has permission to use this plugin
+	 *
+	 * @param userId the primary key of the user
+	 * @param groupId the primary key of the group
+	 * @return <code>true</code> if the user has permission to use this plugin
+	 */
+	@Override
+	public boolean hasPermission(long userId, long groupId) {
+		return model.hasPermission(userId, groupId);
+	}
+
+	/**
 	 * Returns <code>true</code> if the plugin has a role with the specified
 	 * name.
 	 *
@@ -228,11 +240,6 @@ public class PluginSettingWrapper
 		return model.isActive();
 	}
 
-	/**
-	 * NOTE FOR DEVELOPERS:
-	 *
-	 * Never modify or reference this class directly. All methods that expect a plugin setting model instance should use the <code>PluginSetting</code> interface instead.
-	 */
 	@Override
 	public void persist() {
 		model.persist();

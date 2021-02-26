@@ -17,8 +17,9 @@ package com.liferay.trash.web.internal.display.context;
 import com.liferay.frontend.taglib.clay.servlet.taglib.display.context.SearchContainerManagementToolbarDisplayContext;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemList;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemListBuilder;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.LabelItem;
-import com.liferay.frontend.taglib.clay.servlet.taglib.util.LabelItemList;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.LabelItemListBuilder;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
@@ -29,13 +30,17 @@ import com.liferay.portal.kernel.security.permission.ResourceActionsUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.trash.TrashHandler;
 import com.liferay.portal.kernel.trash.TrashHandlerRegistryUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.trash.constants.TrashPortletKeys;
 import com.liferay.trash.model.TrashEntry;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
+import javax.portlet.ActionRequest;
 import javax.portlet.PortletURL;
 
 import javax.servlet.http.HttpServletRequest;
@@ -47,38 +52,60 @@ public class TrashManagementToolbarDisplayContext
 	extends SearchContainerManagementToolbarDisplayContext {
 
 	public TrashManagementToolbarDisplayContext(
+			HttpServletRequest httpServletRequest,
 			LiferayPortletRequest liferayPortletRequest,
 			LiferayPortletResponse liferayPortletResponse,
-			HttpServletRequest httpServletRequest,
 			TrashDisplayContext trashDisplayContext)
 		throws PortalException {
 
 		super(
-			liferayPortletRequest, liferayPortletResponse, httpServletRequest,
+			httpServletRequest, liferayPortletRequest, liferayPortletResponse,
 			trashDisplayContext.getEntrySearch());
+
+		_themeDisplay = (ThemeDisplay)httpServletRequest.getAttribute(
+			WebKeys.THEME_DISPLAY);
 	}
 
 	@Override
 	public List<DropdownItem> getActionDropdownItems() {
-		return new DropdownItemList() {
-			{
-				add(
-					dropdownItem -> {
-						dropdownItem.putData("action", "deleteSelectedEntries");
-						dropdownItem.setIcon("times-circle");
-						dropdownItem.setLabel(
-							LanguageUtil.get(request, "delete"));
-						dropdownItem.setQuickAction(true);
-					});
+		return DropdownItemListBuilder.add(
+			dropdownItem -> {
+				dropdownItem.putData("action", "deleteSelectedEntries");
+				dropdownItem.setIcon("times-circle");
+				dropdownItem.setLabel(
+					LanguageUtil.get(httpServletRequest, "delete"));
+				dropdownItem.setQuickAction(true);
 			}
-		};
+		).add(
+			dropdownItem -> {
+				dropdownItem.putData("action", "restoreSelectedEntries");
+				dropdownItem.setIcon("restore");
+				dropdownItem.setLabel(
+					LanguageUtil.get(httpServletRequest, "restore"));
+				dropdownItem.setQuickAction(true);
+			}
+		).build();
+	}
+
+	public Map<String, Object> getAdditionalProps() {
+		PortletURL restoreEntriesURL = liferayPortletResponse.createActionURL(
+			TrashPortletKeys.TRASH);
+
+		restoreEntriesURL.setParameter(
+			ActionRequest.ACTION_NAME, "restoreEntries");
+		restoreEntriesURL.setParameter(
+			"redirect", _themeDisplay.getURLCurrent());
+
+		return HashMapBuilder.<String, Object>put(
+			"restoreEntriesURL", restoreEntriesURL.toString()
+		).build();
 	}
 
 	public String getAvailableActions(TrashEntry trashEntry)
 		throws PortalException {
 
 		if (_isDeletable(trashEntry)) {
-			return "deleteSelectedEntries";
+			return "deleteSelectedEntries,restoreSelectedEntries";
 		}
 
 		return StringPool.BLANK;
@@ -100,40 +127,26 @@ public class TrashManagementToolbarDisplayContext
 	}
 
 	@Override
-	public String getDefaultEventHandler() {
-		return "TRASH_ENTRIES_MANAGEMENT_TOOLBAR_DEFAULT_EVENT_HANDLER";
-	}
-
-	@Override
 	public List<LabelItem> getFilterLabelItems() {
-		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
-			WebKeys.THEME_DISPLAY);
+		return LabelItemListBuilder.add(
+			() ->
+				Validator.isNotNull(getNavigation()) &&
+				!Objects.equals(getNavigation(), "all"),
+			labelItem -> {
+				PortletURL removeLabelURL = PortletURLUtil.clone(
+					currentURLObj, liferayPortletResponse);
 
-		return new LabelItemList() {
-			{
-				if (Validator.isNotNull(getNavigation()) &&
-					!Objects.equals(getNavigation(), "all")) {
+				removeLabelURL.setParameter("navigation", (String)null);
 
-					add(
-						labelItem -> {
-							PortletURL removeLabelURL = PortletURLUtil.clone(
-								currentURLObj, liferayPortletResponse);
+				labelItem.putData("removeLabelURL", removeLabelURL.toString());
 
-							removeLabelURL.setParameter(
-								"navigation", (String)null);
+				labelItem.setCloseable(true);
 
-							labelItem.putData(
-								"removeLabelURL", removeLabelURL.toString());
-
-							labelItem.setCloseable(true);
-
-							labelItem.setLabel(
-								ResourceActionsUtil.getModelResource(
-									themeDisplay.getLocale(), getNavigation()));
-						});
-				}
+				labelItem.setLabel(
+					ResourceActionsUtil.getModelResource(
+						_themeDisplay.getLocale(), getNavigation()));
 			}
-		};
+		).build();
 	}
 
 	@Override
@@ -160,9 +173,6 @@ public class TrashManagementToolbarDisplayContext
 
 	@Override
 	protected List<DropdownItem> getFilterNavigationDropdownItems() {
-		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
-			WebKeys.THEME_DISPLAY);
-
 		return new DropdownItemList() {
 			{
 				add(
@@ -171,7 +181,8 @@ public class TrashManagementToolbarDisplayContext
 							Objects.equals(getNavigation(), "all"));
 						dropdownItem.setHref(
 							getPortletURL(), "navigation", "all");
-						dropdownItem.setLabel(LanguageUtil.get(request, "all"));
+						dropdownItem.setLabel(
+							LanguageUtil.get(httpServletRequest, "all"));
 					});
 
 				for (TrashHandler trashHandler :
@@ -188,7 +199,7 @@ public class TrashManagementToolbarDisplayContext
 								trashHandler.getClassName());
 							dropdownItem.setLabel(
 								ResourceActionsUtil.getModelResource(
-									themeDisplay.getLocale(),
+									_themeDisplay.getLocale(),
 									trashHandler.getClassName()));
 						});
 				}
@@ -207,5 +218,7 @@ public class TrashManagementToolbarDisplayContext
 
 		return trashHandler.isDeletable(trashEntry.getClassPK());
 	}
+
+	private final ThemeDisplay _themeDisplay;
 
 }

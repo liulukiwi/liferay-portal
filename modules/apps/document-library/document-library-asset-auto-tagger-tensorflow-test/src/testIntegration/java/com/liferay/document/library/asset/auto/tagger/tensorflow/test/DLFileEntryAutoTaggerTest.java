@@ -33,11 +33,11 @@ import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
+import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.HashMapDictionary;
 import com.liferay.portal.kernel.util.StringUtil;
-import com.liferay.portal.service.test.ServiceTestUtil;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 
@@ -62,7 +62,7 @@ public class DLFileEntryAutoTaggerTest {
 
 	@Before
 	public void setUp() throws Exception {
-		ServiceTestUtil.setUser(TestPropsValues.getUser());
+		UserTestUtil.setUser(TestPropsValues.getUser());
 
 		_group = GroupTestUtil.addGroup();
 
@@ -72,7 +72,7 @@ public class DLFileEntryAutoTaggerTest {
 
 	@Test
 	public void testAutoTagsABMPImage() throws Exception {
-		_withTensorflowAutoTagProviderEnabled(
+		_withTensorFlowAutoTagProviderEnabled(
 			() -> {
 				FileEntry fileEntry = DLAppServiceUtil.addFileEntry(
 					_serviceContext.getScopeGroupId(),
@@ -93,7 +93,7 @@ public class DLFileEntryAutoTaggerTest {
 
 	@Test
 	public void testAutoTagsAJPEGImage() throws Exception {
-		_withTensorflowAutoTagProviderEnabled(
+		_withTensorFlowAutoTagProviderEnabled(
 			() -> {
 				FileEntry fileEntry = DLAppServiceUtil.addFileEntry(
 					_serviceContext.getScopeGroupId(),
@@ -113,7 +113,7 @@ public class DLFileEntryAutoTaggerTest {
 
 	@Test
 	public void testAutoTagsAPNGImage() throws Exception {
-		_withTensorflowAutoTagProviderEnabled(
+		_withTensorFlowAutoTagProviderEnabled(
 			() -> {
 				FileEntry fileEntry = DLAppServiceUtil.addFileEntry(
 					_serviceContext.getScopeGroupId(),
@@ -141,7 +141,7 @@ public class DLFileEntryAutoTaggerTest {
 		throw new AssertionError("The asset entry was not tagged with " + tag);
 	}
 
-	private void _withTensorflowAutoTagProviderEnabled(
+	private void _withTensorFlowAutoTagProviderEnabled(
 			UnsafeRunnable<Exception> unsafeRunnable)
 		throws Exception {
 

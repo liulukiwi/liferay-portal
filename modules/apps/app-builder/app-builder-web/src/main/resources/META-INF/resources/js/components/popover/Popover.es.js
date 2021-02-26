@@ -13,21 +13,21 @@
  */
 
 import classNames from 'classnames';
-import {Align} from 'metal-position';
+import {ALIGN_POSITIONS, align} from 'frontend-js-web';
 import {PropTypes} from 'prop-types';
 import React, {useEffect, useState} from 'react';
 
 import PopoverBase from './PopoverBase.es';
 
 const ALIGNMENTS_MAP = {
-	bottom: Align.Bottom,
-	'bottom-left': Align.BottomLeft,
-	'bottom-right': Align.BottomRight,
-	left: Align.Left,
-	right: Align.Right,
-	top: Align.Top,
-	'top-left': Align.TopLeft,
-	'top-right': Align.TopRight
+	bottom: ALIGN_POSITIONS.Bottom,
+	'bottom-left': ALIGN_POSITIONS.BottomLeft,
+	'bottom-right': ALIGN_POSITIONS.BottomRight,
+	left: ALIGN_POSITIONS.Left,
+	right: ALIGN_POSITIONS.Right,
+	top: ALIGN_POSITIONS.Top,
+	'top-left': ALIGN_POSITIONS.TopLeft,
+	'top-right': ALIGN_POSITIONS.TopRight,
 };
 
 const POSITIONS = [
@@ -38,7 +38,7 @@ const POSITIONS = [
 	'bottom',
 	'bottom',
 	'left',
-	'top'
+	'top',
 ];
 
 const getAlignPosition = (source, target, suggestedPosition) => {
@@ -46,11 +46,7 @@ const getAlignPosition = (source, target, suggestedPosition) => {
 		suggestedPosition = 'top';
 	}
 
-	const position = Align.align(
-		source,
-		target,
-		ALIGNMENTS_MAP[suggestedPosition]
-	);
+	const position = align(source, target, ALIGNMENTS_MAP[suggestedPosition]);
 
 	return POSITIONS[position];
 };
@@ -64,7 +60,7 @@ const Popover = ({
 	showArrow,
 	suggestedPosition,
 	title,
-	visible
+	visible,
 }) => {
 	const [state, setState] = useState({position: null, width: 240});
 	const {position, width} = state;
@@ -84,7 +80,7 @@ const Popover = ({
 					forwardRef.current,
 					alignElement,
 					suggestedPosition
-				)
+				),
 			});
 		}
 	}, [alignElement, forwardRef, suggestedPosition, visible]);
@@ -95,7 +91,7 @@ const Popover = ({
 		<PopoverBase
 			className={classNames(className, {
 				'no-content': withoutContent,
-				'popover-large': width > 600
+				'popover-large': width > 600,
 			})}
 			forwardRef={forwardRef}
 			placement={showArrow ? position : null}
@@ -122,7 +118,7 @@ Popover.propTypes = {
 	showArrow: PropTypes.bool,
 	suggestedPosition: PropTypes.string,
 	title: PropTypes.func,
-	visible: PropTypes.bool
+	visible: PropTypes.bool,
 };
 
 export default React.forwardRef((props, ref) => (

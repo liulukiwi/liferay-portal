@@ -51,7 +51,6 @@ import org.osgi.framework.BundleEvent;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.ServiceEvent;
 import org.osgi.framework.ServiceListener;
-import org.osgi.framework.ServiceReference;
 import org.osgi.service.cm.Configuration;
 import org.osgi.service.cm.ConfigurationAdmin;
 import org.osgi.util.tracker.BundleTracker;
@@ -367,10 +366,8 @@ public class BundleBlacklistTest {
 					return;
 				}
 
-				ServiceReference<?> serviceReference =
-					serviceEvent.getServiceReference();
-
-				Object service = _bundleContext.getService(serviceReference);
+				Object service = _bundleContext.getService(
+					serviceEvent.getServiceReference());
 
 				Class<?> clazz = service.getClass();
 
@@ -402,7 +399,7 @@ public class BundleBlacklistTest {
 		"com.liferay.portal.bundle.blacklist.internal.BundleBlacklist";
 
 	private static final String _CONFIG_NAME =
-		"com.liferay.portal.bundle.blacklist.internal." +
+		"com.liferay.portal.bundle.blacklist.internal.configuration." +
 			"BundleBlacklistConfiguration";
 
 	private static final String _LPKG_NAME = "Bundle Blacklist Test";

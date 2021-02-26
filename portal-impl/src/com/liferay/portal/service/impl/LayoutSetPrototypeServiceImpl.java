@@ -41,6 +41,23 @@ public class LayoutSetPrototypeServiceImpl
 	public LayoutSetPrototype addLayoutSetPrototype(
 			Map<Locale, String> nameMap, Map<Locale, String> descriptionMap,
 			boolean active, boolean layoutsUpdateable,
+			boolean readyForPropagation, ServiceContext serviceContext)
+		throws PortalException {
+
+		PortalPermissionUtil.check(
+			getPermissionChecker(), ActionKeys.ADD_LAYOUT_PROTOTYPE);
+
+		User user = getUser();
+
+		return layoutSetPrototypeLocalService.addLayoutSetPrototype(
+			user.getUserId(), user.getCompanyId(), nameMap, descriptionMap,
+			active, layoutsUpdateable, readyForPropagation, serviceContext);
+	}
+
+	@Override
+	public LayoutSetPrototype addLayoutSetPrototype(
+			Map<Locale, String> nameMap, Map<Locale, String> descriptionMap,
+			boolean active, boolean layoutsUpdateable,
 			ServiceContext serviceContext)
 		throws PortalException {
 
@@ -90,7 +107,7 @@ public class LayoutSetPrototypeServiceImpl
 	@Override
 	public List<LayoutSetPrototype> search(
 			long companyId, Boolean active,
-			OrderByComparator<LayoutSetPrototype> obc)
+			OrderByComparator<LayoutSetPrototype> orderByComparator)
 		throws PortalException {
 
 		List<LayoutSetPrototype> filteredLayoutSetPrototypes =
@@ -98,7 +115,8 @@ public class LayoutSetPrototypeServiceImpl
 
 		List<LayoutSetPrototype> layoutSetPrototypes =
 			layoutSetPrototypeLocalService.search(
-				companyId, active, QueryUtil.ALL_POS, QueryUtil.ALL_POS, obc);
+				companyId, active, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+				orderByComparator);
 
 		for (LayoutSetPrototype layoutSetPrototype : layoutSetPrototypes) {
 			if (LayoutSetPrototypePermissionUtil.contains(
@@ -111,6 +129,22 @@ public class LayoutSetPrototypeServiceImpl
 		}
 
 		return filteredLayoutSetPrototypes;
+	}
+
+	@Override
+	public LayoutSetPrototype updateLayoutSetPrototype(
+			long layoutSetPrototypeId, Map<Locale, String> nameMap,
+			Map<Locale, String> descriptionMap, boolean active,
+			boolean layoutsUpdateable, boolean readyForPropagation,
+			ServiceContext serviceContext)
+		throws PortalException {
+
+		LayoutSetPrototypePermissionUtil.check(
+			getPermissionChecker(), layoutSetPrototypeId, ActionKeys.UPDATE);
+
+		return layoutSetPrototypeLocalService.updateLayoutSetPrototype(
+			layoutSetPrototypeId, nameMap, descriptionMap, active,
+			layoutsUpdateable, readyForPropagation, serviceContext);
 	}
 
 	@Override

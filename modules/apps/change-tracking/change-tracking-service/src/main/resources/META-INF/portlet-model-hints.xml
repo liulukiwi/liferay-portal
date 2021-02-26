@@ -1,6 +1,19 @@
 <?xml version="1.0"?>
 
 <model-hints>
+	<model name="com.liferay.change.tracking.model.CTAutoResolutionInfo">
+		<field name="mvccVersion" type="long" />
+		<field name="ctAutoResolutionInfoId" type="long" />
+		<field name="companyId" type="long" />
+		<field name="createDate" type="Date" />
+		<field name="ctCollectionId" type="long" />
+		<field name="modelClassNameId" type="long" />
+		<field name="sourceModelClassPK" type="long" />
+		<field name="targetModelClassPK" type="long" />
+		<field name="conflictIdentifier" type="String">
+			<hint name="max-length">500</hint>
+		</field>
+	</model>
 	<model name="com.liferay.change.tracking.model.CTCollection">
 		<field name="mvccVersion" type="long" />
 		<field name="ctCollectionId" type="long" />
@@ -8,6 +21,7 @@
 		<field name="userId" type="long" />
 		<field name="createDate" type="Date" />
 		<field name="modifiedDate" type="Date" />
+		<field name="schemaVersionId" type="long" />
 		<field name="name" type="String" />
 		<field name="description" type="String">
 			<hint-collection name="TEXTAREA" />
@@ -33,6 +47,7 @@
 	<model name="com.liferay.change.tracking.model.CTMessage">
 		<field name="mvccVersion" type="long" />
 		<field name="ctMessageId" type="long" />
+		<field name="companyId" type="long" />
 		<field name="ctCollectionId" type="long" />
 		<field name="messageContent" type="String">
 			<hint-collection name="CLOB" />
@@ -44,6 +59,7 @@
 		<field name="companyId" type="long" />
 		<field name="userId" type="long" />
 		<field name="ctCollectionId" type="long" />
+		<field name="previousCtCollectionId" type="long" />
 		<field name="confirmationEnabled" type="boolean" />
 	</model>
 	<model name="com.liferay.change.tracking.model.CTProcess">
@@ -54,5 +70,11 @@
 		<field name="createDate" type="Date" />
 		<field name="ctCollectionId" type="long" />
 		<field name="backgroundTaskId" type="long" />
+	</model>
+	<model name="com.liferay.change.tracking.model.CTSchemaVersion">
+		<field name="mvccVersion" type="long" />
+		<field name="schemaVersionId" type="long" />
+		<field name="companyId" type="long" />
+		<field name="schemaContext" type="Map" />
 	</model>
 </model-hints>

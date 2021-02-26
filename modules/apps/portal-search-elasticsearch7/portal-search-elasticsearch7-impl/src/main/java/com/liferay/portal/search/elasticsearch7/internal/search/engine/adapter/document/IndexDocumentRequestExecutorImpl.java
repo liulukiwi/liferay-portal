@@ -15,7 +15,6 @@
 package com.liferay.portal.search.elasticsearch7.internal.search.engine.adapter.document;
 
 import com.liferay.portal.search.elasticsearch7.internal.connection.ElasticsearchClientResolver;
-import com.liferay.portal.search.engine.adapter.document.BulkableDocumentRequestTranslator;
 import com.liferay.portal.search.engine.adapter.document.IndexDocumentRequest;
 import com.liferay.portal.search.engine.adapter.document.IndexDocumentResponse;
 
@@ -42,9 +41,11 @@ public class IndexDocumentRequestExecutorImpl
 		IndexDocumentRequest indexDocumentRequest) {
 
 		IndexRequest indexRequest =
-			_bulkableDocumentRequestTranslator.translate(indexDocumentRequest);
+			_elasticsearchBulkableDocumentRequestTranslator.translate(
+				indexDocumentRequest);
 
-		IndexResponse indexResponse = getIndexResponse(indexRequest);
+		IndexResponse indexResponse = getIndexResponse(
+			indexRequest, indexDocumentRequest);
 
 		RestStatus restStatus = indexResponse.status();
 
@@ -52,24 +53,30 @@ public class IndexDocumentRequestExecutorImpl
 			restStatus.getStatus(), indexResponse.getId());
 	}
 
-	protected IndexResponse getIndexResponse(IndexRequest indexRequest) {
+	protected IndexResponse getIndexResponse(
+		IndexRequest indexRequest, IndexDocumentRequest indexDocumentRequest) {
+
 		RestHighLevelClient restHighLevelClient =
-			_elasticsearchClientResolver.getRestHighLevelClient();
+			_elasticsearchClientResolver.getRestHighLevelClient(
+				indexDocumentRequest.getConnectionId(),
+				indexDocumentRequest.isPreferLocalCluster());
 
 		try {
 			return restHighLevelClient.index(
 				indexRequest, RequestOptions.DEFAULT);
 		}
-		catch (IOException ioe) {
-			throw new RuntimeException(ioe);
+		catch (IOException ioException) {
+			throw new RuntimeException(ioException);
 		}
 	}
 
 	@Reference(target = "(search.engine.impl=Elasticsearch)", unbind = "-")
 	protected void setBulkableDocumentRequestTranslator(
-		BulkableDocumentRequestTranslator bulkableDocumentRequestTranslator) {
+		ElasticsearchBulkableDocumentRequestTranslator
+			elasticsearchBulkableDocumentRequestTranslator) {
 
-		_bulkableDocumentRequestTranslator = bulkableDocumentRequestTranslator;
+		_elasticsearchBulkableDocumentRequestTranslator =
+			elasticsearchBulkableDocumentRequestTranslator;
 	}
 
 	@Reference(unbind = "-")
@@ -79,8 +86,8 @@ public class IndexDocumentRequestExecutorImpl
 		_elasticsearchClientResolver = elasticsearchClientResolver;
 	}
 
-	private BulkableDocumentRequestTranslator
-		_bulkableDocumentRequestTranslator;
+	private ElasticsearchBulkableDocumentRequestTranslator
+		_elasticsearchBulkableDocumentRequestTranslator;
 	private ElasticsearchClientResolver _elasticsearchClientResolver;
 
 }

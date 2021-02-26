@@ -15,6 +15,7 @@
 package com.liferay.dynamic.data.mapping.form.field.type.internal.numeric;
 
 import com.liferay.dynamic.data.mapping.form.field.type.DDMFormFieldValueAccessor;
+import com.liferay.dynamic.data.mapping.form.field.type.constants.DDMFormFieldTypeConstants;
 import com.liferay.dynamic.data.mapping.model.Value;
 import com.liferay.dynamic.data.mapping.storage.DDMFormFieldValue;
 import com.liferay.portal.kernel.log.Log;
@@ -34,7 +35,8 @@ import org.osgi.service.component.annotations.Component;
  * @author Rafael Praxedes
  */
 @Component(
-	immediate = true, property = "ddm.form.field.type.name=numeric",
+	immediate = true,
+	property = "ddm.form.field.type.name=" + DDMFormFieldTypeConstants.NUMERIC,
 	service = {
 		DDMFormFieldValueAccessor.class, NumericDDMFormFieldValueAccessor.class
 	}
@@ -59,13 +61,20 @@ public class NumericDDMFormFieldValueAccessor
 
 			return (BigDecimal)formatter.parse(value.getString(locale));
 		}
-		catch (ParseException pe) {
+		catch (ParseException parseException) {
 			if (_log.isDebugEnabled()) {
-				_log.debug(pe, pe);
+				_log.debug(parseException, parseException);
 			}
 		}
 
 		return null;
+	}
+
+	@Override
+	public BigDecimal getValueForEvaluation(
+		DDMFormFieldValue ddmFormFieldValue, Locale locale) {
+
+		return getValue(ddmFormFieldValue, locale);
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(

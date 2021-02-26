@@ -16,6 +16,8 @@ package com.liferay.portal.kernel.servlet;
 
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletSession;
 import com.liferay.portal.kernel.util.PortalUtil;
@@ -338,19 +340,32 @@ public class SessionErrors {
 	}
 
 	public static void print(HttpSession session) {
-		Iterator<String> itr = iterator(session);
+		Iterator<String> iterator = iterator(session);
 
-		while (itr.hasNext()) {
-			System.out.println(itr.next());
+		while (iterator.hasNext()) {
+			System.out.println(iterator.next());
 		}
 	}
 
 	public static void print(PortletRequest portletRequest) {
-		Iterator<String> itr = iterator(portletRequest);
+		Iterator<String> iterator = iterator(portletRequest);
 
-		while (itr.hasNext()) {
-			System.out.println(itr.next());
+		while (iterator.hasNext()) {
+			System.out.println(iterator.next());
 		}
+	}
+
+	public static void remove(
+		HttpServletRequest httpServletRequest, Class<?> clazz) {
+
+		Map<String, Object> map = _getMap(
+			_getPortalSession(httpServletRequest), _CLASS_NAME, true);
+
+		if (map == null) {
+			return;
+		}
+
+		map.remove(clazz.getName());
 	}
 
 	public static int size(HttpServletRequest httpServletRequest) {
@@ -412,7 +427,10 @@ public class SessionErrors {
 
 			return map;
 		}
-		catch (IllegalStateException ise) {
+		catch (IllegalStateException illegalStateException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(illegalStateException, illegalStateException);
+			}
 
 			// Session is already invalidated, just return a null map
 
@@ -445,5 +463,7 @@ public class SessionErrors {
 	}
 
 	private static final String _CLASS_NAME = SessionErrors.class.getName();
+
+	private static final Log _log = LogFactoryUtil.getLog(SessionErrors.class);
 
 }

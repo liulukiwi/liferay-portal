@@ -36,7 +36,8 @@ import org.osgi.service.component.annotations.Reference;
 @Component(
 	immediate = true,
 	property = {
-		"javax.portlet.name=*", "mvc.command.name=deleteBackgroundTask"
+		"javax.portlet.name=*",
+		"mvc.command.name=/portal_background_task/delete_background_task"
 	},
 	service = MVCActionCommand.class
 )
@@ -59,16 +60,16 @@ public class DeleteBackgroundTaskMVCActionCommand extends BaseMVCActionCommand {
 		try {
 			deleteBackgroundTask(actionRequest);
 		}
-		catch (Exception e) {
-			if (e instanceof NoSuchBackgroundTaskException ||
-				e instanceof PrincipalException) {
+		catch (Exception exception) {
+			if (exception instanceof NoSuchBackgroundTaskException ||
+				exception instanceof PrincipalException) {
 
-				SessionErrors.add(actionRequest, e.getClass());
+				SessionErrors.add(actionRequest, exception.getClass());
 
 				actionResponse.setRenderParameter("mvcPath", "/error.jsp");
 			}
 			else {
-				throw e;
+				throw exception;
 			}
 		}
 	}

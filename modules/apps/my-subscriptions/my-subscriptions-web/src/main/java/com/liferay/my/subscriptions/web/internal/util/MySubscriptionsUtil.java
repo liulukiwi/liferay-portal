@@ -31,6 +31,8 @@ import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.PortletPreferences;
@@ -59,13 +61,16 @@ import java.util.Locale;
  */
 public class MySubscriptionsUtil {
 
-	public static AssetRenderer getAssetRenderer(
+	public static AssetRenderer<?> getAssetRenderer(
 		String className, long classPK) {
 
 		try {
 			return doGetAssetRenderer(className, classPK);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
 		}
 
 		return null;
@@ -75,7 +80,7 @@ public class MySubscriptionsUtil {
 			ThemeDisplay themeDisplay, String className, long classPK)
 		throws PortalException {
 
-		if (className.equals(_BLOGS_ENTRY_CLASSNAME)) {
+		if (className.equals(_CLASS_NAME_BLOGS_ENTRY)) {
 			return PortalUtil.getLayoutFullURL(classPK, PortletKeys.BLOGS);
 		}
 
@@ -84,7 +89,7 @@ public class MySubscriptionsUtil {
 				classPK, PortletKeys.DOCUMENT_LIBRARY);
 		}
 
-		if (className.equals(_KNOWLEDGE_BASE_MODEL_CLASSNAME)) {
+		if (className.equals(_KNOWLEDGE_BASE_MODEL_CLASS_NAME)) {
 			return PortalUtil.getLayoutFullURL(
 				classPK, _KNOWLEDGE_BASE_DISPLAY_PORTLET_ID);
 		}
@@ -138,7 +143,7 @@ public class MySubscriptionsUtil {
 		Group group = GroupLocalServiceUtil.fetchGroup(classPK);
 
 		if (className.equals(BlogsEntry.class.getName()) ||
-			className.equals(_BLOGS_ENTRY_CLASSNAME)) {
+			className.equals(_CLASS_NAME_BLOGS_ENTRY)) {
 
 			title = "Blog at ";
 		}
@@ -164,7 +169,7 @@ public class MySubscriptionsUtil {
 				return LanguageUtil.get(locale, "home");
 			}
 		}
-		else if (className.equals(_KNOWLEDGE_BASE_MODEL_CLASSNAME)) {
+		else if (className.equals(_KNOWLEDGE_BASE_MODEL_CLASS_NAME)) {
 			title = "Knowledge Base Article at ";
 		}
 		else if (className.equals(Layout.class.getName())) {
@@ -214,7 +219,7 @@ public class MySubscriptionsUtil {
 		return title;
 	}
 
-	protected static AssetRenderer doGetAssetRenderer(
+	protected static AssetRenderer<?> doGetAssetRenderer(
 			String className, long classPK)
 		throws Exception {
 
@@ -229,20 +234,23 @@ public class MySubscriptionsUtil {
 			classPK = mbThread.getRootMessageId();
 		}
 
-		AssetRendererFactory assetRendererFactory =
+		AssetRendererFactory<?> assetRendererFactory =
 			AssetRendererFactoryRegistryUtil.getAssetRendererFactoryByClassName(
 				className);
 
 		return assetRendererFactory.getAssetRenderer(classPK);
 	}
 
-	private static final String _BLOGS_ENTRY_CLASSNAME =
+	private static final String _CLASS_NAME_BLOGS_ENTRY =
 		"com.liferay.blogs.kernel.model.BlogsEntry";
 
 	private static final String _KNOWLEDGE_BASE_DISPLAY_PORTLET_ID =
 		"com_liferay_knowledge_base_web_portlet_DisplayPortlet";
 
-	private static final String _KNOWLEDGE_BASE_MODEL_CLASSNAME =
+	private static final String _KNOWLEDGE_BASE_MODEL_CLASS_NAME =
 		"com.liferay.knowledge.base.model.KBArticle";
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		MySubscriptionsUtil.class);
 
 }

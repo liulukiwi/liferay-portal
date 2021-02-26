@@ -29,6 +29,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -38,6 +39,11 @@ import org.json.JSONObject;
  * @author Peter Yoo
  */
 public class PortalGitWorkingDirectory extends GitWorkingDirectory {
+
+	public String getMajorPortalVersion() {
+		return JenkinsResultsParserUtil.getProperty(
+			getReleaseProperties(), "lp.version.major");
+	}
 
 	public List<File> getModifiedModuleDirsList() throws IOException {
 		return getModifiedModuleDirsList(null, null);
@@ -109,7 +115,7 @@ public class PortalGitWorkingDirectory extends GitWorkingDirectory {
 
 				@Override
 				public FileVisitResult postVisitDirectory(
-					Path filePath, IOException exc) {
+					Path filePath, IOException ioException) {
 
 					if (_module == null) {
 						return FileVisitResult.CONTINUE;
@@ -173,6 +179,26 @@ public class PortalGitWorkingDirectory extends GitWorkingDirectory {
 		return moduleDirsList;
 	}
 
+	public List<File> getModulePullSubrepoDirs() {
+		List<File> moduleSubrepoDirs = new ArrayList<>();
+
+		List<File> gitrepoFiles = JenkinsResultsParserUtil.findFiles(
+			new File(getWorkingDirectory(), "modules"), "\\.gitrepo");
+
+		for (File gitrepoFile : gitrepoFiles) {
+			Properties gitrepoProperties =
+				JenkinsResultsParserUtil.getProperties(gitrepoFile);
+
+			String mode = gitrepoProperties.getProperty("mode", "push");
+
+			if (mode.equals("pull")) {
+				moduleSubrepoDirs.add(gitrepoFile.getParentFile());
+			}
+		}
+
+		return moduleSubrepoDirs;
+	}
+
 	public List<File> getNPMTestModuleDirsList() throws IOException {
 		List<File> npmModuleDirsList = new ArrayList<>();
 
@@ -183,6 +209,77 @@ public class PortalGitWorkingDirectory extends GitWorkingDirectory {
 		}
 
 		return npmModuleDirsList;
+	}
+
+	public PluginsGitWorkingDirectory getPluginsGitWorkingDirectory() {
+		String lpPluginsDir = JenkinsResultsParserUtil.getProperty(
+			getReleaseProperties(), "lp.plugins.dir");
+
+		GitWorkingDirectory pluginsGitWorkingDirectory =
+			GitWorkingDirectoryFactory.newGitWorkingDirectory(
+				getUpstreamBranchName(), new File(lpPluginsDir),
+				"liferay-plugins-ee");
+
+		if (pluginsGitWorkingDirectory instanceof PluginsGitWorkingDirectory) {
+			return (PluginsGitWorkingDirectory)pluginsGitWorkingDirectory;
+		}
+
+		throw new RuntimeException(
+			"Could not find a plugins git working directory");
+	}
+
+	public Properties getReleaseProperties() {
+		if (_releaseProperties != null) {
+			return _releaseProperties;
+		}
+
+		_releaseProperties = JenkinsResultsParserUtil.getProperties(
+			new File(getWorkingDirectory(), "release.properties"),
+			new File(
+				getWorkingDirectory(),
+				JenkinsResultsParserUtil.combine(
+					"release.", System.getenv("HOSTNAME"), ".properties")),
+			new File(
+				getWorkingDirectory(),
+				JenkinsResultsParserUtil.combine(
+					"release.", System.getenv("HOST"), ".properties")),
+			new File(
+				getWorkingDirectory(),
+				JenkinsResultsParserUtil.combine(
+					"release.", System.getenv("COMPUTERNAME"), ".properties")),
+			new File(
+				getWorkingDirectory(),
+				JenkinsResultsParserUtil.combine(
+					"release.", System.getenv("user.name"), ".properties")));
+
+		return _releaseProperties;
+	}
+
+	public Properties getTestProperties() {
+		if (_testProperties != null) {
+			return _testProperties;
+		}
+
+		_testProperties = JenkinsResultsParserUtil.getProperties(
+			new File(getWorkingDirectory(), "test.properties"),
+			new File(
+				getWorkingDirectory(),
+				JenkinsResultsParserUtil.combine(
+					"test.", System.getenv("HOSTNAME"), ".properties")),
+			new File(
+				getWorkingDirectory(),
+				JenkinsResultsParserUtil.combine(
+					"test.", System.getenv("HOST"), ".properties")),
+			new File(
+				getWorkingDirectory(),
+				JenkinsResultsParserUtil.combine(
+					"test.", System.getenv("COMPUTERNAME"), ".properties")),
+			new File(
+				getWorkingDirectory(),
+				JenkinsResultsParserUtil.combine(
+					"test.", System.getenv("user.name"), ".properties")));
+
+		return _testProperties;
 	}
 
 	protected PortalGitWorkingDirectory(
@@ -211,13 +308,13 @@ public class PortalGitWorkingDirectory extends GitWorkingDirectory {
 				jsonObject = JenkinsResultsParserUtil.createJSONObject(
 					JenkinsResultsParserUtil.read(packageJSONFile));
 			}
-			catch (IOException ioe) {
+			catch (IOException ioException) {
 				System.out.println(
 					"Unable to read invalid JSON " + packageJSONFile.getPath());
 
 				continue;
 			}
-			catch (JSONException jsone) {
+			catch (JSONException jsonException) {
 				System.out.println(
 					"Invalid JSON file " + packageJSONFile.getPath());
 
@@ -239,6 +336,9 @@ public class PortalGitWorkingDirectory extends GitWorkingDirectory {
 
 		return false;
 	}
+
+	private Properties _releaseProperties;
+	private Properties _testProperties;
 
 	private static class Module {
 

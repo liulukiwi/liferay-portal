@@ -22,15 +22,18 @@ import com.liferay.asset.publisher.util.AssetPublisherHelper;
 import com.liferay.asset.publisher.web.internal.action.AssetEntryActionRegistry;
 import com.liferay.asset.publisher.web.internal.configuration.AssetPublisherWebConfiguration;
 import com.liferay.asset.publisher.web.internal.display.context.AssetPublisherDisplayContext;
+import com.liferay.asset.publisher.web.internal.helper.AssetPublisherWebHelper;
+import com.liferay.asset.publisher.web.internal.helper.AssetRSSHelper;
 import com.liferay.asset.publisher.web.internal.util.AssetPublisherCustomizerRegistry;
-import com.liferay.asset.publisher.web.internal.util.AssetPublisherWebUtil;
-import com.liferay.asset.publisher.web.internal.util.AssetRSSUtil;
 import com.liferay.asset.util.AssetHelper;
+import com.liferay.dynamic.data.mapping.model.DDMFormField;
+import com.liferay.dynamic.data.mapping.model.DDMFormFieldOptions;
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
 import com.liferay.dynamic.data.mapping.storage.Field;
 import com.liferay.dynamic.data.mapping.storage.Fields;
 import com.liferay.dynamic.data.mapping.util.DDMUtil;
 import com.liferay.info.list.provider.InfoListProviderTracker;
+import com.liferay.item.selector.ItemSelector;
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
 import com.liferay.portal.kernel.exception.NoSuchGroupException;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
@@ -51,6 +54,8 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.segments.SegmentsEntryRetriever;
+import com.liferay.segments.context.RequestContextMapper;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -159,14 +164,8 @@ public class AssetPublisherPortlet extends MVCPortlet {
 				return;
 			}
 
-			DDMStructure ddmStructure = field.getDDMStructure();
-
-			String type = ddmStructure.getFieldType(fieldName);
-
-			Serializable displayValue = DDMUtil.getDisplayFieldValue(
-				themeDisplay, fieldValue, type);
-
-			jsonObject.put("displayValue", String.valueOf(displayValue));
+			jsonObject.put(
+				"displayValue", _getDisplayFieldValue(field, themeDisplay));
 
 			if (fieldValue instanceof Boolean) {
 				jsonObject.put("value", (Boolean)fieldValue);
@@ -196,8 +195,8 @@ public class AssetPublisherPortlet extends MVCPortlet {
 
 			writeJSON(resourceRequest, resourceResponse, jsonObject);
 		}
-		catch (Exception e) {
-			throw new PortletException(e);
+		catch (Exception exception) {
+			throw new PortletException(exception);
 		}
 	}
 
@@ -216,7 +215,10 @@ public class AssetPublisherPortlet extends MVCPortlet {
 				portal.sendRSSFeedsDisabledError(
 					resourceRequest, resourceResponse);
 			}
-			catch (ServletException se) {
+			catch (ServletException servletException) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(servletException, servletException);
+				}
 			}
 
 			return;
@@ -237,21 +239,22 @@ public class AssetPublisherPortlet extends MVCPortlet {
 					assetPublisherCustomizerRegistry.
 						getAssetPublisherCustomizer(rootPortletId),
 					assetPublisherHelper, assetPublisherWebConfiguration,
-					assetPublisherWebUtil, infoListProviderTracker,
-					resourceRequest, resourceResponse,
-					resourceRequest.getPreferences());
+					assetPublisherWebHelper, infoListProviderTracker,
+					itemSelector, resourceRequest, resourceResponse,
+					resourceRequest.getPreferences(), requestContextMapper,
+					segmentsEntryRetriever);
 
 			resourceRequest.setAttribute(
 				AssetPublisherWebKeys.ASSET_PUBLISHER_DISPLAY_CONTEXT,
 				assetPublisherDisplayContext);
 
-			byte[] bytes = assetRSSUtil.getRSS(
+			byte[] bytes = assetRSSHelper.getRSS(
 				resourceRequest, resourceResponse);
 
 			outputStream.write(bytes);
 		}
-		catch (Exception e) {
-			_log.error("Unable to get RSS feed", e);
+		catch (Exception exception) {
+			_log.error("Unable to get RSS feed", exception);
 		}
 	}
 
@@ -261,8 +264,8 @@ public class AssetPublisherPortlet extends MVCPortlet {
 		throws IOException, PortletException {
 
 		renderRequest.setAttribute(
-			AssetPublisherWebKeys.ASSET_PUBLISHER_WEB_UTIL,
-			assetPublisherWebUtil);
+			AssetPublisherWebKeys.ASSET_PUBLISHER_WEB_HELPER,
+			assetPublisherWebHelper);
 
 		super.render(renderRequest, renderResponse);
 	}
@@ -293,7 +296,7 @@ public class AssetPublisherPortlet extends MVCPortlet {
 		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 
-		assetPublisherWebUtil.subscribe(
+		assetPublisherWebHelper.subscribe(
 			themeDisplay.getPermissionChecker(), themeDisplay.getScopeGroupId(),
 			themeDisplay.getPlid(), themeDisplay.getPpid());
 	}
@@ -305,7 +308,7 @@ public class AssetPublisherPortlet extends MVCPortlet {
 		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 
-		assetPublisherWebUtil.unsubscribe(
+		assetPublisherWebHelper.unsubscribe(
 			themeDisplay.getPermissionChecker(), themeDisplay.getPlid(),
 			themeDisplay.getPpid());
 	}
@@ -335,9 +338,10 @@ public class AssetPublisherPortlet extends MVCPortlet {
 					assetPublisherCustomizerRegistry.
 						getAssetPublisherCustomizer(rootPortletId),
 					assetPublisherHelper, assetPublisherWebConfiguration,
-					assetPublisherWebUtil, infoListProviderTracker,
-					renderRequest, renderResponse,
-					renderRequest.getPreferences());
+					assetPublisherWebHelper, infoListProviderTracker,
+					itemSelector, renderRequest, renderResponse,
+					renderRequest.getPreferences(), requestContextMapper,
+					segmentsEntryRetriever);
 
 			renderRequest.setAttribute(
 				AssetPublisherWebKeys.ASSET_PUBLISHER_DISPLAY_CONTEXT,
@@ -350,8 +354,8 @@ public class AssetPublisherPortlet extends MVCPortlet {
 			renderRequest.setAttribute(
 				WebKeys.SINGLE_PAGE_APPLICATION_CLEAR_CACHE, Boolean.TRUE);
 		}
-		catch (Exception e) {
-			_log.error("Unable to get asset publisher customizer", e);
+		catch (Exception exception) {
+			_log.error("Unable to get asset publisher customizer", exception);
 		}
 
 		if (SessionErrors.contains(
@@ -367,9 +371,9 @@ public class AssetPublisherPortlet extends MVCPortlet {
 	}
 
 	@Override
-	protected boolean isSessionErrorException(Throwable cause) {
-		if (cause instanceof NoSuchGroupException ||
-			cause instanceof PrincipalException) {
+	protected boolean isSessionErrorException(Throwable throwable) {
+		if (throwable instanceof NoSuchGroupException ||
+			throwable instanceof PrincipalException) {
 
 			return true;
 		}
@@ -395,13 +399,16 @@ public class AssetPublisherPortlet extends MVCPortlet {
 	protected AssetPublisherWebConfiguration assetPublisherWebConfiguration;
 
 	@Reference
-	protected AssetPublisherWebUtil assetPublisherWebUtil;
+	protected AssetPublisherWebHelper assetPublisherWebHelper;
 
 	@Reference
-	protected AssetRSSUtil assetRSSUtil;
+	protected AssetRSSHelper assetRSSHelper;
 
 	@Reference
 	protected InfoListProviderTracker infoListProviderTracker;
+
+	@Reference
+	protected ItemSelector itemSelector;
 
 	@Reference
 	protected Portal portal;
@@ -410,6 +417,38 @@ public class AssetPublisherPortlet extends MVCPortlet {
 		target = "(&(release.bundle.symbolic.name=com.liferay.asset.publisher.web)(&(release.schema.version>=1.0.0)(!(release.schema.version>=2.0.0))))"
 	)
 	protected Release release;
+
+	@Reference
+	protected RequestContextMapper requestContextMapper;
+
+	@Reference
+	protected SegmentsEntryRetriever segmentsEntryRetriever;
+
+	private String _getDisplayFieldValue(Field field, ThemeDisplay themeDisplay)
+		throws Exception {
+
+		String fieldValue = String.valueOf(
+			DDMUtil.getDisplayFieldValue(
+				themeDisplay, field.getValue(themeDisplay.getLocale(), 0),
+				field.getType()));
+
+		DDMStructure ddmStructure = field.getDDMStructure();
+
+		DDMFormField ddmFormField = ddmStructure.getDDMFormField(
+			field.getName());
+
+		DDMFormFieldOptions ddmFormFieldOptions =
+			ddmFormField.getDDMFormFieldOptions();
+
+		String optionReference = ddmFormFieldOptions.getOptionReference(
+			String.valueOf(fieldValue));
+
+		if (optionReference != null) {
+			return optionReference;
+		}
+
+		return fieldValue;
+	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		AssetPublisherPortlet.class);

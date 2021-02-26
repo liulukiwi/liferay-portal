@@ -15,6 +15,7 @@
 package com.liferay.dynamic.data.mapping.form.field.type.internal.grid;
 
 import com.liferay.dynamic.data.mapping.form.field.type.DDMFormFieldValueAccessor;
+import com.liferay.dynamic.data.mapping.form.field.type.constants.DDMFormFieldTypeConstants;
 import com.liferay.dynamic.data.mapping.model.DDMFormField;
 import com.liferay.dynamic.data.mapping.model.DDMFormFieldOptions;
 import com.liferay.dynamic.data.mapping.model.Value;
@@ -39,7 +40,8 @@ import org.osgi.service.component.annotations.Reference;
  * @author Pedro Queiroz
  */
 @Component(
-	immediate = true, property = "ddm.form.field.type.name=grid",
+	immediate = true,
+	property = "ddm.form.field.type.name=" + DDMFormFieldTypeConstants.GRID,
 	service = {
 		DDMFormFieldValueAccessor.class, GridDDMFormFieldValueAccessor.class
 	}
@@ -62,6 +64,13 @@ public class GridDDMFormFieldValueAccessor
 	}
 
 	@Override
+	public JSONObject getValueForEvaluation(
+		DDMFormFieldValue ddmFormFieldValue, Locale locale) {
+
+		return getValue(ddmFormFieldValue, locale);
+	}
+
+	@Override
 	public boolean isEmpty(DDMFormFieldValue ddmFormFieldValue, Locale locale) {
 		JSONObject jsonObject = getValue(ddmFormFieldValue, locale);
 
@@ -79,9 +88,9 @@ public class GridDDMFormFieldValueAccessor
 		try {
 			return jsonFactory.createJSONObject(json);
 		}
-		catch (JSONException jsone) {
+		catch (JSONException jsonException) {
 			if (_log.isDebugEnabled()) {
-				_log.debug("Unable to parse JSON object", jsone);
+				_log.debug("Unable to parse JSON object", jsonException);
 			}
 
 			return jsonFactory.createJSONObject();
@@ -98,10 +107,10 @@ public class GridDDMFormFieldValueAccessor
 	protected Set<String> getUniqueKeys(JSONObject jsonObject) {
 		Set<String> uniqueKeys = new HashSet<>();
 
-		Iterator<String> keys = jsonObject.keys();
+		Iterator<String> iterator = jsonObject.keys();
 
-		while (keys.hasNext()) {
-			uniqueKeys.add(keys.next());
+		while (iterator.hasNext()) {
+			uniqueKeys.add(iterator.next());
 		}
 
 		return uniqueKeys;

@@ -17,6 +17,7 @@ package com.liferay.headless.admin.user.client.resource.v1_0;
 import com.liferay.headless.admin.user.client.dto.v1_0.EmailAddress;
 import com.liferay.headless.admin.user.client.http.HttpInvoker;
 import com.liferay.headless.admin.user.client.pagination.Page;
+import com.liferay.headless.admin.user.client.problem.Problem;
 import com.liferay.headless.admin.user.client.serdes.v1_0.EmailAddressSerDes;
 
 import java.util.LinkedHashMap;
@@ -45,11 +46,11 @@ public interface EmailAddressResource {
 		throws Exception;
 
 	public Page<EmailAddress> getOrganizationEmailAddressesPage(
-			Long organizationId)
+			String organizationId)
 		throws Exception;
 
 	public HttpInvoker.HttpResponse
-			getOrganizationEmailAddressesPageHttpResponse(Long organizationId)
+			getOrganizationEmailAddressesPageHttpResponse(String organizationId)
 		throws Exception;
 
 	public Page<EmailAddress> getUserAccountEmailAddressesPage(
@@ -105,8 +106,8 @@ public interface EmailAddressResource {
 		private Map<String, String> _headers = new LinkedHashMap<>();
 		private String _host = "localhost";
 		private Locale _locale;
-		private String _login = "test@liferay.com";
-		private String _password = "test";
+		private String _login = "";
+		private String _password = "";
 		private Map<String, String> _parameters = new LinkedHashMap<>();
 		private int _port = 8080;
 		private String _scheme = "http";
@@ -138,7 +139,7 @@ public interface EmailAddressResource {
 					Level.WARNING,
 					"Unable to process HTTP response: " + content, e);
 
-				throw e;
+				throw new Problem.ProblemException(Problem.toDTO(content));
 			}
 		}
 
@@ -170,8 +171,9 @@ public interface EmailAddressResource {
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port +
-						"/o/headless-admin-user/v1.0/email-addresses/{emailAddressId}",
-				emailAddressId);
+						"/o/headless-admin-user/v1.0/email-addresses/{emailAddressId}");
+
+			httpInvoker.path("emailAddressId", emailAddressId);
 
 			httpInvoker.userNameAndPassword(
 				_builder._login + ":" + _builder._password);
@@ -180,7 +182,7 @@ public interface EmailAddressResource {
 		}
 
 		public Page<EmailAddress> getOrganizationEmailAddressesPage(
-				Long organizationId)
+				String organizationId)
 			throws Exception {
 
 			HttpInvoker.HttpResponse httpResponse =
@@ -194,12 +196,21 @@ public interface EmailAddressResource {
 			_logger.fine(
 				"HTTP response status code: " + httpResponse.getStatusCode());
 
-			return Page.of(content, EmailAddressSerDes::toDTO);
+			try {
+				return Page.of(content, EmailAddressSerDes::toDTO);
+			}
+			catch (Exception e) {
+				_logger.log(
+					Level.WARNING,
+					"Unable to process HTTP response: " + content, e);
+
+				throw new Problem.ProblemException(Problem.toDTO(content));
+			}
 		}
 
 		public HttpInvoker.HttpResponse
 				getOrganizationEmailAddressesPageHttpResponse(
-					Long organizationId)
+					String organizationId)
 			throws Exception {
 
 			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
@@ -226,8 +237,9 @@ public interface EmailAddressResource {
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port +
-						"/o/headless-admin-user/v1.0/organizations/{organizationId}/email-addresses",
-				organizationId);
+						"/o/headless-admin-user/v1.0/organizations/{organizationId}/email-addresses");
+
+			httpInvoker.path("organizationId", organizationId);
 
 			httpInvoker.userNameAndPassword(
 				_builder._login + ":" + _builder._password);
@@ -250,7 +262,16 @@ public interface EmailAddressResource {
 			_logger.fine(
 				"HTTP response status code: " + httpResponse.getStatusCode());
 
-			return Page.of(content, EmailAddressSerDes::toDTO);
+			try {
+				return Page.of(content, EmailAddressSerDes::toDTO);
+			}
+			catch (Exception e) {
+				_logger.log(
+					Level.WARNING,
+					"Unable to process HTTP response: " + content, e);
+
+				throw new Problem.ProblemException(Problem.toDTO(content));
+			}
 		}
 
 		public HttpInvoker.HttpResponse
@@ -281,8 +302,9 @@ public interface EmailAddressResource {
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port +
-						"/o/headless-admin-user/v1.0/user-accounts/{userAccountId}/email-addresses",
-				userAccountId);
+						"/o/headless-admin-user/v1.0/user-accounts/{userAccountId}/email-addresses");
+
+			httpInvoker.path("userAccountId", userAccountId);
 
 			httpInvoker.userNameAndPassword(
 				_builder._login + ":" + _builder._password);

@@ -14,30 +14,29 @@
 
 import ClayButton from '@clayui/button';
 import ClayIcon from '@clayui/icon';
+import ClayLayout from '@clayui/layout';
 import PropTypes from 'prop-types';
 import React from 'react';
 
 const Header = ({
 	disabledAddButton = false,
 	handleClickAdd,
-	handleClickClose,
-	handleClickEdit,
+	handleClickBack,
 	headerTitle,
 	infoButtonRef,
-	showEditIcon,
-	showInfoIcon
+	showInfoIcon,
 }) => (
 	<div className="navbar navigation-bar navigation-bar-light">
-		<div className="container-fluid header">
+		<ClayLayout.ContainerFluid className="header">
 			<nav className="navbar navbar-expand-md navbar-underline navigation-bar navigation-bar-light">
-				<div className="container-fluid container-fluid-max-xl">
+				<ClayLayout.ContainerFluid>
 					<ul className="navbar-nav">
 						<li className="nav-item">
 							<ClayButton
 								borderless
 								displayType="secondary"
 								monospaced
-								onClick={handleClickClose}
+								onClick={handleClickBack}
 							>
 								<ClayIcon symbol="angle-left" />
 							</ClayButton>
@@ -46,24 +45,12 @@ const Header = ({
 							<strong>{headerTitle}</strong>
 						</li>
 					</ul>
-				</div>
+				</ClayLayout.ContainerFluid>
 			</nav>
 
 			<nav className="navbar navbar-expand-md navbar-underline navigation-bar navigation-bar-light">
-				<div className="container-fluid container-fluid-max-xl">
+				<ClayLayout.ContainerFluid>
 					<ul className="navbar-nav">
-						{showEditIcon && (
-							<li className="btn-group-item nav-item">
-								<ClayButton
-									borderless
-									displayType="secondary"
-									monospaced
-									onClick={handleClickEdit}
-								>
-									<ClayIcon symbol="pencil" />
-								</ClayButton>
-							</li>
-						)}
 						{showInfoIcon && (
 							<li className="btn-group-item nav-item">
 								<ClayButton
@@ -87,20 +74,18 @@ const Header = ({
 							</ClayButton>
 						</li>
 					</ul>
-				</div>
+				</ClayLayout.ContainerFluid>
 			</nav>
-		</div>
+		</ClayLayout.ContainerFluid>
 	</div>
 );
 
 Header.propTypes = {
 	disabledAddButton: PropTypes.bool,
 	handleClickAdd: PropTypes.func.isRequired,
-	handleClickClose: PropTypes.func.isRequired,
-	handleClickEdit: PropTypes.func,
+	handleClickBack: PropTypes.func.isRequired,
 	headerTitle: PropTypes.string.isRequired,
-	showEditIcon: PropTypes.bool,
-	showInfoIcon: PropTypes.bool
+	showInfoIcon: PropTypes.bool,
 };
 
 export default Header;

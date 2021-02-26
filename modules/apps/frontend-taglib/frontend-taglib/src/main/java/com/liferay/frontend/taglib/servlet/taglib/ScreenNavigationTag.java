@@ -181,10 +181,10 @@ public class ScreenNavigationTag extends IncludeTag {
 		super.cleanUp();
 
 		_containerCssClass = "col-md-9";
-		_containerWrapperCssClass = "container";
+		_containerWrapperCssClass = StringPool.BLANK;
 		_context = null;
-		_fullContainerCssClass = "col-md-12";
-		_headerContainerCssClass = "container";
+		_fullContainerCssClass = StringPool.BLANK;
+		_headerContainerCssClass = StringPool.BLANK;
 		_id = null;
 		_inverted = false;
 		_key = null;
@@ -193,6 +193,7 @@ public class ScreenNavigationTag extends IncludeTag {
 		_modelBean = null;
 		_navCssClass = "col-md-3";
 		_portletURL = null;
+		_screenNavigationCategories = null;
 	}
 
 	@Override
@@ -280,20 +281,20 @@ public class ScreenNavigationTag extends IncludeTag {
 	}
 
 	private String _getDefaultScreenNavigationEntryKey() {
-		List<ScreenNavigationEntry> screenNavigationEntries =
+		List<ScreenNavigationEntry<Object>> screenNavigationEntries =
 			_getScreenNavigationEntries();
 
 		if (ListUtil.isEmpty(screenNavigationEntries)) {
 			return null;
 		}
 
-		ScreenNavigationEntry screenNavigationEntry =
+		ScreenNavigationEntry<Object> screenNavigationEntry =
 			screenNavigationEntries.get(0);
 
 		return screenNavigationEntry.getEntryKey();
 	}
 
-	private List<ScreenNavigationEntry> _getScreenNavigationEntries() {
+	private List<ScreenNavigationEntry<Object>> _getScreenNavigationEntries() {
 		ScreenNavigationCategory selectedScreenNavigationCategory =
 			_getSelectedScreenNavigationCategory();
 
@@ -331,7 +332,7 @@ public class ScreenNavigationTag extends IncludeTag {
 		return null;
 	}
 
-	private ScreenNavigationEntry _getSelectedScreenNavigationEntry() {
+	private ScreenNavigationEntry<?> _getSelectedScreenNavigationEntry() {
 		String screenNavigationEntryKey = ParamUtil.getString(
 			request, "screenNavigationEntryKey");
 
@@ -339,14 +340,14 @@ public class ScreenNavigationTag extends IncludeTag {
 			screenNavigationEntryKey = _getDefaultScreenNavigationEntryKey();
 		}
 
-		List<ScreenNavigationEntry> screenNavigationEntries =
+		List<ScreenNavigationEntry<Object>> screenNavigationEntries =
 			_getScreenNavigationEntries();
 
 		if (ListUtil.isEmpty(screenNavigationEntries)) {
 			return null;
 		}
 
-		for (ScreenNavigationEntry screenNavigationEntry :
+		for (ScreenNavigationEntry<Object> screenNavigationEntry :
 				screenNavigationEntries) {
 
 			if (Objects.equals(
@@ -365,10 +366,10 @@ public class ScreenNavigationTag extends IncludeTag {
 	private static final String _PAGE = "/screen_navigation/page.jsp";
 
 	private String _containerCssClass = "col-md-9";
-	private String _containerWrapperCssClass = "container";
+	private String _containerWrapperCssClass = StringPool.BLANK;
 	private Object _context;
-	private String _fullContainerCssClass = "col-md-12";
-	private String _headerContainerCssClass = "container";
+	private String _fullContainerCssClass = StringPool.BLANK;
+	private String _headerContainerCssClass = StringPool.BLANK;
 	private String _id;
 	private boolean _inverted;
 	private String _key;

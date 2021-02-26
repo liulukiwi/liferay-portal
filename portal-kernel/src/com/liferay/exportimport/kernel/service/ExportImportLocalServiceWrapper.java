@@ -33,11 +33,6 @@ public class ExportImportLocalServiceWrapper
 		_exportImportLocalService = exportImportLocalService;
 	}
 
-	/**
-	 * NOTE FOR DEVELOPERS:
-	 *
-	 * Never modify or reference this interface directly. Always use {@link ExportImportLocalServiceUtil} to access the export import local service. Add custom service methods to <code>com.liferay.portlet.exportimport.service.impl.ExportImportLocalServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
-	 */
 	@Override
 	public java.io.File exportLayoutsAsFile(
 			com.liferay.exportimport.kernel.model.ExportImportConfiguration
@@ -139,6 +134,18 @@ public class ExportImportLocalServiceWrapper
 
 		_exportImportLocalService.importLayoutsDataDeletions(
 			exportImportConfiguration, file);
+	}
+
+	@Override
+	public long importLayoutSetPrototypeInBackground(
+			long userId,
+			com.liferay.exportimport.kernel.model.ExportImportConfiguration
+				exportImportConfiguration,
+			java.io.File file)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _exportImportLocalService.importLayoutSetPrototypeInBackground(
+			userId, exportImportConfiguration, file);
 	}
 
 	@Override

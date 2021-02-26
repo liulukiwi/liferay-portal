@@ -20,7 +20,7 @@ const OPERATORS = ['*', '/', '+', '-'];
  * Tokenizer.
  * Transforms an expression into tokens and token into an expression
  */
-class Tokenizer {
+export class Tokenizer {
 	static stringifyTokens(tokens) {
 		return tokens.reduce((expression, token) => {
 			let {value} = token;
@@ -66,9 +66,11 @@ class Tokenizer {
 
 			if (this.isDigit(char)) {
 				numberBuffer.push(char);
-			} else if (char === '.') {
+			}
+			else if (char === '.') {
 				numberBuffer.push(char);
-			} else if (this.isLeftBracket(char)) {
+			}
+			else if (this.isLeftBracket(char)) {
 				if (numberBuffer.length) {
 					emptyNumberBuffer();
 
@@ -82,11 +84,13 @@ class Tokenizer {
 						emptyVariableBuffer();
 
 						break;
-					} else {
+					}
+					else {
 						variableBuffer.push(char);
 					}
 				} while (inputBuffer.length);
-			} else if (this.isLetter(char)) {
+			}
+			else if (this.isLetter(char)) {
 				if (numberBuffer.length) {
 					emptyNumberBuffer();
 
@@ -104,11 +108,13 @@ class Tokenizer {
 				}
 
 				emptyFunctionBuffer();
-			} else if (this.isOperator(char)) {
+			}
+			else if (this.isOperator(char)) {
 				emptyNumberBuffer();
 
 				result.push(new Token(Token.OPERATOR, char));
-			} else if (this.isLeftParenthesis(char)) {
+			}
+			else if (this.isLeftParenthesis(char)) {
 				if (numberBuffer.length) {
 					emptyNumberBuffer();
 
@@ -116,11 +122,13 @@ class Tokenizer {
 				}
 
 				result.push(new Token(Token.LEFT_PARENTHESIS, char));
-			} else if (this.isRightParenthesis(char)) {
+			}
+			else if (this.isRightParenthesis(char)) {
 				emptyNumberBuffer();
 
 				result.push(new Token(Token.RIGHT_PARENTHESIS, char));
-			} else {
+			}
+			else {
 				throw new Error(`Unsupported character ${char}`);
 			}
 		}
@@ -161,6 +169,44 @@ class Tokenizer {
 
 	static isOperator(char) {
 		return OPERATORS.includes(char);
+	}
+
+	static isValid(str) {
+		const tokens = Tokenizer.tokenize(str);
+
+		const leftParentheses = tokens.filter(
+			({type}) => type === Token.LEFT_PARENTHESIS
+		);
+		const rightParentheses = tokens.filter(
+			({type}) => type === Token.RIGHT_PARENTHESIS
+		);
+		const isTokensValid = tokens
+			.map(({type}, index) => {
+				if (type === Token.OPERATOR) {
+
+					// Checks if there are any token on the left and right side
+					// of the operator.
+
+					return (
+						Boolean(tokens[index - 1]) && Boolean(tokens[index + 1])
+					);
+				}
+
+				if (type === Token.FUNCTION) {
+
+					// Checks if there is any Token after the
+					// Token.LEFT_PARENTHESIS.
+
+					return Boolean(tokens[index + 2]);
+				}
+
+				return true;
+			})
+			.every((result) => result === true);
+
+		return (
+			leftParentheses.length === rightParentheses.length && isTokensValid
+		);
 	}
 }
 

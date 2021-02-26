@@ -45,6 +45,7 @@ import com.liferay.portal.kernel.servlet.taglib.ui.URLMenuItem;
 import com.liferay.portal.kernel.servlet.taglib.ui.URLToolbarItem;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.Constants;
+import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.JavaConstants;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.PortalUtil;
@@ -165,7 +166,7 @@ public class DLOpenerOneDriveDLViewFileVersionDisplayContext
 	}
 
 	/**
-	 * @see com.liferay.frontend.image.editor.integration.document.library.internal.display.context.ImageEditorDLViewFileVersionDisplayContext#_addEditWithImageEditorUIItem
+	 * @see com.liferay.sharing.document.library.internal.display.context.SharingDLViewFileVersionDisplayContext#_addSharingUIItem(List, BaseUIItem)
 	 */
 	private <T extends BaseUIItem> List<T> _addEditInOffice365UIItem(
 		List<T> uiItems, T editInOffice365UIItem) {
@@ -205,7 +206,7 @@ public class DLOpenerOneDriveDLViewFileVersionDisplayContext
 			urlMenuItem.setData(Collections.singletonMap("senna-off", "true"));
 			urlMenuItem.setURL(
 				_getEditURL(
-					cmd, "/document_library/edit_in_office365_and_redirect"));
+					cmd, "/document_library/edit_in_one_drive_and_redirect"));
 		}
 		else {
 			urlMenuItem.setURL(
@@ -213,7 +214,7 @@ public class DLOpenerOneDriveDLViewFileVersionDisplayContext
 					"javascript:",
 					_portal.getPortletNamespace(_portal.getPortletId(request)),
 					"editOfficeDocument(\"",
-					_getEditURL(cmd, "/document_library/edit_in_office365"),
+					_getEditURL(cmd, "/document_library/edit_in_one_drive"),
 					"\");"));
 		}
 
@@ -227,7 +228,7 @@ public class DLOpenerOneDriveDLViewFileVersionDisplayContext
 
 		liferayPortletURL.setParameter(
 			ActionRequest.ACTION_NAME,
-			"/document_library/cancel_check_out_in_office365");
+			"/document_library/cancel_check_out_in_one_drive");
 		liferayPortletURL.setParameter(
 			"fileEntryId", String.valueOf(fileVersion.getFileEntryId()));
 
@@ -246,7 +247,7 @@ public class DLOpenerOneDriveDLViewFileVersionDisplayContext
 
 		liferayPortletURL.setParameter(
 			ActionRequest.ACTION_NAME,
-			"/document_library/check_in_in_office365");
+			"/document_library/check_in_in_one_drive");
 		liferayPortletURL.setParameter(
 			"fileEntryId", String.valueOf(fileVersion.getFileEntryId()));
 
@@ -347,14 +348,14 @@ public class DLOpenerOneDriveDLViewFileVersionDisplayContext
 					if (_isCheckingInNewFile()) {
 						javaScriptUIItem.setOnClick(
 							StringBundler.concat(
-								"window.location.href = '", _getCheckInURL(),
-								"'"));
+								"window.location.href = '",
+								HtmlUtil.escapeJS(_getCheckInURL()), "'"));
 					}
 					else {
 						javaScriptUIItem.setOnClick(
 							StringBundler.concat(
 								_getNamespace(), "showVersionDetailsDialog('",
-								_getCheckInURL(), "');"));
+								HtmlUtil.escapeJS(_getCheckInURL()), "');"));
 					}
 				}
 			}
@@ -388,14 +389,14 @@ public class DLOpenerOneDriveDLViewFileVersionDisplayContext
 					if (_isCheckingInNewFile()) {
 						javaScriptUIItem.setOnClick(
 							StringBundler.concat(
-								"window.location.href = '", _getCheckInURL(),
-								"'"));
+								"window.location.href = '",
+								HtmlUtil.escapeJS(_getCheckInURL()), "'"));
 					}
 					else {
 						javaScriptUIItem.setOnClick(
 							StringBundler.concat(
 								_getNamespace(), "showVersionDetailsDialog('",
-								_getCheckInURL(), "');"));
+								HtmlUtil.escapeJS(_getCheckInURL()), "');"));
 					}
 				}
 			}

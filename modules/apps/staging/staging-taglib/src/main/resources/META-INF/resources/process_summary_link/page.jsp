@@ -17,14 +17,14 @@
 <%@ include file="/process_summary_link/init.jsp" %>
 
 <liferay-portlet:renderURL portletName="<%= ExportImportPortletKeys.EXPORT_IMPORT %>" var="processSummaryURL" windowState="<%= LiferayWindowState.POP_UP.toString() %>">
-	<portlet:param name="mvcRenderCommandName" value="showProcessSummary" />
+	<portlet:param name="mvcRenderCommandName" value="/export_import/view_process_summary" />
 	<portlet:param name="backgroundTaskId" value="<%= String.valueOf(backgroundTask.getBackgroundTaskId()) %>" />
 </liferay-portlet:renderURL>
 
 <%
 BackgroundTaskDisplay backgroundTaskDisplay = BackgroundTaskDisplayFactoryUtil.getBackgroundTaskDisplay(backgroundTask);
 
-String taglibOnClick = liferayPortletResponse.getNamespace() + "showProcessSummary(" + String.valueOf(backgroundTask.getBackgroundTaskId()) + ", '" + HtmlUtil.escapeJS(backgroundTaskDisplay.getDisplayName(request)) + "', '" + HtmlUtil.escape(processSummaryURL) + "');";
+String taglibOnClick = liferayPortletResponse.getNamespace() + "showProcessSummary(" + String.valueOf(backgroundTask.getBackgroundTaskId()) + ", '" + HtmlUtil.escapeJS(backgroundTaskDisplay.getDisplayName(request)) + "', '" + HtmlUtil.escapeJS(processSummaryURL) + "');";
 %>
 
 <liferay-ui:icon
@@ -41,14 +41,14 @@ String taglibOnClick = liferayPortletResponse.getNamespace() + "showProcessSumma
 	) {
 		Liferay.Util.openWindow({
 			dialog: {
-				destroyOnHide: true
+				destroyOnHide: true,
 			},
 			id: '<portlet:namespace />showSummary_' + backgroundTaskId,
 			title: backgroundTaskName,
 			uri:
 				processSummaryURL +
 				'&<portlet:namespace />backgroundTaskId=' +
-				backgroundTaskId
+				backgroundTaskId,
 		});
 	}
 </aui:script>

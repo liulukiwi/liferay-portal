@@ -26,17 +26,47 @@ import org.osgi.util.tracker.ServiceTracker;
  * based on the propagated JAAS credentials because this service can be
  * accessed remotely.
  *
- * @author Alessio Antonio Rendina
+ * @author Matija Petanjek
  * @see DispatchTriggerService
  * @generated
  */
 public class DispatchTriggerServiceUtil {
 
-	/**
+	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify this class directly. Add custom service methods to <code>com.liferay.dispatch.service.impl.DispatchTriggerServiceImpl</code> and rerun ServiceBuilder to regenerate this class.
 	 */
+	public static com.liferay.dispatch.model.DispatchTrigger addDispatchTrigger(
+			long userId, String dispatchTaskExecutorType,
+			com.liferay.portal.kernel.util.UnicodeProperties
+				dispatchTaskSettingsUnicodeProperties,
+			String name)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().addDispatchTrigger(
+			userId, dispatchTaskExecutorType,
+			dispatchTaskSettingsUnicodeProperties, name);
+	}
+
+	public static void deleteDispatchTrigger(long dispatchTriggerId)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		getService().deleteDispatchTrigger(dispatchTriggerId);
+	}
+
+	public static java.util.List<com.liferay.dispatch.model.DispatchTrigger>
+			getDispatchTriggers(int start, int end)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().getDispatchTriggers(start, end);
+	}
+
+	public static int getDispatchTriggersCount()
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().getDispatchTriggersCount();
+	}
 
 	/**
 	 * Returns the OSGi service identifier.
@@ -45,6 +75,36 @@ public class DispatchTriggerServiceUtil {
 	 */
 	public static String getOSGiServiceIdentifier() {
 		return getService().getOSGiServiceIdentifier();
+	}
+
+	public static com.liferay.dispatch.model.DispatchTrigger
+			updateDispatchTrigger(
+				long dispatchTriggerId, boolean active, String cronExpression,
+				com.liferay.dispatch.executor.DispatchTaskClusterMode
+					dispatchTaskClusterMode,
+				int endDateMonth, int endDateDay, int endDateYear,
+				int endDateHour, int endDateMinute, boolean neverEnd,
+				boolean overlapAllowed, int startDateMonth, int startDateDay,
+				int startDateYear, int startDateHour, int startDateMinute)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().updateDispatchTrigger(
+			dispatchTriggerId, active, cronExpression, dispatchTaskClusterMode,
+			endDateMonth, endDateDay, endDateYear, endDateHour, endDateMinute,
+			neverEnd, overlapAllowed, startDateMonth, startDateDay,
+			startDateYear, startDateHour, startDateMinute);
+	}
+
+	public static com.liferay.dispatch.model.DispatchTrigger
+			updateDispatchTrigger(
+				long dispatchTriggerId,
+				com.liferay.portal.kernel.util.UnicodeProperties
+					dispatchTaskSettingsUnicodeProperties,
+				String name)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().updateDispatchTrigger(
+			dispatchTriggerId, dispatchTaskSettingsUnicodeProperties, name);
 	}
 
 	public static DispatchTriggerService getService() {

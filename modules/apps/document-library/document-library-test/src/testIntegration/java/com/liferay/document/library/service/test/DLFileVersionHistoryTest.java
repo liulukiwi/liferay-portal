@@ -24,12 +24,14 @@ import com.liferay.document.library.kernel.service.DLFileVersionLocalServiceUtil
 import com.liferay.document.library.test.util.BaseDLAppTestCase;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.repository.model.FileVersion;
 import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.test.constants.TestDataConstants;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
-import com.liferay.portal.kernel.test.util.TestDataConstants;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
@@ -217,7 +219,11 @@ public class DLFileVersionHistoryTest extends BaseDLAppTestCase {
 
 			Assert.fail();
 		}
-		catch (InvalidFileVersionException ifve) {
+		catch (InvalidFileVersionException invalidFileVersionException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(
+					invalidFileVersionException, invalidFileVersionException);
+			}
 		}
 	}
 
@@ -229,7 +235,11 @@ public class DLFileVersionHistoryTest extends BaseDLAppTestCase {
 
 			Assert.fail();
 		}
-		catch (InvalidFileVersionException ifve) {
+		catch (InvalidFileVersionException invalidFileVersionException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(
+					invalidFileVersionException, invalidFileVersionException);
+			}
 		}
 	}
 
@@ -322,6 +332,9 @@ public class DLFileVersionHistoryTest extends BaseDLAppTestCase {
 	private static final String _VERSION_1_1 = "Test Version 1.1.txt";
 
 	private static final String _VERSION_PWC = "Test Version PWC.txt";
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		DLFileVersionHistoryTest.class);
 
 	private FileEntry _fileEntry;
 

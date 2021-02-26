@@ -22,9 +22,12 @@ import com.liferay.message.boards.model.MBMessage;
 import com.liferay.message.boards.model.MBThread;
 import com.liferay.message.boards.service.MBCategoryLocalServiceUtil;
 import com.liferay.message.boards.service.MBMessageLocalServiceUtil;
+import com.liferay.message.boards.service.MBThreadLocalServiceUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.lock.Lock;
 import com.liferay.portal.kernel.lock.LockManagerUtil;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Repository;
 import com.liferay.portal.kernel.portletfilerepository.PortletFileRepositoryUtil;
 import com.liferay.portal.kernel.repository.model.Folder;
@@ -103,7 +106,10 @@ public class MBThreadImpl extends MBThreadBaseImpl {
 
 			_attachmentsFolderId = folder.getFolderId();
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
 		}
 
 		return _attachmentsFolderId;
@@ -129,10 +135,19 @@ public class MBThreadImpl extends MBThreadBaseImpl {
 			return LockManagerUtil.getLock(
 				MBThread.class.getName(), getThreadId());
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
 		}
 
 		return null;
+	}
+
+	@Override
+	public int getMessageCount() {
+		return MBThreadLocalServiceUtil.getMessageCount(
+			getThreadId(), WorkflowConstants.STATUS_APPROVED);
 	}
 
 	@Override
@@ -163,7 +178,10 @@ public class MBThreadImpl extends MBThreadBaseImpl {
 			return LockManagerUtil.hasLock(
 				userId, MBThread.class.getName(), getThreadId());
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
 		}
 
 		return false;
@@ -179,11 +197,16 @@ public class MBThreadImpl extends MBThreadBaseImpl {
 			return LockManagerUtil.isLocked(
 				MBThread.class.getName(), getThreadId());
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
 		}
 
 		return false;
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(MBThreadImpl.class);
 
 	private long _attachmentsFolderId;
 

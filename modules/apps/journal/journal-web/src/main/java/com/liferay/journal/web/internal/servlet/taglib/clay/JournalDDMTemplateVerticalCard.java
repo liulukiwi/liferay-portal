@@ -23,6 +23,8 @@ import com.liferay.journal.web.internal.servlet.taglib.util.JournalDDMTemplateAc
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.search.RowChecker;
 import com.liferay.portal.kernel.language.LanguageUtil;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.BaseModel;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.util.HtmlUtil;
@@ -65,7 +67,10 @@ public class JournalDDMTemplateVerticalCard extends BaseVerticalCard {
 			return ddmTemplateActionDropdownItemsProvider.
 				getActionDropdownItems();
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
 		}
 
 		return null;
@@ -98,7 +103,10 @@ public class JournalDDMTemplateVerticalCard extends BaseVerticalCard {
 
 			return editDDMTemplateURL.toString();
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
 		}
 
 		return null;
@@ -131,6 +139,9 @@ public class JournalDDMTemplateVerticalCard extends BaseVerticalCard {
 	public String getTitle() {
 		return HtmlUtil.escape(_ddmTemplate.getName(themeDisplay.getLocale()));
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		JournalDDMTemplateVerticalCard.class);
 
 	private final DDMTemplate _ddmTemplate;
 	private final HttpServletRequest _httpServletRequest;

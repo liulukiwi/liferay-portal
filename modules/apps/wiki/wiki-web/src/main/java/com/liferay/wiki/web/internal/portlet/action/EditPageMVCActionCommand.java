@@ -58,7 +58,6 @@ import com.liferay.wiki.web.internal.util.WikiWebComponentProvider;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
@@ -138,11 +137,11 @@ public class EditPageMVCActionCommand extends BaseMVCActionCommand {
 		}
 
 		if (moveToTrash && !trashedModels.isEmpty()) {
-			Map<String, Object> data = HashMapBuilder.<String, Object>put(
-				"trashedModels", trashedModels
-			).build();
-
-			addDeleteSuccessData(actionRequest, data);
+			addDeleteSuccessData(
+				actionRequest,
+				HashMapBuilder.<String, Object>put(
+					"trashedModels", trashedModels
+				).build());
 		}
 	}
 
@@ -199,34 +198,35 @@ public class EditPageMVCActionCommand extends BaseMVCActionCommand {
 				sendRedirect(actionRequest, actionResponse, redirect);
 			}
 		}
-		catch (Exception e) {
-			if (e instanceof NoSuchNodeException ||
-				e instanceof NoSuchPageException ||
-				e instanceof PrincipalException) {
+		catch (Exception exception) {
+			if (exception instanceof NoSuchNodeException ||
+				exception instanceof NoSuchPageException ||
+				exception instanceof PrincipalException) {
 
-				SessionErrors.add(actionRequest, e.getClass());
+				SessionErrors.add(actionRequest, exception.getClass());
 			}
-			else if (e instanceof DuplicatePageException ||
-					 e instanceof PageContentException ||
-					 e instanceof PageTitleException ||
-					 e instanceof PageVersionException ||
-					 e instanceof SanitizerException) {
+			else if (exception instanceof DuplicatePageException ||
+					 exception instanceof PageContentException ||
+					 exception instanceof PageTitleException ||
+					 exception instanceof PageVersionException ||
+					 exception instanceof SanitizerException) {
 
-				SessionErrors.add(actionRequest, e.getClass());
+				SessionErrors.add(actionRequest, exception.getClass());
 			}
-			else if (e instanceof AssetCategoryException ||
-					 e instanceof AssetTagException) {
+			else if (exception instanceof AssetCategoryException ||
+					 exception instanceof AssetTagException) {
 
-				SessionErrors.add(actionRequest, e.getClass(), e);
+				SessionErrors.add(
+					actionRequest, exception.getClass(), exception);
 			}
 			else {
-				Throwable cause = e.getCause();
+				Throwable throwable = exception.getCause();
 
-				if (cause instanceof SanitizerException) {
+				if (throwable instanceof SanitizerException) {
 					SessionErrors.add(actionRequest, SanitizerException.class);
 				}
 				else {
-					throw e;
+					throw exception;
 				}
 			}
 		}
@@ -317,37 +317,6 @@ public class EditPageMVCActionCommand extends BaseMVCActionCommand {
 		_wikiPageService.revertPage(nodeId, title, version, serviceContext);
 	}
 
-	@Reference(unbind = "-")
-	protected void setTrashEntryLocalService(
-		TrashEntryLocalService trashEntryLocalService) {
-
-		_trashEntryLocalService = trashEntryLocalService;
-	}
-
-	@Reference(unbind = "-")
-	protected void setTrashEntryService(TrashEntryService trashEntryService) {
-		_trashEntryService = trashEntryService;
-	}
-
-	@Reference(unbind = "-")
-	protected void setWikiPageLocalService(
-		WikiPageLocalService wikiPageLocalService) {
-
-		_wikiPageLocalService = wikiPageLocalService;
-	}
-
-	@Reference(unbind = "-")
-	protected void setWikiPageResourceLocalService(
-		WikiPageResourceLocalService wikiPageResourceLocalService) {
-
-		_wikiPageResourceLocalService = wikiPageResourceLocalService;
-	}
-
-	@Reference(unbind = "-")
-	protected void setWikiPageService(WikiPageService wikiPageService) {
-		_wikiPageService = wikiPageService;
-	}
-
 	protected void subscribePage(ActionRequest actionRequest) throws Exception {
 		long nodeId = ParamUtil.getLong(actionRequest, "nodeId");
 		String title = ParamUtil.getString(actionRequest, "title");
@@ -416,15 +385,25 @@ public class EditPageMVCActionCommand extends BaseMVCActionCommand {
 		return page;
 	}
 
+	@Reference
 	private TrashEntryLocalService _trashEntryLocalService;
+
+	@Reference
 	private TrashEntryService _trashEntryService;
 
 	@Reference
 	private TrashHelper _trashHelper;
 
+	@Reference
 	private WikiAttachmentsHelper _wikiAttachmentsHelper;
+
+	@Reference
 	private WikiPageLocalService _wikiPageLocalService;
+
+	@Reference
 	private WikiPageResourceLocalService _wikiPageResourceLocalService;
+
+	@Reference
 	private WikiPageService _wikiPageService;
 
 }

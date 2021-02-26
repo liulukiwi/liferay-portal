@@ -17,7 +17,7 @@ package com.liferay.headless.delivery.internal.odata.entity.v1_0;
 import com.liferay.dynamic.data.mapping.model.DDMFormField;
 import com.liferay.dynamic.data.mapping.model.DDMFormFieldType;
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
-import com.liferay.dynamic.data.mapping.storage.FieldConstants;
+import com.liferay.dynamic.data.mapping.storage.constants.FieldConstants;
 import com.liferay.dynamic.data.mapping.util.DDMIndexer;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
@@ -83,7 +83,7 @@ public class EntityFieldsProvider {
 
 		if (Objects.equals(ddmFormField.getType(), DDMFormFieldType.CHECKBOX)) {
 			return new BooleanEntityField(
-				ddmFormField.getName(),
+				ddmFormField.getFieldReference(),
 				locale -> _toFilterableOrSortableFieldName(
 					ddmStructure.getStructureId(), ddmFormField.getName(),
 					locale, "String"));
@@ -92,7 +92,7 @@ public class EntityFieldsProvider {
 					ddmFormField.getDataType(), FieldConstants.DATE)) {
 
 			return new DateEntityField(
-				ddmFormField.getName(),
+				ddmFormField.getFieldReference(),
 				locale -> _toFilterableOrSortableFieldName(
 					ddmStructure.getStructureId(), ddmFormField.getName(),
 					locale, "String"),
@@ -107,7 +107,7 @@ public class EntityFieldsProvider {
 					 ddmFormField.getDataType(), FieldConstants.NUMBER)) {
 
 			return new DoubleEntityField(
-				ddmFormField.getName(),
+				ddmFormField.getFieldReference(),
 				locale -> _toFilterableOrSortableFieldName(
 					ddmStructure.getStructureId(), ddmFormField.getName(),
 					locale, "Number"));
@@ -118,19 +118,19 @@ public class EntityFieldsProvider {
 					 ddmFormField.getDataType(), FieldConstants.LONG)) {
 
 			return new IntegerEntityField(
-				ddmFormField.getName(),
+				ddmFormField.getFieldReference(),
 				locale -> _toFilterableOrSortableFieldName(
 					ddmStructure.getStructureId(), ddmFormField.getName(),
 					locale, "Number"));
 		}
 		else if (Objects.equals(
-					ddmFormField.getDataType(), DDMFormFieldType.RADIO) ||
+					ddmFormField.getType(), DDMFormFieldType.RADIO) ||
 				 (Objects.equals(
 					 ddmFormField.getType(), DDMFormFieldType.TEXT) &&
 				  Objects.equals(ddmFormField.getIndexType(), "keyword"))) {
 
 			return new StringEntityField(
-				ddmFormField.getName(),
+				ddmFormField.getFieldReference(),
 				locale -> _toFilterableOrSortableFieldName(
 					ddmStructure.getStructureId(), ddmFormField.getName(),
 					locale, "String"));
@@ -151,8 +151,8 @@ public class EntityFieldsProvider {
 
 			return searchDateFormat.format(date);
 		}
-		catch (ParseException pe) {
-			throw new RuntimeException(pe);
+		catch (ParseException parseException) {
+			throw new RuntimeException(parseException);
 		}
 	}
 

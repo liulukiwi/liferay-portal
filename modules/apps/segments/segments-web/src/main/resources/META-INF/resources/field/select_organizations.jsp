@@ -20,13 +20,13 @@
 SelectOrganizationsDisplayContext selectOrganizationsDisplayContext = (SelectOrganizationsDisplayContext)request.getAttribute(SegmentsWebKeys.SELECT_ORGANIZATIONS_DISPLAY_CONTEXT);
 %>
 
-<clay:management-toolbar
-	displayContext="<%= new SelectOrganizationsManagementToolbarDisplayContext(request, liferayPortletRequest, liferayPortletResponse, selectOrganizationsDisplayContext) %>"
+<clay:management-toolbar-v2
+	displayContext="<%= (SelectOrganizationsManagementToolbarDisplayContext)request.getAttribute(SegmentsWebKeys.SEGMENTS_SELECT_ORGANIZATION_MANAGEMENT_TOOLBAL_DISPLAY_CONTEXT) %>"
 />
 
-<aui:form cssClass="container-fluid-1280" name="fm">
+<aui:form cssClass="container-fluid container-fluid-max-xl" name="fm">
 	<liferay-ui:search-container
-		id="selectSegmentsEntryOrganizations"
+		id="<%= selectOrganizationsDisplayContext.getSearchContainerId() %>"
 		searchContainer="<%= selectOrganizationsDisplayContext.getOrganizationSearchContainer() %>"
 	>
 		<liferay-ui:search-container-row
@@ -37,26 +37,29 @@ SelectOrganizationsDisplayContext selectOrganizationsDisplayContext = (SelectOrg
 		>
 
 			<%
-			Map<String, Object> data = new HashMap<>();
-
-			data.put("id", organization.getOrganizationId());
-			data.put("name", organization.getName());
-
-			row.setData(data);
+			row.setData(
+				HashMapBuilder.<String, Object>put(
+					"id", organization.getOrganizationId()
+				).put(
+					"name", organization.getName()
+				).build());
 			%>
 
 			<liferay-ui:search-container-column-text
+				cssClass="table-cell-expand table-title"
 				name="name"
 				orderable="<%= true %>"
 				property="name"
 			/>
 
 			<liferay-ui:search-container-column-text
+				cssClass="table-cell-expand"
 				name="parent-organization"
 				value="<%= HtmlUtil.escape(organization.getParentOrganizationName()) %>"
 			/>
 
 			<liferay-ui:search-container-column-text
+				cssClass="table-cell-expand"
 				name="type"
 				orderable="<%= true %>"
 				value="<%= LanguageUtil.get(request, organization.getType()) %>"

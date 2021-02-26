@@ -40,13 +40,13 @@ renderResponse.setTitle(LanguageUtil.format(request, "reply-membership-request-f
 %>
 
 <portlet:actionURL name="replyMembershipRequest" var="replyMembershipRequestURL">
-	<portlet:param name="mvcPath" value="/reply_membership_request.jsp" />
 	<portlet:param name="p_u_i_d" value="<%= String.valueOf(membershipRequest.getUserId()) %>" />
+	<portlet:param name="mvcPath" value="/reply_membership_request.jsp" />
 	<portlet:param name="groupId" value="<%= String.valueOf(themeDisplay.getSiteGroupIdOrLiveGroupId()) %>" />
 	<portlet:param name="membershipRequestId" value="<%= String.valueOf(membershipRequest.getMembershipRequestId()) %>" />
 </portlet:actionURL>
 
-<aui:form action="<%= replyMembershipRequestURL %>" cssClass="container-fluid-1280" method="post" name="fm">
+<aui:form action="<%= replyMembershipRequestURL %>" cssClass="container-fluid container-fluid-max-xl" method="post" name="fm">
 	<aui:input name="redirect" type="hidden" value="<%= redirect %>" />
 	<aui:input name="membershipRequestId" type="hidden" value="<%= membershipRequest.getMembershipRequestId() %>" />
 

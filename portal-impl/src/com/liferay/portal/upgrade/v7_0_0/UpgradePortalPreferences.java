@@ -97,12 +97,13 @@ public class UpgradePortalPreferences extends UpgradeProcess {
 					newPreferences = convertStagingPreferencesToJSON(
 						oldPreferences);
 				}
-				catch (DocumentException de) {
+				catch (DocumentException documentException) {
 					if (_log.isWarnEnabled()) {
 						_log.warn(
 							StringBundler.concat(
 								"Portal preferences ", portalPreferencesId,
-								" contains invalid XML, resetting to default"));
+								" contains invalid XML, resetting to default"),
+							documentException);
 					}
 
 					newPreferences = PortletConstants.DEFAULT_PREFERENCES;

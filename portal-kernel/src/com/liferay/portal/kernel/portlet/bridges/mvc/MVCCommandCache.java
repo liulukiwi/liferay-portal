@@ -121,9 +121,10 @@ public class MVCCommandCache<T extends MVCCommand> {
 
 			return mvcCommand;
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isWarnEnabled()) {
-				_log.warn("Unable to instantiate MVCCommand " + className);
+				_log.warn(
+					"Unable to instantiate MVCCommand " + className, exception);
 			}
 
 			_mvcCommandCache.put(mvcCommandName, _emptyMVCCommand);

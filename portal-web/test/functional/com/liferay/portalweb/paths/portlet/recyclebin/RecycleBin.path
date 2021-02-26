@@ -19,6 +19,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>RECYCLE_BIN_ASSET_CHECKBOX</td>
+	<td>//tr[contains(.,'${key_assetName}')]//input[@type='checkbox']</td>
+	<td></td>
+</tr>
+<tr>
 	<td></td>
 	<td></td>
 	<td></td>
@@ -42,7 +47,7 @@
 </tr>
 <tr>
 	<td>RECYCLE_BIN_FOLDER_WARNING_IFRAME</td>
-	<td>//iframe[contains(@id,'selectContainer_iframe_')]</td>
+	<td>//iframe[contains(@id,'trashportlet__iframe')]</td>
 	<td></td>
 </tr>
 </tbody>

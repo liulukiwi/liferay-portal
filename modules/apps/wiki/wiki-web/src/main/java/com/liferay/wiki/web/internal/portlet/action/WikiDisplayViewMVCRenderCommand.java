@@ -16,6 +16,8 @@ package com.liferay.wiki.web.internal.portlet.action;
 
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCRenderCommand;
 import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
@@ -104,14 +106,22 @@ public class WikiDisplayViewMVCRenderCommand implements MVCRenderCommand {
 
 			return "/wiki_display/view.jsp";
 		}
-		catch (NoSuchNodeException nsne) {
+		catch (NoSuchNodeException noSuchNodeException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(noSuchNodeException, noSuchNodeException);
+			}
+
 			return "/wiki_display/portlet_not_setup.jsp";
 		}
-		catch (NoSuchPageException nspe) {
+		catch (NoSuchPageException noSuchPageException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(noSuchPageException, noSuchPageException);
+			}
+
 			return "/wiki_display/portlet_not_setup.jsp";
 		}
-		catch (PortalException pe) {
-			SessionErrors.add(renderRequest, pe.getClass());
+		catch (PortalException portalException) {
+			SessionErrors.add(renderRequest, portalException.getClass());
 
 			return "/wiki/error.jsp";
 		}
@@ -120,17 +130,17 @@ public class WikiDisplayViewMVCRenderCommand implements MVCRenderCommand {
 	protected WikiNode getNode(RenderRequest renderRequest)
 		throws PortalException {
 
-		PortletPreferences portletPreferences = renderRequest.getPreferences();
-
-		ThemeDisplay themeDisplay = (ThemeDisplay)renderRequest.getAttribute(
-			WebKeys.THEME_DISPLAY);
-
 		String nodeName = ParamUtil.getString(renderRequest, "nodeName");
 
 		if (Validator.isNotNull(nodeName)) {
+			ThemeDisplay themeDisplay =
+				(ThemeDisplay)renderRequest.getAttribute(WebKeys.THEME_DISPLAY);
+
 			return _wikiNodeService.getNode(
 				themeDisplay.getScopeGroupId(), nodeName);
 		}
+
+		PortletPreferences portletPreferences = renderRequest.getPreferences();
 
 		long nodeId = GetterUtil.getLong(
 			portletPreferences.getValue("nodeId", StringPool.BLANK));
@@ -138,25 +148,16 @@ public class WikiDisplayViewMVCRenderCommand implements MVCRenderCommand {
 		return _wikiNodeService.getNode(nodeId);
 	}
 
-	@Reference(unbind = "-")
-	protected void setWikiEngineRenderer(
-		WikiEngineRenderer wikiEngineRenderer) {
+	private static final Log _log = LogFactoryUtil.getLog(
+		WikiDisplayViewMVCRenderCommand.class);
 
-		_wikiEngineRenderer = wikiEngineRenderer;
-	}
-
-	@Reference(unbind = "-")
-	protected void setWikiNodeService(WikiNodeService wikiNodeService) {
-		_wikiNodeService = wikiNodeService;
-	}
-
-	@Reference(unbind = "-")
-	protected void setWikiPageService(WikiPageService wikiPageService) {
-		_wikiPageService = wikiPageService;
-	}
-
+	@Reference
 	private WikiEngineRenderer _wikiEngineRenderer;
+
+	@Reference
 	private WikiNodeService _wikiNodeService;
+
+	@Reference
 	private WikiPageService _wikiPageService;
 
 }

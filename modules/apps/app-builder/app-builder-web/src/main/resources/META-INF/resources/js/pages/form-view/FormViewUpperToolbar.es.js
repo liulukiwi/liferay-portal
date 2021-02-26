@@ -12,39 +12,79 @@
  * details.
  */
 
-import React, {useContext} from 'react';
+import ClayButton from '@clayui/button';
+import {
+	errorToast,
+	successToast,
+} from 'data-engine-js-components-web/js/utils/toast.es';
+import {
+	DataDefinitionUtils,
+	DataLayoutBuilderActions,
+	DataLayoutVisitor,
+	TranslationManager,
+} from 'data-engine-taglib';
+import React, {useCallback, useContext, useEffect, useState} from 'react';
 
 import {AppContext} from '../../AppContext.es';
 import UpperToolbar from '../../components/upper-toolbar/UpperToolbar.es';
+import {
+	normalizeDataDefinition,
+	normalizeDataLayout,
+} from '../../utils/normalizers.es';
+import DataLayoutBuilderContext from './DataLayoutBuilderInstanceContext.es';
 import FormViewContext from './FormViewContext.es';
-import {UPDATE_DATA_LAYOUT_NAME} from './actions.es';
-import saveFormView from './saveFormView.es';
 
-export default ({newCustomObject}) => {
+export default function FormViewUpperToolbar({newCustomObject, popUpWindow}) {
+	const [defaultLanguageId, setDefaultLanguageId] = useState('');
+	const [editingLanguageId, setEditingLanguageId] = useState('');
+	const [isLoading, setLoading] = useState(false);
+
 	const [state, dispatch] = useContext(FormViewContext);
-	const {dataDefinitionId, dataLayout} = state;
+	const {
+		dataDefinition,
+		dataDefinitionId,
+		dataLayout,
+		dataLayoutId,
+		initialAvailableLanguageIds,
+	} = state;
+	const [dataLayoutBuilder] = useContext(DataLayoutBuilderContext);
+
+	const onEditingLanguageIdChange = useCallback(
+		(editingLanguageId) => {
+			setEditingLanguageId(editingLanguageId);
+
+			dispatch({
+				payload: editingLanguageId,
+				type: DataLayoutBuilderActions.UPDATE_EDITING_LANGUAGE_ID,
+			});
+		},
+		[dispatch]
+	);
+
+	useEffect(() => {
+		if (dataDefinition.defaultLanguageId) {
+			setDefaultLanguageId(dataDefinition.defaultLanguageId);
+
+			onEditingLanguageIdChange(dataDefinition.defaultLanguageId);
+		}
+	}, [dataDefinition.defaultLanguageId, onEditingLanguageIdChange]);
 
 	const {basePortletURL} = useContext(AppContext);
 	const listUrl = `${basePortletURL}/#/custom-object/${dataDefinitionId}/form-views`;
 
-	const onCancel = () => {
-		if (newCustomObject) {
-			Liferay.Util.navigate(basePortletURL);
-		} else {
-			Liferay.Util.navigate(listUrl);
-		}
-	};
-
-	const onInput = ({target}) => {
-		const {value} = target;
-
+	const onDataLayoutNameChange = ({target: {value}}) => {
 		dispatch({
-			payload: {name: {en_US: value}},
-			type: UPDATE_DATA_LAYOUT_NAME
+			payload: {
+				name: {
+					...dataLayout.name,
+					[editingLanguageId]: value,
+				},
+			},
+			type: DataLayoutBuilderActions.UPDATE_DATA_LAYOUT_NAME,
 		});
 	};
 
-	const onKeyDown = event => {
+	const onKeyDown = (event) => {
 		if (event.keyCode === 13) {
 			event.preventDefault();
 
@@ -52,36 +92,132 @@ export default ({newCustomObject}) => {
 		}
 	};
 
-	const onSave = () => {
-		saveFormView(state).then(() => {
-			Liferay.Util.navigate(listUrl);
-		});
+	const onCancel = () => {
+		if (popUpWindow) {
+			window.top?.Liferay.fire('closeModal');
+		}
+		else {
+			if (newCustomObject) {
+				Liferay.Util.navigate(basePortletURL);
+			}
+			else {
+				Liferay.Util.navigate(listUrl);
+			}
+		}
 	};
 
-	const {
-		name: {en_US: dataLayoutName = ''}
-	} = dataLayout;
+	const onError = (error) => {
+		const {title} = error;
+
+		errorToast(title);
+	};
+
+	const onSuccess = (newFormView) => {
+		successToast(
+			Liferay.Language.get('the-form-view-was-saved-successfully')
+		);
+
+		if (popUpWindow) {
+			const tLiferay = window.top?.Liferay;
+
+			tLiferay.fire('newFormViewCreated', {
+				dataDefinition,
+				newFormView,
+			});
+
+			tLiferay.fire('closeModal');
+		}
+		else {
+			Liferay.Util.navigate(listUrl);
+		}
+	};
+
+	const onSave = () => {
+		setLoading(true);
+
+		DataDefinitionUtils.saveDataDefinition({
+			dataDefinition: normalizeDataDefinition(dataDefinition),
+			dataDefinitionId,
+			dataLayout: normalizeDataLayout({
+				dataDefinition,
+				dataLayout,
+				dataLayoutBuilder,
+				defaultLanguageId,
+				editingLanguageId,
+			}),
+			dataLayoutId,
+		})
+			.then(onSuccess)
+			.catch((error) => {
+				onError(error);
+				setLoading(false);
+			});
+	};
+
+	if (!defaultLanguageId) {
+		return null;
+	}
+
+	const actionButtons = (
+		<ClayButton.Group spaced>
+			<ClayButton displayType="secondary" onClick={onCancel}>
+				{Liferay.Language.get('cancel')}
+			</ClayButton>
+
+			<ClayButton
+				className="m-0"
+				disabled={
+					isLoading ||
+					!dataLayout.name[editingLanguageId]?.trim() ||
+					DataLayoutVisitor.isDataLayoutEmpty(
+						dataLayout.dataLayoutPages
+					)
+				}
+				onClick={onSave}
+			>
+				{Liferay.Language.get('save')}
+			</ClayButton>
+		</ClayButton.Group>
+	);
 
 	return (
-		<UpperToolbar>
-			<UpperToolbar.Input
-				onInput={onInput}
-				onKeyDown={onKeyDown}
-				placeholder={Liferay.Language.get('untitled-form-view')}
-				value={dataLayoutName}
-			/>
-			<UpperToolbar.Group>
-				<UpperToolbar.Button displayType="secondary" onClick={onCancel}>
-					{Liferay.Language.get('cancel')}
-				</UpperToolbar.Button>
+		<>
+			<UpperToolbar>
+				<UpperToolbar.Group>
+					<TranslationManager
+						defaultLanguageId={defaultLanguageId}
+						editingLanguageId={editingLanguageId}
+						onEditingLanguageIdChange={onEditingLanguageIdChange}
+						translatedLanguageIds={{
+							...dataLayout.name,
+							...initialAvailableLanguageIds.reduce(
+								(acc, cur) => {
+									acc[cur] = cur;
 
-				<UpperToolbar.Button
-					disabled={dataLayoutName.trim() === ''}
-					onClick={onSave}
-				>
-					{Liferay.Language.get('save')}
-				</UpperToolbar.Button>
-			</UpperToolbar.Group>
-		</UpperToolbar>
+									return acc;
+								},
+								{}
+							),
+						}}
+					/>
+				</UpperToolbar.Group>
+
+				<UpperToolbar.Input
+					autoFocus
+					onChange={onDataLayoutNameChange}
+					onKeyDown={onKeyDown}
+					placeholder={Liferay.Language.get('untitled-form-view')}
+					value={dataLayout.name[editingLanguageId] || ''}
+				/>
+
+				{!popUpWindow && (
+					<UpperToolbar.Group>{actionButtons}</UpperToolbar.Group>
+				)}
+			</UpperToolbar>
+
+			{popUpWindow && (
+				<div className="dialog-footer">{actionButtons}</div>
+			)}
+		</>
 	);
-};
+}

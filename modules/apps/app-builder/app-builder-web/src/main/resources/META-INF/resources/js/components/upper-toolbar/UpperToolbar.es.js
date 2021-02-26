@@ -12,16 +12,12 @@
  * details.
  */
 
+import ClayButton from '@clayui/button';
 import {ClayInput} from '@clayui/form';
 import classNames from 'classnames';
-import React, {useContext} from 'react';
+import React from 'react';
 
-import {AppContext} from '../../AppContext.es';
-import Button from '../button/Button.es';
-
-const UpperToolbar = ({children}) => {
-	const {appDeploymentType} = useContext(AppContext);
-
+const UpperToolbar = ({children, className = ''}) => {
 	return (
 		<nav
 			className={classNames(
@@ -29,7 +25,7 @@ const UpperToolbar = ({children}) => {
 				'component-tbar',
 				'subnav-tbar-light',
 				'tbar',
-				appDeploymentType
+				className
 			)}
 		>
 			<div className="container-fluid container-fluid-max-xl">
@@ -42,9 +38,9 @@ const UpperToolbar = ({children}) => {
 const UpperToolbarButton = ({children, ...otherProps}) => {
 	return (
 		<ClayInput.GroupItem>
-			<Button className="ml-3" small {...otherProps}>
+			<ClayButton className="ml-3" small {...otherProps}>
 				{children}
-			</Button>
+			</ClayButton>
 		</ClayInput.GroupItem>
 	);
 };
@@ -76,7 +72,7 @@ const UpperToolbarItem = ({children, className, expand}) => {
 	return (
 		<li
 			className={classNames(className, 'tbar-item', {
-				'tbar-item-expand': expand
+				'tbar-item-expand': expand,
 			})}
 		>
 			<div className="tbar-section">{children}</div>
@@ -103,5 +99,5 @@ export {
 	UpperToolbarButton,
 	UpperToolbarGroup,
 	UpperToolbarInput,
-	UpperToolbarItem
+	UpperToolbarItem,
 };

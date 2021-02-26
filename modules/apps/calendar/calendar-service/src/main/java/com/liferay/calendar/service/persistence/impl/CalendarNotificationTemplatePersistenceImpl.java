@@ -16,12 +16,14 @@ package com.liferay.calendar.service.persistence.impl;
 
 import com.liferay.calendar.exception.NoSuchNotificationTemplateException;
 import com.liferay.calendar.model.CalendarNotificationTemplate;
+import com.liferay.calendar.model.CalendarNotificationTemplateTable;
 import com.liferay.calendar.model.impl.CalendarNotificationTemplateImpl;
 import com.liferay.calendar.model.impl.CalendarNotificationTemplateModelImpl;
 import com.liferay.calendar.service.persistence.CalendarNotificationTemplatePersistence;
 import com.liferay.calendar.service.persistence.impl.constants.CalendarPersistenceConstants;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.configuration.Configuration;
+import com.liferay.portal.kernel.dao.orm.ArgumentsResolver;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
@@ -32,11 +34,13 @@ import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.BaseModel;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
+import com.liferay.portal.kernel.service.persistence.BasePersistence;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
-import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.HashMapDictionary;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.SetUtil;
@@ -55,9 +59,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.sql.DataSource;
 
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
@@ -73,12 +80,16 @@ import org.osgi.service.component.annotations.Reference;
  * @author Eduardo Lundgren
  * @generated
  */
-@Component(service = CalendarNotificationTemplatePersistence.class)
+@Component(
+	service = {
+		CalendarNotificationTemplatePersistence.class, BasePersistence.class
+	}
+)
 public class CalendarNotificationTemplatePersistenceImpl
 	extends BasePersistenceImpl<CalendarNotificationTemplate>
 	implements CalendarNotificationTemplatePersistence {
 
-	/**
+	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this class directly. Always use <code>CalendarNotificationTemplateUtil</code> to access the calendar notification template persistence. Modify <code>service.xml</code> and rerun ServiceBuilder to regenerate this class.
@@ -192,7 +203,7 @@ public class CalendarNotificationTemplatePersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<CalendarNotificationTemplate>)finderCache.getResult(
-				finderPath, finderArgs, this);
+				finderPath, finderArgs);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (CalendarNotificationTemplate calendarNotificationTemplate :
@@ -208,55 +219,54 @@ public class CalendarNotificationTemplatePersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					3 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(3);
+				sb = new StringBundler(3);
 			}
 
-			query.append(_SQL_SELECT_CALENDARNOTIFICATIONTEMPLATE_WHERE);
+			sb.append(_SQL_SELECT_CALENDARNOTIFICATIONTEMPLATE_WHERE);
 
 			boolean bindUuid = false;
 
 			if (uuid.isEmpty()) {
-				query.append(_FINDER_COLUMN_UUID_UUID_3);
+				sb.append(_FINDER_COLUMN_UUID_UUID_3);
 			}
 			else {
 				bindUuid = true;
 
-				query.append(_FINDER_COLUMN_UUID_UUID_2);
+				sb.append(_FINDER_COLUMN_UUID_UUID_2);
 			}
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
 			else {
-				query.append(
-					CalendarNotificationTemplateModelImpl.ORDER_BY_JPQL);
+				sb.append(CalendarNotificationTemplateModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
 				if (bindUuid) {
-					qPos.add(uuid);
+					queryPos.add(uuid);
 				}
 
 				list = (List<CalendarNotificationTemplate>)QueryUtil.list(
-					q, getDialect(), start, end);
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
@@ -264,12 +274,8 @@ public class CalendarNotificationTemplatePersistenceImpl
 					finderCache.putResult(finderPath, finderArgs, list);
 				}
 			}
-			catch (Exception e) {
-				if (useFinderCache) {
-					finderCache.removeResult(finderPath, finderArgs);
-				}
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -300,16 +306,16 @@ public class CalendarNotificationTemplatePersistenceImpl
 			return calendarNotificationTemplate;
 		}
 
-		StringBundler msg = new StringBundler(4);
+		StringBundler sb = new StringBundler(4);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("uuid=");
-		msg.append(uuid);
+		sb.append("uuid=");
+		sb.append(uuid);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchNotificationTemplateException(msg.toString());
+		throw new NoSuchNotificationTemplateException(sb.toString());
 	}
 
 	/**
@@ -355,16 +361,16 @@ public class CalendarNotificationTemplatePersistenceImpl
 			return calendarNotificationTemplate;
 		}
 
-		StringBundler msg = new StringBundler(4);
+		StringBundler sb = new StringBundler(4);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("uuid=");
-		msg.append(uuid);
+		sb.append("uuid=");
+		sb.append(uuid);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchNotificationTemplateException(msg.toString());
+		throw new NoSuchNotificationTemplateException(sb.toString());
 	}
 
 	/**
@@ -435,8 +441,8 @@ public class CalendarNotificationTemplatePersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -449,28 +455,28 @@ public class CalendarNotificationTemplatePersistenceImpl
 		OrderByComparator<CalendarNotificationTemplate> orderByComparator,
 		boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				4 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(3);
+			sb = new StringBundler(3);
 		}
 
-		query.append(_SQL_SELECT_CALENDARNOTIFICATIONTEMPLATE_WHERE);
+		sb.append(_SQL_SELECT_CALENDARNOTIFICATIONTEMPLATE_WHERE);
 
 		boolean bindUuid = false;
 
 		if (uuid.isEmpty()) {
-			query.append(_FINDER_COLUMN_UUID_UUID_3);
+			sb.append(_FINDER_COLUMN_UUID_UUID_3);
 		}
 		else {
 			bindUuid = true;
 
-			query.append(_FINDER_COLUMN_UUID_UUID_2);
+			sb.append(_FINDER_COLUMN_UUID_UUID_2);
 		}
 
 		if (orderByComparator != null) {
@@ -478,72 +484,72 @@ public class CalendarNotificationTemplatePersistenceImpl
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(CalendarNotificationTemplateModelImpl.ORDER_BY_JPQL);
+			sb.append(CalendarNotificationTemplateModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
 		if (bindUuid) {
-			qPos.add(uuid);
+			queryPos.add(uuid);
 		}
 
 		if (orderByComparator != null) {
@@ -551,11 +557,11 @@ public class CalendarNotificationTemplatePersistenceImpl
 					orderByComparator.getOrderByConditionValues(
 						calendarNotificationTemplate)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<CalendarNotificationTemplate> list = q.list();
+		List<CalendarNotificationTemplate> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -593,47 +599,45 @@ public class CalendarNotificationTemplatePersistenceImpl
 
 		Object[] finderArgs = new Object[] {uuid};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
 
 		if (count == null) {
-			StringBundler query = new StringBundler(2);
+			StringBundler sb = new StringBundler(2);
 
-			query.append(_SQL_COUNT_CALENDARNOTIFICATIONTEMPLATE_WHERE);
+			sb.append(_SQL_COUNT_CALENDARNOTIFICATIONTEMPLATE_WHERE);
 
 			boolean bindUuid = false;
 
 			if (uuid.isEmpty()) {
-				query.append(_FINDER_COLUMN_UUID_UUID_3);
+				sb.append(_FINDER_COLUMN_UUID_UUID_3);
 			}
 			else {
 				bindUuid = true;
 
-				query.append(_FINDER_COLUMN_UUID_UUID_2);
+				sb.append(_FINDER_COLUMN_UUID_UUID_2);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
 				if (bindUuid) {
-					qPos.add(uuid);
+					queryPos.add(uuid);
 				}
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
 				finderCache.putResult(finderPath, finderArgs, count);
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -668,23 +672,23 @@ public class CalendarNotificationTemplatePersistenceImpl
 			fetchByUUID_G(uuid, groupId);
 
 		if (calendarNotificationTemplate == null) {
-			StringBundler msg = new StringBundler(6);
+			StringBundler sb = new StringBundler(6);
 
-			msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+			sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-			msg.append("uuid=");
-			msg.append(uuid);
+			sb.append("uuid=");
+			sb.append(uuid);
 
-			msg.append(", groupId=");
-			msg.append(groupId);
+			sb.append(", groupId=");
+			sb.append(groupId);
 
-			msg.append("}");
+			sb.append("}");
 
 			if (_log.isDebugEnabled()) {
-				_log.debug(msg.toString());
+				_log.debug(sb.toString());
 			}
 
-			throw new NoSuchNotificationTemplateException(msg.toString());
+			throw new NoSuchNotificationTemplateException(sb.toString());
 		}
 
 		return calendarNotificationTemplate;
@@ -728,7 +732,7 @@ public class CalendarNotificationTemplatePersistenceImpl
 
 		if (useFinderCache) {
 			result = finderCache.getResult(
-				_finderPathFetchByUUID_G, finderArgs, this);
+				_finderPathFetchByUUID_G, finderArgs);
 		}
 
 		if (result instanceof CalendarNotificationTemplate) {
@@ -743,41 +747,41 @@ public class CalendarNotificationTemplatePersistenceImpl
 		}
 
 		if (result == null) {
-			StringBundler query = new StringBundler(4);
+			StringBundler sb = new StringBundler(4);
 
-			query.append(_SQL_SELECT_CALENDARNOTIFICATIONTEMPLATE_WHERE);
+			sb.append(_SQL_SELECT_CALENDARNOTIFICATIONTEMPLATE_WHERE);
 
 			boolean bindUuid = false;
 
 			if (uuid.isEmpty()) {
-				query.append(_FINDER_COLUMN_UUID_G_UUID_3);
+				sb.append(_FINDER_COLUMN_UUID_G_UUID_3);
 			}
 			else {
 				bindUuid = true;
 
-				query.append(_FINDER_COLUMN_UUID_G_UUID_2);
+				sb.append(_FINDER_COLUMN_UUID_G_UUID_2);
 			}
 
-			query.append(_FINDER_COLUMN_UUID_G_GROUPID_2);
+			sb.append(_FINDER_COLUMN_UUID_G_GROUPID_2);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
 				if (bindUuid) {
-					qPos.add(uuid);
+					queryPos.add(uuid);
 				}
 
-				qPos.add(groupId);
+				queryPos.add(groupId);
 
-				List<CalendarNotificationTemplate> list = q.list();
+				List<CalendarNotificationTemplate> list = query.list();
 
 				if (list.isEmpty()) {
 					if (useFinderCache) {
@@ -794,13 +798,8 @@ public class CalendarNotificationTemplatePersistenceImpl
 					cacheResult(calendarNotificationTemplate);
 				}
 			}
-			catch (Exception e) {
-				if (useFinderCache) {
-					finderCache.removeResult(
-						_finderPathFetchByUUID_G, finderArgs);
-				}
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -848,51 +847,49 @@ public class CalendarNotificationTemplatePersistenceImpl
 
 		Object[] finderArgs = new Object[] {uuid, groupId};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
 
 		if (count == null) {
-			StringBundler query = new StringBundler(3);
+			StringBundler sb = new StringBundler(3);
 
-			query.append(_SQL_COUNT_CALENDARNOTIFICATIONTEMPLATE_WHERE);
+			sb.append(_SQL_COUNT_CALENDARNOTIFICATIONTEMPLATE_WHERE);
 
 			boolean bindUuid = false;
 
 			if (uuid.isEmpty()) {
-				query.append(_FINDER_COLUMN_UUID_G_UUID_3);
+				sb.append(_FINDER_COLUMN_UUID_G_UUID_3);
 			}
 			else {
 				bindUuid = true;
 
-				query.append(_FINDER_COLUMN_UUID_G_UUID_2);
+				sb.append(_FINDER_COLUMN_UUID_G_UUID_2);
 			}
 
-			query.append(_FINDER_COLUMN_UUID_G_GROUPID_2);
+			sb.append(_FINDER_COLUMN_UUID_G_GROUPID_2);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
 				if (bindUuid) {
-					qPos.add(uuid);
+					queryPos.add(uuid);
 				}
 
-				qPos.add(groupId);
+				queryPos.add(groupId);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
 				finderCache.putResult(finderPath, finderArgs, count);
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -1018,7 +1015,7 @@ public class CalendarNotificationTemplatePersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<CalendarNotificationTemplate>)finderCache.getResult(
-				finderPath, finderArgs, this);
+				finderPath, finderArgs);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (CalendarNotificationTemplate calendarNotificationTemplate :
@@ -1037,59 +1034,58 @@ public class CalendarNotificationTemplatePersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					4 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(4);
+				sb = new StringBundler(4);
 			}
 
-			query.append(_SQL_SELECT_CALENDARNOTIFICATIONTEMPLATE_WHERE);
+			sb.append(_SQL_SELECT_CALENDARNOTIFICATIONTEMPLATE_WHERE);
 
 			boolean bindUuid = false;
 
 			if (uuid.isEmpty()) {
-				query.append(_FINDER_COLUMN_UUID_C_UUID_3);
+				sb.append(_FINDER_COLUMN_UUID_C_UUID_3);
 			}
 			else {
 				bindUuid = true;
 
-				query.append(_FINDER_COLUMN_UUID_C_UUID_2);
+				sb.append(_FINDER_COLUMN_UUID_C_UUID_2);
 			}
 
-			query.append(_FINDER_COLUMN_UUID_C_COMPANYID_2);
+			sb.append(_FINDER_COLUMN_UUID_C_COMPANYID_2);
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
 			else {
-				query.append(
-					CalendarNotificationTemplateModelImpl.ORDER_BY_JPQL);
+				sb.append(CalendarNotificationTemplateModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
 				if (bindUuid) {
-					qPos.add(uuid);
+					queryPos.add(uuid);
 				}
 
-				qPos.add(companyId);
+				queryPos.add(companyId);
 
 				list = (List<CalendarNotificationTemplate>)QueryUtil.list(
-					q, getDialect(), start, end);
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
@@ -1097,12 +1093,8 @@ public class CalendarNotificationTemplatePersistenceImpl
 					finderCache.putResult(finderPath, finderArgs, list);
 				}
 			}
-			catch (Exception e) {
-				if (useFinderCache) {
-					finderCache.removeResult(finderPath, finderArgs);
-				}
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -1134,19 +1126,19 @@ public class CalendarNotificationTemplatePersistenceImpl
 			return calendarNotificationTemplate;
 		}
 
-		StringBundler msg = new StringBundler(6);
+		StringBundler sb = new StringBundler(6);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("uuid=");
-		msg.append(uuid);
+		sb.append("uuid=");
+		sb.append(uuid);
 
-		msg.append(", companyId=");
-		msg.append(companyId);
+		sb.append(", companyId=");
+		sb.append(companyId);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchNotificationTemplateException(msg.toString());
+		throw new NoSuchNotificationTemplateException(sb.toString());
 	}
 
 	/**
@@ -1194,19 +1186,19 @@ public class CalendarNotificationTemplatePersistenceImpl
 			return calendarNotificationTemplate;
 		}
 
-		StringBundler msg = new StringBundler(6);
+		StringBundler sb = new StringBundler(6);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("uuid=");
-		msg.append(uuid);
+		sb.append("uuid=");
+		sb.append(uuid);
 
-		msg.append(", companyId=");
-		msg.append(companyId);
+		sb.append(", companyId=");
+		sb.append(companyId);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchNotificationTemplateException(msg.toString());
+		throw new NoSuchNotificationTemplateException(sb.toString());
 	}
 
 	/**
@@ -1279,8 +1271,8 @@ public class CalendarNotificationTemplatePersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -1294,117 +1286,117 @@ public class CalendarNotificationTemplatePersistenceImpl
 		OrderByComparator<CalendarNotificationTemplate> orderByComparator,
 		boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				5 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(4);
+			sb = new StringBundler(4);
 		}
 
-		query.append(_SQL_SELECT_CALENDARNOTIFICATIONTEMPLATE_WHERE);
+		sb.append(_SQL_SELECT_CALENDARNOTIFICATIONTEMPLATE_WHERE);
 
 		boolean bindUuid = false;
 
 		if (uuid.isEmpty()) {
-			query.append(_FINDER_COLUMN_UUID_C_UUID_3);
+			sb.append(_FINDER_COLUMN_UUID_C_UUID_3);
 		}
 		else {
 			bindUuid = true;
 
-			query.append(_FINDER_COLUMN_UUID_C_UUID_2);
+			sb.append(_FINDER_COLUMN_UUID_C_UUID_2);
 		}
 
-		query.append(_FINDER_COLUMN_UUID_C_COMPANYID_2);
+		sb.append(_FINDER_COLUMN_UUID_C_COMPANYID_2);
 
 		if (orderByComparator != null) {
 			String[] orderByConditionFields =
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(CalendarNotificationTemplateModelImpl.ORDER_BY_JPQL);
+			sb.append(CalendarNotificationTemplateModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
 		if (bindUuid) {
-			qPos.add(uuid);
+			queryPos.add(uuid);
 		}
 
-		qPos.add(companyId);
+		queryPos.add(companyId);
 
 		if (orderByComparator != null) {
 			for (Object orderByConditionValue :
 					orderByComparator.getOrderByConditionValues(
 						calendarNotificationTemplate)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<CalendarNotificationTemplate> list = q.list();
+		List<CalendarNotificationTemplate> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -1446,51 +1438,49 @@ public class CalendarNotificationTemplatePersistenceImpl
 
 		Object[] finderArgs = new Object[] {uuid, companyId};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
 
 		if (count == null) {
-			StringBundler query = new StringBundler(3);
+			StringBundler sb = new StringBundler(3);
 
-			query.append(_SQL_COUNT_CALENDARNOTIFICATIONTEMPLATE_WHERE);
+			sb.append(_SQL_COUNT_CALENDARNOTIFICATIONTEMPLATE_WHERE);
 
 			boolean bindUuid = false;
 
 			if (uuid.isEmpty()) {
-				query.append(_FINDER_COLUMN_UUID_C_UUID_3);
+				sb.append(_FINDER_COLUMN_UUID_C_UUID_3);
 			}
 			else {
 				bindUuid = true;
 
-				query.append(_FINDER_COLUMN_UUID_C_UUID_2);
+				sb.append(_FINDER_COLUMN_UUID_C_UUID_2);
 			}
 
-			query.append(_FINDER_COLUMN_UUID_C_COMPANYID_2);
+			sb.append(_FINDER_COLUMN_UUID_C_COMPANYID_2);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
 				if (bindUuid) {
-					qPos.add(uuid);
+					queryPos.add(uuid);
 				}
 
-				qPos.add(companyId);
+				queryPos.add(companyId);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
 				finderCache.putResult(finderPath, finderArgs, count);
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -1610,7 +1600,7 @@ public class CalendarNotificationTemplatePersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<CalendarNotificationTemplate>)finderCache.getResult(
-				finderPath, finderArgs, this);
+				finderPath, finderArgs);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (CalendarNotificationTemplate calendarNotificationTemplate :
@@ -1628,44 +1618,43 @@ public class CalendarNotificationTemplatePersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					3 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(3);
+				sb = new StringBundler(3);
 			}
 
-			query.append(_SQL_SELECT_CALENDARNOTIFICATIONTEMPLATE_WHERE);
+			sb.append(_SQL_SELECT_CALENDARNOTIFICATIONTEMPLATE_WHERE);
 
-			query.append(_FINDER_COLUMN_CALENDARID_CALENDARID_2);
+			sb.append(_FINDER_COLUMN_CALENDARID_CALENDARID_2);
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
 			else {
-				query.append(
-					CalendarNotificationTemplateModelImpl.ORDER_BY_JPQL);
+				sb.append(CalendarNotificationTemplateModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(calendarId);
+				queryPos.add(calendarId);
 
 				list = (List<CalendarNotificationTemplate>)QueryUtil.list(
-					q, getDialect(), start, end);
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
@@ -1673,12 +1662,8 @@ public class CalendarNotificationTemplatePersistenceImpl
 					finderCache.putResult(finderPath, finderArgs, list);
 				}
 			}
-			catch (Exception e) {
-				if (useFinderCache) {
-					finderCache.removeResult(finderPath, finderArgs);
-				}
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -1709,16 +1694,16 @@ public class CalendarNotificationTemplatePersistenceImpl
 			return calendarNotificationTemplate;
 		}
 
-		StringBundler msg = new StringBundler(4);
+		StringBundler sb = new StringBundler(4);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("calendarId=");
-		msg.append(calendarId);
+		sb.append("calendarId=");
+		sb.append(calendarId);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchNotificationTemplateException(msg.toString());
+		throw new NoSuchNotificationTemplateException(sb.toString());
 	}
 
 	/**
@@ -1764,16 +1749,16 @@ public class CalendarNotificationTemplatePersistenceImpl
 			return calendarNotificationTemplate;
 		}
 
-		StringBundler msg = new StringBundler(4);
+		StringBundler sb = new StringBundler(4);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("calendarId=");
-		msg.append(calendarId);
+		sb.append("calendarId=");
+		sb.append(calendarId);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchNotificationTemplateException(msg.toString());
+		throw new NoSuchNotificationTemplateException(sb.toString());
 	}
 
 	/**
@@ -1842,8 +1827,8 @@ public class CalendarNotificationTemplatePersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -1857,102 +1842,102 @@ public class CalendarNotificationTemplatePersistenceImpl
 		OrderByComparator<CalendarNotificationTemplate> orderByComparator,
 		boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				4 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(3);
+			sb = new StringBundler(3);
 		}
 
-		query.append(_SQL_SELECT_CALENDARNOTIFICATIONTEMPLATE_WHERE);
+		sb.append(_SQL_SELECT_CALENDARNOTIFICATIONTEMPLATE_WHERE);
 
-		query.append(_FINDER_COLUMN_CALENDARID_CALENDARID_2);
+		sb.append(_FINDER_COLUMN_CALENDARID_CALENDARID_2);
 
 		if (orderByComparator != null) {
 			String[] orderByConditionFields =
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(CalendarNotificationTemplateModelImpl.ORDER_BY_JPQL);
+			sb.append(CalendarNotificationTemplateModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
-		qPos.add(calendarId);
+		queryPos.add(calendarId);
 
 		if (orderByComparator != null) {
 			for (Object orderByConditionValue :
 					orderByComparator.getOrderByConditionValues(
 						calendarNotificationTemplate)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<CalendarNotificationTemplate> list = q.list();
+		List<CalendarNotificationTemplate> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -1989,36 +1974,34 @@ public class CalendarNotificationTemplatePersistenceImpl
 
 		Object[] finderArgs = new Object[] {calendarId};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
 
 		if (count == null) {
-			StringBundler query = new StringBundler(2);
+			StringBundler sb = new StringBundler(2);
 
-			query.append(_SQL_COUNT_CALENDARNOTIFICATIONTEMPLATE_WHERE);
+			sb.append(_SQL_COUNT_CALENDARNOTIFICATIONTEMPLATE_WHERE);
 
-			query.append(_FINDER_COLUMN_CALENDARID_CALENDARID_2);
+			sb.append(_FINDER_COLUMN_CALENDARID_CALENDARID_2);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(calendarId);
+				queryPos.add(calendarId);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
 				finderCache.putResult(finderPath, finderArgs, count);
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -2054,26 +2037,26 @@ public class CalendarNotificationTemplatePersistenceImpl
 				calendarId, notificationType, notificationTemplateType);
 
 		if (calendarNotificationTemplate == null) {
-			StringBundler msg = new StringBundler(8);
+			StringBundler sb = new StringBundler(8);
 
-			msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+			sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-			msg.append("calendarId=");
-			msg.append(calendarId);
+			sb.append("calendarId=");
+			sb.append(calendarId);
 
-			msg.append(", notificationType=");
-			msg.append(notificationType);
+			sb.append(", notificationType=");
+			sb.append(notificationType);
 
-			msg.append(", notificationTemplateType=");
-			msg.append(notificationTemplateType);
+			sb.append(", notificationTemplateType=");
+			sb.append(notificationTemplateType);
 
-			msg.append("}");
+			sb.append("}");
 
 			if (_log.isDebugEnabled()) {
-				_log.debug(msg.toString());
+				_log.debug(sb.toString());
 			}
 
-			throw new NoSuchNotificationTemplateException(msg.toString());
+			throw new NoSuchNotificationTemplateException(sb.toString());
 		}
 
 		return calendarNotificationTemplate;
@@ -2126,7 +2109,7 @@ public class CalendarNotificationTemplatePersistenceImpl
 
 		if (useFinderCache) {
 			result = finderCache.getResult(
-				_finderPathFetchByC_NT_NTT, finderArgs, this);
+				_finderPathFetchByC_NT_NTT, finderArgs);
 		}
 
 		if (result instanceof CalendarNotificationTemplate) {
@@ -2147,58 +2130,56 @@ public class CalendarNotificationTemplatePersistenceImpl
 		}
 
 		if (result == null) {
-			StringBundler query = new StringBundler(5);
+			StringBundler sb = new StringBundler(5);
 
-			query.append(_SQL_SELECT_CALENDARNOTIFICATIONTEMPLATE_WHERE);
+			sb.append(_SQL_SELECT_CALENDARNOTIFICATIONTEMPLATE_WHERE);
 
-			query.append(_FINDER_COLUMN_C_NT_NTT_CALENDARID_2);
+			sb.append(_FINDER_COLUMN_C_NT_NTT_CALENDARID_2);
 
 			boolean bindNotificationType = false;
 
 			if (notificationType.isEmpty()) {
-				query.append(_FINDER_COLUMN_C_NT_NTT_NOTIFICATIONTYPE_3);
+				sb.append(_FINDER_COLUMN_C_NT_NTT_NOTIFICATIONTYPE_3);
 			}
 			else {
 				bindNotificationType = true;
 
-				query.append(_FINDER_COLUMN_C_NT_NTT_NOTIFICATIONTYPE_2);
+				sb.append(_FINDER_COLUMN_C_NT_NTT_NOTIFICATIONTYPE_2);
 			}
 
 			boolean bindNotificationTemplateType = false;
 
 			if (notificationTemplateType.isEmpty()) {
-				query.append(
-					_FINDER_COLUMN_C_NT_NTT_NOTIFICATIONTEMPLATETYPE_3);
+				sb.append(_FINDER_COLUMN_C_NT_NTT_NOTIFICATIONTEMPLATETYPE_3);
 			}
 			else {
 				bindNotificationTemplateType = true;
 
-				query.append(
-					_FINDER_COLUMN_C_NT_NTT_NOTIFICATIONTEMPLATETYPE_2);
+				sb.append(_FINDER_COLUMN_C_NT_NTT_NOTIFICATIONTEMPLATETYPE_2);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(calendarId);
+				queryPos.add(calendarId);
 
 				if (bindNotificationType) {
-					qPos.add(notificationType);
+					queryPos.add(notificationType);
 				}
 
 				if (bindNotificationTemplateType) {
-					qPos.add(notificationTemplateType);
+					queryPos.add(notificationTemplateType);
 				}
 
-				List<CalendarNotificationTemplate> list = q.list();
+				List<CalendarNotificationTemplate> list = query.list();
 
 				if (list.isEmpty()) {
 					if (useFinderCache) {
@@ -2233,13 +2214,8 @@ public class CalendarNotificationTemplatePersistenceImpl
 					cacheResult(calendarNotificationTemplate);
 				}
 			}
-			catch (Exception e) {
-				if (useFinderCache) {
-					finderCache.removeResult(
-						_finderPathFetchByC_NT_NTT, finderArgs);
-				}
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -2298,68 +2274,64 @@ public class CalendarNotificationTemplatePersistenceImpl
 			calendarId, notificationType, notificationTemplateType
 		};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
 
 		if (count == null) {
-			StringBundler query = new StringBundler(4);
+			StringBundler sb = new StringBundler(4);
 
-			query.append(_SQL_COUNT_CALENDARNOTIFICATIONTEMPLATE_WHERE);
+			sb.append(_SQL_COUNT_CALENDARNOTIFICATIONTEMPLATE_WHERE);
 
-			query.append(_FINDER_COLUMN_C_NT_NTT_CALENDARID_2);
+			sb.append(_FINDER_COLUMN_C_NT_NTT_CALENDARID_2);
 
 			boolean bindNotificationType = false;
 
 			if (notificationType.isEmpty()) {
-				query.append(_FINDER_COLUMN_C_NT_NTT_NOTIFICATIONTYPE_3);
+				sb.append(_FINDER_COLUMN_C_NT_NTT_NOTIFICATIONTYPE_3);
 			}
 			else {
 				bindNotificationType = true;
 
-				query.append(_FINDER_COLUMN_C_NT_NTT_NOTIFICATIONTYPE_2);
+				sb.append(_FINDER_COLUMN_C_NT_NTT_NOTIFICATIONTYPE_2);
 			}
 
 			boolean bindNotificationTemplateType = false;
 
 			if (notificationTemplateType.isEmpty()) {
-				query.append(
-					_FINDER_COLUMN_C_NT_NTT_NOTIFICATIONTEMPLATETYPE_3);
+				sb.append(_FINDER_COLUMN_C_NT_NTT_NOTIFICATIONTEMPLATETYPE_3);
 			}
 			else {
 				bindNotificationTemplateType = true;
 
-				query.append(
-					_FINDER_COLUMN_C_NT_NTT_NOTIFICATIONTEMPLATETYPE_2);
+				sb.append(_FINDER_COLUMN_C_NT_NTT_NOTIFICATIONTEMPLATETYPE_2);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(calendarId);
+				queryPos.add(calendarId);
 
 				if (bindNotificationType) {
-					qPos.add(notificationType);
+					queryPos.add(notificationType);
 				}
 
 				if (bindNotificationTemplateType) {
-					qPos.add(notificationTemplateType);
+					queryPos.add(notificationTemplateType);
 				}
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
 				finderCache.putResult(finderPath, finderArgs, count);
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -2387,16 +2359,18 @@ public class CalendarNotificationTemplatePersistenceImpl
 			"(calendarNotificationTemplate.notificationTemplateType IS NULL OR calendarNotificationTemplate.notificationTemplateType = '')";
 
 	public CalendarNotificationTemplatePersistenceImpl() {
-		setModelClass(CalendarNotificationTemplate.class);
-
-		setModelImplClass(CalendarNotificationTemplateImpl.class);
-		setModelPKClass(long.class);
-
 		Map<String, String> dbColumnNames = new HashMap<String, String>();
 
 		dbColumnNames.put("uuid", "uuid_");
 
 		setDBColumnNames(dbColumnNames);
+
+		setModelClass(CalendarNotificationTemplate.class);
+
+		setModelImplClass(CalendarNotificationTemplateImpl.class);
+		setModelPKClass(long.class);
+
+		setTable(CalendarNotificationTemplateTable.INSTANCE);
 	}
 
 	/**
@@ -2409,7 +2383,7 @@ public class CalendarNotificationTemplatePersistenceImpl
 		CalendarNotificationTemplate calendarNotificationTemplate) {
 
 		entityCache.putResult(
-			entityCacheEnabled, CalendarNotificationTemplateImpl.class,
+			CalendarNotificationTemplateImpl.class,
 			calendarNotificationTemplate.getPrimaryKey(),
 			calendarNotificationTemplate);
 
@@ -2429,8 +2403,6 @@ public class CalendarNotificationTemplatePersistenceImpl
 				calendarNotificationTemplate.getNotificationTemplateType()
 			},
 			calendarNotificationTemplate);
-
-		calendarNotificationTemplate.resetOriginalValues();
 	}
 
 	/**
@@ -2446,13 +2418,10 @@ public class CalendarNotificationTemplatePersistenceImpl
 				calendarNotificationTemplates) {
 
 			if (entityCache.getResult(
-					entityCacheEnabled, CalendarNotificationTemplateImpl.class,
+					CalendarNotificationTemplateImpl.class,
 					calendarNotificationTemplate.getPrimaryKey()) == null) {
 
 				cacheResult(calendarNotificationTemplate);
-			}
-			else {
-				calendarNotificationTemplate.resetOriginalValues();
 			}
 		}
 	}
@@ -2468,9 +2437,7 @@ public class CalendarNotificationTemplatePersistenceImpl
 	public void clearCache() {
 		entityCache.clearCache(CalendarNotificationTemplateImpl.class);
 
-		finderCache.clearCache(FINDER_CLASS_NAME_ENTITY);
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+		finderCache.clearCache(CalendarNotificationTemplateImpl.class);
 	}
 
 	/**
@@ -2485,48 +2452,30 @@ public class CalendarNotificationTemplatePersistenceImpl
 		CalendarNotificationTemplate calendarNotificationTemplate) {
 
 		entityCache.removeResult(
-			entityCacheEnabled, CalendarNotificationTemplateImpl.class,
-			calendarNotificationTemplate.getPrimaryKey());
-
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
-
-		clearUniqueFindersCache(
-			(CalendarNotificationTemplateModelImpl)calendarNotificationTemplate,
-			true);
+			CalendarNotificationTemplateImpl.class,
+			calendarNotificationTemplate);
 	}
 
 	@Override
 	public void clearCache(
 		List<CalendarNotificationTemplate> calendarNotificationTemplates) {
 
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
-
 		for (CalendarNotificationTemplate calendarNotificationTemplate :
 				calendarNotificationTemplates) {
 
 			entityCache.removeResult(
-				entityCacheEnabled, CalendarNotificationTemplateImpl.class,
-				calendarNotificationTemplate.getPrimaryKey());
-
-			clearUniqueFindersCache(
-				(CalendarNotificationTemplateModelImpl)
-					calendarNotificationTemplate,
-				true);
+				CalendarNotificationTemplateImpl.class,
+				calendarNotificationTemplate);
 		}
 	}
 
 	@Override
 	public void clearCache(Set<Serializable> primaryKeys) {
-		finderCache.clearCache(FINDER_CLASS_NAME_ENTITY);
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+		finderCache.clearCache(CalendarNotificationTemplateImpl.class);
 
 		for (Serializable primaryKey : primaryKeys) {
 			entityCache.removeResult(
-				entityCacheEnabled, CalendarNotificationTemplateImpl.class,
-				primaryKey);
+				CalendarNotificationTemplateImpl.class, primaryKey);
 		}
 	}
 
@@ -2539,11 +2488,10 @@ public class CalendarNotificationTemplatePersistenceImpl
 			calendarNotificationTemplateModelImpl.getGroupId()
 		};
 
-		finderCache.putResult(
-			_finderPathCountByUUID_G, args, Long.valueOf(1), false);
+		finderCache.putResult(_finderPathCountByUUID_G, args, Long.valueOf(1));
 		finderCache.putResult(
 			_finderPathFetchByUUID_G, args,
-			calendarNotificationTemplateModelImpl, false);
+			calendarNotificationTemplateModelImpl);
 
 		args = new Object[] {
 			calendarNotificationTemplateModelImpl.getCalendarId(),
@@ -2552,65 +2500,10 @@ public class CalendarNotificationTemplatePersistenceImpl
 		};
 
 		finderCache.putResult(
-			_finderPathCountByC_NT_NTT, args, Long.valueOf(1), false);
+			_finderPathCountByC_NT_NTT, args, Long.valueOf(1));
 		finderCache.putResult(
 			_finderPathFetchByC_NT_NTT, args,
-			calendarNotificationTemplateModelImpl, false);
-	}
-
-	protected void clearUniqueFindersCache(
-		CalendarNotificationTemplateModelImpl
-			calendarNotificationTemplateModelImpl,
-		boolean clearCurrent) {
-
-		if (clearCurrent) {
-			Object[] args = new Object[] {
-				calendarNotificationTemplateModelImpl.getUuid(),
-				calendarNotificationTemplateModelImpl.getGroupId()
-			};
-
-			finderCache.removeResult(_finderPathCountByUUID_G, args);
-			finderCache.removeResult(_finderPathFetchByUUID_G, args);
-		}
-
-		if ((calendarNotificationTemplateModelImpl.getColumnBitmask() &
-			 _finderPathFetchByUUID_G.getColumnBitmask()) != 0) {
-
-			Object[] args = new Object[] {
-				calendarNotificationTemplateModelImpl.getOriginalUuid(),
-				calendarNotificationTemplateModelImpl.getOriginalGroupId()
-			};
-
-			finderCache.removeResult(_finderPathCountByUUID_G, args);
-			finderCache.removeResult(_finderPathFetchByUUID_G, args);
-		}
-
-		if (clearCurrent) {
-			Object[] args = new Object[] {
-				calendarNotificationTemplateModelImpl.getCalendarId(),
-				calendarNotificationTemplateModelImpl.getNotificationType(),
-				calendarNotificationTemplateModelImpl.
-					getNotificationTemplateType()
-			};
-
-			finderCache.removeResult(_finderPathCountByC_NT_NTT, args);
-			finderCache.removeResult(_finderPathFetchByC_NT_NTT, args);
-		}
-
-		if ((calendarNotificationTemplateModelImpl.getColumnBitmask() &
-			 _finderPathFetchByC_NT_NTT.getColumnBitmask()) != 0) {
-
-			Object[] args = new Object[] {
-				calendarNotificationTemplateModelImpl.getOriginalCalendarId(),
-				calendarNotificationTemplateModelImpl.
-					getOriginalNotificationType(),
-				calendarNotificationTemplateModelImpl.
-					getOriginalNotificationTemplateType()
-			};
-
-			finderCache.removeResult(_finderPathCountByC_NT_NTT, args);
-			finderCache.removeResult(_finderPathFetchByC_NT_NTT, args);
-		}
+			calendarNotificationTemplateModelImpl);
 	}
 
 	/**
@@ -2686,11 +2579,11 @@ public class CalendarNotificationTemplatePersistenceImpl
 
 			return remove(calendarNotificationTemplate);
 		}
-		catch (NoSuchNotificationTemplateException nsee) {
-			throw nsee;
+		catch (NoSuchNotificationTemplateException noSuchEntityException) {
+			throw noSuchEntityException;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -2717,8 +2610,8 @@ public class CalendarNotificationTemplatePersistenceImpl
 				session.delete(calendarNotificationTemplate);
 			}
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -2799,10 +2692,8 @@ public class CalendarNotificationTemplatePersistenceImpl
 		try {
 			session = openSession();
 
-			if (calendarNotificationTemplate.isNew()) {
+			if (isNew) {
 				session.save(calendarNotificationTemplate);
-
-				calendarNotificationTemplate.setNew(false);
 			}
 			else {
 				calendarNotificationTemplate =
@@ -2810,123 +2701,22 @@ public class CalendarNotificationTemplatePersistenceImpl
 						calendarNotificationTemplate);
 			}
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
 		}
 
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
-
-		if (!_columnBitmaskEnabled) {
-			finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
-		}
-		else if (isNew) {
-			Object[] args = new Object[] {
-				calendarNotificationTemplateModelImpl.getUuid()
-			};
-
-			finderCache.removeResult(_finderPathCountByUuid, args);
-			finderCache.removeResult(
-				_finderPathWithoutPaginationFindByUuid, args);
-
-			args = new Object[] {
-				calendarNotificationTemplateModelImpl.getUuid(),
-				calendarNotificationTemplateModelImpl.getCompanyId()
-			};
-
-			finderCache.removeResult(_finderPathCountByUuid_C, args);
-			finderCache.removeResult(
-				_finderPathWithoutPaginationFindByUuid_C, args);
-
-			args = new Object[] {
-				calendarNotificationTemplateModelImpl.getCalendarId()
-			};
-
-			finderCache.removeResult(_finderPathCountByCalendarId, args);
-			finderCache.removeResult(
-				_finderPathWithoutPaginationFindByCalendarId, args);
-
-			finderCache.removeResult(_finderPathCountAll, FINDER_ARGS_EMPTY);
-			finderCache.removeResult(
-				_finderPathWithoutPaginationFindAll, FINDER_ARGS_EMPTY);
-		}
-		else {
-			if ((calendarNotificationTemplateModelImpl.getColumnBitmask() &
-				 _finderPathWithoutPaginationFindByUuid.getColumnBitmask()) !=
-					 0) {
-
-				Object[] args = new Object[] {
-					calendarNotificationTemplateModelImpl.getOriginalUuid()
-				};
-
-				finderCache.removeResult(_finderPathCountByUuid, args);
-				finderCache.removeResult(
-					_finderPathWithoutPaginationFindByUuid, args);
-
-				args = new Object[] {
-					calendarNotificationTemplateModelImpl.getUuid()
-				};
-
-				finderCache.removeResult(_finderPathCountByUuid, args);
-				finderCache.removeResult(
-					_finderPathWithoutPaginationFindByUuid, args);
-			}
-
-			if ((calendarNotificationTemplateModelImpl.getColumnBitmask() &
-				 _finderPathWithoutPaginationFindByUuid_C.getColumnBitmask()) !=
-					 0) {
-
-				Object[] args = new Object[] {
-					calendarNotificationTemplateModelImpl.getOriginalUuid(),
-					calendarNotificationTemplateModelImpl.getOriginalCompanyId()
-				};
-
-				finderCache.removeResult(_finderPathCountByUuid_C, args);
-				finderCache.removeResult(
-					_finderPathWithoutPaginationFindByUuid_C, args);
-
-				args = new Object[] {
-					calendarNotificationTemplateModelImpl.getUuid(),
-					calendarNotificationTemplateModelImpl.getCompanyId()
-				};
-
-				finderCache.removeResult(_finderPathCountByUuid_C, args);
-				finderCache.removeResult(
-					_finderPathWithoutPaginationFindByUuid_C, args);
-			}
-
-			if ((calendarNotificationTemplateModelImpl.getColumnBitmask() &
-				 _finderPathWithoutPaginationFindByCalendarId.
-					 getColumnBitmask()) != 0) {
-
-				Object[] args = new Object[] {
-					calendarNotificationTemplateModelImpl.
-						getOriginalCalendarId()
-				};
-
-				finderCache.removeResult(_finderPathCountByCalendarId, args);
-				finderCache.removeResult(
-					_finderPathWithoutPaginationFindByCalendarId, args);
-
-				args = new Object[] {
-					calendarNotificationTemplateModelImpl.getCalendarId()
-				};
-
-				finderCache.removeResult(_finderPathCountByCalendarId, args);
-				finderCache.removeResult(
-					_finderPathWithoutPaginationFindByCalendarId, args);
-			}
-		}
-
 		entityCache.putResult(
-			entityCacheEnabled, CalendarNotificationTemplateImpl.class,
-			calendarNotificationTemplate.getPrimaryKey(),
-			calendarNotificationTemplate, false);
+			CalendarNotificationTemplateImpl.class,
+			calendarNotificationTemplateModelImpl, false, true);
 
-		clearUniqueFindersCache(calendarNotificationTemplateModelImpl, false);
 		cacheUniqueFindersCache(calendarNotificationTemplateModelImpl);
+
+		if (isNew) {
+			calendarNotificationTemplate.setNew(false);
+		}
 
 		calendarNotificationTemplate.resetOriginalValues();
 
@@ -3073,23 +2863,23 @@ public class CalendarNotificationTemplatePersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<CalendarNotificationTemplate>)finderCache.getResult(
-				finderPath, finderArgs, this);
+				finderPath, finderArgs);
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 			String sql = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					2 + (orderByComparator.getOrderByFields().length * 2));
 
-				query.append(_SQL_SELECT_CALENDARNOTIFICATIONTEMPLATE);
+				sb.append(_SQL_SELECT_CALENDARNOTIFICATIONTEMPLATE);
 
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 
-				sql = query.toString();
+				sql = sb.toString();
 			}
 			else {
 				sql = _SQL_SELECT_CALENDARNOTIFICATIONTEMPLATE;
@@ -3103,10 +2893,10 @@ public class CalendarNotificationTemplatePersistenceImpl
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
 				list = (List<CalendarNotificationTemplate>)QueryUtil.list(
-					q, getDialect(), start, end);
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
@@ -3114,12 +2904,8 @@ public class CalendarNotificationTemplatePersistenceImpl
 					finderCache.putResult(finderPath, finderArgs, list);
 				}
 			}
-			catch (Exception e) {
-				if (useFinderCache) {
-					finderCache.removeResult(finderPath, finderArgs);
-				}
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -3150,7 +2936,7 @@ public class CalendarNotificationTemplatePersistenceImpl
 	@Override
 	public int countAll() {
 		Long count = (Long)finderCache.getResult(
-			_finderPathCountAll, FINDER_ARGS_EMPTY, this);
+			_finderPathCountAll, FINDER_ARGS_EMPTY);
 
 		if (count == null) {
 			Session session = null;
@@ -3158,19 +2944,16 @@ public class CalendarNotificationTemplatePersistenceImpl
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(
+				Query query = session.createQuery(
 					_SQL_COUNT_CALENDARNOTIFICATIONTEMPLATE);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
 				finderCache.putResult(
 					_finderPathCountAll, FINDER_ARGS_EMPTY, count);
 			}
-			catch (Exception e) {
-				finderCache.removeResult(
-					_finderPathCountAll, FINDER_ARGS_EMPTY);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -3209,136 +2992,120 @@ public class CalendarNotificationTemplatePersistenceImpl
 	 * Initializes the calendar notification template persistence.
 	 */
 	@Activate
-	public void activate() {
-		CalendarNotificationTemplateModelImpl.setEntityCacheEnabled(
-			entityCacheEnabled);
-		CalendarNotificationTemplateModelImpl.setFinderCacheEnabled(
-			finderCacheEnabled);
+	public void activate(BundleContext bundleContext) {
+		_bundleContext = bundleContext;
+
+		_argumentsResolverServiceRegistration = _bundleContext.registerService(
+			ArgumentsResolver.class,
+			new CalendarNotificationTemplateModelArgumentsResolver(),
+			new HashMapDictionary<>());
 
 		_finderPathWithPaginationFindAll = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled,
-			CalendarNotificationTemplateImpl.class,
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findAll", new String[0]);
+			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findAll", new String[0],
+			new String[0], true);
 
 		_finderPathWithoutPaginationFindAll = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled,
-			CalendarNotificationTemplateImpl.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findAll",
-			new String[0]);
+			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findAll", new String[0],
+			new String[0], true);
 
 		_finderPathCountAll = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled, Long.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countAll",
-			new String[0]);
+			new String[0], new String[0], false);
 
 		_finderPathWithPaginationFindByUuid = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled,
-			CalendarNotificationTemplateImpl.class,
 			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
 			new String[] {
 				String.class.getName(), Integer.class.getName(),
 				Integer.class.getName(), OrderByComparator.class.getName()
-			});
+			},
+			new String[] {"uuid_"}, true);
 
 		_finderPathWithoutPaginationFindByUuid = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled,
-			CalendarNotificationTemplateImpl.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
-			new String[] {String.class.getName()},
-			CalendarNotificationTemplateModelImpl.UUID_COLUMN_BITMASK);
+			new String[] {String.class.getName()}, new String[] {"uuid_"},
+			true);
 
 		_finderPathCountByUuid = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled, Long.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
-			new String[] {String.class.getName()});
+			new String[] {String.class.getName()}, new String[] {"uuid_"},
+			false);
 
 		_finderPathFetchByUUID_G = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled,
-			CalendarNotificationTemplateImpl.class, FINDER_CLASS_NAME_ENTITY,
-			"fetchByUUID_G",
+			FINDER_CLASS_NAME_ENTITY, "fetchByUUID_G",
 			new String[] {String.class.getName(), Long.class.getName()},
-			CalendarNotificationTemplateModelImpl.UUID_COLUMN_BITMASK |
-			CalendarNotificationTemplateModelImpl.GROUPID_COLUMN_BITMASK);
+			new String[] {"uuid_", "groupId"}, true);
 
 		_finderPathCountByUUID_G = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled, Long.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUUID_G",
-			new String[] {String.class.getName(), Long.class.getName()});
+			new String[] {String.class.getName(), Long.class.getName()},
+			new String[] {"uuid_", "groupId"}, false);
 
 		_finderPathWithPaginationFindByUuid_C = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled,
-			CalendarNotificationTemplateImpl.class,
 			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
 			new String[] {
 				String.class.getName(), Long.class.getName(),
 				Integer.class.getName(), Integer.class.getName(),
 				OrderByComparator.class.getName()
-			});
+			},
+			new String[] {"uuid_", "companyId"}, true);
 
 		_finderPathWithoutPaginationFindByUuid_C = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled,
-			CalendarNotificationTemplateImpl.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
 			new String[] {String.class.getName(), Long.class.getName()},
-			CalendarNotificationTemplateModelImpl.UUID_COLUMN_BITMASK |
-			CalendarNotificationTemplateModelImpl.COMPANYID_COLUMN_BITMASK);
+			new String[] {"uuid_", "companyId"}, true);
 
 		_finderPathCountByUuid_C = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled, Long.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()});
+			new String[] {String.class.getName(), Long.class.getName()},
+			new String[] {"uuid_", "companyId"}, false);
 
 		_finderPathWithPaginationFindByCalendarId = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled,
-			CalendarNotificationTemplateImpl.class,
 			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByCalendarId",
 			new String[] {
 				Long.class.getName(), Integer.class.getName(),
 				Integer.class.getName(), OrderByComparator.class.getName()
-			});
+			},
+			new String[] {"calendarId"}, true);
 
 		_finderPathWithoutPaginationFindByCalendarId = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled,
-			CalendarNotificationTemplateImpl.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByCalendarId",
-			new String[] {Long.class.getName()},
-			CalendarNotificationTemplateModelImpl.CALENDARID_COLUMN_BITMASK);
+			new String[] {Long.class.getName()}, new String[] {"calendarId"},
+			true);
 
 		_finderPathCountByCalendarId = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled, Long.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByCalendarId",
-			new String[] {Long.class.getName()});
+			new String[] {Long.class.getName()}, new String[] {"calendarId"},
+			false);
 
 		_finderPathFetchByC_NT_NTT = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled,
-			CalendarNotificationTemplateImpl.class, FINDER_CLASS_NAME_ENTITY,
-			"fetchByC_NT_NTT",
+			FINDER_CLASS_NAME_ENTITY, "fetchByC_NT_NTT",
 			new String[] {
 				Long.class.getName(), String.class.getName(),
 				String.class.getName()
 			},
-			CalendarNotificationTemplateModelImpl.CALENDARID_COLUMN_BITMASK |
-			CalendarNotificationTemplateModelImpl.
-				NOTIFICATIONTYPE_COLUMN_BITMASK |
-			CalendarNotificationTemplateModelImpl.
-				NOTIFICATIONTEMPLATETYPE_COLUMN_BITMASK);
+			new String[] {
+				"calendarId", "notificationType", "notificationTemplateType"
+			},
+			true);
 
 		_finderPathCountByC_NT_NTT = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled, Long.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_NT_NTT",
 			new String[] {
 				Long.class.getName(), String.class.getName(),
 				String.class.getName()
-			});
+			},
+			new String[] {
+				"calendarId", "notificationType", "notificationTemplateType"
+			},
+			false);
 	}
 
 	@Deactivate
 	public void deactivate() {
 		entityCache.removeCache(
 			CalendarNotificationTemplateImpl.class.getName());
-		finderCache.removeCache(FINDER_CLASS_NAME_ENTITY);
-		finderCache.removeCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
-		finderCache.removeCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+
+		_argumentsResolverServiceRegistration.unregister();
 	}
 
 	@Override
@@ -3347,12 +3114,6 @@ public class CalendarNotificationTemplatePersistenceImpl
 		unbind = "-"
 	)
 	public void setConfiguration(Configuration configuration) {
-		super.setConfiguration(configuration);
-
-		_columnBitmaskEnabled = GetterUtil.getBoolean(
-			configuration.get(
-				"value.object.column.bitmask.enabled.com.liferay.calendar.model.CalendarNotificationTemplate"),
-			true);
 	}
 
 	@Override
@@ -3373,7 +3134,7 @@ public class CalendarNotificationTemplatePersistenceImpl
 		super.setSessionFactory(sessionFactory);
 	}
 
-	private boolean _columnBitmaskEnabled;
+	private BundleContext _bundleContext;
 
 	@Reference
 	protected EntityCache entityCache;
@@ -3408,13 +3169,108 @@ public class CalendarNotificationTemplatePersistenceImpl
 	private static final Set<String> _badColumnNames = SetUtil.fromArray(
 		new String[] {"uuid"});
 
-	static {
-		try {
-			Class.forName(CalendarPersistenceConstants.class.getName());
+	@Override
+	protected FinderCache getFinderCache() {
+		return finderCache;
+	}
+
+	private ServiceRegistration<ArgumentsResolver>
+		_argumentsResolverServiceRegistration;
+
+	private static class CalendarNotificationTemplateModelArgumentsResolver
+		implements ArgumentsResolver {
+
+		@Override
+		public Object[] getArguments(
+			FinderPath finderPath, BaseModel<?> baseModel, boolean checkColumn,
+			boolean original) {
+
+			String[] columnNames = finderPath.getColumnNames();
+
+			if ((columnNames == null) || (columnNames.length == 0)) {
+				if (baseModel.isNew()) {
+					return FINDER_ARGS_EMPTY;
+				}
+
+				return null;
+			}
+
+			CalendarNotificationTemplateModelImpl
+				calendarNotificationTemplateModelImpl =
+					(CalendarNotificationTemplateModelImpl)baseModel;
+
+			long columnBitmask =
+				calendarNotificationTemplateModelImpl.getColumnBitmask();
+
+			if (!checkColumn || (columnBitmask == 0)) {
+				return _getValue(
+					calendarNotificationTemplateModelImpl, columnNames,
+					original);
+			}
+
+			Long finderPathColumnBitmask = _finderPathColumnBitmasksCache.get(
+				finderPath);
+
+			if (finderPathColumnBitmask == null) {
+				finderPathColumnBitmask = 0L;
+
+				for (String columnName : columnNames) {
+					finderPathColumnBitmask |=
+						calendarNotificationTemplateModelImpl.getColumnBitmask(
+							columnName);
+				}
+
+				_finderPathColumnBitmasksCache.put(
+					finderPath, finderPathColumnBitmask);
+			}
+
+			if ((columnBitmask & finderPathColumnBitmask) != 0) {
+				return _getValue(
+					calendarNotificationTemplateModelImpl, columnNames,
+					original);
+			}
+
+			return null;
 		}
-		catch (ClassNotFoundException cnfe) {
-			throw new ExceptionInInitializerError(cnfe);
+
+		@Override
+		public String getClassName() {
+			return CalendarNotificationTemplateImpl.class.getName();
 		}
+
+		@Override
+		public String getTableName() {
+			return CalendarNotificationTemplateTable.INSTANCE.getTableName();
+		}
+
+		private Object[] _getValue(
+			CalendarNotificationTemplateModelImpl
+				calendarNotificationTemplateModelImpl,
+			String[] columnNames, boolean original) {
+
+			Object[] arguments = new Object[columnNames.length];
+
+			for (int i = 0; i < arguments.length; i++) {
+				String columnName = columnNames[i];
+
+				if (original) {
+					arguments[i] =
+						calendarNotificationTemplateModelImpl.
+							getColumnOriginalValue(columnName);
+				}
+				else {
+					arguments[i] =
+						calendarNotificationTemplateModelImpl.getColumnValue(
+							columnName);
+				}
+			}
+
+			return arguments;
+		}
+
+		private static Map<FinderPath, Long> _finderPathColumnBitmasksCache =
+			new ConcurrentHashMap<>();
+
 	}
 
 }

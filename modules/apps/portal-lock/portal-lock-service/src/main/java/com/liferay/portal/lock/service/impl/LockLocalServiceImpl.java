@@ -19,6 +19,7 @@ import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMapFactory
 import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.aop.AopService;
+import com.liferay.portal.kernel.change.tracking.CTAware;
 import com.liferay.portal.kernel.dao.jdbc.aop.MasterDataSource;
 import com.liferay.portal.kernel.dao.orm.ORMException;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -55,6 +56,7 @@ import org.osgi.service.component.annotations.Deactivate;
 	property = "model.class.name=com.liferay.portal.lock.model.Lock",
 	service = AopService.class
 )
+@CTAware
 public class LockLocalServiceImpl extends LockLocalServiceBaseImpl {
 
 	@Override
@@ -107,27 +109,6 @@ public class LockLocalServiceImpl extends LockLocalServiceBaseImpl {
 		}
 
 		return lock;
-	}
-
-	@Override
-	public Lock getLockByUuidAndCompanyId(String uuid, long companyId)
-		throws PortalException {
-
-		List<Lock> locks = lockPersistence.findByUuid_C(uuid, companyId);
-
-		if (locks.isEmpty()) {
-			StringBundler sb = new StringBundler(5);
-
-			sb.append("{uuid=");
-			sb.append(uuid);
-			sb.append(", companyId=");
-			sb.append(companyId);
-			sb.append("}");
-
-			throw new NoSuchLockException(sb.toString());
-		}
-
-		return locks.get(0);
 	}
 
 	@Override
@@ -289,7 +270,7 @@ public class LockLocalServiceImpl extends LockLocalServiceBaseImpl {
 								lock.setKey(key);
 								lock.setOwner(updatedOwner);
 
-								lockPersistence.update(lock);
+								lock = lockPersistence.update(lock);
 
 								lock.setNew(true);
 							}
@@ -301,7 +282,7 @@ public class LockLocalServiceImpl extends LockLocalServiceBaseImpl {
 								lock.setKey(key);
 								lock.setOwner(updatedOwner);
 
-								lockPersistence.update(lock);
+								lock = lockPersistence.update(lock);
 
 								lock.setNew(true);
 							}
@@ -311,20 +292,20 @@ public class LockLocalServiceImpl extends LockLocalServiceBaseImpl {
 
 					});
 			}
-			catch (Throwable t) {
-				Throwable cause = t;
+			catch (Throwable throwable) {
+				Throwable causeThrowable = throwable;
 
-				if (t instanceof ORMException) {
-					cause = t.getCause();
+				if (throwable instanceof ORMException) {
+					causeThrowable = throwable.getCause();
 				}
 
-				if (cause instanceof ConstraintViolationException ||
-					cause instanceof LockAcquisitionException) {
+				if (causeThrowable instanceof ConstraintViolationException ||
+					causeThrowable instanceof LockAcquisitionException) {
 
 					continue;
 				}
 
-				ReflectionUtil.throwException(t);
+				ReflectionUtil.throwException(throwable);
 			}
 		}
 	}
@@ -370,9 +351,7 @@ public class LockLocalServiceImpl extends LockLocalServiceBaseImpl {
 					new Date(now.getTime() + expirationTime));
 			}
 
-			lockPersistence.update(lock);
-
-			return lock;
+			return lockPersistence.update(lock);
 		}
 		finally {
 			if (lockListener != null) {
@@ -426,20 +405,20 @@ public class LockLocalServiceImpl extends LockLocalServiceBaseImpl {
 
 				return;
 			}
-			catch (Throwable t) {
-				Throwable cause = t;
+			catch (Throwable throwable) {
+				Throwable causeThrowable = throwable;
 
-				if (t instanceof ORMException) {
-					cause = t.getCause();
+				if (throwable instanceof ORMException) {
+					causeThrowable = throwable.getCause();
 				}
 
-				if (cause instanceof ConstraintViolationException ||
-					cause instanceof LockAcquisitionException) {
+				if (causeThrowable instanceof ConstraintViolationException ||
+					causeThrowable instanceof LockAcquisitionException) {
 
 					continue;
 				}
 
-				ReflectionUtil.throwException(t);
+				ReflectionUtil.throwException(throwable);
 			}
 		}
 	}

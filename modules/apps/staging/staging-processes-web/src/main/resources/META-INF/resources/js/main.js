@@ -14,9 +14,7 @@
 
 AUI.add(
 	'liferay-staging-processes-export-import',
-	A => {
-		var $ = AUI.$;
-
+	(A) => {
 		var Lang = A.Lang;
 
 		var ADate = A.Date;
@@ -36,7 +34,7 @@ AUI.add(
 		var STR_HIDE = 'hide';
 
 		var defaultConfig = {
-			setter: '_setNode'
+			setter: '_setNode',
 		};
 
 		var ExportImport = A.Component.create({
@@ -56,7 +54,7 @@ AUI.add(
 				ratingsNode: defaultConfig,
 				setupNode: defaultConfig,
 				timeZoneOffset: 0,
-				userPreferencesNode: defaultConfig
+				userPreferencesNode: defaultConfig,
 			},
 
 			AUGMENTS: [Liferay.PortletBase],
@@ -74,7 +72,7 @@ AUI.add(
 					if (form) {
 						form.delegate(
 							STR_CLICK,
-							event => {
+							(event) => {
 								var portletId = event.currentTarget.attr(
 									'data-portletid'
 								);
@@ -100,46 +98,44 @@ AUI.add(
 						);
 					}
 
-					$('[id^=' + instance.ns('PORTLET_DATA') + ']').each(
-						function() {
-							var checkBox = $(this);
-
-							checkBox.on(STR_CLICK, () => {
-								if (checkBox.is(':checked')) {
-									var id = checkBox.prop('id');
-
-									var controlCheckboxes = $(
-										'[data-root-control-id=' + id + ']'
-									);
-
-									if (controlCheckboxes.length == 0) {
-										return;
-									}
-
-									controlCheckboxes.each(function() {
-										var controlCheckbox = $(this);
-
-										if (!controlCheckbox.is(':checked')) {
-											controlCheckbox.trigger(STR_CLICK);
-										}
-									});
-
-									var portletId = id.replace(
-										instance.ns('PORTLET_DATA') + '_',
-										''
-									);
-
-									instance._setContentLabels(portletId);
-
-									var contentNode = instance.byId(
-										'content_' + portletId
-									);
-
-									instance._storeNodeInputStates(contentNode);
-								}
-							});
-						}
+					const checkboxes = document.querySelectorAll(
+						`[id^=${instance.ns('PORTLET_DATA')}]`
 					);
+
+					if (checkboxes.length > 0) {
+						document.body.addEventListener('click', (event) => {
+							const {id} = event.target;
+
+							if (id.includes(instance.ns('PORTLET_DATA'))) {
+								const controlCheckboxes = document.querySelectorAll(
+									`[data-root-control-id=${id}]`
+								);
+
+								if (controlCheckboxes.length > 0) {
+									controlCheckboxes.forEach(
+										(controlCheckbox) => {
+											if (!controlCheckbox.checked) {
+												controlCheckbox.click();
+											}
+										}
+									);
+								}
+
+								const portletId = id.replace(
+									`${instance.ns('PORTLET_DATA')}_`,
+									''
+								);
+
+								instance._setContentLabels(portletId);
+
+								const contentNode = instance.byId(
+									'content_' + portletId
+								);
+
+								instance._storeNodeInputStates(contentNode);
+							}
+						});
+					}
 
 					var changeToPublicLayoutsButton = instance.byId(
 						'changeToPublicLayoutsButton'
@@ -261,9 +257,9 @@ AUI.add(
 													);
 
 													contentDialog.hide();
-												}
+												},
 											},
-											primary: true
+											primary: true,
 										},
 										{
 											label: Liferay.Language.get(
@@ -278,14 +274,14 @@ AUI.add(
 													);
 
 													contentDialog.hide();
-												}
-											}
-										}
-									]
+												},
+											},
+										},
+									],
 								},
-								width: 400
+								width: 400,
 							},
-							title: portletTitle
+							title: portletTitle,
 						});
 
 						instance._storeNodeInputStates(contentNode);
@@ -328,9 +324,9 @@ AUI.add(
 													);
 
 													contentOptionsDialog.hide();
-												}
+												},
 											},
-											primary: true
+											primary: true,
 										},
 										{
 											label: Liferay.Language.get(
@@ -345,14 +341,14 @@ AUI.add(
 													);
 
 													contentOptionsDialog.hide();
-												}
-											}
-										}
-									]
+												},
+											},
+										},
+									],
 								},
-								width: 400
+								width: 400,
 							},
-							title: Liferay.Language.get('comments-and-ratings')
+							title: Liferay.Language.get('comments-and-ratings'),
 						});
 
 						instance._storeNodeInputStates(contentOptionsNode);
@@ -397,9 +393,9 @@ AUI.add(
 														instance._setGlobalConfigurationLabels();
 
 														globalConfigurationDialog.hide();
-													}
+													},
 												},
-												primary: true
+												primary: true,
 											},
 											{
 												label: Liferay.Language.get(
@@ -410,16 +406,16 @@ AUI.add(
 														event.domEvent.preventDefault();
 
 														globalConfigurationDialog.hide();
-													}
-												}
-											}
-										]
+													},
+												},
+											},
+										],
 									},
-									width: 400
+									width: 400,
 								},
 								title: Liferay.Language.get(
 									'application-configuration'
-								)
+								),
 							}
 						);
 
@@ -438,7 +434,8 @@ AUI.add(
 						message = Liferay.Language.get(
 							'end-date-must-be-greater-than-start-date'
 						);
-					} else if (
+					}
+					else if (
 						!instance._rangeEndsInPast(dateChecker.todayUsed) ||
 						!instance._rangeStartsInPast(dateChecker.todayUsed)
 					) {
@@ -482,14 +479,14 @@ AUI.add(
 														event.domEvent.preventDefault();
 
 														scheduledPublishingEventsDialog.hide();
-													}
-												}
-											}
-										]
+													},
+												},
+											},
+										],
 									},
-									width: 400
+									width: 400,
 								},
-								title: Liferay.Language.get('scheduled-events')
+								title: Liferay.Language.get('scheduled-events'),
 							}
 						);
 
@@ -534,7 +531,7 @@ AUI.add(
 
 					return {
 						endDate,
-						startDate
+						startDate,
 					};
 				},
 
@@ -555,7 +552,7 @@ AUI.add(
 				_initLabels() {
 					var instance = this;
 
-					instance.all('.content-link').each(item => {
+					instance.all('.content-link').each((item) => {
 						instance._setContentLabels(item.attr('data-portletid'));
 					});
 
@@ -603,9 +600,9 @@ AUI.add(
 
 					Liferay.Util.openWindow({
 						dialog: {
-							bodyContent: bodyNode
+							bodyContent: bodyNode,
 						},
-						title
+						title,
 					});
 				},
 
@@ -653,11 +650,12 @@ AUI.add(
 					var instance = this;
 
 					if (instance._isChecked('deletionsNode')) {
-						instance.all('.deletions').each(item => {
+						instance.all('.deletions').each((item) => {
 							item.show();
 						});
-					} else {
-						instance.all('.deletions').each(item => {
+					}
+					else {
+						instance.all('.deletions').each((item) => {
 							item.hide();
 						});
 					}
@@ -671,20 +669,20 @@ AUI.add(
 
 					if (cmdNode.val() === 'add' || cmdNode.val() === 'update') {
 						var redirectParameters = {
-							cmd: cmdNode.val()
+							cmd: cmdNode.val(),
 						};
 
 						if (instance._exportLAR) {
 							redirectParameters.mvcRenderCommandName =
-								'editExportConfiguration';
+								'/export_import/edit_export_configuration';
 							redirectParameters.tabs2 = 'new-export-process';
 							redirectParameters.exportConfigurationButtons =
 								'custom';
-						} else {
+						}
+						else {
 							redirectParameters.mvcRenderCommandName =
-								'editPublishConfiguration';
-							redirectParameters.tabs2 =
-								'new-publication-process';
+								'/staging_processes/edit_publish_configuration';
+							redirectParameters.tabs2 = 'new-publish-process';
 							redirectParameters.publishConfigurationButtons =
 								'custom';
 						}
@@ -757,8 +755,8 @@ AUI.add(
 
 					if (processesNode && instance._processesResourceURL) {
 						Liferay.Util.fetch(instance._processesResourceURL)
-							.then(response => response.text())
-							.then(response => {
+							.then((response) => response.text())
+							.then((response) => {
 								processesNode.empty();
 
 								processesNode.plug(A.Plugin.ParseContent);
@@ -775,19 +773,13 @@ AUI.add(
 								instance._scheduleRenderProcess();
 							})
 							.catch(() => {
-								new Liferay.Notice({
-									closeText: false,
-									content:
-										Liferay.Language.get(
-											'your-request-failed-to-complete'
-										) +
-										'<button type="button" class="close">&times;</button>',
-									noticeClass: 'hide',
-									timeout: FAILURE_TIMEOUT,
-									toggleText: false,
+								Liferay.Util.openToast({
+									message: Liferay.Language.get(
+										'your-request-failed-to-complete'
+									),
+									toastProps: {autoClose: FAILURE_TIMEOUT},
 									type: 'warning',
-									useAnimation: true
-								}).show();
+								});
 							});
 					}
 				},
@@ -803,14 +795,14 @@ AUI.add(
 				_restoreNodeHiddenState(node, state) {
 					var hiddenList = node.ancestorsByClassName(STR_HIDE);
 
-					hiddenList.each(hiddenNode => {
+					hiddenList.each((hiddenNode) => {
 						hiddenNode.removeClass(STR_HIDE);
 					});
 
 					hiddenList = state.hiddenList;
 
 					if (hiddenList !== null) {
-						hiddenList.each(node => {
+						hiddenList.each((node) => {
 							node.addClass(STR_HIDE);
 						});
 					}
@@ -827,7 +819,7 @@ AUI.add(
 						inputNodes = node.getElementsByTagName('input');
 					}
 
-					inputNodes.each(node => {
+					inputNodes.each((node) => {
 						var id = node.get('id');
 
 						var state = inputStates[id];
@@ -864,7 +856,7 @@ AUI.add(
 
 					var selectedContent = [];
 
-					inputs.each(item => {
+					inputs.each((item) => {
 						var checked = item.attr(STR_CHECKED);
 
 						if (checked) {
@@ -873,7 +865,6 @@ AUI.add(
 					});
 
 					if (
-						selectedContent.length === 0 ||
 						!instance
 							.byId('PORTLET_DATA_' + portletId)
 							.attr('checked')
@@ -883,7 +874,8 @@ AUI.add(
 							.attr('checked', false);
 
 						instance.byId('showChangeContent_' + portletId).hide();
-					} else {
+					}
+					else {
 						instance.byId('showChangeContent_' + portletId).show();
 					}
 
@@ -956,7 +948,8 @@ AUI.add(
 					if (linkNode) {
 						if (label !== STR_EMPTY) {
 							linkNode.html(Liferay.Language.get('change'));
-						} else {
+						}
+						else {
 							linkNode.html(Liferay.Language.get('select'));
 						}
 					}
@@ -973,7 +966,8 @@ AUI.add(
 
 					if (Lang.isString(val)) {
 						val = instance.one(val);
-					} else {
+					}
+					else {
 						val = A.one(val);
 					}
 
@@ -991,7 +985,7 @@ AUI.add(
 						inputNodes = node.getElementsByTagName('input');
 					}
 
-					inputNodes.each(node => {
+					inputNodes.each((node) => {
 						var hiddenList = node.ancestorsByClassName(STR_HIDE);
 
 						var id = node.get('id');
@@ -1004,7 +998,7 @@ AUI.add(
 
 						inputStates[id] = {
 							hiddenList,
-							value: val
+							value: val,
 						};
 					});
 				},
@@ -1020,7 +1014,8 @@ AUI.add(
 						A.all(
 							'.datepicker-popover, .timepicker-popover'
 						).hide();
-					} else {
+					}
+					else {
 						instance.showNotification(dateChecker);
 					}
 				},
@@ -1089,7 +1084,7 @@ AUI.add(
 
 					var dateRangeChecker = {
 						todayUsed: adjustedDate,
-						validRange: true
+						validRange: true,
 					};
 
 					if (instance._isChecked('rangeDateRangeNode')) {
@@ -1124,7 +1119,7 @@ AUI.add(
 							instance.ns('viewBackgroundTaskDetails'),
 							instance._onViewBackgroundTaskDetails,
 							instance
-						)
+						),
 					];
 
 					instance._eventHandles = eventHandles;
@@ -1139,34 +1134,18 @@ AUI.add(
 				showNotification(dateChecker) {
 					var instance = this;
 
-					if (instance._notice) {
-						instance._notice.remove();
-					}
-
 					var message = instance._getNotificationMessage(dateChecker);
 
-					instance._notice = new Liferay.Notice({
-						animationConfig: {
-							duration: 2,
-							left: '0px',
-							top: '0px'
+					Liferay.Util.openToast({
+						message,
+						toastProps: {
+							autoClose: 10000,
+							style: {left: 0, top: 0},
+							type: 'warning',
 						},
-						closeText: false,
-						content:
-							message +
-							'<button aria-label="' +
-							Liferay.Language.get('close') +
-							'" type="button" class="close">&times;</button>',
-						noticeClass: 'hide',
-						timeout: 10000,
-						toggleText: false,
-						type: 'warning',
-						useAnimation: true
 					});
-
-					instance._notice.show();
-				}
-			}
+				},
+			},
 		});
 
 		Liferay.ExportImport = ExportImport;
@@ -1180,9 +1159,8 @@ AUI.add(
 			'aui-parse-content',
 			'aui-toggler',
 			'aui-tree-view',
-			'liferay-notice',
 			'liferay-portlet-base',
-			'liferay-util-window'
-		]
+			'liferay-util-window',
+		],
 	}
 );

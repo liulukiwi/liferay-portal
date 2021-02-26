@@ -16,17 +16,26 @@ package com.liferay.talend.runtime.writer;
 
 import com.liferay.talend.BaseTestCase;
 import com.liferay.talend.avro.JsonObjectIndexedRecordConverter;
+import com.liferay.talend.common.schema.SchemaUtils;
+import com.liferay.talend.properties.output.LiferayOutputProperties;
+import com.liferay.talend.properties.parameters.RequestParameterProperties;
+import com.liferay.talend.properties.resource.LiferayResourceProperties;
+import com.liferay.talend.properties.resource.Operation;
 import com.liferay.talend.runtime.LiferayRequestContentAggregatorSink;
 import com.liferay.talend.runtime.LiferaySink;
-import com.liferay.talend.tliferayoutput.Action;
-import com.liferay.talend.tliferayoutput.TLiferayOutputProperties;
 
 import java.io.IOException;
 
 import java.math.BigDecimal;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+
 import javax.json.JsonNumber;
 import javax.json.JsonObject;
+import javax.json.JsonValue;
 
 import org.apache.avro.Schema;
 import org.apache.avro.generic.IndexedRecord;
@@ -34,7 +43,7 @@ import org.apache.avro.generic.IndexedRecord;
 import org.junit.Assert;
 import org.junit.Test;
 
-import org.talend.components.common.SchemaProperties;
+import org.talend.daikon.properties.property.Property;
 
 /**
  * @author Igor Beslic
@@ -43,30 +52,32 @@ public class LiferayWriterTest extends BaseTestCase {
 
 	@Test
 	public void testWrite() throws Exception {
-		String endpoint = "/v1.0/catalogs/{siteId}/product";
+		String openApiModule = "/headless-openapi-module/v1.0";
+		String endpoint = "/catalogs/{siteId}/product";
 
 		LiferayRequestContentAggregatorSink
 			liferayRequestContentAggregatorSink =
 				new LiferayRequestContentAggregatorSink();
 
-		TLiferayOutputProperties testLiferayOutputProperties =
-			_getTLiferayOutputProperties(Action.Insert, _OAS_URL, endpoint);
-
-		_setResourceParametersTableValues(
-			"path", "siteId", "", testLiferayOutputProperties);
+		LiferayOutputProperties testLiferayOutputProperties =
+			_getLiferayOutputProperties(
+				Operation.Insert, openApiModule, _OAS_URL, endpoint, "siteId");
 
 		JsonObject oasJsonObject = readObject("openapi.json");
 
 		Schema postContentSchema = getSchema(
 			"/v1.0/catalogs/{siteId}/product", "POST", oasJsonObject);
 
-		testLiferayOutputProperties.setSchema(postContentSchema);
+		testLiferayOutputProperties.resource.inboundSchemaProperties.schema.
+			setValue(postContentSchema);
+		testLiferayOutputProperties.resource.outboundSchemaProperties.schema.
+			setValue(postContentSchema);
 
 		LiferayWriter liferayWriter = new LiferayWriter(
 			new LiferayWriteOperation(
 				liferayRequestContentAggregatorSink,
 				testLiferayOutputProperties),
-			null, testLiferayOutputProperties);
+			testLiferayOutputProperties);
 
 		liferayWriter.open("aaaa-bbbb-cccc-dddd");
 
@@ -74,8 +85,12 @@ public class LiferayWriterTest extends BaseTestCase {
 			_createIndexedRecordFromFile(
 				"product_content.json", postContentSchema));
 
-		JsonObject outputJsonObject =
-			liferayRequestContentAggregatorSink.getOutputJsonObject();
+		JsonValue outputJsonValue =
+			liferayRequestContentAggregatorSink.getOutputJsonValue();
+
+		Assert.assertTrue(outputJsonValue instanceof JsonObject);
+
+		JsonObject outputJsonObject = outputJsonValue.asJsonObject();
 
 		Assert.assertTrue(
 			"Output has name", outputJsonObject.containsKey("name"));
@@ -90,30 +105,32 @@ public class LiferayWriterTest extends BaseTestCase {
 
 	@Test
 	public void testWriteBigDecimal() throws Exception {
-		String endpoint = "/v1.0/bigdecimal/{id}";
+		String openApiModule = "/headless-openapi-module/v1.0";
+		String endpoint = "/bigdecimal/{id}";
 
 		LiferayRequestContentAggregatorSink
 			liferayRequestContentAggregatorSink =
 				new LiferayRequestContentAggregatorSink();
 
-		TLiferayOutputProperties testLiferayOutputProperties =
-			_getTLiferayOutputProperties(Action.Update, _OAS_URL, endpoint);
-
-		_setResourceParametersTableValues(
-			"path", "id", "1977", testLiferayOutputProperties);
+		LiferayOutputProperties testLiferayOutputProperties =
+			_getLiferayOutputProperties(
+				Operation.Update, openApiModule, _OAS_URL, endpoint, "id");
 
 		JsonObject oasJsonObject = readObject("openapi_data_types.json");
 
 		Schema patchContentSchema = getSchema(
 			"/v1.0/bigdecimal/{id}", "PATCH", oasJsonObject);
 
-		testLiferayOutputProperties.setSchema(patchContentSchema);
+		testLiferayOutputProperties.resource.inboundSchemaProperties.schema.
+			setValue(patchContentSchema);
+		testLiferayOutputProperties.resource.outboundSchemaProperties.schema.
+			setValue(patchContentSchema);
 
 		LiferayWriter liferayWriter = new LiferayWriter(
 			new LiferayWriteOperation(
 				liferayRequestContentAggregatorSink,
 				testLiferayOutputProperties),
-			null, testLiferayOutputProperties);
+			testLiferayOutputProperties);
 
 		liferayWriter.open("aaaa-bbbb-cccc-dddd");
 
@@ -121,8 +138,10 @@ public class LiferayWriterTest extends BaseTestCase {
 			_createIndexedRecordFromFile(
 				"bigdecimal_content.json", patchContentSchema));
 
-		JsonObject outputJsonObject =
-			liferayRequestContentAggregatorSink.getOutputJsonObject();
+		JsonValue outputJsonValue =
+			liferayRequestContentAggregatorSink.getOutputJsonValue();
+
+		JsonObject outputJsonObject = outputJsonValue.asJsonObject();
 
 		Assert.assertTrue(
 			"Output has bigDecimal1",
@@ -143,21 +162,100 @@ public class LiferayWriterTest extends BaseTestCase {
 			bigDecimalNumber.bigDecimalValue());
 	}
 
+	@Test
+	public void testWriteDynamicEndpointUrl() throws Exception {
+		String openApiModule = "/headless-openapi-module/v1.0";
+		String endpoint = "/catalogs/{siteId}/product";
+
+		LiferayRequestContentAggregatorSink
+			liferayRequestContentAggregatorSink =
+				new LiferayRequestContentAggregatorSink();
+
+		LiferayOutputProperties testLiferayOutputProperties =
+			new LiferayOutputProperties(
+				"testLiferayOutputProperties", Operation.Insert, openApiModule,
+				_OAS_URL, endpoint, Arrays.asList("siteId"),
+				Arrays.asList("path"), Collections.emptyList());
+
+		JsonObject oasJsonObject = readObject("openapi.json");
+
+		Schema postContentSchema = getSchema(
+			"/v1.0/catalogs/{siteId}/product", "POST", oasJsonObject);
+
+		testLiferayOutputProperties.resource.inboundSchemaProperties.schema.
+			setValue(postContentSchema);
+		testLiferayOutputProperties.resource.outboundSchemaProperties.schema.
+			setValue(postContentSchema);
+		testLiferayOutputProperties.resource.rejectSchemaProperties.schema.
+			setValue(SchemaUtils.createRejectSchema(postContentSchema));
+
+		LiferayWriter liferayWriter = new LiferayWriter(
+			new LiferayWriteOperation(
+				liferayRequestContentAggregatorSink,
+				testLiferayOutputProperties),
+			testLiferayOutputProperties);
+
+		liferayWriter.open("aaaa-bbbb-cccc-dddd");
+
+		IndexedRecord indexedRecord = _createIndexedRecordFromFile(
+			"product_content.json", postContentSchema);
+
+		liferayWriter.write(indexedRecord);
+
+		Iterable<IndexedRecord> iterable = liferayWriter.getSuccessfulWrites();
+
+		Iterator<IndexedRecord> iterator = iterable.iterator();
+
+		Assert.assertFalse(iterator.hasNext());
+
+		iterable = liferayWriter.getRejectedWrites();
+
+		iterator = iterable.iterator();
+
+		Assert.assertTrue(iterator.hasNext());
+
+		IndexedRecord rejectedIndexedRecord = iterator.next();
+
+		Assert.assertNotNull(rejectedIndexedRecord);
+
+		Schema rejectSchema = rejectedIndexedRecord.getSchema();
+
+		Schema.Field errorMessageField = rejectSchema.getField("errorMessage");
+
+		String errorMessage = (String)rejectedIndexedRecord.get(
+			errorMessageField.pos());
+
+		Assert.assertEquals(
+			"The template variable 'siteId' has no value", errorMessage);
+
+		_simulateRuntimeParameterInjection(testLiferayOutputProperties);
+
+		liferayWriter.write(indexedRecord);
+
+		JsonValue outputJsonValue =
+			liferayRequestContentAggregatorSink.getOutputJsonValue();
+
+		JsonObject outputJsonObject = outputJsonValue.asJsonObject();
+
+		Assert.assertTrue(
+			"Output has name", outputJsonObject.containsKey("name"));
+	}
+
 	@Test(expected = IOException.class)
 	public void testWriteNullIndexedRecord() throws Exception {
-		TLiferayOutputProperties testLiferayOutputProperties =
-			new TLiferayOutputProperties("testLiferayOutputProperties");
+		String openApiModule = "/headless-openapi-module/v1.0";
+		String endpoint = "/bigdecimal/{id}";
 
-		testLiferayOutputProperties.setSchema(SchemaProperties.EMPTY_SCHEMA);
-
-		testLiferayOutputProperties.init();
+		LiferayOutputProperties testLiferayOutputProperties =
+			_getLiferayOutputProperties(
+				Operation.Update, openApiModule, _OAS_URL, endpoint, "id");
 
 		testLiferayOutputProperties.setupProperties();
 
 		LiferayWriter liferayWriter = new LiferayWriter(
 			new LiferayWriteOperation(
 				new LiferaySink(), testLiferayOutputProperties),
-			null, testLiferayOutputProperties);
+			testLiferayOutputProperties);
 
 		liferayWriter.write(null);
 	}
@@ -172,32 +270,29 @@ public class LiferayWriterTest extends BaseTestCase {
 			readObject(name));
 	}
 
-	private TLiferayOutputProperties _getTLiferayOutputProperties(
-		Action action, String apiSpecURL, String endpoint) {
+	private LiferayOutputProperties _getLiferayOutputProperties(
+		Operation operation, String openAPIModule, String apiSpecURL,
+		String endpoint, String parameterName) {
 
-		TLiferayOutputProperties liferayOutputProperties =
-			new TLiferayOutputProperties("testLiferayOutputProperties");
-
-		liferayOutputProperties.init();
-
-		liferayOutputProperties.setConnectionApiSpecURLValue(apiSpecURL);
-		liferayOutputProperties.setResourceEndpointValue(endpoint);
-		liferayOutputProperties.setResourceOperationsValue(action);
-		liferayOutputProperties.setSchema(SchemaProperties.EMPTY_SCHEMA);
-
-		return liferayOutputProperties;
+		return new LiferayOutputProperties(
+			"testLiferayOutputProperties", operation, openAPIModule, apiSpecURL,
+			endpoint, Arrays.asList(parameterName), Arrays.asList("path"),
+			Arrays.asList("1977"));
 	}
 
-	private void _setResourceParametersTableValues(
-		String parameterLocation, String parameterName, String parameterValue,
-		TLiferayOutputProperties tLiferayOutputProperties) {
+	private void _simulateRuntimeParameterInjection(
+		LiferayOutputProperties liferayOutputProperties) {
 
-		tLiferayOutputProperties.setResourceParametersTableColumnNameValue(
-			parameterName);
-		tLiferayOutputProperties.setResourceParametersTableTypeColumnNameValue(
-			parameterLocation);
-		tLiferayOutputProperties.setResourceParametersTableValueColumnNameValue(
-			parameterValue);
+		LiferayResourceProperties liferayResourceProperties =
+			liferayOutputProperties.resource;
+
+		RequestParameterProperties requestParameterProperties =
+			liferayResourceProperties.parameters;
+
+		Property<List<String>> parameterValueColumn =
+			requestParameterProperties.parameterValueColumn;
+
+		parameterValueColumn.setValue(Arrays.asList("1977"));
 	}
 
 	private static final String _OAS_URL =

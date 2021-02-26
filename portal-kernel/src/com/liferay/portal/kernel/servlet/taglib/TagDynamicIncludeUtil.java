@@ -41,9 +41,8 @@ public class TagDynamicIncludeUtil {
 	public static List<TagDynamicInclude> getTagDynamicIncludes(
 		String tagClassName, String tagDynamicId, String tagPoint) {
 
-		String key = _getKey(tagClassName, tagDynamicId, tagPoint);
-
-		return _tagDynamicIncludeUtil._tagDynamicIncludes.getService(key);
+		return _tagDynamicIncludeUtil._tagDynamicIncludes.getService(
+			_getKey(tagClassName, tagDynamicId, tagPoint));
 	}
 
 	public static boolean hasTagDynamicInclude(
@@ -88,8 +87,8 @@ public class TagDynamicIncludeUtil {
 					httpServletRequest, httpServletResponse, tagClassName,
 					tagDynamicId, tagPoint);
 			}
-			catch (Exception e) {
-				_log.error(e, e);
+			catch (Exception exception) {
+				_log.error(exception, exception);
 			}
 		}
 	}

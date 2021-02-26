@@ -15,18 +15,15 @@
 package com.liferay.frontend.js.bundle.config.extender.internal;
 
 import com.liferay.petra.string.StringBundler;
-import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringUtil;
-import com.liferay.portal.minifier.MinifierUtil;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
-import java.io.StringWriter;
 
 import java.net.URL;
 
@@ -90,64 +87,6 @@ public class JSBundleConfigServlet extends HttpServlet {
 			HttpServletResponse httpServletResponse)
 		throws IOException {
 
-		StringWriter stringWriter = new StringWriter();
-
-		PrintWriter printWriter = new PrintWriter(stringWriter);
-
-		Collection<JSBundleConfigTracker.JSConfig> jsConfigs =
-			_jsBundleConfigTracker.getJSConfigs();
-
-		if (!jsConfigs.isEmpty()) {
-			printWriter.println("(function() {");
-
-			for (JSBundleConfigTracker.JSConfig jsConfig : jsConfigs) {
-				URL url = jsConfig.getURL();
-
-				try (InputStream inputStream = url.openStream()) {
-					printWriter.println("try {");
-
-					ServletContext servletContext =
-						jsConfig.getServletContext();
-
-					printWriter.println(
-						StringBundler.concat(
-							"var MODULE_PATH = '", _portal.getPathProxy(),
-							servletContext.getContextPath(), "';"));
-
-					printWriter.println(
-						StringUtil.replace(
-							StringUtil.read(inputStream),
-							"//# sourceMappingURL=config.js.map",
-							StringPool.BLANK));
-
-					printWriter.println("} catch (error) {");
-					printWriter.println("console.error(error);");
-					printWriter.println("}");
-				}
-				catch (Exception e) {
-					_log.error("Unable to open resource", e);
-				}
-			}
-
-			printWriter.println("}());");
-		}
-
-		printWriter.close();
-
-		_writeResponse(httpServletResponse, stringWriter.toString());
-	}
-
-	@Reference(unbind = "-")
-	protected void setJSBundleConfigTracker(
-		JSBundleConfigTracker jsBundleConfigTracker) {
-
-		_jsBundleConfigTracker = jsBundleConfigTracker;
-	}
-
-	private void _writeResponse(
-			HttpServletResponse httpServletResponse, String content)
-		throws IOException {
-
 		httpServletResponse.setContentType(ContentTypes.TEXT_JAVASCRIPT_UTF8);
 
 		ServletOutputStream servletOutputStream =
@@ -155,10 +94,49 @@ public class JSBundleConfigServlet extends HttpServlet {
 
 		PrintWriter printWriter = new PrintWriter(servletOutputStream, true);
 
-		printWriter.write(
-			MinifierUtil.minifyJavaScript("/o/js_bundle_config", content));
+		Collection<JSBundleConfigTracker.JSConfig> jsConfigs =
+			_jsBundleConfigTracker.getJSConfigs();
+
+		if (!jsConfigs.isEmpty()) {
+			printWriter.print("(function(){");
+
+			for (JSBundleConfigTracker.JSConfig jsConfig : jsConfigs) {
+				URL url = jsConfig.getURL();
+
+				try (InputStream inputStream = url.openStream()) {
+					printWriter.print("try{");
+
+					ServletContext servletContext =
+						jsConfig.getServletContext();
+
+					printWriter.print(
+						StringBundler.concat(
+							"var MODULE_PATH='", _portal.getPathProxy(),
+							servletContext.getContextPath(), "';"));
+
+					printWriter.print(
+						StringUtil.removeSubstring(
+							StringUtil.read(inputStream),
+							"//# sourceMappingURL=config.js.map"));
+
+					printWriter.print("}catch(error){console.error(error);}");
+				}
+				catch (Exception exception) {
+					_log.error("Unable to open resource", exception);
+				}
+			}
+
+			printWriter.print("}());");
+		}
 
 		printWriter.close();
+	}
+
+	@Reference(unbind = "-")
+	protected void setJSBundleConfigTracker(
+		JSBundleConfigTracker jsBundleConfigTracker) {
+
+		_jsBundleConfigTracker = jsBundleConfigTracker;
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(

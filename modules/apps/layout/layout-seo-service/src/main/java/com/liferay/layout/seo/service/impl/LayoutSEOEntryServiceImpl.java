@@ -41,11 +41,28 @@ import org.osgi.service.component.annotations.Component;
 public class LayoutSEOEntryServiceImpl extends LayoutSEOEntryServiceBaseImpl {
 
 	@Override
+	public LayoutSEOEntry updateCustomMetaTags(
+			long groupId, boolean privateLayout, long layoutId,
+			ServiceContext serviceContext)
+		throws PortalException {
+
+		Layout layout = layoutLocalService.getLayout(
+			groupId, privateLayout, layoutId);
+
+		LayoutPermissionUtil.check(
+			getPermissionChecker(), layout, ActionKeys.UPDATE);
+
+		return layoutSEOEntryLocalService.updateCustomMetaTags(
+			getUserId(), groupId, privateLayout, layoutId, serviceContext);
+	}
+
+	@Override
 	public LayoutSEOEntry updateLayoutSEOEntry(
 			long groupId, boolean privateLayout, long layoutId,
 			boolean canonicalURLEnabled, Map<Locale, String> canonicalURLMap,
 			boolean openGraphDescriptionEnabled,
 			Map<Locale, String> openGraphDescriptionMap,
+			Map<Locale, String> openGraphImageAltMap,
 			long openGraphImageFileEntryId, boolean openGraphTitleEnabled,
 			Map<Locale, String> openGraphTitleMap,
 			ServiceContext serviceContext)
@@ -60,8 +77,9 @@ public class LayoutSEOEntryServiceImpl extends LayoutSEOEntryServiceBaseImpl {
 		return layoutSEOEntryLocalService.updateLayoutSEOEntry(
 			getUserId(), groupId, privateLayout, layoutId, canonicalURLEnabled,
 			canonicalURLMap, openGraphDescriptionEnabled,
-			openGraphDescriptionMap, openGraphImageFileEntryId,
-			openGraphTitleEnabled, openGraphTitleMap, serviceContext);
+			openGraphDescriptionMap, openGraphImageAltMap,
+			openGraphImageFileEntryId, openGraphTitleEnabled, openGraphTitleMap,
+			serviceContext);
 	}
 
 	@Override

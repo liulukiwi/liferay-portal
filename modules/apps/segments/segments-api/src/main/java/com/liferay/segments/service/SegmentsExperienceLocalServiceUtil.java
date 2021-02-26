@@ -32,16 +32,10 @@ import org.osgi.util.tracker.ServiceTracker;
  */
 public class SegmentsExperienceLocalServiceUtil {
 
-	/**
+	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify this class directly. Add custom service methods to <code>com.liferay.segments.service.impl.SegmentsExperienceLocalServiceImpl</code> and rerun ServiceBuilder to regenerate this class.
-	 */
-
-	/**
-	 * NOTE FOR DEVELOPERS:
-	 *
-	 * Never modify or reference this interface directly. Always use {@link SegmentsExperienceLocalServiceUtil} to access the segments experience local service. Add custom service methods to <code>com.liferay.segments.service.impl.SegmentsExperienceLocalServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
 	 */
 	public static com.liferay.segments.model.SegmentsExperience
 			addSegmentsExperience(
@@ -58,6 +52,20 @@ public class SegmentsExperienceLocalServiceUtil {
 	public static com.liferay.segments.model.SegmentsExperience
 			addSegmentsExperience(
 				long segmentsEntryId, long classNameId, long classPK,
+				java.util.Map<java.util.Locale, String> nameMap, boolean active,
+				com.liferay.portal.kernel.util.UnicodeProperties
+					typeSettingsUnicodeProperties,
+				com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().addSegmentsExperience(
+			segmentsEntryId, classNameId, classPK, nameMap, active,
+			typeSettingsUnicodeProperties, serviceContext);
+	}
+
+	public static com.liferay.segments.model.SegmentsExperience
+			addSegmentsExperience(
+				long segmentsEntryId, long classNameId, long classPK,
 				java.util.Map<java.util.Locale, String> nameMap, int priority,
 				boolean active,
 				com.liferay.portal.kernel.service.ServiceContext serviceContext)
@@ -68,8 +76,27 @@ public class SegmentsExperienceLocalServiceUtil {
 			serviceContext);
 	}
 
+	public static com.liferay.segments.model.SegmentsExperience
+			addSegmentsExperience(
+				long segmentsEntryId, long classNameId, long classPK,
+				java.util.Map<java.util.Locale, String> nameMap, int priority,
+				boolean active,
+				com.liferay.portal.kernel.util.UnicodeProperties
+					typeSettingsUnicodeProperties,
+				com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().addSegmentsExperience(
+			segmentsEntryId, classNameId, classPK, nameMap, priority, active,
+			typeSettingsUnicodeProperties, serviceContext);
+	}
+
 	/**
 	 * Adds the segments experience to the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect SegmentsExperienceLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param segmentsExperience the segments experience
 	 * @return the segments experience that was added
@@ -79,6 +106,42 @@ public class SegmentsExperienceLocalServiceUtil {
 			com.liferay.segments.model.SegmentsExperience segmentsExperience) {
 
 		return getService().addSegmentsExperience(segmentsExperience);
+	}
+
+	public static com.liferay.segments.model.SegmentsExperience
+			appendSegmentsExperience(
+				long segmentsEntryId, long classNameId, long classPK,
+				java.util.Map<java.util.Locale, String> nameMap, boolean active,
+				com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().appendSegmentsExperience(
+			segmentsEntryId, classNameId, classPK, nameMap, active,
+			serviceContext);
+	}
+
+	public static com.liferay.segments.model.SegmentsExperience
+			appendSegmentsExperience(
+				long segmentsEntryId, long classNameId, long classPK,
+				java.util.Map<java.util.Locale, String> nameMap, boolean active,
+				com.liferay.portal.kernel.util.UnicodeProperties
+					typeSettingsUnicodeProperties,
+				com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().appendSegmentsExperience(
+			segmentsEntryId, classNameId, classPK, nameMap, active,
+			typeSettingsUnicodeProperties, serviceContext);
+	}
+
+	/**
+	 * @throws PortalException
+	 */
+	public static com.liferay.portal.kernel.model.PersistedModel
+			createPersistedModel(java.io.Serializable primaryKeyObj)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().createPersistedModel(primaryKeyObj);
 	}
 
 	/**
@@ -114,6 +177,10 @@ public class SegmentsExperienceLocalServiceUtil {
 	/**
 	 * Deletes the segments experience with the primary key from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect SegmentsExperienceLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param segmentsExperienceId the primary key of the segments experience
 	 * @return the segments experience that was removed
 	 * @throws PortalException if a segments experience with the primary key could not be found
@@ -127,6 +194,10 @@ public class SegmentsExperienceLocalServiceUtil {
 
 	/**
 	 * Deletes the segments experience from the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect SegmentsExperienceLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param segmentsExperience the segments experience
 	 * @return the segments experience that was removed
@@ -146,6 +217,12 @@ public class SegmentsExperienceLocalServiceUtil {
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		getService().deleteSegmentsExperiences(groupId, classNameId, classPK);
+	}
+
+	public static <T> T dslQuery(
+		com.liferay.petra.sql.dsl.query.DSLQuery dslQuery) {
+
+		return getService().dslQuery(dslQuery);
 	}
 
 	public static com.liferay.portal.kernel.dao.orm.DynamicQuery
@@ -240,6 +317,14 @@ public class SegmentsExperienceLocalServiceUtil {
 	}
 
 	public static com.liferay.segments.model.SegmentsExperience
+		fetchSegmentsExperience(
+			long groupId, long classNameId, long classPK, int priority) {
+
+		return getService().fetchSegmentsExperience(
+			groupId, classNameId, classPK, priority);
+	}
+
+	public static com.liferay.segments.model.SegmentsExperience
 		fetchSegmentsExperience(long groupId, String segmentsExperienceKey) {
 
 		return getService().fetchSegmentsExperience(
@@ -290,6 +375,9 @@ public class SegmentsExperienceLocalServiceUtil {
 		return getService().getOSGiServiceIdentifier();
 	}
 
+	/**
+	 * @throws PortalException
+	 */
 	public static com.liferay.portal.kernel.model.PersistedModel
 			getPersistedModel(java.io.Serializable primaryKeyObj)
 		throws com.liferay.portal.kernel.exception.PortalException {
@@ -471,8 +559,25 @@ public class SegmentsExperienceLocalServiceUtil {
 			segmentsExperienceId, segmentsEntryId, nameMap, active);
 	}
 
+	public static com.liferay.segments.model.SegmentsExperience
+			updateSegmentsExperience(
+				long segmentsExperienceId, long segmentsEntryId,
+				java.util.Map<java.util.Locale, String> nameMap, boolean active,
+				com.liferay.portal.kernel.util.UnicodeProperties
+					typeSettingsUnicodeProperties)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().updateSegmentsExperience(
+			segmentsExperienceId, segmentsEntryId, nameMap, active,
+			typeSettingsUnicodeProperties);
+	}
+
 	/**
 	 * Updates the segments experience in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect SegmentsExperienceLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param segmentsExperience the segments experience
 	 * @return the segments experience that was updated

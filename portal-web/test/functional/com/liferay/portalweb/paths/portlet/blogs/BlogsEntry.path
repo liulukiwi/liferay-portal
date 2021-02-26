@@ -15,12 +15,12 @@
 </tr>
 <tr>
 	<td>ENTRY_COVER_IMAGE_SELECT_FILE</td>
-	<td>//div[contains(@class,'image-selector')]//a[contains(.,'Select File')]</td>
+	<td>//div[contains(@class,'image-selector')]//button[contains(.,'Select File')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>ENTRY_COVER_IMAGE_UNPUBLISHED</td>
-	<td>//div[@class='image-wrapper']//img[contains(@src,'${key_coverImageName}')]</td>
+	<td>//div[contains(@class,'image-wrapper')]//img[contains(@src,'${key_coverImageName}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -31,6 +31,11 @@
 <tr>
 	<td>TITLE</td>
 	<td>//div[contains(@class,'autofit-row')]//h3[contains(.,'${key_entryTitle}')] | //div[contains(@class,'entry-title')]//p[contains(.,'${key_entryTitle}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>TITLE_CARD</td>
+	<td>//div[contains(@class,'card')]//h3[contains(.,'${key_entryTitle}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -79,13 +84,18 @@
 	<td></td>
 </tr>
 <tr>
+	<td>CONTENT_INLINE_IMAGE_PREVIEW</td>
+	<td>so/screenshots/blogs/content_inline_image_preview.png</td>
+	<td></td>
+</tr>
+<tr>
 	<td>CONTENT_HTML_BOLD</td>
-	<td>//div[contains(@class,'widget-mode-detail-text')]/b</td>
+	<td>//div[contains(@class,'widget-mode-detail-text')]/p/b</td>
 	<td></td>
 </tr>
 <tr>
 	<td>CONTENT_HTML_ITALICS</td>
-	<td>//div[contains(@class,'widget-mode-detail-text')]/i</td>
+	<td>//div[contains(@class,'widget-mode-detail-text')]/p/i</td>
 	<td></td>
 </tr>
 <tr>
@@ -96,6 +106,11 @@
 <tr>
 	<td>CONTENT_LINK_IN_EDIT</td>
 	<td>//div[contains(@id,'contentEditor')]//a[contains(.,'${key_entryContent}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>CONTENT_SMALL_IMAGE</td>
+	<td>//div[contains(@class,'asset-small-image')]//img[contains(@src,'${key_imageFileName}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -136,6 +151,11 @@
 <tr>
 	<td>SMALL_IMAGE</td>
 	<td>//div[@class='current-image' and contains(@src,'${key_smallImage}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SMALL_IMAGE_BROWSE_IMAGE</td>
+	<td>//div[contains(@class,'blogs-small-image')]//button[contains(@class,'browse-image')]</td>
 	<td></td>
 </tr>
 <tr>

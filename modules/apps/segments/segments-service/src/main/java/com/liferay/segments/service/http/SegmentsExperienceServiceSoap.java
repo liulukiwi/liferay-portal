@@ -61,8 +61,10 @@ import java.util.Map;
  *
  * @author Eduardo Garcia
  * @see SegmentsExperienceServiceHttp
+ * @deprecated As of Athanasius (7.3.x), with no direct replacement
  * @generated
  */
+@Deprecated
 public class SegmentsExperienceServiceSoap {
 
 	public static com.liferay.segments.model.SegmentsExperienceSoap
@@ -85,10 +87,37 @@ public class SegmentsExperienceServiceSoap {
 			return com.liferay.segments.model.SegmentsExperienceSoap.
 				toSoapModel(returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
+		}
+	}
+
+	public static com.liferay.segments.model.SegmentsExperienceSoap
+			appendSegmentsExperience(
+				long segmentsEntryId, long classNameId, long classPK,
+				String[] nameMapLanguageIds, String[] nameMapValues,
+				boolean active,
+				com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws RemoteException {
+
+		try {
+			Map<Locale, String> nameMap = LocalizationUtil.getLocalizationMap(
+				nameMapLanguageIds, nameMapValues);
+
+			com.liferay.segments.model.SegmentsExperience returnValue =
+				SegmentsExperienceServiceUtil.appendSegmentsExperience(
+					segmentsEntryId, classNameId, classPK, nameMap, active,
+					serviceContext);
+
+			return com.liferay.segments.model.SegmentsExperienceSoap.
+				toSoapModel(returnValue);
+		}
+		catch (Exception exception) {
+			_log.error(exception, exception);
+
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -104,10 +133,10 @@ public class SegmentsExperienceServiceSoap {
 			return com.liferay.segments.model.SegmentsExperienceSoap.
 				toSoapModel(returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -123,10 +152,10 @@ public class SegmentsExperienceServiceSoap {
 			return com.liferay.segments.model.SegmentsExperienceSoap.
 				toSoapModel(returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -142,10 +171,10 @@ public class SegmentsExperienceServiceSoap {
 			return com.liferay.segments.model.SegmentsExperienceSoap.
 				toSoapModel(returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -163,10 +192,10 @@ public class SegmentsExperienceServiceSoap {
 			return com.liferay.segments.model.SegmentsExperienceSoap.
 				toSoapModels(returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -189,10 +218,10 @@ public class SegmentsExperienceServiceSoap {
 			return com.liferay.segments.model.SegmentsExperienceSoap.
 				toSoapModels(returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -207,10 +236,10 @@ public class SegmentsExperienceServiceSoap {
 
 			return returnValue;
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -232,10 +261,10 @@ public class SegmentsExperienceServiceSoap {
 			return com.liferay.segments.model.SegmentsExperienceSoap.
 				toSoapModel(returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -247,10 +276,10 @@ public class SegmentsExperienceServiceSoap {
 			SegmentsExperienceServiceUtil.updateSegmentsExperiencePriority(
 				segmentsExperienceId, newPriority);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 

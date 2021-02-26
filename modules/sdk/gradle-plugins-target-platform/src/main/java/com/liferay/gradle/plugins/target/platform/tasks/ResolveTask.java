@@ -184,11 +184,14 @@ public class ResolveTask extends DefaultTask {
 					"{}:\n    {}", Constants.RUNBUNDLES,
 					stream.collect(Collectors.joining("\n    ")));
 			}
-			catch (ResolutionException re) {
-				logger.error(ResolveProcess.format(re, isReportOptional()));
+			catch (ResolutionException resolutionException) {
+				logger.error(
+					ResolveProcess.format(
+						resolutionException, isReportOptional()));
 
 				throw new GradleException(
-					bndrun.getPropertiesFile() + " resolution exception", re);
+					bndrun.getPropertiesFile() + " resolution exception",
+					resolutionException);
 			}
 			finally {
 				_logReport(bndrun, logger);
@@ -253,30 +256,32 @@ public class ResolveTask extends DefaultTask {
 		}
 	}
 
-	private static Converter<List<String>, Collection<? extends HeaderClause>>
-		_runbundlesFormatter =
-			new Converter<List<String>, Collection<? extends HeaderClause>>() {
+	private static final Converter
+		<List<String>, Collection<? extends HeaderClause>>
+			_runbundlesFormatter =
+				new Converter
+					<List<String>, Collection<? extends HeaderClause>>() {
 
-				@Override
-				public List<String> convert(
-						Collection<? extends HeaderClause> input)
-					throws IllegalArgumentException {
+					@Override
+					public List<String> convert(
+							Collection<? extends HeaderClause> input)
+						throws IllegalArgumentException {
 
-					Stream<? extends HeaderClause> stream = input.stream();
+						Stream<? extends HeaderClause> stream = input.stream();
 
-					return stream.map(
-						HeaderClause::toString
-					).collect(
-						Collectors.toList()
-					);
-				}
+						return stream.map(
+							HeaderClause::toString
+						).collect(
+							Collectors.toList()
+						);
+					}
 
-				@Override
-				public List<String> error(String msg) {
-					return null;
-				}
+					@Override
+					public List<String> error(String msg) {
+						return null;
+					}
 
-			};
+				};
 
 	private Object _bndrunFile;
 	private FileCollection _distroFileCollection;
@@ -287,8 +292,8 @@ public class ResolveTask extends DefaultTask {
 
 	private static class ProcessorWrapper extends Processor {
 
-		public ProcessorWrapper(Properties properties) {
-			_internalProperties = properties;
+		public ProcessorWrapper(Properties internalProperties) {
+			_internalProperties = internalProperties;
 		}
 
 		public Properties getProperties() {

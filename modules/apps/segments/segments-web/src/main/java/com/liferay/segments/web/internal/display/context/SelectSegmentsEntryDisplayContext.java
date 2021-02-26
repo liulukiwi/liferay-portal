@@ -15,22 +15,26 @@
 package com.liferay.segments.web.internal.display.context;
 
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
-import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemList;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemListBuilder;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.Group;
+import com.liferay.portal.kernel.portlet.SearchDisplayStyleUtil;
 import com.liferay.portal.kernel.search.BaseModelSearchResult;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.LinkedHashMapBuilder;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ParamUtil;
+import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.segments.constants.SegmentsPortletKeys;
 import com.liferay.segments.model.SegmentsEntry;
 import com.liferay.segments.service.SegmentsEntryLocalService;
 import com.liferay.segments.web.internal.util.comparator.SegmentsEntryModifiedDateComparator;
@@ -77,8 +81,9 @@ public class SelectSegmentsEntryDisplayContext {
 			return _displayStyle;
 		}
 
-		_displayStyle = ParamUtil.getString(
-			_renderRequest, "displayStyle", "list");
+		_displayStyle = SearchDisplayStyleUtil.getDisplayStyle(
+			PortalUtil.getHttpServletRequest(_renderRequest),
+			SegmentsPortletKeys.SEGMENTS, "entry-display-style", "list");
 
 		return _displayStyle;
 	}
@@ -96,25 +101,21 @@ public class SelectSegmentsEntryDisplayContext {
 	}
 
 	public List<DropdownItem> getFilterItemsDropdownItems() {
-		return new DropdownItemList() {
-			{
-				addGroup(
-					dropdownGroupItem -> {
-						dropdownGroupItem.setDropdownItems(
-							_getFilterNavigationDropdownItems());
-						dropdownGroupItem.setLabel(
-							LanguageUtil.get(
-								_httpServletRequest, "filter-by-navigation"));
-					});
-				addGroup(
-					dropdownGroupItem -> {
-						dropdownGroupItem.setDropdownItems(
-							_getOrderByDropdownItems());
-						dropdownGroupItem.setLabel(
-							LanguageUtil.get(_httpServletRequest, "order-by"));
-					});
+		return DropdownItemListBuilder.addGroup(
+			dropdownGroupItem -> {
+				dropdownGroupItem.setDropdownItems(
+					_getFilterNavigationDropdownItems());
+				dropdownGroupItem.setLabel(
+					LanguageUtil.get(
+						_httpServletRequest, "filter-by-navigation"));
 			}
-		};
+		).addGroup(
+			dropdownGroupItem -> {
+				dropdownGroupItem.setDropdownItems(_getOrderByDropdownItems());
+				dropdownGroupItem.setLabel(
+					LanguageUtil.get(_httpServletRequest, "order-by"));
+			}
+		).build();
 	}
 
 	public String getGroupDescriptiveName(SegmentsEntry segmentsEntry)
@@ -143,12 +144,14 @@ public class SelectSegmentsEntryDisplayContext {
 		return portletURL.toString();
 	}
 
-	public SearchContainer getSearchContainer() throws PortalException {
+	public SearchContainer<SegmentsEntry> getSearchContainer()
+		throws PortalException {
+
 		if (_searchContainer != null) {
 			return _searchContainer;
 		}
 
-		SearchContainer searchContainer = new SearchContainer(
+		SearchContainer<SegmentsEntry> searchContainer = new SearchContainer(
 			_renderRequest, _getPortletURL(), null, "there-are-no-segments");
 
 		searchContainer.setId("selectSegmentsEntry");
@@ -159,8 +162,14 @@ public class SelectSegmentsEntryDisplayContext {
 		BaseModelSearchResult<SegmentsEntry> baseModelSearchResult =
 			_segmentsEntryLocalService.searchSegmentsEntries(
 				_themeDisplay.getCompanyId(), _themeDisplay.getScopeGroupId(),
-				_getKeywords(), true, searchContainer.getStart(),
-				searchContainer.getEnd(), _getSort());
+				_getKeywords(), true,
+				LinkedHashMapBuilder.<String, Object>put(
+					"excludedSegmentsEntryIds", _getExcludedSegmentsEntryIds()
+				).put(
+					"excludedSources", _getExcludedSources()
+				).build(),
+				searchContainer.getStart(), searchContainer.getEnd(),
+				_getSort());
 
 		searchContainer.setResults(baseModelSearchResult.getBaseModels());
 		searchContainer.setTotal(baseModelSearchResult.getLength());
@@ -168,6 +177,10 @@ public class SelectSegmentsEntryDisplayContext {
 		_searchContainer = searchContainer;
 
 		return _searchContainer;
+	}
+
+	public String getSearchContainerId() {
+		return "selectSegmentsEntrySegments";
 	}
 
 	public long[] getSelectedSegmentsEntryIds() {
@@ -205,18 +218,37 @@ public class SelectSegmentsEntryDisplayContext {
 		return true;
 	}
 
+	private long[] _getExcludedSegmentsEntryIds() {
+		if (_excludedSegmentsEntryIds != null) {
+			return _excludedSegmentsEntryIds;
+		}
+
+		_excludedSegmentsEntryIds = ParamUtil.getLongValues(
+			_httpServletRequest, "excludedSegmentsEntryIds");
+
+		return _excludedSegmentsEntryIds;
+	}
+
+	private String[] _getExcludedSources() {
+		if (_excludedSources != null) {
+			return _excludedSources;
+		}
+
+		_excludedSources = ParamUtil.getStringValues(
+			_httpServletRequest, "excludedSources");
+
+		return _excludedSources;
+	}
+
 	private List<DropdownItem> _getFilterNavigationDropdownItems() {
-		return new DropdownItemList() {
-			{
-				add(
-					dropdownItem -> {
-						dropdownItem.setActive(true);
-						dropdownItem.setHref(_renderResponse.createRenderURL());
-						dropdownItem.setLabel(
-							LanguageUtil.get(_httpServletRequest, "all"));
-					});
+		return DropdownItemListBuilder.add(
+			dropdownItem -> {
+				dropdownItem.setActive(true);
+				dropdownItem.setHref(_renderResponse.createRenderURL());
+				dropdownItem.setLabel(
+					LanguageUtil.get(_httpServletRequest, "all"));
 			}
-		};
+		).build();
 	}
 
 	private String _getKeywords() {
@@ -265,35 +297,31 @@ public class SelectSegmentsEntryDisplayContext {
 	}
 
 	private List<DropdownItem> _getOrderByDropdownItems() {
-		return new DropdownItemList() {
-			{
-				add(
-					dropdownItem -> {
-						dropdownItem.setActive(
-							Objects.equals(_getOrderByCol(), "modified-date"));
-						dropdownItem.setHref(
-							_getPortletURL(), "orderByCol", "modified-date");
-						dropdownItem.setLabel(
-							LanguageUtil.get(
-								_httpServletRequest, "modified-date"));
-					});
-				add(
-					dropdownItem -> {
-						dropdownItem.setActive(
-							Objects.equals(_getOrderByCol(), "name"));
-						dropdownItem.setHref(
-							_getPortletURL(), "orderByCol", "name");
-						dropdownItem.setLabel(
-							LanguageUtil.get(_httpServletRequest, "name"));
-					});
+		return DropdownItemListBuilder.add(
+			dropdownItem -> {
+				dropdownItem.setActive(
+					Objects.equals(_getOrderByCol(), "modified-date"));
+				dropdownItem.setHref(
+					_getPortletURL(), "orderByCol", "modified-date");
+				dropdownItem.setLabel(
+					LanguageUtil.get(_httpServletRequest, "modified-date"));
 			}
-		};
+		).add(
+			dropdownItem -> {
+				dropdownItem.setActive(
+					Objects.equals(_getOrderByCol(), "name"));
+				dropdownItem.setHref(_getPortletURL(), "orderByCol", "name");
+				dropdownItem.setLabel(
+					LanguageUtil.get(_httpServletRequest, "name"));
+			}
+		).build();
 	}
 
 	private PortletURL _getPortletURL() {
 		PortletURL portletURL = _renderResponse.createRenderURL();
 
-		portletURL.setParameter("mvcRenderCommandName", "selectSegmentsEntry");
+		portletURL.setParameter(
+			"mvcRenderCommandName", "/segments/select_segments_entry");
 
 		String keywords = _getKeywords();
 
@@ -302,6 +330,12 @@ public class SelectSegmentsEntryDisplayContext {
 		}
 
 		portletURL.setParameter("displayStyle", getDisplayStyle());
+		portletURL.setParameter("eventName", getEventName());
+		portletURL.setParameter(
+			"excludedSegmentsEntryIds",
+			StringUtil.merge(_getExcludedSegmentsEntryIds()));
+		portletURL.setParameter(
+			"excludedSources", StringUtil.merge(_getExcludedSources()));
 		portletURL.setParameter("orderByCol", _getOrderByCol());
 		portletURL.setParameter("orderByType", getOrderByType());
 
@@ -352,13 +386,15 @@ public class SelectSegmentsEntryDisplayContext {
 
 	private String _displayStyle;
 	private String _eventName;
+	private long[] _excludedSegmentsEntryIds;
+	private String[] _excludedSources;
 	private final HttpServletRequest _httpServletRequest;
 	private String _keywords;
 	private String _orderByCol;
 	private String _orderByType;
 	private final RenderRequest _renderRequest;
 	private final RenderResponse _renderResponse;
-	private SearchContainer _searchContainer;
+	private SearchContainer<SegmentsEntry> _searchContainer;
 	private final SegmentsEntryLocalService _segmentsEntryLocalService;
 	private final ThemeDisplay _themeDisplay;
 

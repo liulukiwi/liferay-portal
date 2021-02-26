@@ -16,7 +16,6 @@ package com.liferay.source.formatter.checkstyle.checks;
 
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
-import com.liferay.source.formatter.checkstyle.util.DetailASTUtil;
 
 import com.puppycrawl.tools.checkstyle.api.DetailAST;
 import com.puppycrawl.tools.checkstyle.api.FullIdent;
@@ -45,7 +44,7 @@ public class ReferenceAnnotationCheck extends BaseCheck {
 			return;
 		}
 
-		List<String> importNames = DetailASTUtil.getImportNames(detailAST);
+		List<String> importNames = getImportNames(detailAST);
 
 		if (!importNames.contains(
 				"org.osgi.service.component.annotations.Reference")) {
@@ -53,7 +52,7 @@ public class ReferenceAnnotationCheck extends BaseCheck {
 			return;
 		}
 
-		List<DetailAST> detailASTList = DetailASTUtil.getAllChildTokens(
+		List<DetailAST> detailASTList = getAllChildTokens(
 			detailAST, true, TokenTypes.METHOD_DEF, TokenTypes.VARIABLE_DEF);
 
 		for (DetailAST curDetailAST : detailASTList) {
@@ -65,10 +64,8 @@ public class ReferenceAnnotationCheck extends BaseCheck {
 		DetailAST classDefinitionDetailAST, DetailAST methodDefinitionDetailAST,
 		String methodName, String defaultUnbindMethodName) {
 
-		String methodBody = _getMethodBody(methodDefinitionDetailAST);
-
 		Matcher matcher = _referenceMethodContentPattern.matcher(
-			StringUtil.trim(methodBody));
+			StringUtil.trim(_getMethodBody(methodDefinitionDetailAST)));
 
 		if (!matcher.find()) {
 			if (!_containsMethod(
@@ -84,9 +81,8 @@ public class ReferenceAnnotationCheck extends BaseCheck {
 
 		String variableName = matcher.group(1);
 
-		List<DetailAST> variableDefinitionDetailASTList =
-			DetailASTUtil.getAllChildTokens(
-				classDefinitionDetailAST, true, TokenTypes.VARIABLE_DEF);
+		List<DetailAST> variableDefinitionDetailASTList = getAllChildTokens(
+			classDefinitionDetailAST, true, TokenTypes.VARIABLE_DEF);
 
 		for (DetailAST variableDefinitionDetailAST :
 				variableDefinitionDetailASTList) {
@@ -133,9 +129,8 @@ public class ReferenceAnnotationCheck extends BaseCheck {
 			return;
 		}
 
-		DetailAST classDefinitionDetailAST =
-			DetailASTUtil.getParentWithTokenType(
-				detailAST, TokenTypes.CLASS_DEF);
+		DetailAST classDefinitionDetailAST = getParentWithTokenType(
+			detailAST, TokenTypes.CLASS_DEF);
 
 		if (classDefinitionDetailAST == null) {
 			return;
@@ -152,35 +147,65 @@ public class ReferenceAnnotationCheck extends BaseCheck {
 			methodName);
 
 		_checkUnbind(
-			classDefinitionDetailAST, defaultUnbindMethodName, unbindName,
-			policyName, annotationDetailAST.getLineNo());
+			annotationDetailAST, classDefinitionDetailAST,
+			defaultUnbindMethodName, unbindName, policyName);
 
 		if (policyName.endsWith(_POLICY_DYNAMIC) && (unbindName == null)) {
 			_checkDynamicMethod(
 				classDefinitionDetailAST, detailAST, methodName,
 				defaultUnbindMethodName);
 		}
+
+		_checkTarget(annotationDetailAST);
+	}
+
+	private void _checkTarget(DetailAST annotationDetailAST) {
+		String targetValue = _getAnnotationMemberValue(
+			annotationDetailAST, "target", null);
+
+		if (targetValue == null) {
+			return;
+		}
+
+		List<String> allowedFileNames = getAttributeValues(_ALLOWED_FILE_NAMES);
+
+		String absolutePath = getAbsolutePath();
+
+		for (String allowedFileName : allowedFileNames) {
+			if (absolutePath.endsWith(allowedFileName)) {
+				return;
+			}
+		}
+
+		List<String> forbiddenReferenceTargetValues = getAttributeValues(
+			_FORBIDDEN_REFERENCE_TARGET_VALUES);
+
+		if (forbiddenReferenceTargetValues.contains(targetValue)) {
+			log(annotationDetailAST, _MSG_INCORRECT_TARGET_VALUE, targetValue);
+		}
 	}
 
 	private void _checkUnbind(
-		DetailAST classDefinitionDetailAST, String defaultUnbindMethodName,
-		String unbindName, String policyName, int lineNo) {
+		DetailAST annotationDetailAST, DetailAST classDefinitionDetailAST,
+		String defaultUnbindMethodName, String unbindName, String policyName) {
 
 		if (unbindName == null) {
 			if (policyName.endsWith(_POLICY_STATIC) &&
 				!_containsMethod(
 					classDefinitionDetailAST, defaultUnbindMethodName)) {
 
-				log(lineNo, _MSG_MISSING_STATIC_POLICY_UNBIND, _NO_UNBIND);
+				log(
+					annotationDetailAST, _MSG_MISSING_STATIC_POLICY_UNBIND,
+					_NO_UNBIND);
 			}
 		}
 		else if (unbindName.equals("\"" + defaultUnbindMethodName + "\"")) {
-			log(lineNo, _MSG_REDUNDANT_DEFAULT_UNBIND);
+			log(annotationDetailAST, _MSG_REDUNDANT_DEFAULT_UNBIND);
 		}
 		else if (unbindName.equals(_NO_UNBIND) &&
 				 policyName.endsWith(_POLICY_DYNAMIC)) {
 
-			log(lineNo, _MSG_MISSING_DYNAMIC_POLICY_UNBIND);
+			log(annotationDetailAST, _MSG_MISSING_DYNAMIC_POLICY_UNBIND);
 		}
 	}
 
@@ -207,9 +232,8 @@ public class ReferenceAnnotationCheck extends BaseCheck {
 	private boolean _containsMethod(
 		DetailAST classDefinitionDetailAST, String methodName) {
 
-		List<DetailAST> methodDefinitionDetailASTList =
-			DetailASTUtil.getAllChildTokens(
-				classDefinitionDetailAST, true, TokenTypes.METHOD_DEF);
+		List<DetailAST> methodDefinitionDetailASTList = getAllChildTokens(
+			classDefinitionDetailAST, true, TokenTypes.METHOD_DEF);
 
 		for (DetailAST methodDefinitionDetailAST :
 				methodDefinitionDetailASTList) {
@@ -229,7 +253,7 @@ public class ReferenceAnnotationCheck extends BaseCheck {
 		DetailAST anontationDetailAST, String name, String defaultValue) {
 
 		List<DetailAST> annotationMemberValuePairDetailASTList =
-			DetailASTUtil.getAllChildTokens(
+			getAllChildTokens(
 				anontationDetailAST, false,
 				TokenTypes.ANNOTATION_MEMBER_VALUE_PAIR);
 
@@ -275,8 +299,8 @@ public class ReferenceAnnotationCheck extends BaseCheck {
 		DetailAST slistDetailAST = methodDefinitionDetailAST.findFirstToken(
 			TokenTypes.SLIST);
 
-		int startLineNumber = DetailASTUtil.getStartLineNumber(slistDetailAST);
-		int endLineNumber = DetailASTUtil.getEndLineNumber(slistDetailAST);
+		int startLineNumber = getStartLineNumber(slistDetailAST);
+		int endLineNumber = getEndLineNumber(slistDetailAST);
 
 		StringBundler sb = new StringBundler(
 			(endLineNumber - startLineNumber - 1) * 2);
@@ -288,6 +312,14 @@ public class ReferenceAnnotationCheck extends BaseCheck {
 
 		return sb.toString();
 	}
+
+	private static final String _ALLOWED_FILE_NAMES = "allowedFileNames";
+
+	private static final String _FORBIDDEN_REFERENCE_TARGET_VALUES =
+		"forbiddenReferenceTargetValues";
+
+	private static final String _MSG_INCORRECT_TARGET_VALUE =
+		"target.value.incorrect";
 
 	private static final String _MSG_MISSING_DYNAMIC_POLICY_UNBIND =
 		"unbind.dynamic.policy.missing";

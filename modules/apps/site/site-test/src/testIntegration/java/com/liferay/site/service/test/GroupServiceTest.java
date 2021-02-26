@@ -24,6 +24,8 @@ import com.liferay.portal.kernel.exception.GroupParentException;
 import com.liferay.portal.kernel.exception.LocaleException;
 import com.liferay.portal.kernel.exception.NoSuchResourcePermissionException;
 import com.liferay.portal.kernel.language.Language;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.GroupConstants;
@@ -74,11 +76,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Set;
 
 import org.junit.Assert;
@@ -880,6 +880,33 @@ public class GroupServiceTest {
 	}
 
 	@Test
+	public void testGroupValidSiteFriendlyURLI18nPath() throws Exception {
+		_group = GroupTestUtil.addGroup();
+
+		GroupTestUtil.updateDisplaySettings(
+			_group.getGroupId(), Arrays.asList(LocaleUtil.SPAIN),
+			LocaleUtil.SPAIN);
+
+		ThemeDisplay themeDisplay = new ThemeDisplay();
+
+		String languageId = _language.getLanguageId(LocaleUtil.ENGLISH);
+
+		themeDisplay.setI18nLanguageId(languageId);
+		themeDisplay.setI18nPath(
+			StringPool.SLASH.concat(LocaleUtil.toW3cLanguageId(languageId)));
+
+		themeDisplay.setSiteGroupId(_group.getGroupId());
+
+		String groupFriendlyURL = _portal.getGroupFriendlyURL(
+			_group.getPublicLayoutSet(), themeDisplay);
+
+		Assert.assertFalse(
+			groupFriendlyURL + " should not contain " +
+				themeDisplay.getI18nPath(),
+			groupFriendlyURL.contains(themeDisplay.getI18nPath()));
+	}
+
+	@Test
 	public void testIndividualResourcePermission() throws Exception {
 		_group = GroupTestUtil.addGroup();
 
@@ -994,16 +1021,15 @@ public class GroupServiceTest {
 
 		Assert.assertFalse(layout.hasScopeGroup());
 
-		Map<Locale, String> nameMap = HashMapBuilder.put(
-			LocaleUtil.getDefault(), layout.getName(LocaleUtil.getDefault())
-		).build();
-
 		Group scopeGroup = _groupLocalService.addGroup(
 			TestPropsValues.getUserId(), GroupConstants.DEFAULT_PARENT_GROUP_ID,
 			Layout.class.getName(), layout.getPlid(),
-			GroupConstants.DEFAULT_LIVE_GROUP_ID, nameMap, null, 0, true,
-			GroupConstants.DEFAULT_MEMBERSHIP_RESTRICTION, null, false, true,
-			null);
+			GroupConstants.DEFAULT_LIVE_GROUP_ID,
+			HashMapBuilder.put(
+				LocaleUtil.getDefault(), layout.getName(LocaleUtil.getDefault())
+			).build(),
+			null, 0, true, GroupConstants.DEFAULT_MEMBERSHIP_RESTRICTION, null,
+			false, true, null);
 
 		_groups.addFirst(scopeGroup);
 
@@ -1218,16 +1244,15 @@ public class GroupServiceTest {
 	private Group _addScopeGroup(Group group) throws Exception {
 		Layout scopeLayout = LayoutTestUtil.addLayout(group);
 
-		Map<Locale, String> nameMap = HashMapBuilder.put(
-			LocaleUtil.getDefault(), RandomTestUtil.randomString()
-		).build();
-
 		return _groupLocalService.addGroup(
 			TestPropsValues.getUserId(), GroupConstants.DEFAULT_PARENT_GROUP_ID,
 			Layout.class.getName(), scopeLayout.getPlid(),
-			GroupConstants.DEFAULT_LIVE_GROUP_ID, nameMap, null, 0, true,
-			GroupConstants.DEFAULT_MEMBERSHIP_RESTRICTION, null, false, true,
-			null);
+			GroupConstants.DEFAULT_LIVE_GROUP_ID,
+			HashMapBuilder.put(
+				LocaleUtil.getDefault(), RandomTestUtil.randomString()
+			).build(),
+			null, 0, true, GroupConstants.DEFAULT_MEMBERSHIP_RESTRICTION, null,
+			false, true, null);
 	}
 
 	private void _assertExpectedGroups(
@@ -1276,15 +1301,13 @@ public class GroupServiceTest {
 			excludedGroupIds.add(stagingGroup.getGroupId());
 		}
 
-		LinkedHashMap<String, Object> params =
+		List<Group> selectableGroups = _groupService.search(
+			_group.getCompanyId(), null, StringPool.BLANK,
 			LinkedHashMapBuilder.<String, Object>put(
 				"site", Boolean.TRUE
 			).put(
 				"excludedGroupIds", excludedGroupIds
-			).build();
-
-		List<Group> selectableGroups = _groupService.search(
-			_group.getCompanyId(), null, StringPool.BLANK, params,
+			).build(),
 			QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
 
 		for (Group selectableGroup : selectableGroups) {
@@ -1322,7 +1345,11 @@ public class GroupServiceTest {
 
 			Assert.assertFalse(expectFailure);
 		}
-		catch (LocaleException le) {
+		catch (LocaleException localeException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(localeException, localeException);
+			}
+
 			Assert.assertTrue(expectFailure);
 		}
 		finally {
@@ -1331,6 +1358,9 @@ public class GroupServiceTest {
 				LocaleUtil.getDefault());
 		}
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		GroupServiceTest.class);
 
 	@Inject
 	private AssetTagLocalService _assetTagLocalService;

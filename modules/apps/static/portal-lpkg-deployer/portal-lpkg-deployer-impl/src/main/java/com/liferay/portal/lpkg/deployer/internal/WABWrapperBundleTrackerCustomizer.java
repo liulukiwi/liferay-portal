@@ -64,8 +64,8 @@ public class WABWrapperBundleTrackerCustomizer
 					wabBundle.start();
 				}
 			}
-			catch (Exception e) {
-				_log.error("Unable to refresh " + bundle, e);
+			catch (Exception exception) {
+				_log.error("Unable to refresh " + bundle, exception);
 			}
 		}
 	}
@@ -80,7 +80,10 @@ public class WABWrapperBundleTrackerCustomizer
 					wabBundle.uninstall();
 				}
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(exception, exception);
+				}
 			}
 		}
 	}

@@ -14,10 +14,10 @@
 	.lfr-portrait-preview {
 		overflow: auto;
 		padding: 5px;
-	}
 
-	.main-content-card {
-		margin-top: 2px;
+		.lfr-portrait-preview-img {
+			width: fit-content;
+		}
 	}
 }
 

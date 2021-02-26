@@ -16,7 +16,7 @@ package com.liferay.journal.internal.exportimport.content.processor;
 
 import com.liferay.document.library.kernel.model.DLFileEntry;
 import com.liferay.document.library.kernel.service.DLAppService;
-import com.liferay.dynamic.data.mapping.model.DDMFormFieldType;
+import com.liferay.dynamic.data.mapping.form.field.type.constants.DDMFormFieldTypeConstants;
 import com.liferay.dynamic.data.mapping.model.Value;
 import com.liferay.dynamic.data.mapping.storage.DDMFormFieldValue;
 import com.liferay.dynamic.data.mapping.util.DDMFormFieldValueTransformer;
@@ -68,7 +68,7 @@ public class ImageImportDDMFormFieldValueTransformer
 
 	@Override
 	public String getFieldType() {
-		return DDMFormFieldType.IMAGE;
+		return DDMFormFieldTypeConstants.IMAGE;
 	}
 
 	@Override
@@ -85,9 +85,9 @@ public class ImageImportDDMFormFieldValueTransformer
 			try {
 				jsonObject = JSONFactoryUtil.createJSONObject(valueString);
 			}
-			catch (JSONException jsone) {
+			catch (JSONException jsonException) {
 				if (_log.isDebugEnabled()) {
-					_log.debug("Unable to parse JSON", jsone);
+					_log.debug("Unable to parse JSON", jsonException);
 				}
 
 				continue;
@@ -150,9 +150,9 @@ public class ImageImportDDMFormFieldValueTransformer
 
 			return _dlAppService.getFileEntry(classPK);
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			if (_log.isWarnEnabled()) {
-				_log.warn("Unable to find file entry", pe);
+				_log.warn("Unable to find file entry", portalException);
 			}
 		}
 
@@ -187,9 +187,9 @@ public class ImageImportDDMFormFieldValueTransformer
 		try {
 			_document = SAXReaderUtil.read(content);
 		}
-		catch (DocumentException de) {
+		catch (DocumentException documentException) {
 			if (_log.isDebugEnabled()) {
-				_log.debug("Invalid content:\n" + content);
+				_log.debug("Invalid content:\n" + content, documentException);
 			}
 		}
 	}

@@ -42,6 +42,8 @@ import javax.servlet.http.HttpSession;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferencePolicy;
+import org.osgi.service.component.annotations.ReferencePolicyOption;
 
 /**
  * Participates in every unauthenticated HTTP request to Liferay Portal.
@@ -73,9 +75,9 @@ public class CASAutoLogin extends BaseAutoLogin {
 	@Override
 	protected String[] doHandleException(
 		HttpServletRequest httpServletRequest,
-		HttpServletResponse httpServletResponse, Exception e) {
+		HttpServletResponse httpServletResponse, Exception exception) {
 
-		if (e instanceof NoSuchUserException) {
+		if (exception instanceof NoSuchUserException) {
 			HttpSession session = httpServletRequest.getSession();
 
 			session.removeAttribute(CASWebKeys.CAS_LOGIN);
@@ -84,7 +86,7 @@ public class CASAutoLogin extends BaseAutoLogin {
 				CASWebKeys.CAS_NO_SUCH_USER_EXCEPTION, Boolean.TRUE);
 		}
 
-		_log.error(e, e);
+		_log.error(exception, exception);
 
 		return null;
 	}
@@ -94,8 +96,6 @@ public class CASAutoLogin extends BaseAutoLogin {
 			HttpServletRequest httpServletRequest,
 			HttpServletResponse httpServletResponse)
 		throws Exception {
-
-		HttpSession session = httpServletRequest.getSession();
 
 		long companyId = _portal.getCompanyId(httpServletRequest);
 
@@ -108,6 +108,8 @@ public class CASAutoLogin extends BaseAutoLogin {
 		if (!casConfiguration.enabled()) {
 			return null;
 		}
+
+		HttpSession session = httpServletRequest.getSession();
 
 		String login = (String)session.getAttribute(CASWebKeys.CAS_LOGIN);
 
@@ -148,12 +150,12 @@ public class CASAutoLogin extends BaseAutoLogin {
 						companyId, login, StringPool.BLANK);
 				}
 			}
-			catch (SystemException se) {
+			catch (SystemException systemException) {
 
 				// LPS-52675
 
 				if (_log.isDebugEnabled()) {
-					_log.debug(se, se);
+					_log.debug(systemException, systemException);
 				}
 			}
 		}
@@ -187,11 +189,6 @@ public class CASAutoLogin extends BaseAutoLogin {
 	}
 
 	@Reference(unbind = "-")
-	protected void setUserImporter(UserImporter userImporter) {
-		_userImporter = userImporter;
-	}
-
-	@Reference(unbind = "-")
 	protected void setUserLocalService(UserLocalService userLocalService) {
 		_userLocalService = userLocalService;
 	}
@@ -203,7 +200,12 @@ public class CASAutoLogin extends BaseAutoLogin {
 	@Reference
 	private Portal _portal;
 
-	private UserImporter _userImporter;
+	@Reference(
+		policy = ReferencePolicy.DYNAMIC,
+		policyOption = ReferencePolicyOption.GREEDY
+	)
+	private volatile UserImporter _userImporter;
+
 	private UserLocalService _userLocalService;
 
 }

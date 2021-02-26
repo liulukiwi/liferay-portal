@@ -33,30 +33,35 @@ definition {
 			folderId = "${folderId}",
 			groupId = "${groupId}",
 			serviceContext = "${serviceContext}",
-			titleMap = "${titleMap}");
+			titleMap = "${titleMap}",
+			userEmailAddress = "${userEmailAddress}",
+			userPassword = "${userPassword}");
 	}
 
 	@summary = "Add a WC Folder with Folder Name '${folderName}' to the Site '${groupName}'"
 	macro addFolder {
 		Variables.assertDefined(parameterList = "${folderName},${groupName}");
 
-		var groupId = JSONWebcontentSetter.setGroupId(groupName = "${groupName}");
+		var groupId = JSONWebcontentSetter.setGroupId(groupName = "${groupName}", site = "${site}");
 
 		var parentFolderId = JSONWebcontentSetter.setFolderId(
 			folderName = "${parentFolderName}",
 			groupId = "${groupId}");
 
 		JSONWebcontentAPI._addFolder(
+			folderDescription = "${folderDescription}",
 			folderName = "${folderName}",
 			groupId = "${groupId}",
-			parentFolderId = "${parentFolderId}");
+			parentFolderId = "${parentFolderId}",
+			userEmailAddress = "${userEmailAddress}",
+			userPassword = "${userPassword}");
 	}
 
 	@summary = "Add a WC Article with Title '${title}' and Content '${content}' to the Site '${groupName}' via JSON"
 	macro addWebContent {
 		Variables.assertDefined(parameterList = "${content},${groupName},${title}");
 
-		var groupId = JSONWebcontentSetter.setGroupId(groupName = "${groupName}");
+		var groupId = JSONWebcontentSetter.setGroupId(groupName = "${groupName}", site = "${site}");
 
 		var contentXML = JSONWebcontentSetter.setContentXML(content = "${content}");
 
@@ -80,7 +85,9 @@ definition {
 			folderId = "${folderId}",
 			groupId = "${groupId}",
 			serviceContext = "${serviceContext}",
-			titleMap = "${titleMap}");
+			titleMap = "${titleMap}",
+			userEmailAddress = "${userEmailAddress}",
+			userPassword = "${userPassword}");
 	}
 
 	@summary = "Delete a WC Article under an existing site via article title"

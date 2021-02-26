@@ -32,10 +32,10 @@ import com.liferay.dynamic.data.mapping.storage.DDMFormFieldValue;
 import com.liferay.dynamic.data.mapping.storage.DDMFormValues;
 import com.liferay.mail.kernel.model.MailMessage;
 import com.liferay.mail.kernel.service.MailService;
+import com.liferay.petra.io.unsync.UnsyncStringWriter;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.io.unsync.UnsyncStringWriter;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -59,7 +59,6 @@ import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.ResourceBundleUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
-import com.liferay.portal.template.soy.data.SoyDataFactory;
 import com.liferay.portal.util.PrefsPropsUtil;
 
 import java.io.Writer;
@@ -67,6 +66,7 @@ import java.io.Writer;
 import java.net.URL;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -95,8 +95,8 @@ public class DDMFormEmailNotificationSender {
 
 			_mailService.sendEmail(mailMessage);
 		}
-		catch (Exception e) {
-			_log.error("Unable to send form email", e);
+		catch (Exception exception) {
+			_log.error("Unable to send form email", exception);
 		}
 	}
 
@@ -135,7 +135,7 @@ public class DDMFormEmailNotificationSender {
 		throws PortalException {
 
 		Template template = TemplateManagerUtil.getTemplate(
-			TemplateConstants.LANG_TYPE_SOY,
+			TemplateConstants.LANG_TYPE_FTL,
 			getTemplateResource(_TEMPLATE_PATH), false);
 
 		populateParameters(
@@ -278,11 +278,12 @@ public class DDMFormEmailNotificationSender {
 			}
 		}
 
-		return HashMapBuilder.<String, Object>put(
-			"label", labelString
-		).put(
-			"value", _soyDataFactory.createSoyRawData(sb.toString())
-		).build();
+		Map<String, Object> fieldMap = new HashMap<>();
+
+		fieldMap.put("label", labelString);
+		fieldMap.put("value", sb.toString());
+
+		return fieldMap;
 	}
 
 	protected List<String> getFieldNames(DDMFormLayoutPage ddmFormLayoutPage) {
@@ -316,9 +317,7 @@ public class DDMFormEmailNotificationSender {
 				continue;
 			}
 
-			Map<String, Object> field = getField(ddmFormFieldValues, locale);
-
-			fields.add(field);
+			fields.add(getField(ddmFormFieldValues, locale));
 		}
 
 		return fields;
@@ -379,11 +378,13 @@ public class DDMFormEmailNotificationSender {
 			"content.Language", locale, getClass());
 	}
 
-	protected String getSiteName(long groupId, Locale locale) {
+	protected String getSiteName(long groupId, Locale locale)
+		throws PortalException {
+
 		Group siteGroup = _groupLocalService.fetchGroup(groupId);
 
 		if (siteGroup != null) {
-			return siteGroup.getName(locale);
+			return siteGroup.getDescriptiveName(locale);
 		}
 
 		return StringPool.BLANK;
@@ -425,17 +426,19 @@ public class DDMFormEmailNotificationSender {
 		String portletNamespace = _portal.getPortletNamespace(
 			DDMPortletKeys.DYNAMIC_DATA_MAPPING_FORM_ADMIN);
 
-		Map<String, String[]> params = HashMapBuilder.put(
-			portletNamespace.concat("mvcPath"),
-			new String[] {"/admin/view_form_instance_records.jsp"}
-		).put(
-			portletNamespace.concat("formInstanceId"),
-			new String[] {String.valueOf(ddmFormInstance.getFormInstanceId())}
-		).build();
-
 		return _portal.getSiteAdminURL(
-			themeDisplay, DDMPortletKeys.DYNAMIC_DATA_MAPPING_FORM_ADMIN,
-			params);
+			themeDisplay.getPortalURL(),
+			_groupLocalService.getGroup(ddmFormInstance.getGroupId()),
+			DDMPortletKeys.DYNAMIC_DATA_MAPPING_FORM_ADMIN,
+			HashMapBuilder.put(
+				portletNamespace.concat("mvcPath"),
+				new String[] {"/admin/view_form_instance_records.jsp"}
+			).put(
+				portletNamespace.concat("formInstanceId"),
+				new String[] {
+					String.valueOf(ddmFormInstance.getFormInstanceId())
+				}
+			).build());
 	}
 
 	protected String getViewFormURL(
@@ -447,22 +450,25 @@ public class DDMFormEmailNotificationSender {
 		String portletNamespace = _portal.getPortletNamespace(
 			DDMPortletKeys.DYNAMIC_DATA_MAPPING_FORM_ADMIN);
 
-		Map<String, String[]> params = HashMapBuilder.put(
-			portletNamespace.concat("mvcPath"),
-			new String[] {"/admin/view_form_instance_record.jsp"}
-		).put(
-			portletNamespace.concat("formInstanceRecordId"),
-			new String[] {
-				String.valueOf(ddmFormInstanceRecord.getFormInstanceRecordId())
-			}
-		).put(
-			portletNamespace.concat("formInstanceId"),
-			new String[] {String.valueOf(ddmFormInstance.getFormInstanceId())}
-		).build();
-
 		return _portal.getSiteAdminURL(
-			themeDisplay, DDMPortletKeys.DYNAMIC_DATA_MAPPING_FORM_ADMIN,
-			params);
+			themeDisplay.getPortalURL(),
+			_groupLocalService.getGroup(ddmFormInstance.getGroupId()),
+			DDMPortletKeys.DYNAMIC_DATA_MAPPING_FORM_ADMIN,
+			HashMapBuilder.put(
+				portletNamespace.concat("mvcPath"),
+				new String[] {"/admin/view_form_instance_record.jsp"}
+			).put(
+				portletNamespace.concat("formInstanceRecordId"),
+				new String[] {
+					String.valueOf(
+						ddmFormInstanceRecord.getFormInstanceRecordId())
+				}
+			).put(
+				portletNamespace.concat("formInstanceId"),
+				new String[] {
+					String.valueOf(ddmFormInstance.getFormInstanceId())
+				}
+			).build());
 	}
 
 	protected void populateParameters(
@@ -473,8 +479,8 @@ public class DDMFormEmailNotificationSender {
 
 		Locale locale = getLocale(ddmFormInstance);
 
-		template.put("authorName", ddmFormInstance.getUserName());
 		template.put("formName", ddmFormInstance.getName(locale));
+
 		template.put("pages", getPages(ddmFormInstance, ddmFormInstanceRecord));
 		template.put(
 			"siteName", getSiteName(ddmFormInstance.getGroupId(), locale));
@@ -493,8 +499,6 @@ public class DDMFormEmailNotificationSender {
 
 	protected String render(Template template) throws TemplateException {
 		Writer writer = new UnsyncStringWriter();
-
-		template.put(TemplateConstants.NAMESPACE, _NAMESPACE);
 
 		template.processTemplate(writer);
 
@@ -533,10 +537,8 @@ public class DDMFormEmailNotificationSender {
 		_userLocalService = userLocalService;
 	}
 
-	private static final String _NAMESPACE = "form.form_entry";
-
 	private static final String _TEMPLATE_PATH =
-		"/META-INF/resources/notification/form_entry_add_body.soy";
+		"/META-INF/resources/notification/form_entry_add_body.ftl";
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		DDMFormEmailNotificationSender.class);
@@ -550,9 +552,6 @@ public class DDMFormEmailNotificationSender {
 
 	@Reference
 	private Portal _portal;
-
-	@Reference
-	private SoyDataFactory _soyDataFactory;
 
 	private UserLocalService _userLocalService;
 

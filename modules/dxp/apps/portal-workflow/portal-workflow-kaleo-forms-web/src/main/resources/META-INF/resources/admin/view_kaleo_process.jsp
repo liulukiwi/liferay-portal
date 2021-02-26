@@ -45,15 +45,24 @@ portletURL.setParameter("kaleoProcessId", String.valueOf(kaleoProcess.getKaleoPr
 	navigationItems="<%= kaleoFormsViewRecordsDisplayContext.getNavigationItems() %>"
 />
 
+<portlet:actionURL name="/kaleo_forms_admin/delete_record" var="deleteDDLRecordURL">
+	<portlet:param name="mvcPath" value="/admin/view_kaleo_process.jsp" />
+	<portlet:param name="redirect" value="<%= currentURL %>" />
+	<portlet:param name="kaleoProcessId" value="<%= String.valueOf(kaleoProcess.getKaleoProcessId()) %>" />
+</portlet:actionURL>
+
 <clay:management-toolbar
 	actionDropdownItems="<%= kaleoFormsViewRecordsDisplayContext.getActionItemsDropdownItems() %>"
+	additionalProps='<%=
+		HashMapBuilder.<String, Object>put(
+			"deleteDDLRecordURL", deleteDDLRecordURL.toString()
+		).build()
+	%>'
 	clearResultsURL="<%= kaleoFormsViewRecordsDisplayContext.getClearResultsURL() %>"
-	componentId="kaleoFormsRecordsManagementToolbar"
 	creationMenu="<%= kaleoFormsViewRecordsDisplayContext.getCreationMenu() %>"
-	disabled="<%= kaleoFormsViewRecordsDisplayContext.isDisabledManagementBar() %>"
 	filterDropdownItems="<%= kaleoFormsViewRecordsDisplayContext.getFilterItemsDropdownItems() %>"
 	itemsTotal="<%= kaleoFormsViewRecordsDisplayContext.getTotalItems() %>"
-	namespace="<%= renderResponse.getNamespace() %>"
+	propsTransformer="admin/js/KaleoFormsViewRecordsManagementToolbarPropsTransformer"
 	searchActionURL="<%= kaleoFormsViewRecordsDisplayContext.getSearchActionURL() %>"
 	searchContainerId="<%= kaleoFormsViewRecordsDisplayContext.getSearchContainerId() %>"
 	searchFormName="fm"
@@ -61,7 +70,9 @@ portletURL.setParameter("kaleoProcessId", String.valueOf(kaleoProcess.getKaleoPr
 	sortingURL="<%= kaleoFormsViewRecordsDisplayContext.getSortingURL() %>"
 />
 
-<div class="container-fluid-1280" id="<portlet:namespace />formContainer">
+<clay:container-fluid
+	id='<%= liferayPortletResponse.getNamespace() + "formContainer" %>'
+>
 	<aui:form action="<%= portletURL.toString() %>" method="post" name="searchContainerForm">
 		<aui:input name="ddlRecordIds" type="hidden" />
 
@@ -147,13 +158,13 @@ portletURL.setParameter("kaleoProcessId", String.valueOf(kaleoProcess.getKaleoPr
 			/>
 		</liferay-ui:search-container>
 	</aui:form>
-</div>
+</clay:container-fluid>
 
-<div class="container-fluid-1280">
+<clay:container-fluid>
 	<liferay-ui:search-paginator
 		searchContainer="<%= kaleoFormsViewRecordsDisplayContext.getSearch() %>"
 	/>
-</div>
+</clay:container-fluid>
 
 <%@ include file="/admin/export_kaleo_process.jspf" %>
 
@@ -163,7 +174,7 @@ portletURL.setParameter("kaleoProcessId", String.valueOf(kaleoProcess.getKaleoPr
 	Liferay.provide(
 		window,
 		'<portlet:namespace />openPreviewDialog',
-		function(content) {
+		(content) => {
 			var Util = Liferay.Util;
 
 			var dialog = Util.getWindow('<portlet:namespace />previewDialog');
@@ -171,12 +182,13 @@ portletURL.setParameter("kaleoProcessId", String.valueOf(kaleoProcess.getKaleoPr
 			if (!dialog) {
 				dialog = Util.Window.getWindow({
 					dialog: {
-						bodyContent: content
+						bodyContent: content,
 					},
 					id: '<portlet:namespace />previewDialog',
-					title: Liferay.Language.get('preview')
+					title: Liferay.Language.get('preview'),
 				});
-			} else {
+			}
+			else {
 				dialog.show();
 
 				dialog.set('bodyContent', content);
@@ -184,57 +196,6 @@ portletURL.setParameter("kaleoProcessId", String.valueOf(kaleoProcess.getKaleoPr
 		},
 		['liferay-util-window']
 	);
-</aui:script>
-
-<aui:script sandbox="<%= true %>">
-	var deleteRecords = function() {
-		if (
-			confirm(
-				'<%= UnicodeLanguageUtil.get(request, "are-you-sure-you-want-to-delete-this") %>'
-			)
-		) {
-			var searchContainer = document.getElementById(
-				'<portlet:namespace /><%= kaleoFormsViewRecordsDisplayContext.getSearchContainerId() %>'
-			);
-
-			if (searchContainer) {
-				Liferay.Util.postForm(
-					document.<portlet:namespace />searchContainerForm,
-					{
-						data: {
-							ddlRecordIds: Liferay.Util.listCheckedExcept(
-								searchContainer,
-								'<portlet:namespace />allRowIds'
-							)
-						},
-
-						<portlet:actionURL name="deleteDDLRecord" var="deleteDDLRecordURL">
-							<portlet:param name="mvcPath" value="/admin/view_kaleo_process.jsp" />
-							<portlet:param name="redirect" value="<%= currentURL %>" />
-						</portlet:actionURL>
-
-						url: '<%= deleteDDLRecordURL %>'
-					}
-				);
-			}
-		}
-	};
-
-	var ACTIONS = {
-		deleteRecords: deleteRecords
-	};
-
-	Liferay.componentReady('kaleoFormsRecordsManagementToolbar').then(function(
-		managementToolbar
-	) {
-		managementToolbar.on(['actionItemClicked'], function(event) {
-			var itemData = event.data.item.data;
-
-			if (itemData && itemData.action && ACTIONS[itemData.action]) {
-				ACTIONS[itemData.action]();
-			}
-		});
-	});
 </aui:script>
 
 <%

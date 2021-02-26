@@ -33,7 +33,6 @@ import com.liferay.headless.form.dto.v1_0.FormRecord;
 import com.liferay.headless.form.internal.dto.v1_0.util.DDMFormValuesUtil;
 import com.liferay.headless.form.internal.dto.v1_0.util.FormRecordUtil;
 import com.liferay.headless.form.resource.v1_0.FormRecordResource;
-import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
@@ -62,11 +61,13 @@ import org.osgi.service.component.annotations.ServiceScope;
 /**
  * @author Javier Gamarra
  * @author Victor Oliveira
+ * @deprecated As of Cavanaugh (7.4.x), with no direct replacement
  */
 @Component(
 	properties = "OSGI-INF/liferay/rest/v1_0/form-record.properties",
 	scope = ServiceScope.PROTOTYPE, service = FormRecordResource.class
 )
+@Deprecated
 public class FormRecordResourceImpl extends BaseFormRecordResourceImpl {
 
 	@Override
@@ -167,7 +168,7 @@ public class FormRecordResourceImpl extends BaseFormRecordResourceImpl {
 	}
 
 	private ServiceContext _createServiceContext(boolean draft)
-		throws PortalException {
+		throws Exception {
 
 		ServiceContext serviceContext = ServiceContextFactory.getInstance(
 			DDMFormInstanceRecord.class.getName(), contextHttpServletRequest);
@@ -219,10 +220,10 @@ public class FormRecordResourceImpl extends BaseFormRecordResourceImpl {
 						_setValue(ddmFormFieldValue);
 					}
 				}
-				catch (Exception e) {
-					_log.error(e, e);
+				catch (Exception exception) {
+					_log.error(exception, exception);
 
-					throw new BadRequestException(e);
+					throw new BadRequestException(exception);
 				}
 			}
 		);

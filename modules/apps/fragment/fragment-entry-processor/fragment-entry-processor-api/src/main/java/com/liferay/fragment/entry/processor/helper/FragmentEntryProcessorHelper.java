@@ -17,6 +17,7 @@ package com.liferay.fragment.entry.processor.helper;
 import aQute.bnd.annotation.ProviderType;
 
 import com.liferay.fragment.processor.FragmentEntryProcessorContext;
+import com.liferay.info.type.WebImage;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONObject;
 
@@ -29,8 +30,40 @@ import java.util.Map;
 @ProviderType
 public interface FragmentEntryProcessorHelper {
 
+	public default String formatMappedValue(Object value, Locale locale) {
+		return value.toString();
+	}
+
+	public String getEditableValue(JSONObject jsonObject, Locale locale);
+
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             #getEditableValue(JSONObject, Locale)}
+	 */
+	@Deprecated
 	public String getEditableValue(
 		JSONObject jsonObject, Locale locale, long[] segmentsExperienceIds);
+
+	public long getFileEntryId(
+			long classNameId, long classPK, String fieldId, Locale locale)
+		throws PortalException;
+
+	public long getFileEntryId(
+		Object displayObject, String fieldId, Locale locale);
+
+	public long getFileEntryId(String className, long classPK);
+
+	public long getFileEntryId(WebImage webImage);
+
+	public Object getMappedCollectionValue(
+			JSONObject jsonObject,
+			FragmentEntryProcessorContext fragmentEntryProcessorContext)
+		throws PortalException;
+
+	public Object getMappedLayoutValue(
+			JSONObject jsonObject,
+			FragmentEntryProcessorContext fragmentEntryProcessorContext)
+		throws PortalException;
 
 	public Object getMappedValue(
 			JSONObject jsonObject,
@@ -59,6 +92,10 @@ public interface FragmentEntryProcessorHelper {
 	public boolean isAssetDisplayPage(String mode);
 
 	public boolean isMapped(JSONObject jsonObject);
+
+	public boolean isMappedCollection(JSONObject jsonObject);
+
+	public boolean isMappedLayout(JSONObject jsonObject);
 
 	public String processTemplate(
 			String html,

@@ -30,8 +30,8 @@ public abstract class BaseTestBatch
 		try {
 			executeBatch();
 		}
-		catch (AntException ae) {
-			throw new RuntimeException(ae);
+		catch (AntException antException) {
+			throw new RuntimeException(antException);
 		}
 		finally {
 			publishResults();
@@ -40,8 +40,9 @@ public abstract class BaseTestBatch
 
 	protected BaseTestBatch(T batchBuildData, S workspace) {
 		_batchBuildData = batchBuildData;
-		_jdk = JDKFactory.getJDK(batchBuildData.getBatchName());
 		_workspace = workspace;
+
+		_jdk = JDKFactory.getJDK(batchBuildData.getBatchName());
 	}
 
 	protected abstract void executeBatch() throws AntException;

@@ -12,128 +12,80 @@
  * details.
  */
 
-import 'frontend-taglib/cards_treeview/CardsTreeview.es';
+import ClayForm, {ClayInput} from '@clayui/form';
+import ClayIcon from '@clayui/icon';
+import ClayLayout from '@clayui/layout';
+import {Treeview} from 'frontend-js-components-web';
+import React, {useCallback, useMemo, useState} from 'react';
 
-import 'metal';
+const SelectFolder = ({itemSelectorSaveEvent, nodes}) => {
+	const [filter, setFilter] = useState('');
 
-import 'metal-component';
-import {PortletBase} from 'frontend-js-web';
-import Soy from 'metal-soy';
-import {Config} from 'metal-state';
+	const nodesById = useMemo(() => {
+		const result = {};
 
-import templates from './SelectFolder.soy';
-
-/**
- * SelectFolder
- *
- * This component shows a list of available folders to move content in and
- * allows to filter them by searching.
- */
-
-class SelectFolder extends PortletBase {
-	/**
-	 * Filters deep nested nodes based on a filtering value
-	 *
-	 * @type {Array.<Object>} nodes
-	 * @type {String} filterVAlue
-	 * @protected
-	 */
-
-	filterSiblingNodes_(nodes, filterValue) {
-		let filteredNodes = [];
-
-		nodes.forEach(node => {
-			if (node.name.toLowerCase().indexOf(filterValue) !== -1) {
-				filteredNodes.push(node);
-			}
+		function visit(node) {
+			result[node.id] = node;
 
 			if (node.children) {
-				filteredNodes = filteredNodes.concat(
-					this.filterSiblingNodes_(node.children, filterValue)
-				);
+				node.children.forEach(visit);
 			}
-		});
-
-		return filteredNodes;
-	}
-
-	/**
-	 * Searchs for nodes by name based on a filtering value
-	 *
-	 * @param {!Event} event
-	 * @protected
-	 */
-
-	searchNodes_(event) {
-		if (!this.originalNodes) {
-			this.originalNodes = this.nodes;
-		} else {
-			this.nodes = this.originalNodes;
 		}
 
-		const filterValue = event.delegateTarget.value.toLowerCase();
+		nodes.forEach(visit);
 
-		if (filterValue !== '') {
-			this.viewType = 'flat';
-			this.nodes = this.filterSiblingNodes_(this.nodes, filterValue);
-		} else {
-			this.viewType = 'tree';
-		}
-	}
+		return result;
+	}, [nodes]);
 
-	/**
-	 * Fires item selector save event on selected node change
-	 *
-	 * @param {!Event} event
-	 * @protected
-	 */
+	const handleQueryChange = useCallback((event) => {
+		const value = event.target.value;
 
-	selectedNodeChange_(event) {
-		var node = event.newVal[0];
+		setFilter(value);
+	}, []);
+
+	const handleSelectionChange = (selectedNodeIds) => {
+		const node = nodesById[[...selectedNodeIds][0]];
 
 		if (node) {
-			var data = {
-				folderId: node.id,
-				folderName: node.name
-			};
-
-			Liferay.Util.getOpener().Liferay.fire(this.itemSelectorSaveEvent, {
-				data
+			Liferay.Util.getOpener().Liferay.fire(itemSelectorSaveEvent, {
+				data: {
+					folderId: node.id,
+					folderName: node.name,
+				},
 			});
 		}
-	}
-}
+	};
 
-SelectFolder.STATE = {
-	/**
-	 * Event name to fire on node selection
-	 * @type {String}
-	 */
+	return (
+		<ClayLayout.ContainerFluid className="p-4 select-folder">
+			<ClayForm.Group>
+				<ClayInput.Group>
+					<ClayInput.GroupItem prepend>
+						<ClayInput
+							aria-label={Liferay.Language.get('search')}
+							className="input-group-inset input-group-inset-after"
+							onChange={handleQueryChange}
+							placeholder={`${Liferay.Language.get('search')}`}
+							type="text"
+						/>
 
-	itemSelectorSaveEvent: Config.string(),
+						<ClayInput.GroupInsetItem after>
+							<div className="link-monospaced">
+								<ClayIcon symbol="search" />
+							</div>
+						</ClayInput.GroupInsetItem>
+					</ClayInput.GroupItem>
+				</ClayInput.Group>
+			</ClayForm.Group>
 
-	/**
-	 * List of nodes
-	 * @type {Array.<Object>}
-	 */
-
-	nodes: Config.array().required(),
-
-	/**
-	 * Theme images root path
-	 * @type {String}
-	 */
-
-	pathThemeImages: Config.string().required(),
-
-	/**
-	 * Type of view to render. Accepted values are 'tree' and 'flat'
-	 * @type {String}
-	 */
-
-	viewType: Config.string().value('tree')
+			<Treeview
+				NodeComponent={Treeview.Card}
+				filter={filter}
+				nodes={nodes}
+				onSelectedNodesChange={handleSelectionChange}
+			/>
+		</ClayLayout.ContainerFluid>
+	);
 };
-
-Soy.register(SelectFolder, templates);
 
 export default SelectFolder;

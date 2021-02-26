@@ -16,16 +16,18 @@ package com.liferay.trash.web.internal.display.context;
 
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.NavigationItem;
-import com.liferay.frontend.taglib.clay.servlet.taglib.util.NavigationItemList;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.NavigationItemListBuilder;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.search.EmptyOnClickRowChecker;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.ContainerModel;
+import com.liferay.portal.kernel.model.TrashedModel;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.portlet.PortletURLUtil;
+import com.liferay.portal.kernel.portlet.SearchDisplayStyleUtil;
 import com.liferay.portal.kernel.search.BaseModelSearchResult;
 import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.search.SortFactoryUtil;
@@ -41,6 +43,7 @@ import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.trash.TrashHelper;
+import com.liferay.trash.constants.TrashPortletKeys;
 import com.liferay.trash.model.TrashEntry;
 import com.liferay.trash.model.TrashEntryList;
 import com.liferay.trash.service.TrashEntryLocalServiceUtil;
@@ -208,8 +211,8 @@ public class TrashDisplayContext {
 			return _displayStyle;
 		}
 
-		_displayStyle = ParamUtil.getString(
-			_httpServletRequest, "displayStyle", "list");
+		_displayStyle = SearchDisplayStyleUtil.getDisplayStyle(
+			_httpServletRequest, TrashPortletKeys.TRASH, "list");
 
 		return _displayStyle;
 	}
@@ -251,7 +254,7 @@ public class TrashDisplayContext {
 		EntrySearchTerms searchTerms =
 			(EntrySearchTerms)entrySearch.getSearchTerms();
 
-		List trashEntries = null;
+		List<TrashEntry> trashEntries = null;
 
 		if (Validator.isNotNull(searchTerms.getKeywords())) {
 			Sort sort = SortFactoryUtil.getSort(
@@ -310,21 +313,20 @@ public class TrashDisplayContext {
 	}
 
 	public List<NavigationItem> getInfoPanelNavigationItems() {
-		ThemeDisplay themeDisplay =
-			(ThemeDisplay)_httpServletRequest.getAttribute(
-				WebKeys.THEME_DISPLAY);
+		return NavigationItemListBuilder.add(
+			navigationItem -> {
+				navigationItem.setActive(true);
 
-		return new NavigationItemList() {
-			{
-				add(
-					navigationItem -> {
-						navigationItem.setActive(true);
-						navigationItem.setHref(themeDisplay.getURLCurrent());
-						navigationItem.setLabel(
-							LanguageUtil.get(_httpServletRequest, "details"));
-					});
+				ThemeDisplay themeDisplay =
+					(ThemeDisplay)_httpServletRequest.getAttribute(
+						WebKeys.THEME_DISPLAY);
+
+				navigationItem.setHref(themeDisplay.getURLCurrent());
+
+				navigationItem.setLabel(
+					LanguageUtil.get(_httpServletRequest, "details"));
 			}
-		};
+		).build();
 	}
 
 	public String getKeywords() {
@@ -419,7 +421,7 @@ public class TrashDisplayContext {
 		return portletURL;
 	}
 
-	public SearchContainer getTrashContainerSearchContainer()
+	public SearchContainer<TrashedModel> getTrashContainerSearchContainer()
 		throws PortalException {
 
 		if (_trashContainerSearchContainer != null) {
@@ -443,14 +445,14 @@ public class TrashDisplayContext {
 			"classNameId", String.valueOf(getClassNameId()));
 		iteratorURL.setParameter("classPK", String.valueOf(getClassPK()));
 
-		SearchContainer searchContainer = new SearchContainer(
+		SearchContainer<TrashedModel> searchContainer = new SearchContainer(
 			_liferayPortletRequest, iteratorURL, null, emptyResultsMessage);
 
 		searchContainer.setDeltaConfigurable(false);
 
 		TrashHandler trashHandler = getTrashHandler();
 
-		List results = trashHandler.getTrashModelTrashedModels(
+		List<TrashedModel> results = trashHandler.getTrashModelTrashedModels(
 			getClassPK(), searchContainer.getStart(), searchContainer.getEnd(),
 			searchContainer.getOrderByComparator());
 
@@ -465,7 +467,8 @@ public class TrashDisplayContext {
 	}
 
 	public int getTrashContainerTotalItems() throws PortalException {
-		SearchContainer searchContainer = getTrashContainerSearchContainer();
+		SearchContainer<TrashedModel> searchContainer =
+			getTrashContainerSearchContainer();
 
 		return searchContainer.getTotal();
 	}
@@ -698,7 +701,7 @@ public class TrashDisplayContext {
 	private String _navigation;
 	private String _orderByCol;
 	private String _orderByType;
-	private SearchContainer _trashContainerSearchContainer;
+	private SearchContainer<TrashedModel> _trashContainerSearchContainer;
 	private TrashEntry _trashEntry;
 	private TrashHandler _trashHandler;
 	private final TrashHelper _trashHelper;

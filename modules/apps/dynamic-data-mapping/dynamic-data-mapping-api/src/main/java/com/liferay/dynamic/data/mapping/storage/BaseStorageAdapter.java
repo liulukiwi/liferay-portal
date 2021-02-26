@@ -17,7 +17,6 @@ package com.liferay.dynamic.data.mapping.storage;
 import com.liferay.dynamic.data.mapping.exception.StorageException;
 import com.liferay.dynamic.data.mapping.util.DDMFormValuesTransformer;
 import com.liferay.dynamic.data.mapping.util.DocumentLibraryDDMFormFieldValueTransformer;
-import com.liferay.dynamic.data.mapping.util.FormsDocumentLibraryDDMFormFieldValueTransformer;
 import com.liferay.dynamic.data.mapping.util.HTMLSanitizerDDMFormFieldValueTransformer;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.service.ServiceContext;
@@ -43,11 +42,11 @@ public abstract class BaseStorageAdapter implements StorageAdapter {
 			return doCreate(
 				companyId, ddmStructureId, ddmFormValues, serviceContext);
 		}
-		catch (StorageException se) {
-			throw se;
+		catch (StorageException storageException) {
+			throw storageException;
 		}
-		catch (Exception e) {
-			throw new StorageException(e);
+		catch (Exception exception) {
+			throw new StorageException(exception);
 		}
 	}
 
@@ -56,11 +55,11 @@ public abstract class BaseStorageAdapter implements StorageAdapter {
 		try {
 			doDeleteByClass(classPK);
 		}
-		catch (StorageException se) {
-			throw se;
+		catch (StorageException storageException) {
+			throw storageException;
 		}
-		catch (Exception e) {
-			throw new StorageException(e);
+		catch (Exception exception) {
+			throw new StorageException(exception);
 		}
 	}
 
@@ -71,11 +70,11 @@ public abstract class BaseStorageAdapter implements StorageAdapter {
 		try {
 			doDeleteByDDMStructure(ddmStructureId);
 		}
-		catch (StorageException se) {
-			throw se;
+		catch (StorageException storageException) {
+			throw storageException;
 		}
-		catch (Exception e) {
-			throw new StorageException(e);
+		catch (Exception exception) {
+			throw new StorageException(exception);
 		}
 	}
 
@@ -86,11 +85,11 @@ public abstract class BaseStorageAdapter implements StorageAdapter {
 		try {
 			return doGetDDMFormValues(classPK);
 		}
-		catch (StorageException se) {
-			throw se;
+		catch (StorageException storageException) {
+			throw storageException;
 		}
-		catch (Exception e) {
-			throw new StorageException(e);
+		catch (Exception exception) {
+			throw new StorageException(exception);
 		}
 	}
 
@@ -105,11 +104,11 @@ public abstract class BaseStorageAdapter implements StorageAdapter {
 
 			doUpdate(classPK, ddmFormValues, serviceContext);
 		}
-		catch (StorageException se) {
-			throw se;
+		catch (StorageException storageException) {
+			throw storageException;
 		}
-		catch (Exception e) {
-			throw new StorageException(e);
+		catch (Exception exception) {
+			throw new StorageException(exception);
 		}
 	}
 
@@ -140,9 +139,6 @@ public abstract class BaseStorageAdapter implements StorageAdapter {
 
 		ddmFormValuesTransformer.addTransformer(
 			new DocumentLibraryDDMFormFieldValueTransformer());
-
-		ddmFormValuesTransformer.addTransformer(
-			new FormsDocumentLibraryDDMFormFieldValueTransformer());
 
 		ddmFormValuesTransformer.addTransformer(
 			new HTMLSanitizerDDMFormFieldValueTransformer(

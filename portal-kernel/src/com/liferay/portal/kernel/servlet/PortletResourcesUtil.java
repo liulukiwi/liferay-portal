@@ -14,6 +14,8 @@
 
 package com.liferay.portal.kernel.servlet;
 
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.model.PortletApp;
 import com.liferay.registry.Registry;
@@ -61,7 +63,10 @@ public class PortletResourcesUtil {
 				return url;
 			}
 		}
-		catch (MalformedURLException murle) {
+		catch (MalformedURLException malformedURLException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(malformedURLException, malformedURLException);
+			}
 		}
 
 		return null;
@@ -85,6 +90,9 @@ public class PortletResourcesUtil {
 
 		_serviceTracker.open();
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		PortletResourcesUtil.class);
 
 	private static final PortletResourcesUtil _portletResourcesUtil =
 		new PortletResourcesUtil();

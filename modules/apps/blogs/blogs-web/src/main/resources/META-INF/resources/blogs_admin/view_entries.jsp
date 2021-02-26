@@ -23,17 +23,19 @@ String assetTagName = ParamUtil.getString(request, "tag");
 BlogEntriesDisplayContext blogEntriesDisplayContext = (BlogEntriesDisplayContext)request.getAttribute(BlogsWebKeys.BLOG_ENTRIES_DISPLAY_CONTEXT);
 
 String displayStyle = blogEntriesDisplayContext.getDisplayStyle();
-SearchContainer entriesSearchContainer = blogEntriesDisplayContext.getSearchContainer();
+
+SearchContainer<BlogsEntry> entriesSearchContainer = blogEntriesDisplayContext.getSearchContainer();
 
 PortletURL portletURL = entriesSearchContainer.getIteratorURL();
 
-BlogEntriesManagementToolbarDisplayContext blogEntriesManagementToolbarDisplayContext = new BlogEntriesManagementToolbarDisplayContext(liferayPortletRequest, liferayPortletResponse, request, entriesSearchContainer, trashHelper, displayStyle);
+BlogEntriesManagementToolbarDisplayContext blogEntriesManagementToolbarDisplayContext = new BlogEntriesManagementToolbarDisplayContext(request, liferayPortletRequest, liferayPortletResponse, entriesSearchContainer, trashHelper, displayStyle);
 %>
 
 <clay:management-toolbar
-	displayContext="<%= blogEntriesManagementToolbarDisplayContext %>"
+	additionalProps="<%= blogEntriesManagementToolbarDisplayContext.getAdditionalProps() %>"
+	managementToolbarDisplayContext="<%= blogEntriesManagementToolbarDisplayContext %>"
+	propsTransformer="blogs_admin/js/BlogEntriesManagementToolbarPropsTransformer"
 	searchContainerId="blogEntries"
-	supportsBulkActions="<%= true %>"
 />
 
 <portlet:actionURL name="/blogs/edit_entry" var="restoreTrashEntriesURL">
@@ -44,7 +46,7 @@ BlogEntriesManagementToolbarDisplayContext blogEntriesManagementToolbarDisplayCo
 	portletURL="<%= restoreTrashEntriesURL %>"
 />
 
-<div class="container-fluid container-fluid-max-xl main-content-body">
+<clay:container-fluid>
 	<aui:form action="<%= portletURL.toString() %>" method="get" name="fm">
 		<aui:input name="<%= Constants.CMD %>" type="hidden" />
 		<aui:input name="redirect" type="hidden" value="<%= portletURL.toString() %>" />
@@ -75,11 +77,10 @@ BlogEntriesManagementToolbarDisplayContext blogEntriesManagementToolbarDisplayCo
 				</liferay-portlet:renderURL>
 
 				<%
-				Map<String, Object> rowData = HashMapBuilder.<String, Object>put(
-					"actions", StringUtil.merge(blogEntriesDisplayContext.getAvailableActions(entry))
-				).build();
-
-				row.setData(rowData);
+				row.setData(
+					HashMapBuilder.<String, Object>put(
+						"actions", StringUtil.merge(blogEntriesDisplayContext.getAvailableActions(entry))
+					).build());
 				%>
 
 				<%@ include file="/blogs_admin/entry_search_columns.jspf" %>
@@ -91,13 +92,7 @@ BlogEntriesManagementToolbarDisplayContext blogEntriesManagementToolbarDisplayCo
 			/>
 		</liferay-ui:search-container>
 	</aui:form>
-</div>
-
-<liferay-frontend:component
-	componentId="<%= blogEntriesManagementToolbarDisplayContext.getDefaultEventHandler() %>"
-	context="<%= blogEntriesManagementToolbarDisplayContext.getComponentContext() %>"
-	module="blogs_admin/js/ManagementToolbarDefaultEventHandler.es"
-/>
+</clay:container-fluid>
 
 <liferay-frontend:component
 	componentId="<%= BlogsWebConstants.BLOGS_ELEMENTS_DEFAULT_EVENT_HANDLER %>"

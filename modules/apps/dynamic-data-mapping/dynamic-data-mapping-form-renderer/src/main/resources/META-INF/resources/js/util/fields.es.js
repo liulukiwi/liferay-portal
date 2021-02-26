@@ -12,8 +12,8 @@
  * details.
  */
 
-export const checkInvalidFieldNameCharacter = character => {
-	return /[\\~`!@#$%^&*(){}[\];:"'<,.>?/\-+=|]/g.test(character);
+export const checkValidFieldNameCharacter = (character) => {
+	return /[A-Za-z0-9_]/g.test(character);
 };
 
 export function normalizeFieldName(fieldName) {
@@ -29,7 +29,8 @@ export function normalizeFieldName(fieldName) {
 			nextUpperCase = true;
 
 			continue;
-		} else if (checkInvalidFieldNameCharacter(item)) {
+		}
+		else if (!checkValidFieldNameCharacter(item)) {
 			continue;
 		}
 
@@ -48,3 +49,6 @@ export function normalizeFieldName(fieldName) {
 
 	return normalizedFieldName;
 }
+
+export const hasFieldSet = (field) =>
+	field && field.type === 'fieldset' && field.ddmStructureId;

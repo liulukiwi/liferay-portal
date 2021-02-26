@@ -15,11 +15,11 @@
 package com.liferay.journal.internal.upgrade.v0_0_5;
 
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
+import com.liferay.dynamic.data.mapping.model.DDMStructureVersion;
 import com.liferay.dynamic.data.mapping.service.DDMStorageLinkLocalService;
 import com.liferay.dynamic.data.mapping.service.DDMStructureLocalService;
 import com.liferay.dynamic.data.mapping.service.DDMTemplateLinkLocalService;
 import com.liferay.dynamic.data.mapping.util.DefaultDDMStructureHelper;
-import com.liferay.journal.constants.JournalPortletKeys;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
@@ -39,6 +39,7 @@ import com.liferay.portal.kernel.upgrade.UpgradeProcess;
 import com.liferay.portal.kernel.upgrade.util.UpgradeProcessUtil;
 import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.LocaleThreadLocal;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.LoggingTimer;
 import com.liferay.portal.kernel.util.PortalUtil;
@@ -109,20 +110,29 @@ public class UpgradeJournal extends UpgradeProcess {
 
 		Class<?> clazz = getClass();
 
-		_defaultDDMStructureHelper.addDDMStructures(
-			defaultUserId, group.getGroupId(),
-			PortalUtil.getClassNameId(JournalArticle.class),
-			clazz.getClassLoader(),
-			"com/liferay/journal/internal/upgrade/v1_0_0/dependencies" +
-				"/basic-web-content-structure.xml",
-			new ServiceContext());
+		Locale oldSiteDefaultLocale = LocaleThreadLocal.getSiteDefaultLocale();
+
+		Locale siteDefaultLocale = LocaleUtil.fromLanguageId(
+			UpgradeProcessUtil.getDefaultLanguageId(companyId));
+
+		LocaleThreadLocal.setSiteDefaultLocale(siteDefaultLocale);
+
+		try {
+			_defaultDDMStructureHelper.addDDMStructures(
+				defaultUserId, group.getGroupId(),
+				PortalUtil.getClassNameId(JournalArticle.class),
+				clazz.getClassLoader(),
+				"com/liferay/journal/internal/upgrade/v1_0_0/dependencies" +
+					"/basic-web-content-structure.xml",
+				new ServiceContext());
+		}
+		finally {
+			LocaleThreadLocal.setSiteDefaultLocale(oldSiteDefaultLocale);
+		}
 
 		addDefaultResourcePermissions(group.getGroupId());
 
-		Locale defaultLocale = LocaleUtil.fromLanguageId(
-			UpgradeProcessUtil.getDefaultLanguageId(companyId));
-
-		List<Element> structureElements = getDDMStructures(defaultLocale);
+		List<Element> structureElements = getDDMStructures(siteDefaultLocale);
 
 		Element structureElement = structureElements.get(0);
 
@@ -141,8 +151,15 @@ public class UpgradeJournal extends UpgradeProcess {
 			long ddmStructureId = getDDMStructureId(
 				entry.getKey(), entry.getValue());
 
+			DDMStructure ddmStructure = _ddmStructureLocalService.getStructure(
+				ddmStructureId);
+
+			DDMStructureVersion ddmStructureVersion =
+				ddmStructure.getStructureVersion();
+
 			_ddmStorageLinkLocalService.addStorageLink(
-				journalArticleClassNameId, entry.getKey(), ddmStructureId,
+				journalArticleClassNameId, entry.getKey(),
+				ddmStructureVersion.getStructureVersionId(),
 				new ServiceContext());
 		}
 	}
@@ -432,20 +449,9 @@ public class UpgradeJournal extends UpgradeProcess {
 	protected void initJournalDDMCompositeModelsResourceActions()
 		throws Exception {
 
-		_resourceActions.read(
-			null, UpgradeJournal.class.getClassLoader(),
-			"/META-INF/resource-actions/journal_ddm_composite_models.xml");
-
-		List<String> modelNames = _resourceActions.getPortletModelResources(
-			JournalPortletKeys.JOURNAL);
-
-		for (String modelName : modelNames) {
-			List<String> modelActions =
-				_resourceActions.getModelResourceActions(modelName);
-
-			_resourceActionLocalService.checkResourceActions(
-				modelName, modelActions);
-		}
+		_resourceActions.populateModelResources(
+			UpgradeJournal.class.getClassLoader(),
+			"/resource-actions/journal_ddm_composite_models.xml");
 	}
 
 	protected void transformDateFieldValue(Element dynamicContentElement) {
@@ -574,11 +580,13 @@ public class UpgradeJournal extends UpgradeProcess {
 
 			while (rs.next()) {
 				long id = rs.getLong("id_");
-				long groupId = rs.getLong("groupId");
 				String content = rs.getString("content");
+
 				String ddmStructureKey = rs.getString("DDMStructureKey");
 
 				if (Validator.isNull(ddmStructureKey)) {
+					long groupId = rs.getLong("groupId");
+
 					content = convertStaticContentToDynamic(groupId, content);
 
 					updateJournalArticle(id, name, name, content);
@@ -630,8 +638,8 @@ public class UpgradeJournal extends UpgradeProcess {
 				"com/liferay/journal/internal/upgrade/v1_0_0/dependencies" +
 					"/basic-web-content-structure.xml");
 		}
-		catch (IOException ioe) {
-			throw new ExceptionInInitializerError(ioe);
+		catch (IOException ioException) {
+			throw new ExceptionInInitializerError(ioException);
 		}
 	}
 

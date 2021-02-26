@@ -19,11 +19,11 @@
 <%
 String app = ParamUtil.getString(request, "app");
 
-ViewModulesManagementToolbarDisplayContext viewModulesManagementToolbarDisplayContext = new ViewModulesManagementToolbarDisplayContext(liferayPortletRequest, liferayPortletResponse, request);
+ViewModulesManagementToolbarDisplayContext viewModulesManagementToolbarDisplayContext = new ViewModulesManagementToolbarDisplayContext(request, liferayPortletRequest, liferayPortletResponse);
 
 AppDisplay appDisplay = viewModulesManagementToolbarDisplayContext.getAppDisplay();
 
-SearchContainer searchContainer = viewModulesManagementToolbarDisplayContext.getSearchContainer();
+SearchContainer<Object> searchContainer = viewModulesManagementToolbarDisplayContext.getSearchContainer();
 
 PortletURL backURL = renderResponse.createRenderURL();
 
@@ -42,12 +42,7 @@ MarketplaceAppManagerUtil.addPortletBreadcrumbEntry(appDisplay, request, renderR
 	<portlet:param name="app" value="<%= app %>" />
 </portlet:renderURL>
 
-<clay:navigation-bar
-	inverted="<%= true %>"
-	navigationItems='<%= appManagerDisplayContext.getNavigationItems(viewURL, "modules") %>'
-/>
-
-<clay:management-toolbar
+<clay:management-toolbar-v2
 	filterDropdownItems="<%= viewModulesManagementToolbarDisplayContext.getFilterDropdownItems() %>"
 	searchActionURL="<%= viewModulesManagementToolbarDisplayContext.getSearchActionURL() %>"
 	searchContainerId="bundles"
@@ -58,7 +53,7 @@ MarketplaceAppManagerUtil.addPortletBreadcrumbEntry(appDisplay, request, renderR
 	sortingURL="<%= viewModulesManagementToolbarDisplayContext.getSortingURL() %>"
 />
 
-<div class="container-fluid container-fluid-max-xl">
+<clay:container-fluid>
 	<liferay-ui:breadcrumb
 		showCurrentGroup="<%= false %>"
 		showGuestGroup="<%= false %>"
@@ -83,4 +78,4 @@ MarketplaceAppManagerUtil.addPortletBreadcrumbEntry(appDisplay, request, renderR
 			markupView="lexicon"
 		/>
 	</liferay-ui:search-container>
-</div>
+</clay:container-fluid>

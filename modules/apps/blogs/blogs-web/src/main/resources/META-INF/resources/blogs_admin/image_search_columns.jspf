@@ -64,11 +64,6 @@ String thumbnailSrc = DLURLHelperUtil.getThumbnailSrc(fileEntry, themeDisplay);
 		</liferay-ui:search-container-column-text>
 	</c:when>
 	<c:when test='<%= displayStyle.equals("icon") %>'>
-
-		<%
-		row.setCssClass("entry-card lfr-asset-item");
-		%>
-
 		<liferay-ui:search-container-column-text>
 			<clay:vertical-card
 				verticalCard="<%= new BlogsEntryImageVerticalCard(fileEntry, renderRequest, renderResponse, searchContainer.getRowChecker()) %>"
@@ -86,7 +81,7 @@ String thumbnailSrc = DLURLHelperUtil.getThumbnailSrc(fileEntry, themeDisplay);
 		<liferay-ui:search-container-column-text
 			cssClass="table-cell-expand-smaller"
 			name="size"
-			value="<%= TextFormatter.formatStorageSize(fileEntry.getSize(), locale) %>"
+			value="<%= LanguageUtil.formatStorageSize(fileEntry.getSize(), locale) %>"
 		/>
 
 		<liferay-ui:search-container-column-text

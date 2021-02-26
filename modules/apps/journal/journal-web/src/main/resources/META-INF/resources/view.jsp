@@ -20,22 +20,16 @@
 JournalManagementToolbarDisplayContext journalManagementToolbarDisplayContext = null;
 
 if (!journalDisplayContext.isSearch() || journalDisplayContext.isWebContentTabSelected()) {
-	journalManagementToolbarDisplayContext = new JournalManagementToolbarDisplayContext(liferayPortletRequest, liferayPortletResponse, request, journalDisplayContext, trashHelper);
+	journalManagementToolbarDisplayContext = new JournalManagementToolbarDisplayContext(request, liferayPortletRequest, liferayPortletResponse, journalDisplayContext, trashHelper);
 }
 else if (journalDisplayContext.isVersionsTabSelected()) {
-	journalManagementToolbarDisplayContext = new JournalArticleVersionsManagementToolbarDisplayContext(liferayPortletRequest, liferayPortletResponse, request, journalDisplayContext, trashHelper);
+	journalManagementToolbarDisplayContext = new JournalArticleVersionsManagementToolbarDisplayContext(request, liferayPortletRequest, liferayPortletResponse, journalDisplayContext, trashHelper);
 }
 else if (journalDisplayContext.isCommentsTabSelected()) {
-	journalManagementToolbarDisplayContext = new JournalArticleCommentsManagementToolbarDisplayContext(liferayPortletRequest, liferayPortletResponse, request, journalDisplayContext, trashHelper);
+	journalManagementToolbarDisplayContext = new JournalArticleCommentsManagementToolbarDisplayContext(request, liferayPortletRequest, liferayPortletResponse, journalDisplayContext, trashHelper);
 }
 else {
-	journalManagementToolbarDisplayContext = new JournalManagementToolbarDisplayContext(liferayPortletRequest, liferayPortletResponse, request, journalDisplayContext, trashHelper);
-}
-
-String title = journalDisplayContext.getFolderTitle();
-
-if (Validator.isNotNull(title)) {
-	renderResponse.setTitle(journalDisplayContext.getFolderTitle());
+	journalManagementToolbarDisplayContext = new JournalManagementToolbarDisplayContext(request, liferayPortletRequest, liferayPortletResponse, journalDisplayContext, trashHelper);
 }
 %>
 
@@ -47,10 +41,10 @@ if (Validator.isNotNull(title)) {
 
 <clay:navigation-bar
 	inverted="<%= true %>"
-	navigationItems='<%= journalDisplayContext.getNavigationBarItems("web-content") %>'
+	navigationItems='<%= journalDisplayContext.getNavigationItems("web-content") %>'
 />
 
-<clay:management-toolbar
+<clay:management-toolbar-v2
 	displayContext="<%= journalManagementToolbarDisplayContext %>"
 />
 
@@ -60,7 +54,7 @@ if (Validator.isNotNull(title)) {
 	module="js/ManagementToolbarDefaultEventHandler.es"
 />
 
-<div class="closed container-fluid-1280 sidenav-container sidenav-right" id="<portlet:namespace />infoPanelId">
+<div class="closed sidenav-container sidenav-right" id="<%= liferayPortletResponse.getNamespace() + "infoPanelId" %>">
 	<c:if test="<%= journalDisplayContext.isShowInfoButton() %>">
 		<liferay-portlet:resourceURL copyCurrentRenderParameters="<%= false %>" id="/journal/info_panel" var="sidebarPanelURL">
 			<portlet:param name="folderId" value="<%= String.valueOf(journalDisplayContext.getFolderId()) %>" />
@@ -75,72 +69,86 @@ if (Validator.isNotNull(title)) {
 	</c:if>
 
 	<div class="sidenav-content">
-		<c:if test="<%= !journalDisplayContext.isNavigationMine() && !journalDisplayContext.isNavigationRecent() %>">
-			<liferay-site-navigation:breadcrumb
-				breadcrumbEntries="<%= JournalPortletUtil.getPortletBreadcrumbEntries(journalDisplayContext.getFolder(), request, journalDisplayContext.getPortletURL()) %>"
-			/>
-		</c:if>
+		<clay:container-fluid
+			cssClass="container-view"
+		>
+			<c:if test="<%= !journalDisplayContext.isNavigationMine() && !journalDisplayContext.isNavigationRecent() %>">
+				<liferay-site-navigation:breadcrumb
+					breadcrumbEntries="<%= JournalPortletUtil.getPortletBreadcrumbEntries(journalDisplayContext.getFolder(), request, journalDisplayContext.getPortletURL()) %>"
+				/>
+			</c:if>
 
-		<aui:form action="<%= journalDisplayContext.getPortletURL() %>" method="get" name="fm">
-			<aui:input name="<%= ActionRequest.ACTION_NAME %>" type="hidden" />
-			<aui:input name="redirect" type="hidden" value="<%= currentURL %>" />
-			<aui:input name="groupId" type="hidden" value="<%= scopeGroupId %>" />
-			<aui:input name="newFolderId" type="hidden" />
+			<aui:form action="<%= journalDisplayContext.getPortletURL() %>" method="get" name="fm">
+				<aui:input name="<%= ActionRequest.ACTION_NAME %>" type="hidden" />
+				<aui:input name="redirect" type="hidden" value="<%= currentURL %>" />
+				<aui:input name="groupId" type="hidden" value="<%= scopeGroupId %>" />
+				<aui:input name="newFolderId" type="hidden" />
 
-			<c:choose>
-				<c:when test="<%= !journalDisplayContext.isSearch() %>">
-					<liferay-util:include page="/view_entries.jsp" servletContext="<%= application %>" />
-				</c:when>
-				<c:otherwise>
+				<c:choose>
+					<c:when test="<%= !journalDisplayContext.isSearch() %>">
+						<liferay-util:include page="/view_entries.jsp" servletContext="<%= application %>" />
+					</c:when>
+					<c:otherwise>
 
-					<%
-					String[] tabsNames = new String[0];
-					String[] tabsValues = new String[0];
+						<%
+						String[] tabsNames = new String[0];
+						String[] tabsValues = new String[0];
 
-					if (journalDisplayContext.hasResults()) {
-						String tabName = StringUtil.appendParentheticalSuffix(LanguageUtil.get(request, "web-content"), journalDisplayContext.getTotalItems());
+						if (journalDisplayContext.hasResults()) {
+							String tabName = StringUtil.appendParentheticalSuffix(LanguageUtil.get(request, "web-content"), journalDisplayContext.getTotalItems());
 
-						tabsNames = ArrayUtil.append(tabsNames, tabName);
-						tabsValues = ArrayUtil.append(tabsValues, "web-content");
-					}
+							tabsNames = ArrayUtil.append(tabsNames, tabName);
 
-					if (journalDisplayContext.hasVersionsResults()) {
-						String tabName = StringUtil.appendParentheticalSuffix(LanguageUtil.get(request, "versions"), journalDisplayContext.getVersionsTotal());
+							tabsValues = ArrayUtil.append(tabsValues, "web-content");
+						}
 
-						tabsNames = ArrayUtil.append(tabsNames, tabName);
-						tabsValues = ArrayUtil.append(tabsValues, "versions");
-					}
+						if (journalDisplayContext.hasVersionsResults()) {
+							String tabName = StringUtil.appendParentheticalSuffix(LanguageUtil.get(request, "versions"), journalDisplayContext.getVersionsTotal());
 
-					if (journalDisplayContext.hasCommentsResults()) {
-						String tabName = StringUtil.appendParentheticalSuffix(LanguageUtil.get(request, "comments"), journalDisplayContext.getCommentsTotal());
+							tabsNames = ArrayUtil.append(tabsNames, tabName);
 
-						tabsNames = ArrayUtil.append(tabsNames, tabName);
-						tabsValues = ArrayUtil.append(tabsValues, "comments");
-					}
-					%>
+							tabsValues = ArrayUtil.append(tabsValues, "versions");
+						}
 
-					<liferay-ui:tabs
-						names="<%= StringUtil.merge(tabsNames) %>"
-						portletURL="<%= journalDisplayContext.getPortletURL() %>"
-						tabsValues="<%= StringUtil.merge(tabsValues) %>"
-					/>
+						if (journalDisplayContext.hasCommentsResults()) {
+							String tabName = StringUtil.appendParentheticalSuffix(LanguageUtil.get(request, "comments"), journalDisplayContext.getCommentsTotal());
 
-					<c:choose>
-						<c:when test="<%= journalDisplayContext.isWebContentTabSelected() %>">
-							<liferay-util:include page="/view_entries.jsp" servletContext="<%= application %>" />
-						</c:when>
-						<c:when test="<%= journalDisplayContext.isVersionsTabSelected() %>">
-							<liferay-util:include page="/view_versions.jsp" servletContext="<%= application %>" />
-						</c:when>
-						<c:when test="<%= journalDisplayContext.isCommentsTabSelected() %>">
-							<liferay-util:include page="/view_comments.jsp" servletContext="<%= application %>" />
-						</c:when>
-						<c:otherwise>
-							<liferay-util:include page="/view_entries.jsp" servletContext="<%= application %>" />
-						</c:otherwise>
-					</c:choose>
-				</c:otherwise>
-			</c:choose>
-		</aui:form>
+							tabsNames = ArrayUtil.append(tabsNames, tabName);
+
+							tabsValues = ArrayUtil.append(tabsValues, "comments");
+						}
+						%>
+
+						<liferay-ui:tabs
+							names="<%= StringUtil.merge(tabsNames) %>"
+							portletURL="<%= journalDisplayContext.getPortletURL() %>"
+							tabsValues="<%= StringUtil.merge(tabsValues) %>"
+						/>
+
+						<c:choose>
+							<c:when test="<%= journalDisplayContext.isWebContentTabSelected() %>">
+								<liferay-util:include page="/view_entries.jsp" servletContext="<%= application %>" />
+							</c:when>
+							<c:when test="<%= journalDisplayContext.isVersionsTabSelected() %>">
+								<liferay-util:include page="/view_versions.jsp" servletContext="<%= application %>" />
+							</c:when>
+							<c:when test="<%= journalDisplayContext.isCommentsTabSelected() %>">
+								<liferay-util:include page="/view_comments.jsp" servletContext="<%= application %>" />
+							</c:when>
+							<c:otherwise>
+								<liferay-util:include page="/view_entries.jsp" servletContext="<%= application %>" />
+							</c:otherwise>
+						</c:choose>
+					</c:otherwise>
+				</c:choose>
+			</aui:form>
+		</clay:container-fluid>
+	</div>
+
+	<div>
+		<react:component
+			module="js/export_translation/ExportTranslation.es"
+			props="<%= journalDisplayContext.getExportTranslationData() %>"
+		/>
 	</div>
 </div>

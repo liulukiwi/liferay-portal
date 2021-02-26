@@ -105,10 +105,11 @@ public abstract class BaseAccessTokenGrantHandler
 
 			permissionChecker = PermissionCheckerFactoryUtil.create(user);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isDebugEnabled()) {
 				_log.debug(
-					"Unable to create permission checker for user " + userId);
+					"Unable to create permission checker for user " + userId,
+					exception);
 			}
 
 			return false;
@@ -122,12 +123,12 @@ public abstract class BaseAccessTokenGrantHandler
 				return true;
 			}
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			if (_log.isDebugEnabled()) {
 				_log.debug(
 					"Unable to check permissions for application " +
 						oAuth2Application,
-					pe);
+					portalException);
 			}
 		}
 

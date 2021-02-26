@@ -9,11 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>ADD</td>
-	<td>//a[contains(text(),'Add')] | //button[contains(@type,'submit') and contains(.,'Add')] | //button[contains(@type,'button') and contains(.,'Add')]</td>
-	<td></td>
-</tr>
-<tr>
 	<td>ADD_ACTION</td>
 	<td>//span[contains(.,'Add Action')]</td>
 	<td></td>
@@ -64,8 +59,18 @@
 	<td></td>
 </tr>
 <tr>
+	<td>ANGLE_DOWN</td>
+	<td>//button[*[name()='svg'][contains(@class,'lexicon-icon-angle-down')]]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>ANY</td>
 	<td>//*[contains(@class,'btn')][normalize-space(text())='${key_text}']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ANY_WITH_COLOR</td>
+	<td>//*[contains(@class,'btn-${key_color}')][normalize-space(text())='${key_text}']</td>
 	<td></td>
 </tr>
 <tr>
@@ -79,6 +84,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>ANY_LAST</td>
+	<td>xpath=(//*[contains(@class,'btn')][normalize-space(text())='${key_text}'])[last()]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>APPLY_EFFECTS</td>
 	<td>//div[contains(@class,'controls-container') and contains(@class,'open')]//button[contains(@class,'btn') and contains(.,'Apply')]</td>
 	<td></td>
@@ -86,6 +96,11 @@
 <tr>
 	<td>BACK</td>
 	<td>//a[@title='Back'] | //a[contains(@id,'back')] | //button[contains(.,'Back')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>BORDER_BOTTOM_PALETTE_ITEM</td>
+	<td>//label[normalize-space(text())='${key_borderBottom}']/following-sibling::div[1]//li[contains(@class,'palette-item')]//button[contains(@class,'bg-${key_paletteItem}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -101,11 +116,6 @@
 <tr>
 	<td>CANCEL_CHECKOUT</td>
 	<td>//a[contains(@class,'btn') and contains(.,'Cancel Checkout')] | //button[contains(.,'Cancel Checkout')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>CANCEL_GIVEN_POSITION</td>
-	<td>//div[contains(@class,'lfr-form-content')]/../div/a[contains(@class,'cancel') and contains(@class,'btn')] | //button[contains(.,'Cancel')] | //a[contains(@class,'btn') and contains(.,'Cancel')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -155,7 +165,7 @@
 </tr>
 <tr>
 	<td>CLOSE_MODAL</td>
-	<td>//h3[contains(@class,'modal-title') and contains(.,'${key_modalTitle}')]/../div/button[contains(@class,'close')]</td>
+	<td>//*[contains(@class,'modal-header') and contains(.,'${key_modalTitle}')]//*[contains(@class,'close')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -174,6 +184,16 @@
 	<td></td>
 </tr>
 <tr>
+	<td>COLOR_PICKER</td>
+	<td>//label[normalize-space(text())='${key_fieldLabel}']/following-sibling::div//div[contains(@class,'color-picker')]//button[contains(@class,'clay-color-btn')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>COLOR_SWATCH_ITEM</td>
+	<td>//div[contains(@class,'dropdown-menu') and contains(@class,'show')]//button[contains(@class,'color')][@*='${key_colorSwatchItem}']</td>
+	<td></td>
+</tr>
+<tr>
 	<td>COMMENT</td>
 	<td>//button/span[contains(.,'Comment')]</td>
 	<td></td>
@@ -181,6 +201,11 @@
 <tr>
 	<td>COMPARE_VERSIONS</td>
 	<td>//button[contains(@id,'compare')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>CONFIGURE_ALLOWED_FRAGMENTS</td>
+	<td>//button[contains(.,'Configure Allowed Fragments')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -204,18 +229,8 @@
 	<td></td>
 </tr>
 <tr>
-	<td>CREATE_CERTIFICATE</td>
-	<td>//button[contains(@onclick,'${key_certificateUsage}')]/span[contains(.,'Create Certificate')]</td>
-	<td></td>
-</tr>
-<tr>
 	<td>DELETE</td>
 	<td>//*[@data-qa-id='deleteButton'] | //div[contains(@class,'show')]//button[contains(.,'Delete')] | //button[contains(.,'delete')] | //button[contains(@class,'delete-logo')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>DELETE_CERTIFICATE</td>
-	<td>//button[contains(.,'Delete Certificate')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -225,7 +240,7 @@
 </tr>
 <tr>
 	<td>DELETE_FRAGMENT_COMMENT</td>
-	<td>//button[contains(@class,'fragments-editor')]/span[contains(.,'Delete')]</td>
+	<td>//button[contains(@class,'page-editor')]/span[contains(.,'Delete')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -239,6 +254,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>DEPOT_LANGUAGES_MANAGEMENT_PANEL_SAVE</td>
+	<td>//div[contains(@class,'modal-content')]//button[contains(.,'Save')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>DONE</td>
 	<td>//button[contains(.,'Done')]</td>
 	<td></td>
@@ -249,8 +269,8 @@
 	<td></td>
 </tr>
 <tr>
-	<td>DOWNLOAD_CERTIFICATE</td>
-	<td>//a[contains(@href,'${key_certificateUsage}')]/span[contains(.,'Download Certificate')]</td>
+	<td>DUPLICATE</td>
+	<td>//button[contains(@class, 'ddm-form-field-repeatable-add-button p-0 btn btn-sm btn-primary')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -294,6 +314,16 @@
 	<td></td>
 </tr>
 <tr>
+	<td>EXPORT_MODAL</td>
+	<td>//div[contains(@class,'btn-group-item')]/button[contains(@class,'btn') and contains(.,'Export')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>EXPORT_MODAL_DISABLED</td>
+	<td>//div[contains(@class,'btn-group-item')]/button[@disabled and contains(.,'Export')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>FIELD_FILTER_APPLY</td>
 	<td>//tr[contains(.,'${key_fieldName}')]//button[contains(.,'Apply')]</td>
 	<td></td>
@@ -324,8 +354,8 @@
 	<td></td>
 </tr>
 <tr>
-	<td>IMPORT</td>
-	<td>//div[contains(@class,'footer')]//button[contains(.,'Import')]</td>
+	<td>IGNORE_REDIRECT_URLS</td>
+	<td>//button[*[name()='svg'][contains(@class,'lexicon-icon-hidden')]]</td>
 	<td></td>
 </tr>
 <tr>
@@ -374,6 +404,16 @@
 	<td></td>
 </tr>
 <tr>
+	<td>LOCALIZATION_SUMMARY</td>
+	<td>//button[@id='_com_liferay_journal_web_portlet_JournalPortlet__com_liferay_journal_web_portlet_JournalPortlet_descriptionMapAsXMLMenu']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>MAKE_DEFAULT</td>
+	<td>//button[contains(.,'Make Default') and contains(@data-value,'${key_language}')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>MERGE</td>
 	<td>//button[contains(.,'Merge')]</td>
 	<td></td>
@@ -401,6 +441,11 @@
 <tr>
 	<td>MOVE_TO_RECYCLE_BIN</td>
 	<td>//a[contains(@class,'btn') and contains(.,'Move to Recycle Bin')] | //button[contains(.,'Move to Recycle Bin')] | //*[contains(@class, 'icon-trash')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>NEW</td>
+	<td>//button[@*='New']</td>
 	<td></td>
 </tr>
 <tr>
@@ -435,22 +480,17 @@
 </tr>
 <tr>
 	<td>PERMISSIONS</td>
-	<td>//a[contains(.,'Permissions') and contains(@class,'btn')] | //button[contains(.,'Permissions')]</td>
+	<td>//a[contains(.,'Permissions') and contains(@class,'btn')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>PLUS</td>
-	<td>//*[@data-qa-id='addButton'] | //a[contains(@class,'btn') and @aria-label='add'] | //a[contains(@class,'btn') and *[contains(@class,'icon-plus')]] | //button[*[contains(@class,'icon-plus')]]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>PLUS_IE</td>
-	<td>//a[contains(@class,'nav-btn-monospaced')] | //button[@data-title='New' or @title='New' or @title='Add']</td>
+	<td>//*[@data-qa-id='addButton'] | //a[contains(@class,'btn') and @aria-label='add'] | //a[contains(@class,'nav-btn') and *[contains(@class,'icon-plus')]] | //button[*[contains(@class,'icon-plus')]]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>POST</td>
-	<td>//div[@class='button-holder']/button[contains(@id,'MicroblogsPortlet')]/span[contains(.,'Post')]</td>
+	<td>//div[@class='button-holder']/button[contains(@id,'MicroblogsPortlet') and not (contains(@class,'disabled'))]/span[contains(.,'Post')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -474,18 +514,18 @@
 	<td></td>
 </tr>
 <tr>
-	<td>PUBLISH_GIVEN_POSITION</td>
-	<td>//div[contains(@class,'lfr-form-content')]/../div/button[span[contains(.,'Publish')]]</td>
-	<td></td>
-</tr>
-<tr>
 	<td>PUBLISH_LOCALIZED</td>
 	<td>//button[contains(@id,'publishButton')]</td>
 	<td></td>
 </tr>
 <tr>
+	<td>REMOVE_BUTTON</td>
+	<td>//button[contains(@class, 'ddm-form-field-repeatable-delete-button p-0 btn btn-sm btn-primary')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>REMOVE_IMAGE</td>
-	<td>//button[@id='sdjj___removeImage']</td>
+	<td>//button[*[name()='svg'][contains(@class,'lexicon-icon-trash')]]</td>
 	<td></td>
 </tr>
 <tr>
@@ -501,11 +541,6 @@
 <tr>
 	<td>REOPEN</td>
 	<td>//button/span[*[name()='svg'][contains(@class,'lexicon-icon-check-circle-full')]]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>REPLACE_CERTIFICATE</td>
-	<td>//button[contains(@onclick,'${key_certificateUsage}')]/span[contains(.,'Replace Certificate')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -535,7 +570,7 @@
 </tr>
 <tr>
 	<td>RESET_CHANGES</td>
-	<td>//button[contains(.,'Reset Changes')]</td>
+	<td>//a[contains(@class,'btn')][contains(.,'Reset Changes')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -546,6 +581,11 @@
 <tr>
 	<td>RESOLVE</td>
 	<td>//button/span[*[name()='svg'][contains(@class,'lexicon-icon-check-circle')]]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>RESTORE_VALUES</td>
+	<td>//button/span[contains(.,'Restore Values')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -619,13 +659,18 @@
 	<td></td>
 </tr>
 <tr>
+	<td>SELECT_FIELD_LAST</td>
+	<td>xpath=(//*[contains(@class,'btn btn-secondary') and contains(text(),'Select')])[last()]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>SELECT_FILE</td>
 	<td>//button[contains(.,'Select File')] | //label[contains(.,'Select File')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>SELECT_FILE_SMALL_IMAGE</td>
-	<td>//div[contains(@class,'blogs-small-image-selector')]//a[contains(.,'Select File')]</td>
+	<td>//div[contains(@class,'blogs-small-image-selector')]//div[contains(@class,'browse-image-controls')]//button[contains(.,'Select File')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -641,6 +686,11 @@
 <tr>
 	<td>SELECT_OPEN_GRAPH_IMAGE</td>
 	<td>//button[contains(@name,'openGraphImageButton')][contains(.,'Select')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>TRANSLATIONS_LOCALIZATION</td>
+	<td>//div[contains(@class,'dropdown')]//button[contains(@class,'dropdown-toggle')]//*[name()='svg'][contains(@class,'lexicon-icon-${key_currentLocale}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -674,6 +724,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>STAGING_INDICATOR</td>
+	<td>//button[contains(@class,'staging-indicator-button')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>STAY</td>
 	<td>//button[contains(.,'Stay')]</td>
 	<td></td>
@@ -689,13 +744,38 @@
 	<td></td>
 </tr>
 <tr>
+	<td>MODAL_ITEM_SUBMIT</td>
+	<td>//div[contains(@class,'modal-item')]//button[@type='submit']</td>
+	<td></td>
+</tr>
+<tr>
 	<td>TAB_SUBMIT_BTN</td>
 	<td>//button[contains(@type,'submit') and contains(.,'${key_tab}')]</td>
 	<td></td>
 </tr>
 <tr>
+	<td>TWITCH_PLAY</td>
+	<td>//button[contains(@data-test-selector,'player-overlay-play-button') and contains(@aria-label,'Play')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>TRY_REDIRECTION</td>
+	<td>//button[@type='button' and @title='Check URL']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>TRY_REDIRECTION_DISABLED</td>
+	<td>//button[@type='button' and @title='Check URL'][@disabled='']</td>
+	<td></td>
+</tr>
+<tr>
 	<td>SUBMIT_FOR_PUBLICATION</td>
 	<td>//button[contains(.,'Submit for Publication')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SUBMIT_FOR_PUBLICATION_DISABLED</td>
+	<td>//button[contains(@class,'disabled') and contains(.,'Submit for Publication')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -714,6 +794,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>UNIGNORE_REDIRECT_URLS</td>
+	<td>//button[*[name()='svg'][contains(@class,'lexicon-icon-view')]]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>UNLOCK</td>
 	<td>//button[contains(.,'Unlock')]</td>
 	<td></td>
@@ -725,7 +810,7 @@
 </tr>
 <tr>
 	<td>UNSUBSCRIBE</td>
-	<td>//button[contains(.,'Unsubscribe')] | //li[contains(@class,'nav-item')]/button[contains(@class,'nav-link')]</td>
+	<td>//button[contains(.,'Unsubscribe')] | //li[contains(@class,'nav-item')]/*[contains(@class,'nav-link')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -751,6 +836,11 @@
 <tr>
 	<td>WEB_CONTENT_CHOOSE</td>
 	<td>//tr[contains(.,'${key_webContentTitle}')]/td//button</td>
+	<td></td>
+</tr>
+<tr>
+	<td>YOUTUBE_PLAY</td>
+	<td>//button[contains(@class,'ytp-large-play-button')]</td>
 	<td></td>
 </tr>
 </tbody>

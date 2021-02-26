@@ -18,14 +18,12 @@
 
 <clay:management-toolbar
 	clearResultsURL="<%= workflowDefinitionLinkDisplayContext.getClearResultsURL() %>"
-	disabled="<%= workflowDefinitionLinkDisplayContext.isDisabledManagementBar() %>"
 	filterDropdownItems="<%= workflowDefinitionLinkDisplayContext.getFilterOptions(request) %>"
 	itemsTotal="<%= workflowDefinitionLinkDisplayContext.getTotalItems() %>"
-	namespace="<%= renderResponse.getNamespace() %>"
 	searchActionURL="<%= workflowDefinitionLinkDisplayContext.getSearchURL() %>"
 	searchContainerId="workflowDefinitionLinks"
 	searchFormName="fm1"
-	selectable="false"
+	selectable="<%= false %>"
 	sortingOrder="<%= workflowDefinitionLinkDisplayContext.getOrderByType() %>"
 	sortingURL="<%= workflowDefinitionLinkDisplayContext.getSortingURL() %>"
 />

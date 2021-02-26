@@ -90,7 +90,7 @@ public class GoogleDocsDLDisplayContextFactory
 		if (googleDocsMetadataHelper.isGoogleDocs()) {
 			return new GoogleDocsDLEditFileEntryDisplayContext(
 				parentDLEditFileEntryDisplayContext, httpServletRequest,
-				httpServletResponse, fileEntry);
+				httpServletResponse, fileEntry, googleDocsMetadataHelper);
 		}
 
 		return parentDLEditFileEntryDisplayContext;
@@ -111,11 +111,11 @@ public class GoogleDocsDLDisplayContextFactory
 				parentDLViewFileVersionDisplayContext, httpServletRequest,
 				httpServletResponse, fileEntry.getFileVersion());
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			throw new SystemException(
 				"Unable to build GoogleDocsDLViewFileVersionDisplayContext " +
 					"for shortcut " + fileShortcut.getPrimaryKey(),
-				pe);
+				portalException);
 		}
 	}
 

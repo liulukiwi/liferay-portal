@@ -16,6 +16,7 @@ package com.liferay.dynamic.data.mapping.form.field.type.internal.radio;
 
 import com.liferay.dynamic.data.mapping.form.field.type.DDMFormFieldValueValidationException;
 import com.liferay.dynamic.data.mapping.form.field.type.DDMFormFieldValueValidator;
+import com.liferay.dynamic.data.mapping.form.field.type.constants.DDMFormFieldTypeConstants;
 import com.liferay.dynamic.data.mapping.model.DDMFormField;
 import com.liferay.dynamic.data.mapping.model.DDMFormFieldOptions;
 import com.liferay.dynamic.data.mapping.model.Value;
@@ -31,7 +32,8 @@ import org.osgi.service.component.annotations.Component;
  * @author Marcellus Tavares
  */
 @Component(
-	immediate = true, property = "ddm.form.field.type.name=radio",
+	immediate = true,
+	property = "ddm.form.field.type.name=" + DDMFormFieldTypeConstants.RADIO,
 	service = DDMFormFieldValueValidator.class
 )
 public class RadioDDMFormFieldValueValidator
@@ -51,9 +53,9 @@ public class RadioDDMFormFieldValueValidator
 					ddmFormField.getName()));
 		}
 
-		Set<String> optionValues = ddmFormFieldOptions.getOptionsValues();
+		Set<String> optionsValues = ddmFormFieldOptions.getOptionsValues();
 
-		if (optionValues.isEmpty()) {
+		if (optionsValues.isEmpty()) {
 			throw new DDMFormFieldValueValidationException(
 				"Options must contain at least one alternative");
 		}
@@ -62,7 +64,7 @@ public class RadioDDMFormFieldValueValidator
 
 		for (String selectedValue : selectedValues.values()) {
 			if (Validator.isNotNull(selectedValue) &&
-				!optionValues.contains(selectedValue)) {
+				!optionsValues.contains(selectedValue)) {
 
 				throw new DDMFormFieldValueValidationException(
 					String.format(

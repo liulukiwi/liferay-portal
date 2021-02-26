@@ -20,6 +20,8 @@ import com.liferay.petra.string.StringPool;
 import com.liferay.portal.json.JSONObjectImpl;
 import com.liferay.portal.kernel.json.JSONException;
 import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -151,19 +153,6 @@ public abstract class BaseSourceCheck implements SourceCheck {
 	}
 
 	protected void addMessage(String fileName, String message, int lineNumber) {
-		addMessage(fileName, message, null, lineNumber);
-	}
-
-	protected void addMessage(
-		String fileName, String message, String markdownFileName) {
-
-		addMessage(fileName, message, markdownFileName, -1);
-	}
-
-	protected void addMessage(
-		String fileName, String message, String markdownFileName,
-		int lineNumber) {
-
 		Set<SourceFormatterMessage> sourceFormatterMessages =
 			_sourceFormatterMessagesMap.get(fileName);
 
@@ -176,7 +165,9 @@ public abstract class BaseSourceCheck implements SourceCheck {
 		sourceFormatterMessages.add(
 			new SourceFormatterMessage(
 				fileName, message, CheckType.SOURCE_CHECK,
-				clazz.getSimpleName(), markdownFileName, lineNumber));
+				clazz.getSimpleName(),
+				SourceFormatterUtil.getDocumentationURLString(clazz),
+				lineNumber));
 
 		_sourceFormatterMessagesMap.put(fileName, sourceFormatterMessages);
 	}
@@ -658,7 +649,10 @@ public abstract class BaseSourceCheck implements SourceCheck {
 				}
 			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
 		}
 
 		return absolutePath.contains("/modules/");
@@ -770,6 +764,9 @@ public abstract class BaseSourceCheck implements SourceCheck {
 
 	private static final String _MODULES_PROPERTIES_FILE_NAME =
 		"modules/modules.properties";
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		BaseSourceCheck.class);
 
 	private JSONObject _attributesJSONObject = new JSONObjectImpl();
 	private final Map<String, String> _attributeValueMap =

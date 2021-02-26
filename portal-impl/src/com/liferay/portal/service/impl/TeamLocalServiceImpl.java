@@ -17,6 +17,7 @@ package com.liferay.portal.service.impl;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
+import com.liferay.portal.kernel.exception.DataLimitException;
 import com.liferay.portal.kernel.exception.DuplicateTeamException;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.TeamNameException;
@@ -33,6 +34,7 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.service.base.TeamLocalServiceBaseImpl;
+import com.liferay.portal.util.PropsValues;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -52,6 +54,14 @@ public class TeamLocalServiceImpl extends TeamLocalServiceBaseImpl {
 
 		User user = userPersistence.findByPrimaryKey(userId);
 
+		if ((PropsValues.DATA_LIMIT_MAX_TEAM_COUNT > 0) &&
+			(teamPersistence.countByCompanyId(user.getCompanyId()) >=
+				PropsValues.DATA_LIMIT_MAX_TEAM_COUNT)) {
+
+			throw new DataLimitException(
+				"Unable to exceed maximum number of allowed teams");
+		}
+
 		validate(0, groupId, name);
 
 		long teamId = counterLocalService.increment();
@@ -66,7 +76,7 @@ public class TeamLocalServiceImpl extends TeamLocalServiceBaseImpl {
 		team.setName(name);
 		team.setDescription(description);
 
-		teamPersistence.update(team);
+		team = teamPersistence.update(team);
 
 		// Resources
 
@@ -109,22 +119,25 @@ public class TeamLocalServiceImpl extends TeamLocalServiceBaseImpl {
 			team.getCompanyId(), true);
 
 		for (Group group : groups) {
-			UnicodeProperties typeSettingsProperties =
+			UnicodeProperties typeSettingsUnicodeUnicodeProperties =
 				group.getTypeSettingsProperties();
 
 			List<Long> defaultTeamIds = ListUtil.fromArray(
 				StringUtil.split(
-					typeSettingsProperties.getProperty("defaultTeamIds"), 0L));
+					typeSettingsUnicodeUnicodeProperties.getProperty(
+						"defaultTeamIds"),
+					0L));
 
 			if (defaultTeamIds.contains(team.getTeamId())) {
 				defaultTeamIds.remove(team.getTeamId());
 
-				typeSettingsProperties.setProperty(
+				typeSettingsUnicodeUnicodeProperties.setProperty(
 					"defaultTeamIds",
 					ListUtil.toString(defaultTeamIds, StringPool.BLANK));
 
 				groupLocalService.updateGroup(
-					group.getGroupId(), typeSettingsProperties.toString());
+					group.getGroupId(),
+					typeSettingsUnicodeUnicodeProperties.toString());
 			}
 		}
 
@@ -172,24 +185,22 @@ public class TeamLocalServiceImpl extends TeamLocalServiceBaseImpl {
 
 	@Override
 	public List<Team> getUserTeams(long userId, long groupId) {
-		LinkedHashMap<String, Object> params =
+		return search(
+			groupId, null, null,
 			LinkedHashMapBuilder.<String, Object>put(
 				"usersTeams", userId
-			).build();
-
-		return search(
-			groupId, null, null, params, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			null);
+			).build(),
+			QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
 	}
 
 	@Override
 	public List<Team> search(
 		long groupId, String name, String description,
 		LinkedHashMap<String, Object> params, int start, int end,
-		OrderByComparator<Team> obc) {
+		OrderByComparator<Team> orderByComparator) {
 
 		return teamFinder.findByG_N_D(
-			groupId, name, description, params, start, end, obc);
+			groupId, name, description, params, start, end, orderByComparator);
 	}
 
 	@Override
@@ -211,9 +222,7 @@ public class TeamLocalServiceImpl extends TeamLocalServiceBaseImpl {
 		team.setName(name);
 		team.setDescription(description);
 
-		teamPersistence.update(team);
-
-		return team;
+		return teamPersistence.update(team);
 	}
 
 	protected void validate(long teamId, long groupId, String name)

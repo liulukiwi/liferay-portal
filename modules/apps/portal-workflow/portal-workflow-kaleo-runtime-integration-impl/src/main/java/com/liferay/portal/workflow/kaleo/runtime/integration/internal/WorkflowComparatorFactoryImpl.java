@@ -20,6 +20,7 @@ import com.liferay.portal.kernel.workflow.WorkflowInstance;
 import com.liferay.portal.kernel.workflow.WorkflowLog;
 import com.liferay.portal.kernel.workflow.WorkflowTask;
 import com.liferay.portal.kernel.workflow.comparator.WorkflowComparatorFactory;
+import com.liferay.portal.kernel.workflow.comparator.WorkflowDefinitionModifiedDateComparator;
 import com.liferay.portal.kernel.workflow.comparator.WorkflowDefinitionNameComparator;
 import com.liferay.portal.kernel.workflow.comparator.WorkflowInstanceCompletedComparator;
 import com.liferay.portal.kernel.workflow.comparator.WorkflowInstanceEndDateComparator;
@@ -30,6 +31,7 @@ import com.liferay.portal.kernel.workflow.comparator.WorkflowLogUserIdComparator
 import com.liferay.portal.kernel.workflow.comparator.WorkflowTaskCompletionDateComparator;
 import com.liferay.portal.kernel.workflow.comparator.WorkflowTaskCreateDateComparator;
 import com.liferay.portal.kernel.workflow.comparator.WorkflowTaskDueDateComparator;
+import com.liferay.portal.kernel.workflow.comparator.WorkflowTaskInstanceIdComparator;
 import com.liferay.portal.kernel.workflow.comparator.WorkflowTaskModifiedDateComparator;
 import com.liferay.portal.kernel.workflow.comparator.WorkflowTaskNameComparator;
 import com.liferay.portal.kernel.workflow.comparator.WorkflowTaskUserIdComparator;
@@ -45,6 +47,16 @@ import org.osgi.service.component.annotations.Component;
 )
 public class WorkflowComparatorFactoryImpl
 	implements WorkflowComparatorFactory {
+
+	@Override
+	public OrderByComparator<WorkflowDefinition>
+		getDefinitionModifiedDateComparator(boolean ascending) {
+
+		return new WorkflowDefinitionModifiedDateComparator(
+			ascending, "modifiedDate ASC, version ASC",
+			"modifiedDate DESC, version DESC",
+			new String[] {"modifiedDate", "version"});
+	}
 
 	@Override
 	public OrderByComparator<WorkflowDefinition> getDefinitionNameComparator(
@@ -148,6 +160,16 @@ public class WorkflowComparatorFactoryImpl
 			new String[] {
 				"completed", "dueDate", "modifiedDate", "kaleoTaskId"
 			});
+	}
+
+	@Override
+	public OrderByComparator<WorkflowTask> getTaskInstanceIdComparator(
+		boolean ascending) {
+
+		return new WorkflowTaskInstanceIdComparator(
+			ascending, "completed ASC, kaleoInstanceId ASC",
+			"completed ASC, kaleoInstanceId DESC",
+			new String[] {"completed", "kaleoInstanceId"});
 	}
 
 	@Override

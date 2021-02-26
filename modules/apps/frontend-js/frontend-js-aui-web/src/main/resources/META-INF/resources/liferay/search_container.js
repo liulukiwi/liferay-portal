@@ -14,7 +14,7 @@
 
 AUI.add(
 	'liferay-search-container',
-	A => {
+	(A) => {
 		var Lang = A.Lang;
 
 		var CSS_TEMPLATE = 'lfr-template';
@@ -28,13 +28,17 @@ AUI.add(
 
 			ATTRS: {
 				id: {
-					value: STR_BLANK
-				}
+					value: STR_BLANK,
+				},
 			},
 
 			NAME: 'searchcontainer',
 
-			constructor(config) {
+			// NOTE: Do not convert the constructor to an object concise method.
+			//
+			// See: https://stackoverflow.com/a/45119651/2103996
+
+			constructor: function constructor(config) {
 				var id = config.id;
 
 				config.boundingBox = config.boundingBox || '#' + id;
@@ -51,9 +55,10 @@ AUI.add(
 
 				if (instance._cache[id]) {
 					searchContainer = instance._cache[id];
-				} else {
+				}
+				else {
 					searchContainer = new SearchContainer({
-						id
+						id,
 					}).render();
 				}
 
@@ -123,7 +128,7 @@ AUI.add(
 							id,
 							ids: instance._ids,
 							row,
-							rowData: arr
+							rowData: arr,
 						});
 					}
 
@@ -134,11 +139,11 @@ AUI.add(
 					var instance = this;
 
 					instance.publish('addRow', {
-						defaultFn: instance._addRow
+						defaultFn: instance._addRow,
 					});
 
 					instance.publish('deleteRow', {
-						defaultFn: instance._deleteRow
+						defaultFn: instance._deleteRow,
 					});
 				},
 
@@ -157,7 +162,8 @@ AUI.add(
 						});
 
 						obj = row;
-					} else {
+					}
+					else {
 						obj = A.one(obj);
 					}
 
@@ -174,7 +180,7 @@ AUI.add(
 					instance.fire('deleteRow', {
 						id,
 						ids: instance._ids,
-						row: obj
+						row: obj,
 					});
 
 					if (obj) {
@@ -307,7 +313,7 @@ AUI.add(
 					if (dataStore) {
 						dataStore.val(instance._ids.join(','));
 					}
-				}
+				},
 			},
 
 			register(obj) {
@@ -318,19 +324,19 @@ AUI.add(
 				instance._cache[id] = obj;
 
 				Liferay.component(id, obj, {
-					destroyOnNavigate: true
+					destroyOnNavigate: true,
 				});
 
 				Liferay.fire('search-container:registered', {
-					searchContainer: obj
+					searchContainer: obj,
 				});
-			}
+			},
 		});
 
 		Liferay.SearchContainer = SearchContainer;
 	},
 	'',
 	{
-		requires: ['aui-base', 'aui-component']
+		requires: ['aui-base', 'aui-component'],
 	}
 );

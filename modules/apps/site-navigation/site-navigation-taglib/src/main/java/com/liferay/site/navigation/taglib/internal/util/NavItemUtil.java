@@ -18,13 +18,16 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Layout;
+import com.liferay.portal.kernel.model.LayoutConstants;
 import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.theme.NavItem;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.site.navigation.model.SiteNavigationMenuItem;
-import com.liferay.site.navigation.service.SiteNavigationMenuItemLocalService;
+import com.liferay.site.navigation.service.SiteNavigationMenuItemService;
+import com.liferay.site.navigation.taglib.servlet.taglib.NavigationMenuMode;
 import com.liferay.site.navigation.type.SiteNavigationMenuItemType;
 import com.liferay.site.navigation.type.SiteNavigationMenuItemTypeRegistry;
 
@@ -52,6 +55,12 @@ public class NavItemUtil {
 				WebKeys.THEME_DISPLAY);
 
 		Layout layout = themeDisplay.getLayout();
+
+		if ((layout.getClassNameId() == _portal.getClassNameId(Layout.class)) &&
+			(layout.getClassPK() > 0)) {
+
+			layout = _layoutLocalService.fetchLayout(layout.getClassPK());
+		}
 
 		if (layout.isRootLayout()) {
 			return Collections.singletonList(
@@ -85,8 +94,19 @@ public class NavItemUtil {
 				WebKeys.THEME_DISPLAY);
 
 		List<SiteNavigationMenuItem> siteNavigationMenuItems =
-			_siteNavigationMenuItemLocalService.getSiteNavigationMenuItems(
-				siteNavigationMenuId, parentSiteNavigationMenuItemId);
+			Collections.emptyList();
+
+		try {
+			siteNavigationMenuItems =
+				_siteNavigationMenuItemService.getSiteNavigationMenuItems(
+					siteNavigationMenuId, parentSiteNavigationMenuItemId);
+		}
+		catch (Exception exception) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(
+					"Unable to get site navigation menu items", exception);
+			}
+		}
 
 		List<NavItem> navItems = new ArrayList<>(
 			siteNavigationMenuItems.size());
@@ -112,9 +132,9 @@ public class NavItemUtil {
 						httpServletRequest, themeDisplay,
 						siteNavigationMenuItem));
 			}
-			catch (PortalException pe) {
+			catch (PortalException portalException) {
 				if (_log.isDebugEnabled()) {
-					_log.debug(pe, pe);
+					_log.debug(portalException, portalException);
 				}
 			}
 		}
@@ -123,6 +143,7 @@ public class NavItemUtil {
 	}
 
 	public static List<NavItem> getNavItems(
+			NavigationMenuMode navigationMenuMode,
 			HttpServletRequest httpServletRequest, String rootLayoutType,
 			int rootLayoutLevel, String rootLayoutUuid,
 			List<NavItem> branchNavItems)
@@ -137,8 +158,8 @@ public class NavItemUtil {
 
 		if (rootLayoutType.equals("absolute")) {
 			if (rootLayoutLevel == 0) {
-				navItems = NavItem.fromLayouts(
-					httpServletRequest, themeDisplay, null);
+				navItems = _fromLayouts(
+					navigationMenuMode, httpServletRequest, themeDisplay);
 			}
 			else if (branchNavItems.size() >= rootLayoutLevel) {
 				rootNavItem = branchNavItems.get(rootLayoutLevel - 1);
@@ -151,8 +172,8 @@ public class NavItemUtil {
 				int absoluteLevel = branchNavItems.size() - 1 - rootLayoutLevel;
 
 				if (absoluteLevel == -1) {
-					navItems = NavItem.fromLayouts(
-						httpServletRequest, themeDisplay, null);
+					navItems = _fromLayouts(
+						navigationMenuMode, httpServletRequest, themeDisplay);
 				}
 				else if ((absoluteLevel >= 0) &&
 						 (absoluteLevel < branchNavItems.size())) {
@@ -166,16 +187,21 @@ public class NavItemUtil {
 				Layout layout = themeDisplay.getLayout();
 
 				Layout rootLayout =
-					_layoutLocalService.getLayoutByUuidAndGroupId(
-						rootLayoutUuid, layout.getGroupId(),
-						layout.isPrivateLayout());
+					_layoutLocalService.fetchLayoutByUuidAndGroupId(
+						rootLayoutUuid, layout.getGroupId(), false);
+
+				if (rootLayout == null) {
+					rootLayout =
+						_layoutLocalService.fetchLayoutByUuidAndGroupId(
+							rootLayoutUuid, layout.getGroupId(), true);
+				}
 
 				rootNavItem = new NavItem(
 					httpServletRequest, themeDisplay, rootLayout, null);
 			}
 			else {
-				navItems = NavItem.fromLayouts(
-					httpServletRequest, themeDisplay, null);
+				navItems = _fromLayouts(
+					navigationMenuMode, httpServletRequest, themeDisplay);
 			}
 		}
 
@@ -198,11 +224,15 @@ public class NavItemUtil {
 	}
 
 	@Reference(unbind = "-")
-	protected void setSiteNavigationMenuItemLocalService(
-		SiteNavigationMenuItemLocalService siteNavigationMenuItemLocalService) {
+	protected void setPortal(Portal portal) {
+		_portal = portal;
+	}
 
-		_siteNavigationMenuItemLocalService =
-			siteNavigationMenuItemLocalService;
+	@Reference(unbind = "-")
+	protected void setSiteNavigationMenuItemService(
+		SiteNavigationMenuItemService siteNavigationMenuItemService) {
+
+		_siteNavigationMenuItemService = siteNavigationMenuItemService;
 	}
 
 	@Reference(unbind = "-")
@@ -213,11 +243,34 @@ public class NavItemUtil {
 			siteNavigationMenuItemTypeRegistry;
 	}
 
+	private static List<NavItem> _fromLayouts(
+			NavigationMenuMode navigationMenuMode,
+			HttpServletRequest httpServletRequest, ThemeDisplay themeDisplay)
+		throws Exception {
+
+		if (navigationMenuMode == NavigationMenuMode.DEFAULT) {
+			return NavItem.fromLayouts(httpServletRequest, themeDisplay, null);
+		}
+
+		boolean privateLayout = false;
+
+		if (navigationMenuMode == NavigationMenuMode.PRIVATE_PAGES) {
+			privateLayout = true;
+		}
+
+		List<Layout> layouts = _layoutLocalService.getLayouts(
+			themeDisplay.getScopeGroupId(), privateLayout,
+			LayoutConstants.DEFAULT_PARENT_LAYOUT_ID);
+
+		return NavItem.fromLayouts(
+			httpServletRequest, layouts, themeDisplay, null);
+	}
+
 	private static final Log _log = LogFactoryUtil.getLog(NavItemUtil.class);
 
 	private static LayoutLocalService _layoutLocalService;
-	private static SiteNavigationMenuItemLocalService
-		_siteNavigationMenuItemLocalService;
+	private static Portal _portal;
+	private static SiteNavigationMenuItemService _siteNavigationMenuItemService;
 	private static SiteNavigationMenuItemTypeRegistry
 		_siteNavigationMenuItemTypeRegistry;
 

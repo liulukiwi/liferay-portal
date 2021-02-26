@@ -16,6 +16,7 @@ package com.liferay.site.browser.web.internal.display.context;
 
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.NavigationItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.NavigationItemList;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.NavigationItemListBuilder;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
@@ -29,6 +30,7 @@ import com.liferay.portal.kernel.model.Organization;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
+import com.liferay.portal.kernel.portlet.SearchDisplayStyleUtil;
 import com.liferay.portal.kernel.security.membershippolicy.SiteMembershipPolicyUtil;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
@@ -45,6 +47,7 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portlet.usersadmin.search.GroupSearch;
 import com.liferay.portlet.usersadmin.search.GroupSearchTerms;
+import com.liferay.site.browser.web.internal.constants.SiteBrowserPortletKeys;
 import com.liferay.sites.kernel.util.SitesUtil;
 
 import java.util.ArrayList;
@@ -79,8 +82,8 @@ public class SiteBrowserDisplayContext {
 			return _displayStyle;
 		}
 
-		_displayStyle = ParamUtil.getString(
-			_httpServletRequest, "displayStyle", "list");
+		_displayStyle = SearchDisplayStyleUtil.getDisplayStyle(
+			_httpServletRequest, SiteBrowserPortletKeys.SITE_BROWSER, "list");
 
 		return _displayStyle;
 	}
@@ -236,18 +239,14 @@ public class SiteBrowserDisplayContext {
 		String[] types = _getTypes();
 
 		if (types.length == 1) {
-			return new NavigationItemList() {
-				{
-					add(
-						navigationItem -> {
-							navigationItem.setActive(true);
-							navigationItem.setHref(
-								_liferayPortletResponse.createRenderURL());
-							navigationItem.setLabel(
-								LanguageUtil.get(_httpServletRequest, "sites"));
-						});
+			return NavigationItemListBuilder.add(
+				navigationItem -> {
+					navigationItem.setActive(true);
+					navigationItem.setHref(getPortletURL());
+					navigationItem.setLabel(
+						LanguageUtil.get(_httpServletRequest, "sites"));
 				}
-			};
+			).build();
 		}
 		else if (types.length > 1) {
 			return new NavigationItemList() {
@@ -288,9 +287,9 @@ public class SiteBrowserDisplayContext {
 		try {
 			selUser = PortalUtil.getSelectedUser(_httpServletRequest);
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			if (_log.isDebugEnabled()) {
-				_log.debug(pe, pe);
+				_log.debug(portalException, portalException);
 			}
 		}
 
@@ -380,7 +379,10 @@ public class SiteBrowserDisplayContext {
 				return true;
 			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
 		}
 
 		return false;
@@ -388,7 +390,7 @@ public class SiteBrowserDisplayContext {
 
 	private List<Group> _filterGroups(
 			List<Group> groups, PermissionChecker permissionChecker)
-		throws PortalException {
+		throws Exception {
 
 		boolean filterManageableGroups = ParamUtil.getBoolean(
 			_httpServletRequest, "filterManageableGroups", true);
@@ -469,9 +471,7 @@ public class SiteBrowserDisplayContext {
 		return _groupId;
 	}
 
-	private LinkedHashMap<String, Object> _getGroupParams()
-		throws PortalException {
-
+	private LinkedHashMap<String, Object> _getGroupParams() throws Exception {
 		if (_groupParams != null) {
 			return _groupParams;
 		}

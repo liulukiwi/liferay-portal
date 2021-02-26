@@ -16,17 +16,27 @@
 
 <%@ include file="/polls/init.jsp" %>
 
+<portlet:actionURL name="/polls/delete_question" var="deleteQuestionURL">
+	<portlet:param name="mvcPath" value="/view.jsp" />
+	<portlet:param name="redirect" value="<%= currentURL %>" />
+</portlet:actionURL>
+
 <clay:management-toolbar
+	actionDropdownItems="<%= pollsDisplayContext.getActionItemsDropdownItems() %>"
+	additionalProps='<%=
+		HashMapBuilder.<String, Object>put(
+			"deleteQuestionURL", deleteQuestionURL.toString()
+		).build()
+	%>'
 	clearResultsURL="<%= pollsDisplayContext.getClearResultsURL() %>"
 	creationMenu="<%= pollsDisplayContext.getCreationMenu() %>"
 	disabled="<%= pollsDisplayContext.isDisabledManagementBar() %>"
 	filterDropdownItems="<%= pollsDisplayContext.getFilterItemsDropdownItems() %>"
 	itemsTotal="<%= pollsDisplayContext.getTotalItems() %>"
-	namespace="<%= renderResponse.getNamespace() %>"
+	propsTransformer="polls/js/PollsManagementToolbarPropsTransformer"
 	searchActionURL="<%= pollsDisplayContext.getSearchActionURL() %>"
 	searchContainerId="<%= pollsDisplayContext.getSearchContainerId() %>"
 	searchFormName="fm1"
-	selectable="false"
 	sortingOrder="<%= pollsDisplayContext.getOrderByType() %>"
 	sortingURL="<%= pollsDisplayContext.getSortingURL() %>"
 />

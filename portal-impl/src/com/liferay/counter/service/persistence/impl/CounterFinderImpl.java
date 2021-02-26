@@ -23,7 +23,6 @@ import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.cache.CacheRegistryItem;
 import com.liferay.portal.kernel.concurrent.CompeteLatch;
-import com.liferay.portal.kernel.dao.jdbc.DataAccess;
 import com.liferay.portal.kernel.dao.orm.LockMode;
 import com.liferay.portal.kernel.dao.orm.ORMException;
 import com.liferay.portal.kernel.dao.orm.ObjectNotFoundException;
@@ -60,16 +59,10 @@ public class CounterFinderImpl implements CacheRegistryItem, CounterFinder {
 
 	@Override
 	public List<String> getNames() {
-		Connection connection = null;
-		PreparedStatement preparedStatement = null;
-		ResultSet resultSet = null;
-
-		try {
-			connection = getConnection();
-
-			preparedStatement = connection.prepareStatement(_SQL_SELECT_NAMES);
-
-			resultSet = preparedStatement.executeQuery();
+		try (Connection connection = getConnection();
+			PreparedStatement preparedStatement = connection.prepareStatement(
+				_SQL_SELECT_NAMES);
+			ResultSet resultSet = preparedStatement.executeQuery()) {
 
 			List<String> list = new ArrayList<>();
 
@@ -79,11 +72,8 @@ public class CounterFinderImpl implements CacheRegistryItem, CounterFinder {
 
 			return list;
 		}
-		catch (SQLException sqle) {
-			throw processException(sqle);
-		}
-		finally {
-			DataAccess.cleanUp(connection, preparedStatement, resultSet);
+		catch (SQLException sqlException) {
+			throw processException(sqlException);
 		}
 	}
 
@@ -127,27 +117,23 @@ public class CounterFinderImpl implements CacheRegistryItem, CounterFinder {
 						"Cannot rename ", oldName, " to ", newName));
 			}
 
-			Connection connection = null;
-			PreparedStatement preparedStatement = null;
-
-			try {
-				connection = getConnection();
-
-				preparedStatement = connection.prepareStatement(
-					_SQL_UPDATE_NAME_BY_NAME);
+			try (Connection connection = getConnection();
+				PreparedStatement preparedStatement =
+					connection.prepareStatement(_SQL_UPDATE_NAME_BY_NAME)) {
 
 				preparedStatement.setString(1, newName);
 				preparedStatement.setString(2, oldName);
 
 				preparedStatement.executeUpdate();
 			}
-			catch (ObjectNotFoundException onfe) {
+			catch (ObjectNotFoundException objectNotFoundException) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(
+						objectNotFoundException, objectNotFoundException);
+				}
 			}
-			catch (Exception e) {
-				throw processException(e);
-			}
-			finally {
-				DataAccess.cleanUp(connection, preparedStatement);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 
 			counterRegister.setName(newName);
@@ -173,10 +159,14 @@ public class CounterFinderImpl implements CacheRegistryItem, CounterFinder {
 
 				session.flush();
 			}
-			catch (ObjectNotFoundException onfe) {
+			catch (ObjectNotFoundException objectNotFoundException) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(
+						objectNotFoundException, objectNotFoundException);
+				}
 			}
-			catch (Exception e) {
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -229,8 +219,8 @@ public class CounterFinderImpl implements CacheRegistryItem, CounterFinder {
 				}
 			}
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 
 		int rangeSize = getRangeSize(name);
@@ -301,15 +291,15 @@ public class CounterFinderImpl implements CacheRegistryItem, CounterFinder {
 		return _sessionFactory.openSession();
 	}
 
-	protected SystemException processException(Exception e) {
-		if (!(e instanceof ORMException)) {
-			_log.error("Caught unexpected exception", e);
+	protected SystemException processException(Exception exception) {
+		if (!(exception instanceof ORMException)) {
+			_log.error("Caught unexpected exception", exception);
 		}
 		else if (_log.isDebugEnabled()) {
-			_log.debug(e, e);
+			_log.debug(exception, exception);
 		}
 
-		return new SystemException(e);
+		return new SystemException(exception);
 	}
 
 	protected void setDataSource(DataSource dataSource) {
@@ -342,8 +332,8 @@ public class CounterFinderImpl implements CacheRegistryItem, CounterFinder {
 			try {
 				competeLatch.await();
 			}
-			catch (InterruptedException ie) {
-				throw processException(ie);
+			catch (InterruptedException interruptedException) {
+				throw processException(interruptedException);
 			}
 
 			// Compete again
@@ -362,17 +352,22 @@ public class CounterFinderImpl implements CacheRegistryItem, CounterFinder {
 			newValue = counterHolder.addAndGet(size);
 
 			if (newValue > counterHolder.getRangeMax()) {
+				int range = counterRegister.getRangeSize();
+
+				if (size > range) {
+					range = size;
+				}
+
 				CounterHolder newCounterHolder = _obtainIncrement(
-					counterRegister.getName(), counterRegister.getRangeSize(),
-					0);
+					counterRegister.getName(), range, 0);
 
 				newValue = newCounterHolder.addAndGet(size);
 
 				counterRegister.setCounterHolder(newCounterHolder);
 			}
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 
@@ -413,8 +408,8 @@ public class CounterFinderImpl implements CacheRegistryItem, CounterFinder {
 
 			return counterHolder;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);

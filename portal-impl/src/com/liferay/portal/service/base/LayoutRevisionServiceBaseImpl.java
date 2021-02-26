@@ -28,6 +28,7 @@ import com.liferay.portal.kernel.service.persistence.LayoutFinder;
 import com.liferay.portal.kernel.service.persistence.LayoutPersistence;
 import com.liferay.portal.kernel.service.persistence.LayoutRevisionPersistence;
 import com.liferay.portal.kernel.service.persistence.LayoutSetBranchPersistence;
+import com.liferay.portal.kernel.service.persistence.PortletPreferenceValuePersistence;
 import com.liferay.portal.kernel.service.persistence.PortletPreferencesFinder;
 import com.liferay.portal.kernel.service.persistence.PortletPreferencesPersistence;
 import com.liferay.portal.kernel.service.persistence.RecentLayoutRevisionPersistence;
@@ -53,7 +54,7 @@ public abstract class LayoutRevisionServiceBaseImpl
 	extends BaseServiceImpl
 	implements IdentifiableOSGiService, LayoutRevisionService {
 
-	/**
+	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this class directly. Use <code>LayoutRevisionService</code> via injection or a <code>org.osgi.util.tracker.ServiceTracker</code> or use <code>com.liferay.portal.kernel.service.LayoutRevisionServiceUtil</code>.
@@ -288,6 +289,53 @@ public abstract class LayoutRevisionServiceBaseImpl
 		LayoutSetBranchPersistence layoutSetBranchPersistence) {
 
 		this.layoutSetBranchPersistence = layoutSetBranchPersistence;
+	}
+
+	/**
+	 * Returns the portlet preference value local service.
+	 *
+	 * @return the portlet preference value local service
+	 */
+	public com.liferay.portal.kernel.service.PortletPreferenceValueLocalService
+		getPortletPreferenceValueLocalService() {
+
+		return portletPreferenceValueLocalService;
+	}
+
+	/**
+	 * Sets the portlet preference value local service.
+	 *
+	 * @param portletPreferenceValueLocalService the portlet preference value local service
+	 */
+	public void setPortletPreferenceValueLocalService(
+		com.liferay.portal.kernel.service.PortletPreferenceValueLocalService
+			portletPreferenceValueLocalService) {
+
+		this.portletPreferenceValueLocalService =
+			portletPreferenceValueLocalService;
+	}
+
+	/**
+	 * Returns the portlet preference value persistence.
+	 *
+	 * @return the portlet preference value persistence
+	 */
+	public PortletPreferenceValuePersistence
+		getPortletPreferenceValuePersistence() {
+
+		return portletPreferenceValuePersistence;
+	}
+
+	/**
+	 * Sets the portlet preference value persistence.
+	 *
+	 * @param portletPreferenceValuePersistence the portlet preference value persistence
+	 */
+	public void setPortletPreferenceValuePersistence(
+		PortletPreferenceValuePersistence portletPreferenceValuePersistence) {
+
+		this.portletPreferenceValuePersistence =
+			portletPreferenceValuePersistence;
 	}
 
 	/**
@@ -589,8 +637,8 @@ public abstract class LayoutRevisionServiceBaseImpl
 
 			sqlUpdate.update();
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 	}
 
@@ -641,6 +689,17 @@ public abstract class LayoutRevisionServiceBaseImpl
 
 	@BeanReference(type = LayoutSetBranchPersistence.class)
 	protected LayoutSetBranchPersistence layoutSetBranchPersistence;
+
+	@BeanReference(
+		type = com.liferay.portal.kernel.service.PortletPreferenceValueLocalService.class
+	)
+	protected
+		com.liferay.portal.kernel.service.PortletPreferenceValueLocalService
+			portletPreferenceValueLocalService;
+
+	@BeanReference(type = PortletPreferenceValuePersistence.class)
+	protected PortletPreferenceValuePersistence
+		portletPreferenceValuePersistence;
 
 	@BeanReference(
 		type = com.liferay.portal.kernel.service.PortletPreferencesLocalService.class

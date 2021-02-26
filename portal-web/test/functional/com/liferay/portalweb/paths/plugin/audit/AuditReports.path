@@ -49,6 +49,37 @@
 	<td></td>
 	<td></td>
 </tr>
+<!--REPORTS_DETAIL -->
+<tr>
+	<td>REPORTS_DETAIL_RESOURCE_NAME</td>
+	<td>//span[contains(@class,'control-label') and contains (.,'Resource Name')]/parent::div[contains(@class,'ddm-field-group')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>REPORTS_DETAIL_RESOURCE_ACTION</td>
+	<td>//span[contains(@class,'control-label') and contains (.,'Resource Action')]/parent::div[contains(@class,'ddm-field-group')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>REPORTS_DETAIL_USER_NAME</td>
+	<td>//span[contains(@class,'control-label') and contains (.,'User Name')]/parent::div[contains(@class,'ddm-field-group')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>REPORTS_DETAIL_CLIENT_IP</td>
+	<td>//span[contains(@class,'control-label') and contains (.,'Client IP')]/parent::div[contains(@class,'ddm-field-group')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>REPORTS_DETAIL_ADDITIONAL_INFORMATION</td>
+	<td>//span[contains(@class,'control-label') and contains (.,'Additional Information')]/parent::div[contains(@class,'ddm-field-group')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td></td>
+	<td></td>
+	<td></td>
+</tr>
 <!--ADVANCED_SEARCH -->
 <tr>
 	<td>ADVANCED_SEARCH_MATCH_SELECT</td>

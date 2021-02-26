@@ -52,10 +52,11 @@ public class UserModelListener extends BaseModelListener<User> {
 				StatusLocalServiceUtil.deleteStatus(status);
 			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			_log.error(
 				"Unable to remove chat entries and status for user " +
-					user.getUserId());
+					user.getUserId(),
+				exception);
 		}
 	}
 

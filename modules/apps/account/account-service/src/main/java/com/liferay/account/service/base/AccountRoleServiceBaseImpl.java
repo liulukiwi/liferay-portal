@@ -47,7 +47,7 @@ public abstract class AccountRoleServiceBaseImpl
 	extends BaseServiceImpl
 	implements AccountRoleService, AopService, IdentifiableOSGiService {
 
-	/**
+	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this class directly. Use <code>AccountRoleService</code> via injection or a <code>org.osgi.util.tracker.ServiceTracker</code> or use <code>com.liferay.account.service.AccountRoleServiceUtil</code>.
@@ -101,8 +101,8 @@ public abstract class AccountRoleServiceBaseImpl
 
 			sqlUpdate.update();
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 	}
 
@@ -123,18 +123,18 @@ public abstract class AccountRoleServiceBaseImpl
 		counterLocalService;
 
 	@Reference
+	protected com.liferay.portal.kernel.service.CompanyLocalService
+		companyLocalService;
+
+	@Reference
+	protected com.liferay.portal.kernel.service.CompanyService companyService;
+
+	@Reference
 	protected com.liferay.portal.kernel.service.RoleLocalService
 		roleLocalService;
 
 	@Reference
 	protected com.liferay.portal.kernel.service.RoleService roleService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.UserLocalService
-		userLocalService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.UserService userService;
 
 	@Reference
 	protected com.liferay.portal.kernel.service.UserGroupRoleLocalService

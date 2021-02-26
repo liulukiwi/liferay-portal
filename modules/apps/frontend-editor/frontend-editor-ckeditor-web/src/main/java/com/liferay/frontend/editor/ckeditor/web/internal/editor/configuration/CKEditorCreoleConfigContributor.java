@@ -51,7 +51,7 @@ public class CKEditorCreoleConfigContributor
 
 		jsonObject.put(
 			"allowedContent",
-			"b strong i hr h1 h2 h3 h4 h5 h6 em ul ol li pre table tr th; " +
+			"b strong i u hr h1 h2 h3 h4 h5 h6 em ul ol li pre table tr th; " +
 				"img a[*]");
 
 		Map<String, String> fileBrowserParams =
@@ -72,7 +72,9 @@ public class CKEditorCreoleConfigContributor
 		).put(
 			"disableObjectResizing", Boolean.TRUE
 		).put(
-			"extraPlugins", "a11yhelpbtn,creole,itemselector,lfrpopup,wikilink"
+			"extraPlugins",
+			"a11yhelpbtn,creole,itemselector,lfrpopup,showborders," +
+				"sourcearea,wikilink"
 		).put(
 			"filebrowserWindowFeatures",
 			"title=" + LanguageUtil.get(themeDisplay.getLocale(), "browse")
@@ -82,10 +84,10 @@ public class CKEditorCreoleConfigContributor
 
 		StringBundler sb = new StringBundler(4);
 
-		sb.append("bidi,colorbutton,colordialog,div,elementspath,flash,font,");
-		sb.append("forms,indentblock,justify,keystrokes,link,maximize,");
-		sb.append("newpage,pagebreak,preview,print,save,showblocks,smiley,");
-		sb.append("stylescombo,templates,video");
+		sb.append("bidi,codemirror,colorbutton,colordialog,div,");
+		sb.append("elementspath,font,forms,indentblock,justify,keystrokes");
+		sb.append("link,maximize,newpage,pagebreak,preview,print,save,");
+		sb.append("showblocks,smiley,stylescombo,templates,video");
 
 		jsonObject.put(
 			"removePlugins", sb.toString()
@@ -105,18 +107,11 @@ public class CKEditorCreoleConfigContributor
 		Map<String, Object> inputEditorTaglibAttributes) {
 
 		JSONArray jsonArray = JSONUtil.putAll(
-			toJSONArray("['Bold', 'Italic', '-' ,'RemoveFormat']"),
-			toJSONArray(
-				"['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent']"),
+			toJSONArray("['Bold', 'Italic', 'Underline', '-' ,'RemoveFormat']"),
+			toJSONArray("['NumberedList', 'BulletedList', '-']"),
 			toJSONArray("['Format']"), toJSONArray("['Link', 'Unlink']"),
 			toJSONArray(
-				"['Table', '-','ImageSelector', '-', 'HorizontalRule', '-', " +
-					"'SpecialChar']"),
-			"/",
-			toJSONArray(
-				"['Cut', 'Copy', 'Paste', '-', 'PasteText', 'PasteFromWord', " +
-					"'-', 'SelectAll', '-', 'Undo', 'Redo']"),
-			toJSONArray("['Find','Replace']"));
+				"['Table', '-','ImageSelector', '-', 'HorizontalRule']"));
 
 		if (isShowSource(inputEditorTaglibAttributes)) {
 			jsonArray.put(toJSONArray("['Source']"));

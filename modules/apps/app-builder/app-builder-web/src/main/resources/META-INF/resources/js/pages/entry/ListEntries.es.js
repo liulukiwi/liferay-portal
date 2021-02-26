@@ -12,182 +12,118 @@
  * details.
  */
 
-import openToast from 'frontend-js-web/liferay/toast/commands/OpenToast.es';
-import React, {useContext, useEffect, useState} from 'react';
-import {Link, withRouter} from 'react-router-dom';
+import ClayButton, {ClayButtonWithIcon} from '@clayui/button';
+import ListView from 'data-engine-js-components-web/js/components/list-view/ListView.es';
+import Loading from 'data-engine-js-components-web/js/components/loading/Loading.es';
+import useQuery from 'data-engine-js-components-web/js/hooks/useQuery.es';
+import React, {useContext} from 'react';
 
 import {AppContext} from '../../AppContext.es';
-import Button from '../../components/button/Button.es';
-import ListView from '../../components/list-view/ListView.es';
-import {Loading} from '../../components/loading/Loading.es';
-import {toQuery, toQueryString} from '../../hooks/useQuery.es';
-import {confirmDelete, getItem} from '../../utils/client.es';
-import {getFieldLabel} from '../../utils/dataDefinition.es';
-import {FieldValuePreview} from './FieldPreview.es';
+import useDataListView from '../../hooks/useDataListView.es';
+import useEntriesActions from '../../hooks/useEntriesActions.es';
+import usePermissions from '../../hooks/usePermissions.es';
+import {getLocalizedUserPreferenceValue} from '../../utils/lang.es';
+import {buildEntries, getStatusLabel, navigateToEditPage} from './utils.es';
 
-const ListEntries = withRouter(({history, location}) => {
-	const [state, setState] = useState({
-		dataDefinition: null,
-		dataListView: {
-			fieldNames: []
-		},
-		isLoading: true
-	});
-
+export default function ListEntries({history}) {
+	const actions = useEntriesActions();
+	const permissions = usePermissions();
 	const {
+		appId,
 		basePortletURL,
 		dataDefinitionId,
 		dataListViewId,
-		showFormView
+		showFormView,
+		userLanguageId,
 	} = useContext(AppContext);
 
-	useEffect(() => {
-		Promise.all([
-			getItem(`/o/data-engine/v2.0/data-definitions/${dataDefinitionId}`),
-			getItem(`/o/data-engine/v2.0/data-list-views/${dataListViewId}`)
-		]).then(([dataDefinition, dataListView]) => {
-			setState(prevState => ({
-				...prevState,
-				dataDefinition: {
-					...prevState.dataDefinition,
-					...dataDefinition
-				},
-				dataListView: {
-					...prevState.dataListView,
-					...dataListView
-				},
-				isLoading: false
-			}));
+	const {
+		columns,
+		dataDefinition,
+		dataListView: {fieldNames},
+		isLoading,
+	} = useDataListView(dataListViewId, dataDefinitionId);
+
+	const formColumns = [
+		...columns.map(({value, ...column}) => ({
+			...column,
+			value: getLocalizedUserPreferenceValue(
+				value,
+				userLanguageId,
+				dataDefinition.defaultLanguageId
+			),
+		})),
+		{
+			key: 'status',
+			value: Liferay.Language.get('status'),
+		},
+	];
+
+	const onClickEditPage = () => {
+		navigateToEditPage(basePortletURL, {
+			backURL: window.location.href,
+			languageId: userLanguageId,
 		});
-	}, [dataDefinitionId, dataListViewId]);
-
-	const {dataDefinition, dataListView, isLoading} = state;
-	const {fieldNames: columns} = dataListView;
-
-	const getEditURL = (dataRecordId = 0) =>
-		Liferay.Util.PortletURL.createRenderURL(basePortletURL, {
-			dataRecordId,
-			mvcPath: '/edit_entry.jsp'
-		});
-
-	const handleEditItem = dataRecordId => {
-		Liferay.Util.navigate(getEditURL(dataRecordId));
 	};
 
-	let actions = [];
-
-	if (showFormView) {
-		actions = [
-			{
-				action: ({viewURL}) => Promise.resolve(history.push(viewURL)),
-				name: Liferay.Language.get('view')
-			},
-			{
-				action: ({id}) => Promise.resolve(handleEditItem(id)),
-				name: Liferay.Language.get('edit')
-			},
-			{
-				action: item =>
-					confirmDelete('/o/data-engine/v2.0/data-records/')(
-						item
-					).then(confirmed => {
-						if (confirmed) {
-							openToast({
-								message: Liferay.Language.get(
-									'an-entry-was-deleted'
-								),
-								title: Liferay.Language.get('success'),
-								type: 'success'
-							});
-						}
-
-						return Promise.resolve(confirmed);
-					}),
-				name: Liferay.Language.get('delete')
-			}
-		];
-	}
+	const [query] = useQuery(
+		history,
+		{
+			keywords: '',
+			page: 1,
+			pageSize: 20,
+			sort: '',
+		},
+		appId
+	);
 
 	return (
-		<Loading isLoading={isLoading}>
+		<Loading className="loading-wrapper" isLoading={isLoading}>
 			<ListView
 				actions={actions}
 				addButton={() =>
-					showFormView && (
-						<Button
-							className="nav-btn nav-btn-monospaced navbar-breakpoint-down-d-none"
-							onClick={() => handleEditItem(0)}
+					showFormView &&
+					permissions.add && (
+						<ClayButtonWithIcon
+							className="nav-btn nav-btn-monospaced"
+							onClick={onClickEditPage}
 							symbol="plus"
-							tooltip={Liferay.Language.get('new-entry')}
+							title={Liferay.Language.get('new-entry')}
 						/>
 					)
 				}
-				columns={columns.map(column => ({
-					key: column,
-					value: getFieldLabel(dataDefinition, column)
-				}))}
+				columns={formColumns}
 				emptyState={{
 					button: () =>
-						showFormView && (
-							<Button
+						showFormView &&
+						permissions.add && (
+							<ClayButton
 								displayType="secondary"
-								onClick={() => handleEditItem(0)}
+								onClick={onClickEditPage}
 							>
 								{Liferay.Language.get('new-entry')}
-							</Button>
+							</ClayButton>
 						),
-					title: Liferay.Language.get('there-are-no-entries-yet')
+					title: Liferay.Language.get('there-are-no-entries-yet'),
 				}}
 				endpoint={`/o/data-engine/v2.0/data-definitions/${dataDefinitionId}/data-records`}
+				history={history}
+				noActionsMessage={Liferay.Language.get(
+					'you-do-not-have-the-permission-to-manage-this-entry'
+				)}
+				queryParams={{dataListViewId}}
+				scope={appId}
 			>
-				{(item, index) => {
-					const {dataRecordValues = {}, id} = item;
-					const query = toQuery(location.search, {
-						keywords: '',
-						page: 1,
-						pageSize: 20,
-						sort: ''
-					});
-
-					const entryIndex =
-						query.pageSize * (query.page - 1) + index + 1;
-
-					const viewURL = `/entries/${entryIndex}?${toQueryString(
-						query
-					)}`;
-
-					const displayedDataRecordValues = {};
-
-					columns.forEach((fieldName, columnIndex) => {
-						let fieldValuePreview = (
-							<FieldValuePreview
-								dataDefinition={dataDefinition}
-								dataRecordValues={dataRecordValues}
-								displayType="list"
-								fieldName={fieldName}
-							/>
-						);
-
-						if (columnIndex === 0) {
-							fieldValuePreview = (
-								<Link to={viewURL}>{fieldValuePreview}</Link>
-							);
-						}
-
-						displayedDataRecordValues[
-							fieldName
-						] = fieldValuePreview;
-					});
-
-					return {
-						...displayedDataRecordValues,
-						id,
-						viewURL
-					};
-				}}
+				{(entry, index) => ({
+					...buildEntries({
+						dataDefinition,
+						fieldNames,
+						permissions,
+						query,
+					})(entry, index),
+					status: getStatusLabel(entry.status),
+				})}
 			</ListView>
 		</Loading>
 	);
-});
-
-export default ListEntries;
+}

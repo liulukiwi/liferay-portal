@@ -15,7 +15,15 @@
 package com.liferay.layout.taglib.internal.servlet;
 
 import com.liferay.fragment.contributor.FragmentCollectionContributorTracker;
+import com.liferay.fragment.entry.processor.helper.FragmentEntryProcessorHelper;
 import com.liferay.fragment.renderer.FragmentRendererTracker;
+import com.liferay.frontend.token.definition.FrontendTokenDefinitionRegistry;
+import com.liferay.info.item.InfoItemServiceTracker;
+import com.liferay.info.list.renderer.InfoListRendererTracker;
+import com.liferay.layout.adaptive.media.LayoutAdaptiveMediaProcessor;
+import com.liferay.layout.display.page.LayoutDisplayPageProviderTracker;
+import com.liferay.layout.list.retriever.LayoutListRetrieverTracker;
+import com.liferay.layout.list.retriever.ListObjectReferenceFactoryTracker;
 import com.liferay.layout.util.LayoutClassedModelUsageRecorder;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -47,14 +55,58 @@ public class ServletContextUtil {
 		return _fragmentCollectionContributorTracker;
 	}
 
+	public static FragmentEntryProcessorHelper
+		getFragmentEntryProcessorHelper() {
+
+		return _fragmentEntryProcessorHelper;
+	}
+
 	public static final FragmentRendererTracker getFragmentRendererTracker() {
 		return _fragmentRendererTracker;
+	}
+
+	public static FrontendTokenDefinitionRegistry
+		getFrontendTokenDefinitionRegistry() {
+
+		return _frontendTokenDefinitionRegistry;
+	}
+
+	public static final InfoItemServiceTracker getInfoItemServiceTracker() {
+		return _infoItemServiceTracker;
+	}
+
+	public static final InfoListRendererTracker getInfoListRendererTracker() {
+		return _infoListRendererTracker;
+	}
+
+	public static final LayoutAdaptiveMediaProcessor
+		getLayoutAdaptiveMediaProcessor() {
+
+		return _layoutAdaptiveMediaProcessor;
 	}
 
 	public static final Map<String, LayoutClassedModelUsageRecorder>
 		getLayoutClassedModelUsageRecorders() {
 
 		return _layoutClassedModelUsageRecorders;
+	}
+
+	public static final LayoutDisplayPageProviderTracker
+		getLayoutDisplayPageProviderTracker() {
+
+		return _layoutDisplayPageProviderTracker;
+	}
+
+	public static final LayoutListRetrieverTracker
+		getLayoutListRetrieverTracker() {
+
+		return _layoutListRetrieverTracker;
+	}
+
+	public static final ListObjectReferenceFactoryTracker
+		getListObjectReferenceFactoryTracker() {
+
+		return _listObjectReferenceFactoryTracker;
 	}
 
 	public static final ServletContext getServletContext() {
@@ -105,10 +157,66 @@ public class ServletContextUtil {
 	}
 
 	@Reference(unbind = "-")
+	protected void setFragmentEntryProcessorHelper(
+		FragmentEntryProcessorHelper fragmentEntryProcessorHelper) {
+
+		_fragmentEntryProcessorHelper = fragmentEntryProcessorHelper;
+	}
+
+	@Reference(unbind = "-")
 	protected void setFragmentRendererTracker(
 		FragmentRendererTracker fragmentRendererTracker) {
 
 		_fragmentRendererTracker = fragmentRendererTracker;
+	}
+
+	@Reference(unbind = "-")
+	protected void setFrontendTokenDefinitionRegistry(
+		FrontendTokenDefinitionRegistry frontendTokenDefinitionRegistry) {
+
+		_frontendTokenDefinitionRegistry = frontendTokenDefinitionRegistry;
+	}
+
+	@Reference(unbind = "-")
+	protected void setInfoItemServiceTracker(
+		InfoItemServiceTracker infoItemServiceTracker) {
+
+		_infoItemServiceTracker = infoItemServiceTracker;
+	}
+
+	@Reference(unbind = "-")
+	protected void setInfoListRendererTracker(
+		InfoListRendererTracker infoListRendererTracker) {
+
+		_infoListRendererTracker = infoListRendererTracker;
+	}
+
+	@Reference(unbind = "-")
+	protected void setLayoutAdaptiveMediaProcessor(
+		LayoutAdaptiveMediaProcessor layoutAdaptiveMediaProcessor) {
+
+		_layoutAdaptiveMediaProcessor = layoutAdaptiveMediaProcessor;
+	}
+
+	@Reference(unbind = "-")
+	protected void setLayoutDisplayPageProviderTracker(
+		LayoutDisplayPageProviderTracker layoutDisplayPageProviderTracker) {
+
+		_layoutDisplayPageProviderTracker = layoutDisplayPageProviderTracker;
+	}
+
+	@Reference(unbind = "-")
+	protected void setLayoutListRetrieverTracker(
+		LayoutListRetrieverTracker layoutListRetrieverTracker) {
+
+		_layoutListRetrieverTracker = layoutListRetrieverTracker;
+	}
+
+	@Reference(unbind = "-")
+	protected void setListObjectReferenceFactoryTracker(
+		ListObjectReferenceFactoryTracker listObjectReferenceFactoryTracker) {
+
+		_listObjectReferenceFactoryTracker = listObjectReferenceFactoryTracker;
 	}
 
 	@Reference(
@@ -121,9 +229,20 @@ public class ServletContextUtil {
 
 	private static FragmentCollectionContributorTracker
 		_fragmentCollectionContributorTracker;
+	private static FragmentEntryProcessorHelper _fragmentEntryProcessorHelper;
 	private static FragmentRendererTracker _fragmentRendererTracker;
+	private static FrontendTokenDefinitionRegistry
+		_frontendTokenDefinitionRegistry;
+	private static InfoItemServiceTracker _infoItemServiceTracker;
+	private static InfoListRendererTracker _infoListRendererTracker;
+	private static LayoutAdaptiveMediaProcessor _layoutAdaptiveMediaProcessor;
 	private static final Map<String, LayoutClassedModelUsageRecorder>
 		_layoutClassedModelUsageRecorders = new ConcurrentHashMap<>();
+	private static LayoutDisplayPageProviderTracker
+		_layoutDisplayPageProviderTracker;
+	private static LayoutListRetrieverTracker _layoutListRetrieverTracker;
+	private static ListObjectReferenceFactoryTracker
+		_listObjectReferenceFactoryTracker;
 	private static ServletContext _servletContext;
 
 }

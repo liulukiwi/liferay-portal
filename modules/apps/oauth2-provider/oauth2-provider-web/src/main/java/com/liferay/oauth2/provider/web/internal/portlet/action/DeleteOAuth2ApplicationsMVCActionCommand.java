@@ -38,7 +38,7 @@ import org.osgi.service.component.annotations.Reference;
 	configurationPid = "com.liferay.oauth2.provider.configuration.OAuth2ProviderConfiguration",
 	property = {
 		"javax.portlet.name=" + OAuth2ProviderPortletKeys.OAUTH2_ADMIN,
-		"mvc.command.name=/admin/delete_oauth2_applications"
+		"mvc.command.name=/oauth2_provider/delete_oauth2_applications"
 	},
 	service = MVCActionCommand.class
 )
@@ -58,12 +58,12 @@ public class DeleteOAuth2ApplicationsMVCActionCommand
 					oAuth2ApplicationId);
 			}
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			if (_log.isDebugEnabled()) {
-				_log.debug(pe, pe);
+				_log.debug(portalException, portalException);
 			}
 
-			SessionErrors.add(actionRequest, pe.getClass());
+			SessionErrors.add(actionRequest, portalException.getClass());
 		}
 
 		return true;

@@ -43,7 +43,7 @@ import org.osgi.service.component.annotations.Reference;
 @Component(
 	property = {
 		"javax.portlet.name=" + OAuth2ProviderPortletKeys.OAUTH2_ADMIN,
-		"mvc.command.name=/admin/assign_scopes"
+		"mvc.command.name=/oauth2_provider/assign_scopes"
 	},
 	service = MVCActionCommand.class
 )
@@ -73,14 +73,15 @@ public class AssignScopesMVCActionCommand implements MVCActionCommand {
 			_oAuth2ApplicationService.updateScopeAliases(
 				oAuth2ApplicationId, scopeAliasesList);
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			if (_log.isDebugEnabled()) {
-				_log.debug(pe, pe);
+				_log.debug(portalException, portalException);
 			}
 
-			Class<?> peClass = pe.getClass();
+			Class<?> peClass = portalException.getClass();
 
-			SessionErrors.add(actionRequest, peClass.getName(), pe);
+			SessionErrors.add(
+				actionRequest, peClass.getName(), portalException);
 		}
 
 		String backURL = ParamUtil.get(

@@ -16,8 +16,8 @@ package com.liferay.oauth2.provider.web.internal.display.context;
 
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemList;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemListBuilder;
 import com.liferay.oauth2.provider.model.OAuth2Authorization;
-import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
@@ -45,36 +45,26 @@ public class OAuth2AuthorizationsManagementToolbarDisplayContext
 	}
 
 	public List<DropdownItem> getActionDropdownItems() {
-		DropdownItemList dropdownItems = new DropdownItemList();
-
-		dropdownItems.add(
+		return DropdownItemListBuilder.add(
 			dropdownItem -> {
-				dropdownItem.setHref(
-					StringBundler.concat(
-						"javascript:", liferayPortletResponse.getNamespace(),
-						"revokeOAuth2Authorizations();"));
+				dropdownItem.putData("action", "revokeOAuth2Authorizations");
 				dropdownItem.setIcon("trash");
 				dropdownItem.setLabel(
 					LanguageUtil.get(
 						httpServletRequest, "revoke-authorizations"));
 				dropdownItem.setQuickAction(true);
-			});
-
-		return dropdownItems;
+			}
+		).build();
 	}
 
 	public List<DropdownItem> getFilterDropdownItems() {
-		return new DropdownItemList() {
-			{
-				addGroup(
-					dropdownGroupItem -> {
-						dropdownGroupItem.setDropdownItems(
-							_getOrderByDropdownItems());
-						dropdownGroupItem.setLabel(
-							LanguageUtil.get(httpServletRequest, "order-by"));
-					});
+		return DropdownItemListBuilder.addGroup(
+			dropdownGroupItem -> {
+				dropdownGroupItem.setDropdownItems(_getOrderByDropdownItems());
+				dropdownGroupItem.setLabel(
+					LanguageUtil.get(httpServletRequest, "order-by"));
 			}
-		};
+		).build();
 	}
 
 	public OrderByComparator<OAuth2Authorization> getOrderByComparator() {
@@ -83,7 +73,7 @@ public class OAuth2AuthorizationsManagementToolbarDisplayContext
 
 		String columnName = "createDate";
 
-		for (String orderByColumn : _orderByColumns) {
+		for (String orderByColumn : _ORDER_BY_COLUMNS) {
 			if (orderByCol.equals(orderByColumn)) {
 				columnName = orderByColumn;
 			}
@@ -96,7 +86,7 @@ public class OAuth2AuthorizationsManagementToolbarDisplayContext
 	private List<DropdownItem> _getOrderByDropdownItems() {
 		return new DropdownItemList() {
 			{
-				for (String orderByCol : _orderByColumns) {
+				for (String orderByCol : _ORDER_BY_COLUMNS) {
 					add(
 						dropdownItem -> {
 							dropdownItem.setActive(
@@ -113,7 +103,7 @@ public class OAuth2AuthorizationsManagementToolbarDisplayContext
 		};
 	}
 
-	private static String[] _orderByColumns = {
+	private static final String[] _ORDER_BY_COLUMNS = {
 		"createDate", "userId", "userName", "accessTokenCreateDate",
 		"accessTokenExpirationDate", "refreshTokenCreateDate",
 		"refreshTokenExpirationDate", "remoteIPInfo"

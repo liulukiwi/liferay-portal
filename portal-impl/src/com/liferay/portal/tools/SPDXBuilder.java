@@ -137,8 +137,8 @@ public class SPDXBuilder {
 				new DocumentSource(document),
 				new StreamResult(new FileOutputStream(versionHtmlFile)));
 		}
-		catch (Exception e) {
-			e.printStackTrace();
+		catch (Exception exception) {
+			exception.printStackTrace();
 		}
 	}
 
@@ -249,9 +249,8 @@ public class SPDXBuilder {
 			for (Node fileNameNode : fileNameNodes) {
 				Element libraryElement = fileNameNode.getParent();
 
-				String key = _getKey("portal", libraryElement);
-
-				libraryElementMap.put(key, libraryElement);
+				libraryElementMap.put(
+					_getKey("portal", libraryElement), libraryElement);
 			}
 		}
 
@@ -279,21 +278,20 @@ public class SPDXBuilder {
 				packageElement, licenseOverrideProperties);
 
 			for (Element libraryElement : libraryElements) {
-				String key = _getKey("spdx", libraryElement);
-
-				libraryElementMap.put(key, libraryElement);
+				libraryElementMap.put(
+					_getKey("spdx", libraryElement), libraryElement);
 			}
 		}
 
 		Document document = DocumentHelper.createDocument();
 
-		Map<String, String> args = HashMapBuilder.put(
-			"href", "versions.xsl"
-		).put(
-			"type", "text/xsl"
-		).build();
-
-		document.addProcessingInstruction("xml-stylesheet", args);
+		document.addProcessingInstruction(
+			"xml-stylesheet",
+			HashMapBuilder.put(
+				"href", "versions.xsl"
+			).put(
+				"type", "text/xsl"
+			).build());
 
 		Element versionsElement = document.addElement("versions");
 

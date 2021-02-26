@@ -16,6 +16,8 @@ package com.liferay.portal.kernel.io.unsync;
 
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.io.OutputStreamWriter;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 
 import java.io.File;
@@ -122,7 +124,11 @@ public class UnsyncPrintWriter extends PrintWriter {
 
 			_writer = null;
 		}
-		catch (IOException ioe) {
+		catch (IOException ioException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(ioException, ioException);
+			}
+
 			_hasError = true;
 		}
 	}
@@ -136,7 +142,11 @@ public class UnsyncPrintWriter extends PrintWriter {
 			try {
 				_writer.flush();
 			}
-			catch (IOException ioe) {
+			catch (IOException ioException) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(ioException, ioException);
+				}
+
 				_hasError = true;
 			}
 		}
@@ -240,12 +250,20 @@ public class UnsyncPrintWriter extends PrintWriter {
 			try {
 				_writer.write(_LINE_SEPARATOR);
 			}
-			catch (InterruptedIOException iioe) {
+			catch (InterruptedIOException interruptedIOException) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(interruptedIOException, interruptedIOException);
+				}
+
 				Thread currentThread = Thread.currentThread();
 
 				currentThread.interrupt();
 			}
-			catch (IOException ioe) {
+			catch (IOException ioException) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(ioException, ioException);
+				}
+
 				_hasError = true;
 			}
 		}
@@ -329,12 +347,20 @@ public class UnsyncPrintWriter extends PrintWriter {
 			try {
 				_writer.write(chars, offset, length);
 			}
-			catch (InterruptedIOException iioe) {
+			catch (InterruptedIOException interruptedIOException) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(interruptedIOException, interruptedIOException);
+				}
+
 				Thread currentThread = Thread.currentThread();
 
 				currentThread.interrupt();
 			}
-			catch (IOException ioe) {
+			catch (IOException ioException) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(ioException, ioException);
+				}
+
 				_hasError = true;
 			}
 		}
@@ -349,12 +375,20 @@ public class UnsyncPrintWriter extends PrintWriter {
 			try {
 				_writer.write(c);
 			}
-			catch (InterruptedIOException iioe) {
+			catch (InterruptedIOException interruptedIOException) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(interruptedIOException, interruptedIOException);
+				}
+
 				Thread currentThread = Thread.currentThread();
 
 				currentThread.interrupt();
 			}
-			catch (IOException ioe) {
+			catch (IOException ioException) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(ioException, ioException);
+				}
+
 				_hasError = true;
 			}
 		}
@@ -369,12 +403,20 @@ public class UnsyncPrintWriter extends PrintWriter {
 			try {
 				_writer.write(string);
 			}
-			catch (InterruptedIOException iioe) {
+			catch (InterruptedIOException interruptedIOException) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(interruptedIOException, interruptedIOException);
+				}
+
 				Thread currentThread = Thread.currentThread();
 
 				currentThread.interrupt();
 			}
-			catch (IOException ioe) {
+			catch (IOException ioException) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(ioException, ioException);
+				}
+
 				_hasError = true;
 			}
 		}
@@ -389,12 +431,20 @@ public class UnsyncPrintWriter extends PrintWriter {
 			try {
 				_writer.write(string, offset, length);
 			}
-			catch (InterruptedIOException iioe) {
+			catch (InterruptedIOException interruptedIOException) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(interruptedIOException, interruptedIOException);
+				}
+
 				Thread currentThread = Thread.currentThread();
 
 				currentThread.interrupt();
 			}
-			catch (IOException ioe) {
+			catch (IOException ioException) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(ioException, ioException);
+				}
+
 				_hasError = true;
 			}
 		}
@@ -402,6 +452,9 @@ public class UnsyncPrintWriter extends PrintWriter {
 
 	private static final String _LINE_SEPARATOR = System.getProperty(
 		"line.separator");
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		UnsyncPrintWriter.class);
 
 	private Formatter _formatter;
 	private boolean _hasError;

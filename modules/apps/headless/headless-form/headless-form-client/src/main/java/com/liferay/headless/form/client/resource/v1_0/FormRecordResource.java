@@ -18,6 +18,7 @@ import com.liferay.headless.form.client.dto.v1_0.FormRecord;
 import com.liferay.headless.form.client.http.HttpInvoker;
 import com.liferay.headless.form.client.pagination.Page;
 import com.liferay.headless.form.client.pagination.Pagination;
+import com.liferay.headless.form.client.problem.Problem;
 import com.liferay.headless.form.client.serdes.v1_0.FormRecordSerDes;
 
 import java.util.LinkedHashMap;
@@ -51,6 +52,13 @@ public interface FormRecordResource {
 			Long formRecordId, FormRecord formRecord)
 		throws Exception;
 
+	public void putFormRecordBatch(String callbackURL, Object object)
+		throws Exception;
+
+	public HttpInvoker.HttpResponse putFormRecordBatchHttpResponse(
+			String callbackURL, Object object)
+		throws Exception;
+
 	public Page<FormRecord> getFormFormRecordsPage(
 			Long formId, Pagination pagination)
 		throws Exception;
@@ -64,6 +72,14 @@ public interface FormRecordResource {
 
 	public HttpInvoker.HttpResponse postFormFormRecordHttpResponse(
 			Long formId, FormRecord formRecord)
+		throws Exception;
+
+	public void postFormFormRecordBatch(
+			Long formId, String callbackURL, Object object)
+		throws Exception;
+
+	public HttpInvoker.HttpResponse postFormFormRecordBatchHttpResponse(
+			Long formId, String callbackURL, Object object)
 		throws Exception;
 
 	public FormRecord getFormFormRecordByLatestDraft(Long formId)
@@ -118,8 +134,8 @@ public interface FormRecordResource {
 		private Map<String, String> _headers = new LinkedHashMap<>();
 		private String _host = "localhost";
 		private Locale _locale;
-		private String _login = "test@liferay.com";
-		private String _password = "test";
+		private String _login = "";
+		private String _password = "";
 		private Map<String, String> _parameters = new LinkedHashMap<>();
 		private int _port = 8080;
 		private String _scheme = "http";
@@ -148,7 +164,7 @@ public interface FormRecordResource {
 					Level.WARNING,
 					"Unable to process HTTP response: " + content, e);
 
-				throw e;
+				throw new Problem.ProblemException(Problem.toDTO(content));
 			}
 		}
 
@@ -180,8 +196,9 @@ public interface FormRecordResource {
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port +
-						"/o/headless-form/v1.0/form-records/{formRecordId}",
-				formRecordId);
+						"/o/headless-form/v1.0/form-records/{formRecordId}");
+
+			httpInvoker.path("formRecordId", formRecordId);
 
 			httpInvoker.userNameAndPassword(
 				_builder._login + ":" + _builder._password);
@@ -212,7 +229,7 @@ public interface FormRecordResource {
 					Level.WARNING,
 					"Unable to process HTTP response: " + content, e);
 
-				throw e;
+				throw new Problem.ProblemException(Problem.toDTO(content));
 			}
 		}
 
@@ -246,8 +263,67 @@ public interface FormRecordResource {
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port +
-						"/o/headless-form/v1.0/form-records/{formRecordId}",
-				formRecordId);
+						"/o/headless-form/v1.0/form-records/{formRecordId}");
+
+			httpInvoker.path("formRecordId", formRecordId);
+
+			httpInvoker.userNameAndPassword(
+				_builder._login + ":" + _builder._password);
+
+			return httpInvoker.invoke();
+		}
+
+		public void putFormRecordBatch(String callbackURL, Object object)
+			throws Exception {
+
+			HttpInvoker.HttpResponse httpResponse =
+				putFormRecordBatchHttpResponse(callbackURL, object);
+
+			String content = httpResponse.getContent();
+
+			_logger.fine("HTTP response content: " + content);
+
+			_logger.fine("HTTP response message: " + httpResponse.getMessage());
+			_logger.fine(
+				"HTTP response status code: " + httpResponse.getStatusCode());
+		}
+
+		public HttpInvoker.HttpResponse putFormRecordBatchHttpResponse(
+				String callbackURL, Object object)
+			throws Exception {
+
+			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+			httpInvoker.body(object.toString(), "application/json");
+
+			if (_builder._locale != null) {
+				httpInvoker.header(
+					"Accept-Language", _builder._locale.toLanguageTag());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
+			}
+
+			httpInvoker.httpMethod(HttpInvoker.HttpMethod.PUT);
+
+			if (callbackURL != null) {
+				httpInvoker.parameter(
+					"callbackURL", String.valueOf(callbackURL));
+			}
+
+			httpInvoker.path(
+				_builder._scheme + "://" + _builder._host + ":" +
+					_builder._port +
+						"/o/headless-form/v1.0/form-records/batch");
 
 			httpInvoker.userNameAndPassword(
 				_builder._login + ":" + _builder._password);
@@ -270,7 +346,16 @@ public interface FormRecordResource {
 			_logger.fine(
 				"HTTP response status code: " + httpResponse.getStatusCode());
 
-			return Page.of(content, FormRecordSerDes::toDTO);
+			try {
+				return Page.of(content, FormRecordSerDes::toDTO);
+			}
+			catch (Exception e) {
+				_logger.log(
+					Level.WARNING,
+					"Unable to process HTTP response: " + content, e);
+
+				throw new Problem.ProblemException(Problem.toDTO(content));
+			}
 		}
 
 		public HttpInvoker.HttpResponse getFormFormRecordsPageHttpResponse(
@@ -308,8 +393,9 @@ public interface FormRecordResource {
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port +
-						"/o/headless-form/v1.0/forms/{formId}/form-records",
-				formId);
+						"/o/headless-form/v1.0/forms/{formId}/form-records");
+
+			httpInvoker.path("formId", formId);
 
 			httpInvoker.userNameAndPassword(
 				_builder._login + ":" + _builder._password);
@@ -339,7 +425,7 @@ public interface FormRecordResource {
 					Level.WARNING,
 					"Unable to process HTTP response: " + content, e);
 
-				throw e;
+				throw new Problem.ProblemException(Problem.toDTO(content));
 			}
 		}
 
@@ -373,8 +459,71 @@ public interface FormRecordResource {
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port +
-						"/o/headless-form/v1.0/forms/{formId}/form-records",
-				formId);
+						"/o/headless-form/v1.0/forms/{formId}/form-records");
+
+			httpInvoker.path("formId", formId);
+
+			httpInvoker.userNameAndPassword(
+				_builder._login + ":" + _builder._password);
+
+			return httpInvoker.invoke();
+		}
+
+		public void postFormFormRecordBatch(
+				Long formId, String callbackURL, Object object)
+			throws Exception {
+
+			HttpInvoker.HttpResponse httpResponse =
+				postFormFormRecordBatchHttpResponse(
+					formId, callbackURL, object);
+
+			String content = httpResponse.getContent();
+
+			_logger.fine("HTTP response content: " + content);
+
+			_logger.fine("HTTP response message: " + httpResponse.getMessage());
+			_logger.fine(
+				"HTTP response status code: " + httpResponse.getStatusCode());
+		}
+
+		public HttpInvoker.HttpResponse postFormFormRecordBatchHttpResponse(
+				Long formId, String callbackURL, Object object)
+			throws Exception {
+
+			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+			httpInvoker.body(object.toString(), "application/json");
+
+			if (_builder._locale != null) {
+				httpInvoker.header(
+					"Accept-Language", _builder._locale.toLanguageTag());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
+			}
+
+			httpInvoker.httpMethod(HttpInvoker.HttpMethod.POST);
+
+			if (callbackURL != null) {
+				httpInvoker.parameter(
+					"callbackURL", String.valueOf(callbackURL));
+			}
+
+			httpInvoker.path(
+				_builder._scheme + "://" + _builder._host + ":" +
+					_builder._port +
+						"/o/headless-form/v1.0/forms/{formId}/form-records/batch");
+
+			httpInvoker.path("formId", formId);
 
 			httpInvoker.userNameAndPassword(
 				_builder._login + ":" + _builder._password);
@@ -404,7 +553,7 @@ public interface FormRecordResource {
 					Level.WARNING,
 					"Unable to process HTTP response: " + content, e);
 
-				throw e;
+				throw new Problem.ProblemException(Problem.toDTO(content));
 			}
 		}
 
@@ -436,8 +585,9 @@ public interface FormRecordResource {
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port +
-						"/o/headless-form/v1.0/forms/{formId}/form-records/by-latest-draft",
-				formId);
+						"/o/headless-form/v1.0/forms/{formId}/form-records/by-latest-draft");
+
+			httpInvoker.path("formId", formId);
 
 			httpInvoker.userNameAndPassword(
 				_builder._login + ":" + _builder._password);

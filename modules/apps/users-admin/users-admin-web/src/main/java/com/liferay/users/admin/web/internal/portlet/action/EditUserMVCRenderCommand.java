@@ -14,8 +14,11 @@
 
 package com.liferay.users.admin.web.internal.portlet.action;
 
+import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.portlet.LiferayRenderRequest;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCRenderCommand;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
+import com.liferay.portal.kernel.servlet.DynamicServletRequest;
 import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.users.admin.constants.UsersAdminPortletKeys;
@@ -33,6 +36,7 @@ import org.osgi.service.component.annotations.Reference;
 @Component(
 	immediate = true,
 	property = {
+		"javax.portlet.name=" + UsersAdminPortletKeys.MY_ACCOUNT,
 		"javax.portlet.name=" + UsersAdminPortletKeys.MY_ORGANIZATIONS,
 		"javax.portlet.name=" + UsersAdminPortletKeys.USERS_ADMIN,
 		"mvc.command.name=/users_admin/edit_user"
@@ -47,16 +51,32 @@ public class EditUserMVCRenderCommand implements MVCRenderCommand {
 		throws PortletException {
 
 		try {
+			String portletId = _portal.getPortletId(renderRequest);
+
+			if (portletId.equals(UsersAdminPortletKeys.MY_ACCOUNT)) {
+				User user = _portal.getUser(renderRequest);
+
+				LiferayRenderRequest liferayRenderRequest =
+					(LiferayRenderRequest)renderRequest;
+
+				DynamicServletRequest dynamicRequest =
+					(DynamicServletRequest)
+						liferayRenderRequest.getHttpServletRequest();
+
+				dynamicRequest.setParameter(
+					"p_u_i_d", String.valueOf(user.getUserId()));
+			}
+
 			_portal.getSelectedUser(renderRequest);
 		}
-		catch (Exception e) {
-			if (e instanceof PrincipalException) {
-				SessionErrors.add(renderRequest, e.getClass());
+		catch (Exception exception) {
+			if (exception instanceof PrincipalException) {
+				SessionErrors.add(renderRequest, exception.getClass());
 
 				return "/error.jsp";
 			}
 
-			throw new PortletException(e);
+			throw new PortletException(exception);
 		}
 
 		return "/edit_user.jsp";

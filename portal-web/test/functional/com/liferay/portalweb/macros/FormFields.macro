@@ -3,13 +3,16 @@ definition {
 	var rowNumber = "1";
 
 	macro addRepeatableField {
-		Click(
+		Pause(locator1 = "2000");
+
+		Click.javaScriptClick(
 			key_fieldName = "${fieldName}",
 			key_repeatableFieldNumber = "${repeatableFieldNumber}",
 			locator1 = "FormFields#FIELD_ADD_SPECIFIC");
 	}
 
 	macro changeFieldType {
+		Pause(locator1 = "2000");
 
 		while (IsElementNotPresent(locator1 = "FormFields#CHANGE_FIELD_TYPE_BUTTON_DROPDOWN")) {
 			Click(locator1 = "FormFields#CHANGE_FIELD_TYPE_BUTTON");
@@ -19,7 +22,7 @@ definition {
 	}
 
 	macro deleteGridOptionsRow {
-		Click(
+		Click.javaScriptClick(
 			key_gridField = "${gridField}",
 			key_rowNumber = "${rowNumber}",
 			locator1 = "FormFields#GRID_OPTIONS_OPTION_DELETE_ROW_BUTTON");
@@ -50,7 +53,9 @@ definition {
 	}
 
 	macro duplicateField {
-		Click(locator1 = "Form#SIDEBAR_ELLIPSIS");
+		while (IsElementNotPresent(locator1 = "Form#SIDEBAR_MENUITEM_DUPLICATE_FIELD")) {
+			Click(locator1 = "Form#SIDEBAR_ELLIPSIS");
+		}
 
 		AssertClick(
 			locator1 = "Form#SIDEBAR_MENUITEM_DUPLICATE_FIELD",
@@ -70,6 +75,16 @@ definition {
 			value1 = "${fieldValue}");
 	}
 
+	macro editColor {
+		Click(
+			key_fieldLabel = "${fieldLabel}",
+			locator1 = "FormFields#COLOR_PICKER");
+
+		Click(
+			key_colorSwatchItem = "${colorSwatchItem}",
+			locator1 = "FormFields#COLOR_SWATCH_ITEM");
+	}
+
 	macro editDate {
 		Type(
 			key_fieldName = "${fieldName}",
@@ -78,7 +93,6 @@ definition {
 	}
 
 	macro editFieldName {
-
 		Form.gotoAdvancedTab();
 
 		var key_fieldValue = "${fieldValue}";
@@ -98,7 +112,9 @@ definition {
 			locator1 = "FormFields#GRID_OPTIONS_OPTION_VALUE_FIELD",
 			value1 = "${optionValue}");
 
-		AssertElementPresent(locator1 = "FormFields#GRID_OPTIONS_OPTION_NAME_FIELD");
+		AssertElementNotPresent(locator1 = "FormFields#GRID_OPTIONS_OPTION_NAME_FIELD");
+
+		AssertElementPresent(locator1 = "FormFields#GRID_OPTIONS_OPTION_REFERENCE_FIELD");
 	}
 
 	macro editHelpText {
@@ -111,6 +127,10 @@ definition {
 	macro editOptionsRow {
 		var key_rowNumber = "${rowNumber}";
 
+		WaitForElementPresent(
+			locator1 = "FormFields#OPTIONS_OPTION_VALUE_FIELD",
+			value1 = "${optionValue}");
+
 		Type(
 			locator1 = "FormFields#OPTIONS_OPTION_VALUE_FIELD",
 			value1 = "${optionValue}");
@@ -121,16 +141,23 @@ definition {
 	macro editOptionsRowNameField {
 		var key_rowNumber = "${rowNumber}";
 
+		WaitForElementPresent(
+			locator1 = "FormFields#OPTIONS_OPTION_NAME_FIELD_EDIT",
+			value1 = "${optionValue}");
+
 		Type.clickAtType(
 			locator1 = "FormFields#OPTIONS_OPTION_NAME_FIELD_EDIT",
 			value1 = "${optionValue}");
 	}
 
 	macro editParagraphBody {
+		SelectFrame.selectFrameNoLoading(locator1 = "CKEditor#BODY_FIELD_IFRAME");
 
 		Type.clickAtType(
-			locator1 = "FormFields#PARAGRAPH_BODY_TEXT_FIELD",
-			value1 = "${fieldValue}");
+			locator1 = "CKEditor#BODY",
+			value1 = "${content}");
+
+		SelectFrame(value1 = "relative=top");
 	}
 
 	macro editPassword {
@@ -150,6 +177,8 @@ definition {
 	}
 
 	macro editRepeatingText {
+		Pause(locator1 = "2000");
+
 		var key_fieldName = "${fieldName}";
 
 		Type(
@@ -164,6 +193,8 @@ definition {
 	}
 
 	macro editText {
+		Pause(locator1 = "1000");
+
 		Type(
 			key_fieldName = "${fieldName}",
 			locator1 = "FormFields#TEXT_FIELD",
@@ -171,6 +202,8 @@ definition {
 	}
 
 	macro editTextAlt {
+		Pause(locator1 = "1000");
+
 		Type(
 			key_fieldName = "${fieldName}",
 			locator1 = "FormFields#TEXT_FIELD_ALT",
@@ -178,6 +211,8 @@ definition {
 	}
 
 	macro editTextFieldWithEnterKey {
+		Pause(locator1 = "1000");
+
 		KeyPress(
 			key_fieldName = "${fieldName}",
 			locator1 = "FormFields#TEXT_FIELD",
@@ -185,6 +220,8 @@ definition {
 	}
 
 	macro editTextMultiline {
+		Pause(locator1 = "1000");
+
 		Type(
 			key_fieldName = "${fieldName}",
 			locator1 = "FormFields#TEXT_MULTILINE_FIELD",
@@ -192,6 +229,8 @@ definition {
 	}
 
 	macro editTextWithBackspace {
+		Pause(locator1 = "1000");
+
 		var key_fieldName = "${fieldName}";
 
 		DoubleClick(locator1 = "FormFields#TEXT_FIELD");
@@ -202,6 +241,8 @@ definition {
 	}
 
 	macro editTextWithDataProvider {
+		Pause(locator1 = "1000");
+
 		Type.sendKeys(
 			key_fieldName = "${fieldName}",
 			locator1 = "FormFields#TEXT_FIELD",
@@ -209,6 +250,8 @@ definition {
 	}
 
 	macro editValidation {
+		Pause(locator1 = "1000");
+
 		Click(locator1 = "FormFields#VALIDATION_ARGUMENT");
 
 		AssertClick(
@@ -236,9 +279,13 @@ definition {
 	}
 
 	macro enableSwitcher {
+		Pause(locator1 = "2000");
+
 		Click(
 			key_fieldName = "${fieldName}",
 			locator1 = "FormFields#SWITCHER");
+
+		Pause(locator1 = "2000");
 
 		//FormFields.viewSwitcherChecked(fieldName = "${fieldName}");
 
@@ -253,7 +300,7 @@ definition {
 	}
 
 	macro moveGridOptionsRow {
-		DragAndDrop.dragAndDropPortletToObject(
+		DragAndDrop.javaScriptDragAndDropToObject(
 			key_gridField = "${gridField}",
 			key_rowNumber1 = "${rowNumberStart}",
 			key_rowNumber2 = "${rowNumberEnd}",
@@ -266,7 +313,7 @@ definition {
 		var key_rowNumber1 = "${rowNumberStart}";
 		var key_rowNumber2 = "${rowNumberEnd}";
 
-		DragAndDrop.dragAndDropPortletToObject(
+		DragAndDrop.javaScriptDragAndDropToObject(
 			locator1 = "FormFields#OPTIONS_DRAG_ICON_1",
 			locator2 = "FormFields#OPTIONS_DRAG_ICON_2",
 			value1 = "");
@@ -346,8 +393,11 @@ definition {
 	macro selectGridRadioOption {
 		var key_categoryColumnName = "${categoryColumnName}";
 		var key_optionRowName = "${optionRowName}";
+		var optionNumber = "${optionNumber}";
+		var key_optionNumber = "Row: Option ${optionNumber}, Column: Category ${optionNumber}";
+		var key_fieldName = "${fieldName}";
 
-		Click(locator1 = "FormFields#GRID_RADIO_OPTIONS");
+		Click.clickNoWaitForVisible(locator1 = "FormFields#GRID_RADIO_OPTIONS");
 	}
 
 	macro selectRadioOption {
@@ -358,6 +408,8 @@ definition {
 	}
 
 	macro selectSelectOption {
+		Pause(locator1 = "1000");
+
 		var key_fieldName = "${fieldName}";
 		var key_selectOption = "${selectOption}";
 
@@ -449,6 +501,21 @@ definition {
 			locator1 = "FormFields#CHECKBOX");
 	}
 
+	macro viewColorLabel {
+		AssertTextEquals.assertText(
+			key_fieldLabel = "${fieldLabel}",
+			key_fieldName = "${fieldName}",
+			locator1 = "FormFields#LABEL",
+			value1 = "${fieldLabel}");
+	}
+
+	macro viewColorValue {
+		AssertTextEquals(
+			key_fieldName = "${fieldName}",
+			locator1 = "FormFields#COLOR_FIELD",
+			value1 = "${fieldValue}");
+	}
+
 	macro viewDateField {
 		FormFields.viewDateLabel(
 			fieldLabel = "${fieldLabel}",
@@ -515,14 +582,23 @@ definition {
 	}
 
 	macro viewFieldName {
-
-		Form.gotoAdvancedTab();
+		if (isSet(localeAdvanced)) {
+			Form.gotoAdvancedTab(key_localeAdvanced = "${localeAdvanced}");
+		}
+		else {
+			Form.gotoAdvancedTab();
+		}
 
 		AssertTextEquals(
 			locator1 = "FormFields#FIELD_NAME_EDIT",
 			value1 = "${fieldName}");
 
-		Form.gotoBasicTab();
+		if (isSet(localeBasic)) {
+			Form.gotoBasicTab(key_localeBasic = "${localeBasic}");
+		}
+		else {
+			Form.gotoBasicTab();
+		}
 	}
 
 	macro viewFieldValidationErrorMessage {
@@ -628,6 +704,8 @@ definition {
 	}
 
 	macro viewRepeatableTextFieldLabel {
+		Pause(locator1 = "2000");
+
 		var key_fieldLabel = "${fieldLabel}";
 		var key_fieldName = "${fieldName}";
 
@@ -684,6 +762,19 @@ definition {
 		AssertElementNotPresent(locator1 = "Icon#ASTERISK");
 	}
 
+	macro viewRichTextValue {
+		SelectFrame.selectFrameNoLoading(
+			key_fieldLabel = "Rich Text",
+			locator1 = "CKEditor#BODY_FIELD_IFRAME_WEB_CONTENT_ARTICLE");
+
+		AssertTextEquals(
+			key_fieldName = "${fieldName}",
+			locator1 = "CKEditor#BODY",
+			value1 = "${fieldValue}");
+
+		SelectFrame(value1 = "relative=top");
+	}
+
 	macro viewSelectLabel {
 		AssertTextEquals.assertText(
 			key_fieldName = "${fieldName}",
@@ -709,6 +800,8 @@ definition {
 	}
 
 	macro viewSelectOptionsList {
+		Pause(locator1 = "2000");
+
 		var key_fieldName = "${fieldName}";
 
 		Click(locator1 = "FormFields#SELECT_FIELD");
@@ -754,6 +847,7 @@ definition {
 		var key_fieldName = "${fieldName}";
 
 		AssertTextNotPresent(
+			key_fieldLabel = "${fieldLabel}",
 			locator1 = "FormFields#LABEL",
 			value1 = "${fieldLabel}");
 	}
@@ -796,7 +890,6 @@ definition {
 	macro viewTextLabel {
 		AssertTextEquals.assertText(
 			key_fieldLabel = "${fieldLabel}",
-			key_fieldName = "${fieldName}",
 			locator1 = "FormFields#LABEL",
 			value1 = "${fieldLabel}");
 	}
@@ -831,6 +924,17 @@ definition {
 		var key_fieldName = "${fieldName}";
 
 		AssertElementPresent.assertVisible(locator1 = "FormFields#UPLOAD_FIELD");
+	}
+
+	macro viewUploadFieldAsGuest {
+		FormFields.viewUploadLabel(
+			fieldLabel = "${fieldLabel}",
+			fieldName = "${fieldName}");
+
+		var key_fieldLabel = "${fieldLabel}";
+		var key_fieldName = "${fieldName}";
+
+		AssertElementPresent(locator1 = "FormFields#UPLOAD_FIELD_GUEST");
 	}
 
 	macro viewUploadLabel {

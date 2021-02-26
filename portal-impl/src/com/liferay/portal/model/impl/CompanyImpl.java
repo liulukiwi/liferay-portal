@@ -14,6 +14,7 @@
 
 package com.liferay.portal.model.impl;
 
+import com.liferay.counter.kernel.service.CounterLocalServiceUtil;
 import com.liferay.petra.encryptor.Encryptor;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringPool;
@@ -22,15 +23,19 @@ import com.liferay.portal.kernel.cache.thread.local.Lifecycle;
 import com.liferay.portal.kernel.cache.thread.local.ThreadLocalCache;
 import com.liferay.portal.kernel.cache.thread.local.ThreadLocalCacheManager;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Account;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.CompanyConstants;
+import com.liferay.portal.kernel.model.CompanyInfo;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.LayoutSet;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.VirtualHost;
 import com.liferay.portal.kernel.model.cache.CacheField;
 import com.liferay.portal.kernel.service.AccountLocalServiceUtil;
+import com.liferay.portal.kernel.service.CompanyInfoLocalServiceUtil;
 import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
 import com.liferay.portal.kernel.service.LayoutSetLocalServiceUtil;
 import com.liferay.portal.kernel.service.UserLocalServiceUtil;
@@ -99,6 +104,25 @@ public class CompanyImpl extends CompanyBaseImpl {
 	}
 
 	@Override
+	public CompanyInfo getCompanyInfo() {
+		if (_companyInfo == null) {
+			CompanyInfo companyInfo = CompanyInfoLocalServiceUtil.fetchCompany(
+				getCompanyId());
+
+			if (companyInfo == null) {
+				companyInfo = CompanyInfoLocalServiceUtil.createCompanyInfo(
+					CounterLocalServiceUtil.increment());
+
+				companyInfo.setCompanyId(getCompanyId());
+			}
+
+			_companyInfo = companyInfo;
+		}
+
+		return _companyInfo;
+	}
+
+	@Override
 	public CompanySecurityBag getCompanySecurityBag() {
 		if (_companySecurityBag == null) {
 			_companySecurityBag = new CompanySecurityBag(this);
@@ -157,6 +181,13 @@ public class CompanyImpl extends CompanyBaseImpl {
 	}
 
 	@Override
+	public String getKey() {
+		CompanyInfo companyInfo = getCompanyInfo();
+
+		return companyInfo.getKey();
+	}
+
+	@Override
 	public Key getKeyObj() {
 		if (_keyObj == null) {
 			String key = getKey();
@@ -182,10 +213,10 @@ public class CompanyImpl extends CompanyBaseImpl {
 
 	@Override
 	public String getPortalURL(long groupId) throws PortalException {
-		int portalPort = PortalUtil.getPortalServerPort(false);
+		int portalServerPort = PortalUtil.getPortalServerPort(false);
 
 		String portalURL = PortalUtil.getPortalURL(
-			getVirtualHostname(), portalPort, false);
+			getVirtualHostname(), portalServerPort, false);
 
 		if (groupId <= 0) {
 			return portalURL;
@@ -202,7 +233,7 @@ public class CompanyImpl extends CompanyBaseImpl {
 
 			if (!virtualHostnames.isEmpty()) {
 				portalURL = PortalUtil.getPortalURL(
-					virtualHostnames.firstKey(), portalPort, false);
+					virtualHostnames.firstKey(), portalServerPort, false);
 			}
 		}
 		else if (group.hasPrivateLayouts()) {
@@ -214,8 +245,35 @@ public class CompanyImpl extends CompanyBaseImpl {
 
 			if (!virtualHostnames.isEmpty()) {
 				portalURL = PortalUtil.getPortalURL(
-					virtualHostnames.firstKey(), portalPort, false);
+					virtualHostnames.firstKey(), portalServerPort, false);
 			}
+		}
+
+		return portalURL;
+	}
+
+	@Override
+	public String getPortalURL(long groupId, boolean privateLayout)
+		throws PortalException {
+
+		int portalServerPort = PortalUtil.getPortalServerPort(false);
+
+		String portalURL = PortalUtil.getPortalURL(
+			getVirtualHostname(), portalServerPort, false);
+
+		if (groupId <= 0) {
+			return portalURL;
+		}
+
+		LayoutSet layoutSet = LayoutSetLocalServiceUtil.getLayoutSet(
+			groupId, privateLayout);
+
+		TreeMap<String, String> virtualHostnames =
+			layoutSet.getVirtualHostnames();
+
+		if (!virtualHostnames.isEmpty()) {
+			portalURL = PortalUtil.getPortalURL(
+				virtualHostnames.firstKey(), portalServerPort, false);
 		}
 
 		return portalURL;
@@ -243,7 +301,10 @@ public class CompanyImpl extends CompanyBaseImpl {
 			virtualHost = VirtualHostLocalServiceUtil.fetchVirtualHost(
 				getCompanyId(), 0);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
 		}
 
 		if (virtualHost == null) {
@@ -341,9 +402,11 @@ public class CompanyImpl extends CompanyBaseImpl {
 
 	@Override
 	public void setKey(String key) {
-		_keyObj = null;
+		CompanyInfo companyInfo = getCompanyInfo();
 
-		super.setKey(key);
+		companyInfo.setKey(key);
+
+		_keyObj = null;
 	}
 
 	@Override
@@ -421,12 +484,14 @@ public class CompanyImpl extends CompanyBaseImpl {
 		return defaultValue;
 	}
 
+	private static final Log _log = LogFactoryUtil.getLog(CompanyImpl.class);
+
 	private Account _account;
+	private CompanyInfo _companyInfo;
 
 	@CacheField
 	private CompanySecurityBag _companySecurityBag;
 
-	@CacheField(propagateToInterface = true)
 	private Key _keyObj;
 
 	@CacheField(propagateToInterface = true)

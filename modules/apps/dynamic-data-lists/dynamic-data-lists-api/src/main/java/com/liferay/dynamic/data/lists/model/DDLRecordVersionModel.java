@@ -19,6 +19,7 @@ import com.liferay.portal.kernel.model.BaseModel;
 import com.liferay.portal.kernel.model.MVCCModel;
 import com.liferay.portal.kernel.model.ShardedModel;
 import com.liferay.portal.kernel.model.WorkflowedModel;
+import com.liferay.portal.kernel.model.change.tracking.CTModel;
 
 import java.util.Date;
 
@@ -37,10 +38,10 @@ import org.osgi.annotation.versioning.ProviderType;
  */
 @ProviderType
 public interface DDLRecordVersionModel
-	extends BaseModel<DDLRecordVersion>, MVCCModel, ShardedModel,
-			WorkflowedModel {
+	extends BaseModel<DDLRecordVersion>, CTModel<DDLRecordVersion>, MVCCModel,
+			ShardedModel, WorkflowedModel {
 
-	/**
+	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this interface directly. All methods that expect a ddl record version model instance should use the {@link DDLRecordVersion} interface instead.
@@ -51,6 +52,7 @@ public interface DDLRecordVersionModel
 	 *
 	 * @return the primary key of this ddl record version
 	 */
+	@Override
 	public long getPrimaryKey();
 
 	/**
@@ -58,6 +60,7 @@ public interface DDLRecordVersionModel
 	 *
 	 * @param primaryKey the primary key of this ddl record version
 	 */
+	@Override
 	public void setPrimaryKey(long primaryKey);
 
 	/**
@@ -75,6 +78,22 @@ public interface DDLRecordVersionModel
 	 */
 	@Override
 	public void setMvccVersion(long mvccVersion);
+
+	/**
+	 * Returns the ct collection ID of this ddl record version.
+	 *
+	 * @return the ct collection ID of this ddl record version
+	 */
+	@Override
+	public long getCtCollectionId();
+
+	/**
+	 * Sets the ct collection ID of this ddl record version.
+	 *
+	 * @param ctCollectionId the ct collection ID of this ddl record version
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId);
 
 	/**
 	 * Returns the record version ID of this ddl record version.

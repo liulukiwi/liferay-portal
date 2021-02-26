@@ -19,6 +19,8 @@ import com.liferay.message.boards.model.MBCategory;
 import com.liferay.message.boards.settings.MBGroupServiceSettings;
 import com.liferay.message.boards.web.internal.portlet.action.ActionUtil;
 import com.liferay.portal.kernel.language.LanguageUtil;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.portlet.configuration.icon.BasePortletConfigurationIcon;
 import com.liferay.portal.kernel.portlet.configuration.icon.PortletConfigurationIcon;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
@@ -62,7 +64,10 @@ public class CategorySubscriptionPortletConfigurationIcon
 				key = "unsubscribe";
 			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
 		}
 
 		return LanguageUtil.get(
@@ -85,7 +90,11 @@ public class CategorySubscriptionPortletConfigurationIcon
 		try {
 			category = ActionUtil.getCategory(portletRequest);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
+
 			return null;
 		}
 
@@ -129,7 +138,10 @@ public class CategorySubscriptionPortletConfigurationIcon
 				themeDisplay.getPermissionChecker(),
 				ActionUtil.getCategory(portletRequest), ActionKeys.SUBSCRIBE);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
 		}
 
 		return false;
@@ -152,6 +164,9 @@ public class CategorySubscriptionPortletConfigurationIcon
 			themeDisplay.getCompanyId(), themeDisplay.getUserId(),
 			MBCategory.class.getName(), category.getCategoryId());
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		CategorySubscriptionPortletConfigurationIcon.class);
 
 	@Reference(
 		target = "(model.class.name=com.liferay.message.boards.model.MBCategory)"

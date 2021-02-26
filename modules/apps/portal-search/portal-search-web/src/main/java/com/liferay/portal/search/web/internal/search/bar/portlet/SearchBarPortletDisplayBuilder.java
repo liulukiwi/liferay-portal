@@ -17,19 +17,29 @@ package com.liferay.portal.search.web.internal.search.bar.portlet;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
+import com.liferay.portal.kernel.module.configuration.ConfigurationException;
+import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.service.LayoutLocalService;
+import com.liferay.portal.kernel.theme.PortletDisplay;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.Http;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.search.web.internal.display.context.SearchScope;
 import com.liferay.portal.search.web.internal.display.context.SearchScopePreference;
+import com.liferay.portal.search.web.internal.search.bar.portlet.configuration.SearchBarPortletInstanceConfiguration;
 
 import java.util.Optional;
+
+import javax.portlet.PortletException;
+import javax.portlet.RenderRequest;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author André de Oliveira
@@ -37,25 +47,44 @@ import java.util.Optional;
 public class SearchBarPortletDisplayBuilder {
 
 	public SearchBarPortletDisplayBuilder(
-		Http http, LayoutLocalService layoutLocalService, Portal portal) {
+		Http http, LayoutLocalService layoutLocalService, Portal portal,
+		RenderRequest renderRequest) {
 
 		_http = http;
 		_layoutLocalService = layoutLocalService;
 		_portal = portal;
+		_renderRequest = renderRequest;
 	}
 
-	public SearchBarPortletDisplayContext build() {
+	public SearchBarPortletDisplayContext build() throws PortletException {
 		SearchBarPortletDisplayContext searchBarPortletDisplayContext =
 			new SearchBarPortletDisplayContext();
+
+		HttpServletRequest httpServletRequest = getHttpServletRequest(
+			_renderRequest);
+
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
+
+		SearchBarPortletInstanceConfiguration
+			searchBarPortletInstanceConfiguration =
+				getSearchBarPortletInstanceConfiguration(
+					themeDisplay.getPortletDisplay());
 
 		searchBarPortletDisplayContext.setAvailableEverythingSearchScope(
 			isAvailableEverythingSearchScope());
 		searchBarPortletDisplayContext.setCurrentSiteSearchScopeParameterString(
 			SearchScope.THIS_SITE.getParameterString());
+		searchBarPortletDisplayContext.setDisplayStyleGroupId(
+			getDisplayStyleGroupId(
+				searchBarPortletInstanceConfiguration, themeDisplay));
 		searchBarPortletDisplayContext.setEmptySearchEnabled(
 			_emptySearchEnabled);
 		searchBarPortletDisplayContext.setEverythingSearchScopeParameterString(
 			SearchScope.EVERYTHING.getParameterString());
+		searchBarPortletDisplayContext.setInputPlaceholder(
+			LanguageUtil.get(httpServletRequest, "search-..."));
 		searchBarPortletDisplayContext.setKeywords(getKeywords());
 		searchBarPortletDisplayContext.setKeywordsParameterName(
 			_keywordsParameterName);
@@ -73,6 +102,8 @@ public class SearchBarPortletDisplayBuilder {
 			_scopeParameterName);
 		searchBarPortletDisplayContext.setScopeParameterValue(
 			getScopeParameterValue());
+		searchBarPortletDisplayContext.setSearchBarPortletInstanceConfiguration(
+			searchBarPortletInstanceConfiguration);
 
 		setSelectedSearchScope(searchBarPortletDisplayContext);
 
@@ -208,6 +239,30 @@ public class SearchBarPortletDisplayBuilder {
 		return getLayoutFriendlyURL(layout);
 	}
 
+	protected long getDisplayStyleGroupId(
+		SearchBarPortletInstanceConfiguration
+			searchBarPortletInstanceConfiguration,
+		ThemeDisplay themeDisplay) {
+
+		long displayStyleGroupId =
+			searchBarPortletInstanceConfiguration.displayStyleGroupId();
+
+		if (displayStyleGroupId <= 0) {
+			displayStyleGroupId = themeDisplay.getScopeGroupId();
+		}
+
+		return displayStyleGroupId;
+	}
+
+	protected HttpServletRequest getHttpServletRequest(
+		RenderRequest renderRequest) {
+
+		LiferayPortletRequest liferayPortletRequest =
+			_portal.getLiferayPortletRequest(renderRequest);
+
+		return liferayPortletRequest.getHttpServletRequest();
+	}
+
 	protected String getKeywords() {
 		if (_keywords != null) {
 			return _keywords;
@@ -220,12 +275,12 @@ public class SearchBarPortletDisplayBuilder {
 		try {
 			return _portal.getLayoutFriendlyURL(layout, _themeDisplay);
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			if (_log.isWarnEnabled()) {
 				_log.warn(
 					"Unable to get friendly URL for layout " +
 						layout.getLinkedToLayout(),
-					pe);
+					portalException);
 			}
 
 			return null;
@@ -248,6 +303,19 @@ public class SearchBarPortletDisplayBuilder {
 		return StringPool.BLANK;
 	}
 
+	protected SearchBarPortletInstanceConfiguration
+		getSearchBarPortletInstanceConfiguration(
+			PortletDisplay portletDisplay) {
+
+		try {
+			return portletDisplay.getPortletInstanceConfiguration(
+				SearchBarPortletInstanceConfiguration.class);
+		}
+		catch (ConfigurationException configurationException) {
+			throw new RuntimeException(configurationException);
+		}
+	}
+
 	protected SearchScope getSearchScope() {
 		if (_scopeParameterValue != null) {
 			return SearchScope.getSearchScope(_scopeParameterValue);
@@ -267,12 +335,6 @@ public class SearchBarPortletDisplayBuilder {
 	}
 
 	protected boolean isAvailableEverythingSearchScope() {
-		Group group = _themeDisplay.getScopeGroup();
-
-		if (group.isStagingGroup()) {
-			return false;
-		}
-
 		return true;
 	}
 
@@ -304,6 +366,7 @@ public class SearchBarPortletDisplayBuilder {
 	private final LayoutLocalService _layoutLocalService;
 	private String _paginationStartParameterName;
 	private final Portal _portal;
+	private final RenderRequest _renderRequest;
 	private String _scopeParameterName;
 	private String _scopeParameterValue;
 	private SearchScopePreference _searchScopePreference;

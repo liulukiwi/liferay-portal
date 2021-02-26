@@ -63,16 +63,22 @@ public class PortalUpgradeProcess extends UpgradeProcess {
 		return _upgradeProcesses.lastKey();
 	}
 
+	public static SortedMap<Version, UpgradeProcess> getPendingUpgradeProcesses(
+		Version schemaVersion) {
+
+		return _upgradeProcesses.tailMap(schemaVersion, false);
+	}
+
 	public static Version getRequiredSchemaVersion() {
 		NavigableSet<Version> reverseSchemaVersions =
 			_upgradeProcesses.descendingKeySet();
 
-		Iterator<Version> itr = reverseSchemaVersions.iterator();
+		Iterator<Version> iterator = reverseSchemaVersions.iterator();
 
-		Version requiredSchemaVersion = itr.next();
+		Version requiredSchemaVersion = iterator.next();
 
-		while (itr.hasNext()) {
-			Version nextSchemaVersion = itr.next();
+		while (iterator.hasNext()) {
+			Version nextSchemaVersion = iterator.next();
 
 			if ((requiredSchemaVersion.getMajor() !=
 					nextSchemaVersion.getMajor()) ||
@@ -156,8 +162,8 @@ public class PortalUpgradeProcess extends UpgradeProcess {
 		}
 	}
 
-	private static void _initializeSchemaVersion(Connection connection)
-		throws SQLException {
+	private void _initializeSchemaVersion(Connection connection)
+		throws Exception {
 
 		try (PreparedStatement ps = connection.prepareStatement(
 				"update Release_ set schemaVersion = ? where " +
@@ -174,7 +180,9 @@ public class PortalUpgradeProcess extends UpgradeProcess {
 		PortalUpgradeProcessRegistryImpl.class,
 		com.liferay.portal.upgrade.v7_2_x.PortalUpgradeProcessRegistryImpl.
 			class,
-		com.liferay.portal.upgrade.v7_3_x.PortalUpgradeProcessRegistryImpl.class
+		com.liferay.portal.upgrade.v7_3_x.PortalUpgradeProcessRegistryImpl.
+			class,
+		com.liferay.portal.upgrade.v7_4_x.PortalUpgradeProcessRegistryImpl.class
 	};
 
 	private static final Version _initialSchemaVersion = new Version(0, 1, 0);
@@ -195,8 +203,8 @@ public class PortalUpgradeProcess extends UpgradeProcess {
 				registry.registerUpgradeProcesses(_upgradeProcesses);
 			}
 		}
-		catch (ReflectiveOperationException roe) {
-			throw new ExceptionInInitializerError(roe);
+		catch (ReflectiveOperationException reflectiveOperationException) {
+			throw new ExceptionInInitializerError(reflectiveOperationException);
 		}
 	}
 

@@ -62,13 +62,10 @@ public class AuditEventLocalServiceImpl extends AuditEventLocalServiceBaseImpl {
 		auditEvent.setServerName(auditMessage.getServerName());
 		auditEvent.setServerPort(auditMessage.getServerPort());
 		auditEvent.setSessionID(auditMessage.getSessionID());
-		auditEvent.setServerPort(auditMessage.getServerPort());
 		auditEvent.setAdditionalInfo(
 			String.valueOf(auditMessage.getAdditionalInfo()));
 
-		auditEventPersistence.update(auditEvent);
-
-		return auditEvent;
+		return auditEventPersistence.update(auditEvent);
 	}
 
 	@Override
@@ -85,7 +82,7 @@ public class AuditEventLocalServiceImpl extends AuditEventLocalServiceBaseImpl {
 	@Override
 	public List<AuditEvent> getAuditEvents(
 		long companyId, int start, int end,
-		OrderByComparator orderByComparator) {
+		OrderByComparator<AuditEvent> orderByComparator) {
 
 		return auditEventPersistence.findByCompanyId(
 			companyId, start, end, orderByComparator);
@@ -111,7 +108,7 @@ public class AuditEventLocalServiceImpl extends AuditEventLocalServiceBaseImpl {
 		Date createDateLT, String eventType, String className, String classPK,
 		String clientHost, String clientIP, String serverName, int serverPort,
 		String sessionID, boolean andSearch, int start, int end,
-		OrderByComparator orderByComparator) {
+		OrderByComparator<AuditEvent> orderByComparator) {
 
 		DynamicQuery dynamicQuery = buildDynamicQuery(
 			companyId, userId, userName, createDateGT, createDateLT, eventType,
@@ -163,11 +160,10 @@ public class AuditEventLocalServiceImpl extends AuditEventLocalServiceBaseImpl {
 		}
 
 		if (Validator.isNotNull(userName)) {
-			Property property = PropertyFactoryUtil.forName("userName");
-
-			String value = StringPool.PERCENT + userName + StringPool.PERCENT;
-
-			junction.add(property.like(value));
+			junction.add(
+				RestrictionsFactoryUtil.ilike(
+					"userName",
+					StringPool.PERCENT + userName + StringPool.PERCENT));
 		}
 
 		if (Validator.isNotNull(eventType)) {
@@ -181,11 +177,10 @@ public class AuditEventLocalServiceImpl extends AuditEventLocalServiceBaseImpl {
 		}
 
 		if (Validator.isNotNull(className)) {
-			Property property = PropertyFactoryUtil.forName("className");
-
-			String value = StringPool.PERCENT + className + StringPool.PERCENT;
-
-			junction.add(property.like(value));
+			junction.add(
+				RestrictionsFactoryUtil.ilike(
+					"className",
+					StringPool.PERCENT + className + StringPool.PERCENT));
 		}
 
 		if (Validator.isNotNull(classPK)) {
@@ -195,27 +190,24 @@ public class AuditEventLocalServiceImpl extends AuditEventLocalServiceBaseImpl {
 		}
 
 		if (Validator.isNotNull(clientHost)) {
-			Property property = PropertyFactoryUtil.forName("clientHost");
-
-			String value = StringPool.PERCENT + clientHost + StringPool.PERCENT;
-
-			junction.add(property.like(value));
+			junction.add(
+				RestrictionsFactoryUtil.ilike(
+					"clientHost",
+					StringPool.PERCENT + clientHost + StringPool.PERCENT));
 		}
 
 		if (Validator.isNotNull(clientIP)) {
-			Property property = PropertyFactoryUtil.forName("clientIP");
-
-			String value = StringPool.PERCENT + clientIP + StringPool.PERCENT;
-
-			junction.add(property.like(value));
+			junction.add(
+				RestrictionsFactoryUtil.ilike(
+					"clientIP",
+					StringPool.PERCENT + clientIP + StringPool.PERCENT));
 		}
 
 		if (Validator.isNotNull(serverName)) {
-			Property property = PropertyFactoryUtil.forName("serverName");
-
-			String value = StringPool.PERCENT + serverName + StringPool.PERCENT;
-
-			junction.add(property.like(value));
+			junction.add(
+				RestrictionsFactoryUtil.ilike(
+					"serverName",
+					StringPool.PERCENT + serverName + StringPool.PERCENT));
 		}
 
 		if (serverPort > 0) {
@@ -225,11 +217,10 @@ public class AuditEventLocalServiceImpl extends AuditEventLocalServiceBaseImpl {
 		}
 
 		if (Validator.isNotNull(sessionID)) {
-			Property property = PropertyFactoryUtil.forName("sessionID");
-
-			String value = StringPool.PERCENT + sessionID + StringPool.PERCENT;
-
-			junction.add(property.like(value));
+			junction.add(
+				RestrictionsFactoryUtil.ilike(
+					"sessionID",
+					StringPool.PERCENT + sessionID + StringPool.PERCENT));
 		}
 
 		DynamicQuery dynamicQuery = dynamicQuery();

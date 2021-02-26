@@ -16,8 +16,8 @@ package com.liferay.site.memberships.web.internal.portlet.action;
 
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCResourceCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCResourceCommand;
+import com.liferay.site.memberships.constants.SiteMembershipsPortletKeys;
 import com.liferay.site.memberships.web.internal.constants.SiteMembershipWebKeys;
-import com.liferay.site.memberships.web.internal.constants.SiteMembershipsPortletKeys;
 
 import javax.portlet.ResourceRequest;
 import javax.portlet.ResourceResponse;
@@ -31,7 +31,7 @@ import org.osgi.service.component.annotations.Component;
 	immediate = true,
 	property = {
 		"javax.portlet.name=" + SiteMembershipsPortletKeys.SITE_MEMBERSHIPS_ADMIN,
-		"mvc.command.name=/user/info_panel"
+		"mvc.command.name=/site_memberships/users_info_panel"
 	},
 	service = MVCResourceCommand.class
 )

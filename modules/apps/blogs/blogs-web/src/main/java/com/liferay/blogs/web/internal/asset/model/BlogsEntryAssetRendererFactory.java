@@ -23,15 +23,17 @@ import com.liferay.blogs.constants.BlogsPortletKeys;
 import com.liferay.blogs.model.BlogsEntry;
 import com.liferay.blogs.service.BlogsEntryLocalService;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.portlet.LiferayPortletURL;
+import com.liferay.portal.kernel.resource.bundle.ResourceBundleLoaderUtil;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.security.permission.resource.PortletResourcePermission;
 import com.liferay.portal.kernel.util.Portal;
-import com.liferay.portal.kernel.util.ResourceBundleLoaderUtil;
 
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletURL;
@@ -89,11 +91,9 @@ public class BlogsEntryAssetRendererFactory
 			long groupId, String urlTitle)
 		throws PortalException {
 
-		BlogsEntry entry = _blogsEntryLocalService.getEntry(groupId, urlTitle);
-
 		BlogsEntryAssetRenderer blogsEntryAssetRenderer =
 			new BlogsEntryAssetRenderer(
-				entry,
+				_blogsEntryLocalService.getEntry(groupId, urlTitle),
 				ResourceBundleLoaderUtil.
 					getResourceBundleLoaderByBundleSymbolicName(
 						"com.liferay.blogs.web"));
@@ -144,7 +144,10 @@ public class BlogsEntryAssetRendererFactory
 		try {
 			liferayPortletURL.setWindowState(windowState);
 		}
-		catch (WindowStateException wse) {
+		catch (WindowStateException windowStateException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(windowStateException, windowStateException);
+			}
 		}
 
 		return liferayPortletURL;
@@ -166,6 +169,9 @@ public class BlogsEntryAssetRendererFactory
 		return _blogsEntryModelResourcePermission.contains(
 			permissionChecker, classPK, actionId);
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		BlogsEntryAssetRendererFactory.class);
 
 	@Reference
 	private AssetDisplayPageFriendlyURLProvider

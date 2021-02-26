@@ -16,12 +16,14 @@ package com.liferay.account.service.persistence.impl;
 
 import com.liferay.account.exception.NoSuchEntryUserRelException;
 import com.liferay.account.model.AccountEntryUserRel;
+import com.liferay.account.model.AccountEntryUserRelTable;
 import com.liferay.account.model.impl.AccountEntryUserRelImpl;
 import com.liferay.account.model.impl.AccountEntryUserRelModelImpl;
 import com.liferay.account.service.persistence.AccountEntryUserRelPersistence;
 import com.liferay.account.service.persistence.impl.constants.AccountPersistenceConstants;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.configuration.Configuration;
+import com.liferay.portal.kernel.dao.orm.ArgumentsResolver;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
@@ -32,9 +34,11 @@ import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.BaseModel;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
+import com.liferay.portal.kernel.service.persistence.BasePersistence;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
-import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.HashMapDictionary;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -47,9 +51,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.sql.DataSource;
 
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
@@ -65,12 +72,14 @@ import org.osgi.service.component.annotations.Reference;
  * @author Brian Wing Shun Chan
  * @generated
  */
-@Component(service = AccountEntryUserRelPersistence.class)
+@Component(
+	service = {AccountEntryUserRelPersistence.class, BasePersistence.class}
+)
 public class AccountEntryUserRelPersistenceImpl
 	extends BasePersistenceImpl<AccountEntryUserRel>
 	implements AccountEntryUserRelPersistence {
 
-	/**
+	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this class directly. Always use <code>AccountEntryUserRelUtil</code> to access the account entry user rel persistence. Modify <code>service.xml</code> and rerun ServiceBuilder to regenerate this class.
@@ -185,7 +194,7 @@ public class AccountEntryUserRelPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<AccountEntryUserRel>)finderCache.getResult(
-				finderPath, finderArgs, this);
+				finderPath, finderArgs);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (AccountEntryUserRel accountEntryUserRel : list) {
@@ -201,43 +210,43 @@ public class AccountEntryUserRelPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					3 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(3);
+				sb = new StringBundler(3);
 			}
 
-			query.append(_SQL_SELECT_ACCOUNTENTRYUSERREL_WHERE);
+			sb.append(_SQL_SELECT_ACCOUNTENTRYUSERREL_WHERE);
 
-			query.append(_FINDER_COLUMN_AEI_ACCOUNTENTRYID_2);
+			sb.append(_FINDER_COLUMN_AEI_ACCOUNTENTRYID_2);
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
 			else {
-				query.append(AccountEntryUserRelModelImpl.ORDER_BY_JPQL);
+				sb.append(AccountEntryUserRelModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(accountEntryId);
+				queryPos.add(accountEntryId);
 
 				list = (List<AccountEntryUserRel>)QueryUtil.list(
-					q, getDialect(), start, end);
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
@@ -245,12 +254,8 @@ public class AccountEntryUserRelPersistenceImpl
 					finderCache.putResult(finderPath, finderArgs, list);
 				}
 			}
-			catch (Exception e) {
-				if (useFinderCache) {
-					finderCache.removeResult(finderPath, finderArgs);
-				}
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -281,16 +286,16 @@ public class AccountEntryUserRelPersistenceImpl
 			return accountEntryUserRel;
 		}
 
-		StringBundler msg = new StringBundler(4);
+		StringBundler sb = new StringBundler(4);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("accountEntryId=");
-		msg.append(accountEntryId);
+		sb.append("accountEntryId=");
+		sb.append(accountEntryId);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchEntryUserRelException(msg.toString());
+		throw new NoSuchEntryUserRelException(sb.toString());
 	}
 
 	/**
@@ -336,16 +341,16 @@ public class AccountEntryUserRelPersistenceImpl
 			return accountEntryUserRel;
 		}
 
-		StringBundler msg = new StringBundler(4);
+		StringBundler sb = new StringBundler(4);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("accountEntryId=");
-		msg.append(accountEntryId);
+		sb.append("accountEntryId=");
+		sb.append(accountEntryId);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchEntryUserRelException(msg.toString());
+		throw new NoSuchEntryUserRelException(sb.toString());
 	}
 
 	/**
@@ -413,8 +418,8 @@ public class AccountEntryUserRelPersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -427,102 +432,102 @@ public class AccountEntryUserRelPersistenceImpl
 		OrderByComparator<AccountEntryUserRel> orderByComparator,
 		boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				4 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(3);
+			sb = new StringBundler(3);
 		}
 
-		query.append(_SQL_SELECT_ACCOUNTENTRYUSERREL_WHERE);
+		sb.append(_SQL_SELECT_ACCOUNTENTRYUSERREL_WHERE);
 
-		query.append(_FINDER_COLUMN_AEI_ACCOUNTENTRYID_2);
+		sb.append(_FINDER_COLUMN_AEI_ACCOUNTENTRYID_2);
 
 		if (orderByComparator != null) {
 			String[] orderByConditionFields =
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(AccountEntryUserRelModelImpl.ORDER_BY_JPQL);
+			sb.append(AccountEntryUserRelModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
-		qPos.add(accountEntryId);
+		queryPos.add(accountEntryId);
 
 		if (orderByComparator != null) {
 			for (Object orderByConditionValue :
 					orderByComparator.getOrderByConditionValues(
 						accountEntryUserRel)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<AccountEntryUserRel> list = q.list();
+		List<AccountEntryUserRel> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -560,36 +565,34 @@ public class AccountEntryUserRelPersistenceImpl
 
 		Object[] finderArgs = new Object[] {accountEntryId};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
 
 		if (count == null) {
-			StringBundler query = new StringBundler(2);
+			StringBundler sb = new StringBundler(2);
 
-			query.append(_SQL_COUNT_ACCOUNTENTRYUSERREL_WHERE);
+			sb.append(_SQL_COUNT_ACCOUNTENTRYUSERREL_WHERE);
 
-			query.append(_FINDER_COLUMN_AEI_ACCOUNTENTRYID_2);
+			sb.append(_FINDER_COLUMN_AEI_ACCOUNTENTRYID_2);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(accountEntryId);
+				queryPos.add(accountEntryId);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
 				finderCache.putResult(finderPath, finderArgs, count);
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -700,7 +703,7 @@ public class AccountEntryUserRelPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<AccountEntryUserRel>)finderCache.getResult(
-				finderPath, finderArgs, this);
+				finderPath, finderArgs);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (AccountEntryUserRel accountEntryUserRel : list) {
@@ -716,43 +719,43 @@ public class AccountEntryUserRelPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					3 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(3);
+				sb = new StringBundler(3);
 			}
 
-			query.append(_SQL_SELECT_ACCOUNTENTRYUSERREL_WHERE);
+			sb.append(_SQL_SELECT_ACCOUNTENTRYUSERREL_WHERE);
 
-			query.append(_FINDER_COLUMN_AUI_ACCOUNTUSERID_2);
+			sb.append(_FINDER_COLUMN_AUI_ACCOUNTUSERID_2);
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
 			else {
-				query.append(AccountEntryUserRelModelImpl.ORDER_BY_JPQL);
+				sb.append(AccountEntryUserRelModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(accountUserId);
+				queryPos.add(accountUserId);
 
 				list = (List<AccountEntryUserRel>)QueryUtil.list(
-					q, getDialect(), start, end);
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
@@ -760,12 +763,8 @@ public class AccountEntryUserRelPersistenceImpl
 					finderCache.putResult(finderPath, finderArgs, list);
 				}
 			}
-			catch (Exception e) {
-				if (useFinderCache) {
-					finderCache.removeResult(finderPath, finderArgs);
-				}
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -796,16 +795,16 @@ public class AccountEntryUserRelPersistenceImpl
 			return accountEntryUserRel;
 		}
 
-		StringBundler msg = new StringBundler(4);
+		StringBundler sb = new StringBundler(4);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("accountUserId=");
-		msg.append(accountUserId);
+		sb.append("accountUserId=");
+		sb.append(accountUserId);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchEntryUserRelException(msg.toString());
+		throw new NoSuchEntryUserRelException(sb.toString());
 	}
 
 	/**
@@ -851,16 +850,16 @@ public class AccountEntryUserRelPersistenceImpl
 			return accountEntryUserRel;
 		}
 
-		StringBundler msg = new StringBundler(4);
+		StringBundler sb = new StringBundler(4);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("accountUserId=");
-		msg.append(accountUserId);
+		sb.append("accountUserId=");
+		sb.append(accountUserId);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchEntryUserRelException(msg.toString());
+		throw new NoSuchEntryUserRelException(sb.toString());
 	}
 
 	/**
@@ -928,8 +927,8 @@ public class AccountEntryUserRelPersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -942,102 +941,102 @@ public class AccountEntryUserRelPersistenceImpl
 		OrderByComparator<AccountEntryUserRel> orderByComparator,
 		boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				4 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(3);
+			sb = new StringBundler(3);
 		}
 
-		query.append(_SQL_SELECT_ACCOUNTENTRYUSERREL_WHERE);
+		sb.append(_SQL_SELECT_ACCOUNTENTRYUSERREL_WHERE);
 
-		query.append(_FINDER_COLUMN_AUI_ACCOUNTUSERID_2);
+		sb.append(_FINDER_COLUMN_AUI_ACCOUNTUSERID_2);
 
 		if (orderByComparator != null) {
 			String[] orderByConditionFields =
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(AccountEntryUserRelModelImpl.ORDER_BY_JPQL);
+			sb.append(AccountEntryUserRelModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
-		qPos.add(accountUserId);
+		queryPos.add(accountUserId);
 
 		if (orderByComparator != null) {
 			for (Object orderByConditionValue :
 					orderByComparator.getOrderByConditionValues(
 						accountEntryUserRel)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<AccountEntryUserRel> list = q.list();
+		List<AccountEntryUserRel> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -1075,36 +1074,34 @@ public class AccountEntryUserRelPersistenceImpl
 
 		Object[] finderArgs = new Object[] {accountUserId};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
 
 		if (count == null) {
-			StringBundler query = new StringBundler(2);
+			StringBundler sb = new StringBundler(2);
 
-			query.append(_SQL_COUNT_ACCOUNTENTRYUSERREL_WHERE);
+			sb.append(_SQL_COUNT_ACCOUNTENTRYUSERREL_WHERE);
 
-			query.append(_FINDER_COLUMN_AUI_ACCOUNTUSERID_2);
+			sb.append(_FINDER_COLUMN_AUI_ACCOUNTUSERID_2);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(accountUserId);
+				queryPos.add(accountUserId);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
 				finderCache.putResult(finderPath, finderArgs, count);
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -1137,23 +1134,23 @@ public class AccountEntryUserRelPersistenceImpl
 			accountEntryId, accountUserId);
 
 		if (accountEntryUserRel == null) {
-			StringBundler msg = new StringBundler(6);
+			StringBundler sb = new StringBundler(6);
 
-			msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+			sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-			msg.append("accountEntryId=");
-			msg.append(accountEntryId);
+			sb.append("accountEntryId=");
+			sb.append(accountEntryId);
 
-			msg.append(", accountUserId=");
-			msg.append(accountUserId);
+			sb.append(", accountUserId=");
+			sb.append(accountUserId);
 
-			msg.append("}");
+			sb.append("}");
 
 			if (_log.isDebugEnabled()) {
-				_log.debug(msg.toString());
+				_log.debug(sb.toString());
 			}
 
-			throw new NoSuchEntryUserRelException(msg.toString());
+			throw new NoSuchEntryUserRelException(sb.toString());
 		}
 
 		return accountEntryUserRel;
@@ -1195,7 +1192,7 @@ public class AccountEntryUserRelPersistenceImpl
 
 		if (useFinderCache) {
 			result = finderCache.getResult(
-				_finderPathFetchByAEI_AUI, finderArgs, this);
+				_finderPathFetchByAEI_AUI, finderArgs);
 		}
 
 		if (result instanceof AccountEntryUserRel) {
@@ -1210,30 +1207,30 @@ public class AccountEntryUserRelPersistenceImpl
 		}
 
 		if (result == null) {
-			StringBundler query = new StringBundler(4);
+			StringBundler sb = new StringBundler(4);
 
-			query.append(_SQL_SELECT_ACCOUNTENTRYUSERREL_WHERE);
+			sb.append(_SQL_SELECT_ACCOUNTENTRYUSERREL_WHERE);
 
-			query.append(_FINDER_COLUMN_AEI_AUI_ACCOUNTENTRYID_2);
+			sb.append(_FINDER_COLUMN_AEI_AUI_ACCOUNTENTRYID_2);
 
-			query.append(_FINDER_COLUMN_AEI_AUI_ACCOUNTUSERID_2);
+			sb.append(_FINDER_COLUMN_AEI_AUI_ACCOUNTUSERID_2);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(accountEntryId);
+				queryPos.add(accountEntryId);
 
-				qPos.add(accountUserId);
+				queryPos.add(accountUserId);
 
-				List<AccountEntryUserRel> list = q.list();
+				List<AccountEntryUserRel> list = query.list();
 
 				if (list.isEmpty()) {
 					if (useFinderCache) {
@@ -1266,13 +1263,8 @@ public class AccountEntryUserRelPersistenceImpl
 					cacheResult(accountEntryUserRel);
 				}
 			}
-			catch (Exception e) {
-				if (useFinderCache) {
-					finderCache.removeResult(
-						_finderPathFetchByAEI_AUI, finderArgs);
-				}
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -1318,40 +1310,38 @@ public class AccountEntryUserRelPersistenceImpl
 
 		Object[] finderArgs = new Object[] {accountEntryId, accountUserId};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
 
 		if (count == null) {
-			StringBundler query = new StringBundler(3);
+			StringBundler sb = new StringBundler(3);
 
-			query.append(_SQL_COUNT_ACCOUNTENTRYUSERREL_WHERE);
+			sb.append(_SQL_COUNT_ACCOUNTENTRYUSERREL_WHERE);
 
-			query.append(_FINDER_COLUMN_AEI_AUI_ACCOUNTENTRYID_2);
+			sb.append(_FINDER_COLUMN_AEI_AUI_ACCOUNTENTRYID_2);
 
-			query.append(_FINDER_COLUMN_AEI_AUI_ACCOUNTUSERID_2);
+			sb.append(_FINDER_COLUMN_AEI_AUI_ACCOUNTUSERID_2);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(accountEntryId);
+				queryPos.add(accountEntryId);
 
-				qPos.add(accountUserId);
+				queryPos.add(accountUserId);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
 				finderCache.putResult(finderPath, finderArgs, count);
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -1372,6 +1362,8 @@ public class AccountEntryUserRelPersistenceImpl
 
 		setModelImplClass(AccountEntryUserRelImpl.class);
 		setModelPKClass(long.class);
+
+		setTable(AccountEntryUserRelTable.INSTANCE);
 	}
 
 	/**
@@ -1382,8 +1374,8 @@ public class AccountEntryUserRelPersistenceImpl
 	@Override
 	public void cacheResult(AccountEntryUserRel accountEntryUserRel) {
 		entityCache.putResult(
-			entityCacheEnabled, AccountEntryUserRelImpl.class,
-			accountEntryUserRel.getPrimaryKey(), accountEntryUserRel);
+			AccountEntryUserRelImpl.class, accountEntryUserRel.getPrimaryKey(),
+			accountEntryUserRel);
 
 		finderCache.putResult(
 			_finderPathFetchByAEI_AUI,
@@ -1392,8 +1384,6 @@ public class AccountEntryUserRelPersistenceImpl
 				accountEntryUserRel.getAccountUserId()
 			},
 			accountEntryUserRel);
-
-		accountEntryUserRel.resetOriginalValues();
 	}
 
 	/**
@@ -1405,13 +1395,10 @@ public class AccountEntryUserRelPersistenceImpl
 	public void cacheResult(List<AccountEntryUserRel> accountEntryUserRels) {
 		for (AccountEntryUserRel accountEntryUserRel : accountEntryUserRels) {
 			if (entityCache.getResult(
-					entityCacheEnabled, AccountEntryUserRelImpl.class,
+					AccountEntryUserRelImpl.class,
 					accountEntryUserRel.getPrimaryKey()) == null) {
 
 				cacheResult(accountEntryUserRel);
-			}
-			else {
-				accountEntryUserRel.resetOriginalValues();
 			}
 		}
 	}
@@ -1427,9 +1414,7 @@ public class AccountEntryUserRelPersistenceImpl
 	public void clearCache() {
 		entityCache.clearCache(AccountEntryUserRelImpl.class);
 
-		finderCache.clearCache(FINDER_CLASS_NAME_ENTITY);
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+		finderCache.clearCache(AccountEntryUserRelImpl.class);
 	}
 
 	/**
@@ -1442,40 +1427,23 @@ public class AccountEntryUserRelPersistenceImpl
 	@Override
 	public void clearCache(AccountEntryUserRel accountEntryUserRel) {
 		entityCache.removeResult(
-			entityCacheEnabled, AccountEntryUserRelImpl.class,
-			accountEntryUserRel.getPrimaryKey());
-
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
-
-		clearUniqueFindersCache(
-			(AccountEntryUserRelModelImpl)accountEntryUserRel, true);
+			AccountEntryUserRelImpl.class, accountEntryUserRel);
 	}
 
 	@Override
 	public void clearCache(List<AccountEntryUserRel> accountEntryUserRels) {
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
-
 		for (AccountEntryUserRel accountEntryUserRel : accountEntryUserRels) {
 			entityCache.removeResult(
-				entityCacheEnabled, AccountEntryUserRelImpl.class,
-				accountEntryUserRel.getPrimaryKey());
-
-			clearUniqueFindersCache(
-				(AccountEntryUserRelModelImpl)accountEntryUserRel, true);
+				AccountEntryUserRelImpl.class, accountEntryUserRel);
 		}
 	}
 
 	@Override
 	public void clearCache(Set<Serializable> primaryKeys) {
-		finderCache.clearCache(FINDER_CLASS_NAME_ENTITY);
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+		finderCache.clearCache(AccountEntryUserRelImpl.class);
 
 		for (Serializable primaryKey : primaryKeys) {
-			entityCache.removeResult(
-				entityCacheEnabled, AccountEntryUserRelImpl.class, primaryKey);
+			entityCache.removeResult(AccountEntryUserRelImpl.class, primaryKey);
 		}
 	}
 
@@ -1487,38 +1455,9 @@ public class AccountEntryUserRelPersistenceImpl
 			accountEntryUserRelModelImpl.getAccountUserId()
 		};
 
+		finderCache.putResult(_finderPathCountByAEI_AUI, args, Long.valueOf(1));
 		finderCache.putResult(
-			_finderPathCountByAEI_AUI, args, Long.valueOf(1), false);
-		finderCache.putResult(
-			_finderPathFetchByAEI_AUI, args, accountEntryUserRelModelImpl,
-			false);
-	}
-
-	protected void clearUniqueFindersCache(
-		AccountEntryUserRelModelImpl accountEntryUserRelModelImpl,
-		boolean clearCurrent) {
-
-		if (clearCurrent) {
-			Object[] args = new Object[] {
-				accountEntryUserRelModelImpl.getAccountEntryId(),
-				accountEntryUserRelModelImpl.getAccountUserId()
-			};
-
-			finderCache.removeResult(_finderPathCountByAEI_AUI, args);
-			finderCache.removeResult(_finderPathFetchByAEI_AUI, args);
-		}
-
-		if ((accountEntryUserRelModelImpl.getColumnBitmask() &
-			 _finderPathFetchByAEI_AUI.getColumnBitmask()) != 0) {
-
-			Object[] args = new Object[] {
-				accountEntryUserRelModelImpl.getOriginalAccountEntryId(),
-				accountEntryUserRelModelImpl.getOriginalAccountUserId()
-			};
-
-			finderCache.removeResult(_finderPathCountByAEI_AUI, args);
-			finderCache.removeResult(_finderPathFetchByAEI_AUI, args);
-		}
+			_finderPathFetchByAEI_AUI, args, accountEntryUserRelModelImpl);
 	}
 
 	/**
@@ -1584,11 +1523,11 @@ public class AccountEntryUserRelPersistenceImpl
 
 			return remove(accountEntryUserRel);
 		}
-		catch (NoSuchEntryUserRelException nsee) {
-			throw nsee;
+		catch (NoSuchEntryUserRelException noSuchEntityException) {
+			throw noSuchEntityException;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -1614,8 +1553,8 @@ public class AccountEntryUserRelPersistenceImpl
 				session.delete(accountEntryUserRel);
 			}
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -1659,99 +1598,30 @@ public class AccountEntryUserRelPersistenceImpl
 		try {
 			session = openSession();
 
-			if (accountEntryUserRel.isNew()) {
+			if (isNew) {
 				session.save(accountEntryUserRel);
-
-				accountEntryUserRel.setNew(false);
 			}
 			else {
 				accountEntryUserRel = (AccountEntryUserRel)session.merge(
 					accountEntryUserRel);
 			}
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
 		}
 
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
-
-		if (!_columnBitmaskEnabled) {
-			finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
-		}
-		else if (isNew) {
-			Object[] args = new Object[] {
-				accountEntryUserRelModelImpl.getAccountEntryId()
-			};
-
-			finderCache.removeResult(_finderPathCountByAEI, args);
-			finderCache.removeResult(
-				_finderPathWithoutPaginationFindByAEI, args);
-
-			args = new Object[] {
-				accountEntryUserRelModelImpl.getAccountUserId()
-			};
-
-			finderCache.removeResult(_finderPathCountByAUI, args);
-			finderCache.removeResult(
-				_finderPathWithoutPaginationFindByAUI, args);
-
-			finderCache.removeResult(_finderPathCountAll, FINDER_ARGS_EMPTY);
-			finderCache.removeResult(
-				_finderPathWithoutPaginationFindAll, FINDER_ARGS_EMPTY);
-		}
-		else {
-			if ((accountEntryUserRelModelImpl.getColumnBitmask() &
-				 _finderPathWithoutPaginationFindByAEI.getColumnBitmask()) !=
-					 0) {
-
-				Object[] args = new Object[] {
-					accountEntryUserRelModelImpl.getOriginalAccountEntryId()
-				};
-
-				finderCache.removeResult(_finderPathCountByAEI, args);
-				finderCache.removeResult(
-					_finderPathWithoutPaginationFindByAEI, args);
-
-				args = new Object[] {
-					accountEntryUserRelModelImpl.getAccountEntryId()
-				};
-
-				finderCache.removeResult(_finderPathCountByAEI, args);
-				finderCache.removeResult(
-					_finderPathWithoutPaginationFindByAEI, args);
-			}
-
-			if ((accountEntryUserRelModelImpl.getColumnBitmask() &
-				 _finderPathWithoutPaginationFindByAUI.getColumnBitmask()) !=
-					 0) {
-
-				Object[] args = new Object[] {
-					accountEntryUserRelModelImpl.getOriginalAccountUserId()
-				};
-
-				finderCache.removeResult(_finderPathCountByAUI, args);
-				finderCache.removeResult(
-					_finderPathWithoutPaginationFindByAUI, args);
-
-				args = new Object[] {
-					accountEntryUserRelModelImpl.getAccountUserId()
-				};
-
-				finderCache.removeResult(_finderPathCountByAUI, args);
-				finderCache.removeResult(
-					_finderPathWithoutPaginationFindByAUI, args);
-			}
-		}
-
 		entityCache.putResult(
-			entityCacheEnabled, AccountEntryUserRelImpl.class,
-			accountEntryUserRel.getPrimaryKey(), accountEntryUserRel, false);
+			AccountEntryUserRelImpl.class, accountEntryUserRelModelImpl, false,
+			true);
 
-		clearUniqueFindersCache(accountEntryUserRelModelImpl, false);
 		cacheUniqueFindersCache(accountEntryUserRelModelImpl);
+
+		if (isNew) {
+			accountEntryUserRel.setNew(false);
+		}
 
 		accountEntryUserRel.resetOriginalValues();
 
@@ -1893,23 +1763,23 @@ public class AccountEntryUserRelPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<AccountEntryUserRel>)finderCache.getResult(
-				finderPath, finderArgs, this);
+				finderPath, finderArgs);
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 			String sql = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					2 + (orderByComparator.getOrderByFields().length * 2));
 
-				query.append(_SQL_SELECT_ACCOUNTENTRYUSERREL);
+				sb.append(_SQL_SELECT_ACCOUNTENTRYUSERREL);
 
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 
-				sql = query.toString();
+				sql = sb.toString();
 			}
 			else {
 				sql = _SQL_SELECT_ACCOUNTENTRYUSERREL;
@@ -1922,10 +1792,10 @@ public class AccountEntryUserRelPersistenceImpl
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
 				list = (List<AccountEntryUserRel>)QueryUtil.list(
-					q, getDialect(), start, end);
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
@@ -1933,12 +1803,8 @@ public class AccountEntryUserRelPersistenceImpl
 					finderCache.putResult(finderPath, finderArgs, list);
 				}
 			}
-			catch (Exception e) {
-				if (useFinderCache) {
-					finderCache.removeResult(finderPath, finderArgs);
-				}
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -1967,7 +1833,7 @@ public class AccountEntryUserRelPersistenceImpl
 	@Override
 	public int countAll() {
 		Long count = (Long)finderCache.getResult(
-			_finderPathCountAll, FINDER_ARGS_EMPTY, this);
+			_finderPathCountAll, FINDER_ARGS_EMPTY);
 
 		if (count == null) {
 			Session session = null;
@@ -1975,18 +1841,16 @@ public class AccountEntryUserRelPersistenceImpl
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(_SQL_COUNT_ACCOUNTENTRYUSERREL);
+				Query query = session.createQuery(
+					_SQL_COUNT_ACCOUNTENTRYUSERREL);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
 				finderCache.putResult(
 					_finderPathCountAll, FINDER_ARGS_EMPTY, count);
 			}
-			catch (Exception e) {
-				finderCache.removeResult(
-					_finderPathCountAll, FINDER_ARGS_EMPTY);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -2020,88 +1884,78 @@ public class AccountEntryUserRelPersistenceImpl
 	 * Initializes the account entry user rel persistence.
 	 */
 	@Activate
-	public void activate() {
-		AccountEntryUserRelModelImpl.setEntityCacheEnabled(entityCacheEnabled);
-		AccountEntryUserRelModelImpl.setFinderCacheEnabled(finderCacheEnabled);
+	public void activate(BundleContext bundleContext) {
+		_bundleContext = bundleContext;
+
+		_argumentsResolverServiceRegistration = _bundleContext.registerService(
+			ArgumentsResolver.class,
+			new AccountEntryUserRelModelArgumentsResolver(),
+			new HashMapDictionary<>());
 
 		_finderPathWithPaginationFindAll = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled,
-			AccountEntryUserRelImpl.class,
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findAll", new String[0]);
+			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findAll", new String[0],
+			new String[0], true);
 
 		_finderPathWithoutPaginationFindAll = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled,
-			AccountEntryUserRelImpl.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findAll",
-			new String[0]);
+			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findAll", new String[0],
+			new String[0], true);
 
 		_finderPathCountAll = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled, Long.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countAll",
-			new String[0]);
+			new String[0], new String[0], false);
 
 		_finderPathWithPaginationFindByAEI = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled,
-			AccountEntryUserRelImpl.class,
 			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByAEI",
 			new String[] {
 				Long.class.getName(), Integer.class.getName(),
 				Integer.class.getName(), OrderByComparator.class.getName()
-			});
+			},
+			new String[] {"accountEntryId"}, true);
 
 		_finderPathWithoutPaginationFindByAEI = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled,
-			AccountEntryUserRelImpl.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByAEI",
 			new String[] {Long.class.getName()},
-			AccountEntryUserRelModelImpl.ACCOUNTENTRYID_COLUMN_BITMASK);
+			new String[] {"accountEntryId"}, true);
 
 		_finderPathCountByAEI = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled, Long.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByAEI",
-			new String[] {Long.class.getName()});
+			new String[] {Long.class.getName()},
+			new String[] {"accountEntryId"}, false);
 
 		_finderPathWithPaginationFindByAUI = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled,
-			AccountEntryUserRelImpl.class,
 			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByAUI",
 			new String[] {
 				Long.class.getName(), Integer.class.getName(),
 				Integer.class.getName(), OrderByComparator.class.getName()
-			});
+			},
+			new String[] {"accountUserId"}, true);
 
 		_finderPathWithoutPaginationFindByAUI = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled,
-			AccountEntryUserRelImpl.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByAUI",
-			new String[] {Long.class.getName()},
-			AccountEntryUserRelModelImpl.ACCOUNTUSERID_COLUMN_BITMASK);
+			new String[] {Long.class.getName()}, new String[] {"accountUserId"},
+			true);
 
 		_finderPathCountByAUI = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled, Long.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByAUI",
-			new String[] {Long.class.getName()});
+			new String[] {Long.class.getName()}, new String[] {"accountUserId"},
+			false);
 
 		_finderPathFetchByAEI_AUI = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled,
-			AccountEntryUserRelImpl.class, FINDER_CLASS_NAME_ENTITY,
-			"fetchByAEI_AUI",
+			FINDER_CLASS_NAME_ENTITY, "fetchByAEI_AUI",
 			new String[] {Long.class.getName(), Long.class.getName()},
-			AccountEntryUserRelModelImpl.ACCOUNTENTRYID_COLUMN_BITMASK |
-			AccountEntryUserRelModelImpl.ACCOUNTUSERID_COLUMN_BITMASK);
+			new String[] {"accountEntryId", "accountUserId"}, true);
 
 		_finderPathCountByAEI_AUI = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled, Long.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByAEI_AUI",
-			new String[] {Long.class.getName(), Long.class.getName()});
+			new String[] {Long.class.getName(), Long.class.getName()},
+			new String[] {"accountEntryId", "accountUserId"}, false);
 	}
 
 	@Deactivate
 	public void deactivate() {
 		entityCache.removeCache(AccountEntryUserRelImpl.class.getName());
-		finderCache.removeCache(FINDER_CLASS_NAME_ENTITY);
-		finderCache.removeCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
-		finderCache.removeCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+
+		_argumentsResolverServiceRegistration.unregister();
 	}
 
 	@Override
@@ -2110,12 +1964,6 @@ public class AccountEntryUserRelPersistenceImpl
 		unbind = "-"
 	)
 	public void setConfiguration(Configuration configuration) {
-		super.setConfiguration(configuration);
-
-		_columnBitmaskEnabled = GetterUtil.getBoolean(
-			configuration.get(
-				"value.object.column.bitmask.enabled.com.liferay.account.model.AccountEntryUserRel"),
-			true);
 	}
 
 	@Override
@@ -2136,7 +1984,7 @@ public class AccountEntryUserRelPersistenceImpl
 		super.setSessionFactory(sessionFactory);
 	}
 
-	private boolean _columnBitmaskEnabled;
+	private BundleContext _bundleContext;
 
 	@Reference
 	protected EntityCache entityCache;
@@ -2167,13 +2015,103 @@ public class AccountEntryUserRelPersistenceImpl
 	private static final Log _log = LogFactoryUtil.getLog(
 		AccountEntryUserRelPersistenceImpl.class);
 
-	static {
-		try {
-			Class.forName(AccountPersistenceConstants.class.getName());
+	@Override
+	protected FinderCache getFinderCache() {
+		return finderCache;
+	}
+
+	private ServiceRegistration<ArgumentsResolver>
+		_argumentsResolverServiceRegistration;
+
+	private static class AccountEntryUserRelModelArgumentsResolver
+		implements ArgumentsResolver {
+
+		@Override
+		public Object[] getArguments(
+			FinderPath finderPath, BaseModel<?> baseModel, boolean checkColumn,
+			boolean original) {
+
+			String[] columnNames = finderPath.getColumnNames();
+
+			if ((columnNames == null) || (columnNames.length == 0)) {
+				if (baseModel.isNew()) {
+					return FINDER_ARGS_EMPTY;
+				}
+
+				return null;
+			}
+
+			AccountEntryUserRelModelImpl accountEntryUserRelModelImpl =
+				(AccountEntryUserRelModelImpl)baseModel;
+
+			long columnBitmask =
+				accountEntryUserRelModelImpl.getColumnBitmask();
+
+			if (!checkColumn || (columnBitmask == 0)) {
+				return _getValue(
+					accountEntryUserRelModelImpl, columnNames, original);
+			}
+
+			Long finderPathColumnBitmask = _finderPathColumnBitmasksCache.get(
+				finderPath);
+
+			if (finderPathColumnBitmask == null) {
+				finderPathColumnBitmask = 0L;
+
+				for (String columnName : columnNames) {
+					finderPathColumnBitmask |=
+						accountEntryUserRelModelImpl.getColumnBitmask(
+							columnName);
+				}
+
+				_finderPathColumnBitmasksCache.put(
+					finderPath, finderPathColumnBitmask);
+			}
+
+			if ((columnBitmask & finderPathColumnBitmask) != 0) {
+				return _getValue(
+					accountEntryUserRelModelImpl, columnNames, original);
+			}
+
+			return null;
 		}
-		catch (ClassNotFoundException cnfe) {
-			throw new ExceptionInInitializerError(cnfe);
+
+		@Override
+		public String getClassName() {
+			return AccountEntryUserRelImpl.class.getName();
 		}
+
+		@Override
+		public String getTableName() {
+			return AccountEntryUserRelTable.INSTANCE.getTableName();
+		}
+
+		private Object[] _getValue(
+			AccountEntryUserRelModelImpl accountEntryUserRelModelImpl,
+			String[] columnNames, boolean original) {
+
+			Object[] arguments = new Object[columnNames.length];
+
+			for (int i = 0; i < arguments.length; i++) {
+				String columnName = columnNames[i];
+
+				if (original) {
+					arguments[i] =
+						accountEntryUserRelModelImpl.getColumnOriginalValue(
+							columnName);
+				}
+				else {
+					arguments[i] = accountEntryUserRelModelImpl.getColumnValue(
+						columnName);
+				}
+			}
+
+			return arguments;
+		}
+
+		private static Map<FinderPath, Long> _finderPathColumnBitmasksCache =
+			new ConcurrentHashMap<>();
+
 	}
 
 }

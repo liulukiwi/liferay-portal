@@ -14,6 +14,8 @@
 
 package com.liferay.portal.kernel.servlet;
 
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.registry.collections.ServiceTrackerCollections;
 
@@ -72,7 +74,10 @@ public class DynamicResourceIncludeUtil {
 				return url;
 			}
 		}
-		catch (MalformedURLException murle) {
+		catch (MalformedURLException malformedURLException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(malformedURLException, malformedURLException);
+			}
 		}
 
 		return null;
@@ -87,6 +92,9 @@ public class DynamicResourceIncludeUtil {
 
 		return null;
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		DynamicResourceIncludeUtil.class);
 
 	private static final List<ServletContext> _servletContexts =
 		ServiceTrackerCollections.openList(ServletContext.class);

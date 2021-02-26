@@ -26,6 +26,8 @@ import com.liferay.portal.kernel.json.JSONException;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.language.LanguageUtil;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -44,7 +46,7 @@ public class DocumentLibraryDDMFormFieldValueRenderer
 	}
 
 	@Override
-	protected ValueAccessor getValueAcessor(Locale locale) {
+	protected ValueAccessor getValueAccessor(Locale locale) {
 		return new ValueAccessor(locale) {
 
 			@Override
@@ -68,7 +70,11 @@ public class DocumentLibraryDDMFormFieldValueRenderer
 
 					return fileEntry.getTitle();
 				}
-				catch (Exception e) {
+				catch (Exception exception) {
+					if (_log.isDebugEnabled()) {
+						_log.debug(exception, exception);
+					}
+
 					return LanguageUtil.format(
 						locale, "is-temporarily-unavailable", "content");
 				}
@@ -78,12 +84,15 @@ public class DocumentLibraryDDMFormFieldValueRenderer
 				try {
 					return JSONFactoryUtil.createJSONObject(json);
 				}
-				catch (JSONException jsone) {
-					throw new ValueAccessorException(jsone);
+				catch (JSONException jsonException) {
+					throw new ValueAccessorException(jsonException);
 				}
 			}
 
 		};
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		DocumentLibraryDDMFormFieldValueRenderer.class);
 
 }

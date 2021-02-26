@@ -37,7 +37,7 @@ import org.osgi.service.component.annotations.Reference;
 	immediate = true,
 	property = {
 		"javax.portlet.name=" + StagingBarPortletKeys.STAGING_BAR,
-		"mvc.command.name=mergeLayoutSetBranch"
+		"mvc.command.name=/staging_bar/merge_layout_set_branch"
 	},
 	service = MVCActionCommand.class
 )
@@ -66,8 +66,8 @@ public class MergeLayoutSetBranchMVCActionCommand extends BaseMVCActionCommand {
 			ActionUtil.addLayoutBranchSessionMessages(
 				actionRequest, actionResponse);
 		}
-		catch (Exception e) {
-			SessionErrors.add(actionRequest, e.getClass(), e);
+		catch (Exception exception) {
+			SessionErrors.add(actionRequest, exception.getClass(), exception);
 
 			actionResponse.setRenderParameter(
 				"mvcPath", "/view_layout_set_branches.jsp");

@@ -55,12 +55,15 @@ public class LoginFailure implements AuthFailure {
 
 			_auditRouter.route(auditMessage);
 		}
-		catch (AuditException ae) {
+		catch (AuditException auditException) {
 			if (_log.isWarnEnabled()) {
-				_log.warn("Unable to route audit message", ae);
+				_log.warn("Unable to route audit message", auditException);
 			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
 		}
 	}
 
@@ -78,14 +81,14 @@ public class LoginFailure implements AuthFailure {
 
 			_auditRouter.route(auditMessage);
 		}
-		catch (AuditException ae) {
+		catch (AuditException auditException) {
 			if (_log.isWarnEnabled()) {
-				_log.warn("Unable to route audit message", ae);
+				_log.warn("Unable to route audit message", auditException);
 			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isDebugEnabled()) {
-				_log.debug(e, e);
+				_log.debug(exception, exception);
 			}
 		}
 	}
@@ -103,14 +106,14 @@ public class LoginFailure implements AuthFailure {
 
 			_auditRouter.route(auditMessage);
 		}
-		catch (AuditException ae) {
+		catch (AuditException auditException) {
 			if (_log.isWarnEnabled()) {
-				_log.warn("Unable to route audit message", ae);
+				_log.warn("Unable to route audit message", auditException);
 			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isDebugEnabled()) {
-				_log.debug(e, e);
+				_log.debug(exception, exception);
 			}
 		}
 	}

@@ -46,7 +46,7 @@ import org.osgi.util.tracker.ServiceTracker;
 </#if>
 public class ${entity.name}${sessionTypeName}ServiceUtil {
 
-	/**
+	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify this class directly. Add custom service methods to <code>${packagePath}.service.impl.${entity.name}${sessionTypeName}ServiceImpl</code> and rerun ServiceBuilder to regenerate this class.
@@ -61,11 +61,7 @@ public class ${entity.name}${sessionTypeName}ServiceUtil {
 			</#if>
 			public static
 
-			<#if method.name = "dynamicQuery" && (serviceBuilder.getTypeGenericsName(method.returns) == "java.util.List<T>")>
-				<T>
-			</#if>
-
-			${serviceBuilder.getTypeGenericsName(method.returns)} ${method.name}(
+			${serviceBuilder.getTypeParametersDefinition(method.typeParameters)} ${serviceBuilder.getTypeGenericsName(method.returns)} ${method.name}(
 
 			<#list method.parameters as parameter>
 				${serviceBuilder.getTypeGenericsName(parameter.type)} ${parameter.name}

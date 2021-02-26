@@ -25,17 +25,19 @@ ConfigurationScopeDisplayContext configurationScopeDisplayContext = Configuratio
 <portlet:renderURL var="redirectURL" />
 
 <portlet:renderURL var="searchURL">
-	<portlet:param name="mvcRenderCommandName" value="/search" />
+	<portlet:param name="mvcRenderCommandName" value="/configuration_admin/search_results" />
 	<portlet:param name="redirect" value="<%= redirectURL %>" />
 </portlet:renderURL>
 
-<clay:management-toolbar
+<clay:management-toolbar-v2
 	searchActionURL="<%= searchURL %>"
 	selectable="<%= false %>"
 	showSearch="<%= true %>"
 />
 
-<div class="container-fluid container-fluid-max-xl container-view">
+<clay:container-fluid
+	cssClass="container-view"
+>
 	<c:if test="<%= configurationCategorySectionDisplays.isEmpty() %>">
 		<liferay-ui:empty-result-message
 			message="no-configurations-were-found"
@@ -63,14 +65,11 @@ ConfigurationScopeDisplayContext configurationScopeDisplayContext = Configuratio
 						if (configurationCategoryMenuDisplay.isEmpty()) {
 							continue;
 						}
-
-						String viewCategoryHREF = ConfigurationCategoryUtil.getHREF(configurationCategoryMenuDisplay, liferayPortletResponse, renderRequest, renderResponse);
 					%>
 
 						<li class="list-group-card-item">
-							<a href="<%= viewCategoryHREF %>">
+							<a href="<%= ConfigurationCategoryUtil.getHREF(configurationCategoryMenuDisplay, liferayPortletResponse, renderRequest, renderResponse) %>">
 								<clay:icon
-									elementClasses="user-icon-sm"
 									symbol="<%= configurationCategoryDisplay.getCategoryIcon() %>"
 								/>
 
@@ -92,4 +91,4 @@ ConfigurationScopeDisplayContext configurationScopeDisplayContext = Configuratio
 		%>
 
 	</ul>
-</div>
+</clay:container-fluid>

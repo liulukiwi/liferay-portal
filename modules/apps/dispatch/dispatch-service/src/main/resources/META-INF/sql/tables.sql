@@ -8,8 +8,8 @@ create table DispatchLog (
 	modifiedDate DATE null,
 	dispatchTriggerId LONG,
 	endDate DATE null,
-	error VARCHAR(75) null,
-	output_ VARCHAR(75) null,
+	error TEXT null,
+	output_ TEXT null,
 	startDate DATE null,
 	status INTEGER
 );
@@ -24,10 +24,12 @@ create table DispatchTrigger (
 	modifiedDate DATE null,
 	active_ BOOLEAN,
 	cronExpression VARCHAR(75) null,
+	dispatchTaskClusterMode INTEGER,
+	dispatchTaskExecutorType VARCHAR(75) null,
+	dispatchTaskSettings TEXT null,
 	endDate DATE null,
 	name VARCHAR(75) null,
+	overlapAllowed BOOLEAN,
 	startDate DATE null,
-	system_ BOOLEAN,
-	type_ VARCHAR(75) null,
-	typeSettings VARCHAR(75) null
+	system_ BOOLEAN
 );

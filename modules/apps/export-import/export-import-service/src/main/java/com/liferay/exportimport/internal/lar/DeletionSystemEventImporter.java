@@ -101,7 +101,7 @@ public class DeletionSystemEventImporter {
 			StagedModelDataHandlerUtil.deleteStagedModel(
 				portletDataContext, element);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isWarnEnabled()) {
 				StringBundler sb = new StringBundler(4);
 
@@ -110,7 +110,7 @@ public class DeletionSystemEventImporter {
 				sb.append(" with UUID ");
 				sb.append(element.attributeValue("uuid"));
 
-				_log.warn(sb.toString());
+				_log.warn(sb.toString(), exception);
 			}
 		}
 	}

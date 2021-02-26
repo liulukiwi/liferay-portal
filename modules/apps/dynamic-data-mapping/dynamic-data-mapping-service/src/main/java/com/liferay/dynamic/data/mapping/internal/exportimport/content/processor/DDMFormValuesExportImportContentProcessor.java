@@ -16,7 +16,7 @@ package com.liferay.dynamic.data.mapping.internal.exportimport.content.processor
 
 import com.liferay.document.library.kernel.model.DLFileEntry;
 import com.liferay.document.library.kernel.service.DLAppLocalService;
-import com.liferay.dynamic.data.mapping.model.DDMFormFieldType;
+import com.liferay.dynamic.data.mapping.form.field.type.constants.DDMFormFieldTypeConstants;
 import com.liferay.dynamic.data.mapping.model.Value;
 import com.liferay.dynamic.data.mapping.storage.DDMFormFieldValue;
 import com.liferay.dynamic.data.mapping.storage.DDMFormValues;
@@ -27,9 +27,11 @@ import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandler;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerRegistryUtil;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
+import com.liferay.journal.article.dynamic.data.mapping.form.field.type.constants.JournalArticleDDMFormFieldTypeConstants;
 import com.liferay.journal.exception.NoSuchArticleException;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.service.JournalArticleLocalService;
+import com.liferay.layout.dynamic.data.mapping.form.field.type.constants.LayoutDDMFormFieldTypeConstants;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONException;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
@@ -169,7 +171,7 @@ public class DDMFormValuesExportImportContentProcessor
 
 		@Override
 		public String getFieldType() {
-			return DDMFormFieldType.DOCUMENT_LIBRARY;
+			return DDMFormFieldTypeConstants.DOCUMENT_LIBRARY;
 		}
 
 		@Override
@@ -186,9 +188,9 @@ public class DDMFormValuesExportImportContentProcessor
 				try {
 					jsonObject = JSONFactoryUtil.createJSONObject(valueString);
 				}
-				catch (JSONException jsone) {
+				catch (JSONException jsonException) {
 					if (_log.isDebugEnabled()) {
-						_log.debug("Unable to parse JSON", jsone);
+						_log.debug("Unable to parse JSON", jsonException);
 					}
 
 					continue;
@@ -207,9 +209,9 @@ public class DDMFormValuesExportImportContentProcessor
 					fileEntry = _dlAppLocalService.getFileEntryByUuidAndGroupId(
 						uuid, groupId);
 				}
-				catch (PortalException pe) {
+				catch (PortalException portalException) {
 					if (_log.isWarnEnabled()) {
-						_log.warn("Unable to find file entry", pe);
+						_log.warn("Unable to find file entry", portalException);
 					}
 
 					continue;
@@ -263,7 +265,7 @@ public class DDMFormValuesExportImportContentProcessor
 
 		@Override
 		public String getFieldType() {
-			return DDMFormFieldType.DOCUMENT_LIBRARY;
+			return DDMFormFieldTypeConstants.DOCUMENT_LIBRARY;
 		}
 
 		@Override
@@ -280,9 +282,9 @@ public class DDMFormValuesExportImportContentProcessor
 				try {
 					jsonObject = JSONFactoryUtil.createJSONObject(valueString);
 				}
-				catch (JSONException jsone) {
+				catch (JSONException jsonException) {
 					if (_log.isDebugEnabled()) {
-						_log.debug("Unable to parse JSON", jsone);
+						_log.debug("Unable to parse JSON", jsonException);
 					}
 
 					continue;
@@ -317,12 +319,12 @@ public class DDMFormValuesExportImportContentProcessor
 				try {
 					return _dlAppLocalService.getFileEntry(newClassPK);
 				}
-				catch (PortalException pe) {
+				catch (PortalException portalException) {
 					if (_log.isWarnEnabled()) {
 						_log.warn(
 							"Unable to find file entry with file entry ID " +
 								newClassPK,
-							pe);
+							portalException);
 					}
 				}
 			}
@@ -343,9 +345,9 @@ public class DDMFormValuesExportImportContentProcessor
 					return _dlAppLocalService.getFileEntryByUuidAndGroupId(
 						uuid, groupId);
 				}
-				catch (PortalException pe) {
+				catch (PortalException portalException) {
 					if (_log.isWarnEnabled()) {
-						_log.warn("Unable to find file entry", pe);
+						_log.warn("Unable to find file entry", portalException);
 					}
 				}
 			}
@@ -388,7 +390,7 @@ public class DDMFormValuesExportImportContentProcessor
 
 		@Override
 		public String getFieldType() {
-			return DDMFormFieldType.JOURNAL_ARTICLE;
+			return JournalArticleDDMFormFieldTypeConstants.JOURNAL_ARTICLE;
 		}
 
 		@Override
@@ -405,9 +407,9 @@ public class DDMFormValuesExportImportContentProcessor
 				try {
 					jsonObject = JSONFactoryUtil.createJSONObject(valueString);
 				}
-				catch (JSONException jsone) {
+				catch (JSONException jsonException) {
 					if (_log.isDebugEnabled()) {
-						_log.debug("Unable to parse JSON", jsone);
+						_log.debug("Unable to parse JSON", jsonException);
 					}
 
 					continue;
@@ -484,7 +486,7 @@ public class DDMFormValuesExportImportContentProcessor
 
 		@Override
 		public String getFieldType() {
-			return DDMFormFieldType.JOURNAL_ARTICLE;
+			return JournalArticleDDMFormFieldTypeConstants.JOURNAL_ARTICLE;
 		}
 
 		@Override
@@ -501,9 +503,9 @@ public class DDMFormValuesExportImportContentProcessor
 				try {
 					jsonObject = JSONFactoryUtil.createJSONObject(valueString);
 				}
-				catch (JSONException jsone) {
+				catch (JSONException jsonException) {
 					if (_log.isDebugEnabled()) {
-						_log.debug("Unable to parse JSON", jsone);
+						_log.debug("Unable to parse JSON", jsonException);
 					}
 
 					continue;
@@ -537,12 +539,12 @@ public class DDMFormValuesExportImportContentProcessor
 					return _journalArticleLocalService.getLatestArticle(
 						newClassPK);
 				}
-				catch (NoSuchArticleException nsae) {
+				catch (NoSuchArticleException noSuchArticleException) {
 					if (_log.isWarnEnabled()) {
 						_log.warn(
 							"Unable to find journal article with primary key " +
 								newClassPK,
-							nsae);
+							noSuchArticleException);
 					}
 				}
 			}
@@ -579,7 +581,7 @@ public class DDMFormValuesExportImportContentProcessor
 
 		@Override
 		public String getFieldType() {
-			return DDMFormFieldType.LINK_TO_PAGE;
+			return LayoutDDMFormFieldTypeConstants.LINK_TO_LAYOUT;
 		}
 
 		@Override
@@ -600,9 +602,9 @@ public class DDMFormValuesExportImportContentProcessor
 				try {
 					jsonObject = JSONFactoryUtil.createJSONObject(valueString);
 				}
-				catch (JSONException jsone) {
+				catch (JSONException jsonException) {
 					if (_log.isDebugEnabled()) {
-						_log.debug("Unable to parse JSON", jsone);
+						_log.debug("Unable to parse JSON", jsonException);
 					}
 
 					continue;
@@ -645,7 +647,7 @@ public class DDMFormValuesExportImportContentProcessor
 
 		@Override
 		public String getFieldType() {
-			return DDMFormFieldType.LINK_TO_PAGE;
+			return LayoutDDMFormFieldTypeConstants.LINK_TO_LAYOUT;
 		}
 
 		@Override
@@ -662,9 +664,9 @@ public class DDMFormValuesExportImportContentProcessor
 				try {
 					jsonObject = JSONFactoryUtil.createJSONObject(valueString);
 				}
-				catch (JSONException jsone) {
+				catch (JSONException jsonException) {
 					if (_log.isDebugEnabled()) {
-						_log.debug("Unable to parse JSON", jsone);
+						_log.debug("Unable to parse JSON", jsonException);
 					}
 
 					continue;

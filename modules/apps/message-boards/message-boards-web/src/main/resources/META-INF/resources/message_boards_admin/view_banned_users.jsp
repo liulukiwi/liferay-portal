@@ -21,29 +21,31 @@ String navigation = "banned-users";
 
 PortletURL portletURL = renderResponse.createRenderURL();
 
-portletURL.setParameter("mvcRenderCommandName", "/message_boards/view_banned_users");
+portletURL.setParameter("mvcRenderCommandName", "/message_boards_admin/view_banned_users");
 %>
 
-<%@ include file="/message_boards_admin/nav.jspf" %>
+<%@ include file="/message_boards/nav.jspf" %>
 
 <%
-MBBannedUsersManagementToolbarDisplayContext mbBannedUsersManagementToolbarDisplayContext = new MBBannedUsersManagementToolbarDisplayContext(liferayPortletRequest, liferayPortletResponse, request);
+MBBannedUsersManagementToolbarDisplayContext mbBannedUsersManagementToolbarDisplayContext = new MBBannedUsersManagementToolbarDisplayContext(request, liferayPortletRequest, liferayPortletResponse);
 
 int totalBannedUsers = MBBanLocalServiceUtil.getBansCount(scopeGroupId);
 %>
 
 <clay:management-toolbar
 	actionDropdownItems="<%= mbBannedUsersManagementToolbarDisplayContext.getActionDropdownItems() %>"
+	additionalProps="<%= mbBannedUsersManagementToolbarDisplayContext.getAdditionalProps() %>"
 	componentId="mbBannedUsersManagementToolbar"
 	disabled="<%= totalBannedUsers == 0 %>"
 	itemsTotal="<%= totalBannedUsers %>"
+	propsTransformer="message_boards_admin/js/BanUsersManagementToolbarPropsTransformer"
 	searchContainerId="mbBanUsers"
 	showCreationMenu="<%= false %>"
 	showInfoButton="<%= false %>"
 	showSearch="<%= false %>"
 />
 
-<div class="container-fluid-1280">
+<clay:container-fluid>
 	<aui:form action="<%= portletURL.toString() %>" method="get" name="fm">
 		<aui:input name="<%= Constants.CMD %>" type="hidden" />
 		<aui:input name="redirect" type="hidden" value="<%= currentURL %>" />
@@ -67,9 +69,9 @@ int totalBannedUsers = MBBanLocalServiceUtil.getBansCount(scopeGroupId);
 			>
 
 				<%
-				Map<String, Object> rowData = new HashMap<String, Object>();
-
-				rowData.put("actions", StringUtil.merge(mbBannedUsersManagementToolbarDisplayContext.getAvailableActions(ban)));
+				Map<String, Object> rowData = HashMapBuilder.<String, Object>put(
+					"actions", StringUtil.merge(mbBannedUsersManagementToolbarDisplayContext.getAvailableActions(ban))
+				).build();
 
 				row.setData(rowData);
 				%>
@@ -129,37 +131,10 @@ int totalBannedUsers = MBBanLocalServiceUtil.getBansCount(scopeGroupId);
 			/>
 		</liferay-ui:search-container>
 	</aui:form>
-</div>
+</clay:container-fluid>
 
 <%
 PortalUtil.addPortletBreadcrumbEntry(request, LanguageUtil.get(request, TextFormatter.format("banned-users", TextFormatter.O)), portletURL.toString());
 
 PortalUtil.setPageSubtitle(LanguageUtil.get(request, "banned-users"), request);
 %>
-
-<aui:script>
-	var unbanUser = function() {
-		Liferay.Util.postForm(document.<portlet:namespace />fm, {
-			data: {
-				<%= Constants.CMD %>: 'unban'
-			},
-			url: '<portlet:actionURL name="/message_boards/ban_user" />'
-		});
-	};
-
-	var ACTIONS = {
-		unbanUser: unbanUser
-	};
-
-	Liferay.componentReady('mbBannedUsersManagementToolbar').then(function(
-		managementToolbar
-	) {
-		managementToolbar.on('actionItemClicked', function(event) {
-			var itemData = event.data.item.data;
-
-			if (itemData && itemData.action && ACTIONS[itemData.action]) {
-				ACTIONS[itemData.action]();
-			}
-		});
-	});
-</aui:script>

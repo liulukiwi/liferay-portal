@@ -41,8 +41,8 @@ public class UserDisplayTag extends TagSupport {
 
 			return EVAL_PAGE;
 		}
-		catch (Exception e) {
-			throw new JspException(e);
+		catch (Exception exception) {
+			throw new JspException(exception);
 		}
 	}
 
@@ -59,7 +59,7 @@ public class UserDisplayTag extends TagSupport {
 				String.valueOf(_displayStyle));
 
 			if (Validator.isNull(_imageCssClass)) {
-				_imageCssClass = "img-circle";
+				_imageCssClass = "rounded-circle";
 			}
 
 			httpServletRequest.setAttribute(
@@ -117,8 +117,8 @@ public class UserDisplayTag extends TagSupport {
 
 			return SKIP_BODY;
 		}
-		catch (Exception e) {
-			throw new JspException(e);
+		catch (Exception exception) {
+			throw new JspException(exception);
 		}
 	}
 

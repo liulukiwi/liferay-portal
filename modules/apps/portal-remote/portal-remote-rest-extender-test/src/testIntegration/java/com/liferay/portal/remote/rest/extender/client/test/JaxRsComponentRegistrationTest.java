@@ -167,6 +167,13 @@ public class JaxRsComponentRegistrationTest {
 		Assert.assertEquals("Hello.", StringUtil.read(url.openStream()));
 	}
 
+	@Test(expected = Exception.class)
+	public void testServiceListIsUnavailable() throws Exception {
+		URL url = new URL("http://localhost:8080/o/rest-test/services");
+
+		StringUtil.read(url.openStream());
+	}
+
 	private void _cleanUp() throws Exception {
 		final CountDownLatch countDownLatch = new CountDownLatch(1);
 
@@ -198,19 +205,19 @@ public class JaxRsComponentRegistrationTest {
 		try {
 			_serviceRegistration.unregister();
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 		}
 
 		try {
 			_restConfiguration.delete();
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 		}
 
 		try {
 			_cxfConfiguration.delete();
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 		}
 
 		if (!countDownLatch.await(10, TimeUnit.MINUTES)) {

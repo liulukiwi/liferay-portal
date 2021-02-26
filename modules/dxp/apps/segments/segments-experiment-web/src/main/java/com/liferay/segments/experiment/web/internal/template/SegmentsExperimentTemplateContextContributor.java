@@ -14,7 +14,6 @@
 
 package com.liferay.segments.experiment.web.internal.template;
 
-import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -52,22 +51,22 @@ public class SegmentsExperimentTemplateContextContributor
 				return;
 			}
 		}
-		catch (PortalException pe) {
-			_log.error(pe, pe);
+		catch (PortalException portalException) {
+			_log.error(portalException, portalException);
 
 			return;
 		}
 
-		String cssClass = GetterUtil.getString(
-			contextObjects.get("bodyCssClass"));
-
 		if (_segmentsExperimentProductNavigationControlMenuEntry.
 				isPanelStateOpen(httpServletRequest)) {
 
+			String cssClass = GetterUtil.getString(
+				contextObjects.get("bodyCssClass"));
+
 			contextObjects.put(
 				"bodyCssClass",
-				cssClass + StringPool.SPACE +
-					"lfr-has-segments-experiment-panel open-admin-panel");
+				cssClass +
+					" lfr-has-segments-experiment-panel open-admin-panel");
 		}
 	}
 

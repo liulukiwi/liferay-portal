@@ -18,11 +18,12 @@ import com.liferay.frontend.taglib.clay.servlet.taglib.soy.BaseBaseClayCard;
 import com.liferay.frontend.taglib.clay.servlet.taglib.soy.VerticalCard;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.LabelItem;
-import com.liferay.frontend.taglib.clay.servlet.taglib.util.LabelItemList;
-import com.liferay.layout.page.template.admin.web.internal.constants.LayoutPageTemplateAdminWebKeys;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.LabelItemListBuilder;
 import com.liferay.layout.page.template.admin.web.internal.servlet.taglib.util.LayoutPrototypeActionDropdownItemsProvider;
 import com.liferay.portal.kernel.dao.search.RowChecker;
 import com.liferay.portal.kernel.language.LanguageUtil;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.BaseModel;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.LayoutPrototype;
@@ -72,16 +73,13 @@ public class LayoutPrototypeVerticalCard
 			return layoutPrototypeActionDropdownItemsProvider.
 				getActionDropdownItems();
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
 		}
 
 		return null;
-	}
-
-	@Override
-	public String getDefaultEventHandler() {
-		return LayoutPageTemplateAdminWebKeys.
-			LAYOUT_PROTOTYPE_DROPDOWN_DEFAULT_EVENT_HANDLER;
 	}
 
 	@Override
@@ -99,7 +97,10 @@ public class LayoutPrototypeVerticalCard
 			return HttpUtil.setParameter(
 				layoutFullURL, "p_l_back_url", _themeDisplay.getURLCurrent());
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
 		}
 
 		return null;
@@ -112,29 +113,26 @@ public class LayoutPrototypeVerticalCard
 
 	@Override
 	public List<LabelItem> getLabels() {
-		return new LabelItemList() {
-			{
-				add(
-					labelItem -> {
-						String label = "not-active";
+		return LabelItemListBuilder.add(
+			labelItem -> {
+				String label = "not-active";
 
-						if (_layoutPrototype.isActive()) {
-							label = "active";
-						}
+				if (_layoutPrototype.isActive()) {
+					label = "active";
+				}
 
-						labelItem.setLabel(
-							LanguageUtil.get(_httpServletRequest, label));
+				labelItem.setLabel(
+					LanguageUtil.get(_httpServletRequest, label));
 
-						String style = "warning";
+				String style = "warning";
 
-						if (_layoutPrototype.isActive()) {
-							style = "success";
-						}
+				if (_layoutPrototype.isActive()) {
+					style = "success";
+				}
 
-						labelItem.setStyle(style);
-					});
+				labelItem.setStyle(style);
 			}
-		};
+		).build();
 	}
 
 	@Override
@@ -158,6 +156,9 @@ public class LayoutPrototypeVerticalCard
 
 		return null;
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		LayoutPrototypeVerticalCard.class);
 
 	private final HttpServletRequest _httpServletRequest;
 	private final LayoutPrototype _layoutPrototype;

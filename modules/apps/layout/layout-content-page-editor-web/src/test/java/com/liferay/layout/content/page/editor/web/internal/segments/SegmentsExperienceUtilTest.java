@@ -15,123 +15,97 @@
 package com.liferay.layout.content.page.editor.web.internal.segments;
 
 import com.liferay.portal.json.JSONFactoryImpl;
-import com.liferay.portal.kernel.json.JSONException;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
-import com.liferay.portal.kernel.json.JSONObject;
-import com.liferay.portal.kernel.util.StringUtil;
-
-import java.io.IOException;
+import com.liferay.portal.kernel.json.JSONUtil;
+import com.liferay.portal.kernel.language.LanguageUtil;
+import com.liferay.portal.kernel.test.util.RandomTestUtil;
+import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.UnicodeProperties;
+import com.liferay.portal.language.LanguageImpl;
+import com.liferay.segments.model.SegmentsExperience;
 
 import org.junit.Assert;
-import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
+
+import org.mockito.Mockito;
 
 /**
  * @author David Arques
  */
 public class SegmentsExperienceUtilTest {
 
-	@Before
-	public void setUp() {
+	@BeforeClass
+	public static void setUpClass() {
 		JSONFactoryUtil jsonFactoryUtil = new JSONFactoryUtil();
 
 		jsonFactoryUtil.setJSONFactory(new JSONFactoryImpl());
+
+		LanguageUtil languageUtil = new LanguageUtil();
+
+		languageUtil.setLanguage(new LanguageImpl());
 	}
 
 	@Test
-	public void testCopyEditableValuesConfigurationWithExistingSourceSegmentsExperienceId()
-		throws Exception {
+	public void testGetSegmentsExperienceJSONObject() {
+		SegmentsExperience segmentsExperience = Mockito.mock(
+			SegmentsExperience.class);
 
-		long existingSourceSegmentsExperienceId = 0L;
-		long targetSegmentsExperienceId = 2L;
+		Mockito.when(
+			segmentsExperience.isActive()
+		).thenReturn(
+			RandomTestUtil.randomBoolean()
+		);
 
-		JSONObject editableValuesJSONObject =
-			SegmentsExperienceUtil.copyEditableValues(
-				JSONFactoryUtil.createJSONObject(
-					_getJsonFileAsString(
-						"editable_values_configuration_matching_segments_" +
-							"experience.json")),
-				existingSourceSegmentsExperienceId, targetSegmentsExperienceId);
+		Mockito.when(
+			segmentsExperience.getNameCurrentValue()
+		).thenReturn(
+			RandomTestUtil.randomString()
+		);
 
-		JSONObject expectedEditableValuesJSONObject =
-			JSONFactoryUtil.createJSONObject(
-				_getJsonFileAsString(
-					"editable_values_configuration_matching_segments_" +
-						"experience_expected.json"));
+		Mockito.when(
+			segmentsExperience.getPriority()
+		).thenReturn(
+			RandomTestUtil.randomInt()
+		);
 
-		Assert.assertEquals(
-			expectedEditableValuesJSONObject.toJSONString(),
-			editableValuesJSONObject.toJSONString());
-	}
+		Mockito.when(
+			segmentsExperience.getSegmentsEntryId()
+		).thenReturn(
+			RandomTestUtil.randomLong()
+		);
 
-	@Test
-	public void testCopyEditableValuesWithExistingSourceSegmentsExperienceId()
-		throws Exception {
+		Mockito.when(
+			segmentsExperience.getSegmentsExperienceId()
+		).thenReturn(
+			RandomTestUtil.randomLong()
+		);
 
-		long existingSourceSegmentsExperienceId = 0L;
-		long targetSegmentsExperienceId = 2L;
-
-		JSONObject editableValuesJSONObject =
-			SegmentsExperienceUtil.copyEditableValues(
-				JSONFactoryUtil.createJSONObject(
-					_getJsonFileAsString(
-						"editable_values_matching_segments_experience.json")),
-				existingSourceSegmentsExperienceId, targetSegmentsExperienceId);
-
-		JSONObject expectedEditableValuesJSONObject =
-			JSONFactoryUtil.createJSONObject(
-				_getJsonFileAsString(
-					"editable_values_matching_segments_experience_" +
-						"expected.json"));
+		Mockito.when(
+			segmentsExperience.getTypeSettingsUnicodeProperties()
+		).thenReturn(
+			new UnicodeProperties(true)
+		);
 
 		Assert.assertEquals(
-			expectedEditableValuesJSONObject.toJSONString(),
-			editableValuesJSONObject.toJSONString());
-	}
-
-	@Test
-	public void testCopyEditableValuesWithNonexistingSourceSegmentsExperienceId()
-		throws Exception {
-
-		long nonexistingSourceSegmentsExperienceId = 2L;
-		long targetSegmentsExperienceId = 3L;
-
-		JSONObject editableValuesJSONObject =
-			SegmentsExperienceUtil.copyEditableValues(
-				JSONFactoryUtil.createJSONObject(
-					_getJsonFileAsString(
-						"editable_values_unmatching_segments_experience.json")),
-				nonexistingSourceSegmentsExperienceId,
-				targetSegmentsExperienceId);
-
-		JSONObject expectedEditableValuesJSONObject =
-			JSONFactoryUtil.createJSONObject(
-				_getJsonFileAsString(
-					"editable_values_unmatching_segments_experience_" +
-						"expected.json"));
-
-		Assert.assertEquals(
-			expectedEditableValuesJSONObject.toJSONString(),
-			editableValuesJSONObject.toJSONString());
-	}
-
-	private String _getFileAsString(String fileName) throws IOException {
-		Class<?> clazz = getClass();
-
-		return StringUtil.read(
-			clazz.getClassLoader(),
-			"com/liferay/layout/content/page/editor/web/internal/segments" +
-				"/dependencies/" + fileName);
-	}
-
-	private String _getJsonFileAsString(String jsonFileName)
-		throws IOException, JSONException {
-
-		String json = _getFileAsString(jsonFileName);
-
-		JSONObject jsonObject = JSONFactoryUtil.createJSONObject(json);
-
-		return jsonObject.toString();
+			JSONUtil.put(
+				"active", segmentsExperience.isActive()
+			).put(
+				"languageIds",
+				LocaleUtil.toLanguageIds(LanguageUtil.getAvailableLocales())
+			).put(
+				"name", segmentsExperience.getNameCurrentValue()
+			).put(
+				"priority", segmentsExperience.getPriority()
+			).put(
+				"segmentsEntryId", segmentsExperience.getSegmentsEntryId()
+			).put(
+				"segmentsExperienceId",
+				segmentsExperience.getSegmentsExperienceId()
+			).toString(),
+			String.valueOf(
+				SegmentsExperienceUtil.getSegmentsExperienceJSONObject(
+					segmentsExperience)));
 	}
 
 }

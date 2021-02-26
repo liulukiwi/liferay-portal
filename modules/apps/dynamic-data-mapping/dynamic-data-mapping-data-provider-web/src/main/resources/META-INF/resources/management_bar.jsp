@@ -20,7 +20,7 @@
 PortletURL portletURL = ddmDataProviderDisplayContext.getPortletURL();
 %>
 
-<clay:management-toolbar
+<clay:management-toolbar-v2
 	actionDropdownItems="<%= ddmDataProviderDisplayContext.getActionItemsDropdownItems() %>"
 	clearResultsURL="<%= ddmDataProviderDisplayContext.getClearResultsURL() %>"
 	componentId="ddmDataProviderManagementToolbar"
@@ -28,7 +28,7 @@ PortletURL portletURL = ddmDataProviderDisplayContext.getPortletURL();
 	disabled="<%= ddmDataProviderDisplayContext.isDisabledManagementBar() %>"
 	filterDropdownItems="<%= ddmDataProviderDisplayContext.getFilterItemsDropdownItems() %>"
 	itemsTotal="<%= ddmDataProviderDisplayContext.getTotalItems() %>"
-	namespace="<%= renderResponse.getNamespace() %>"
+	namespace="<%= liferayPortletResponse.getNamespace() %>"
 	searchActionURL="<%= portletURL.toString() %>"
 	searchContainerId="<%= ddmDataProviderDisplayContext.getSearchContainerId() %>"
 	searchFormName="fm1"
@@ -38,7 +38,7 @@ PortletURL portletURL = ddmDataProviderDisplayContext.getPortletURL();
 />
 
 <aui:script>
-	var deleteDataProviderInstances = function() {
+	var deleteDataProviderInstances = function () {
 		if (
 			confirm(
 				'<%= UnicodeLanguageUtil.get(request, "are-you-sure-you-want-to-delete-this") %>'
@@ -56,15 +56,15 @@ PortletURL portletURL = ddmDataProviderDisplayContext.getPortletURL();
 							deleteDataProviderInstanceIds: Liferay.Util.listCheckedExcept(
 								searchContainer,
 								'<portlet:namespace />allRowIds'
-							)
+							),
 						},
 
-						<portlet:actionURL name="deleteDataProvider" var="deleteDataProviderURL">
+						<portlet:actionURL name="/dynamic_data_mapping_data_provider/delete_data_provider" var="deleteDataProviderURL">
 							<portlet:param name="mvcPath" value="/view.jsp" />
 							<portlet:param name="redirect" value="<%= currentURL %>" />
 						</portlet:actionURL>
 
-						url: '<%= deleteDataProviderURL %>'
+						url: '<%= deleteDataProviderURL %>',
 					}
 				);
 			}
@@ -72,18 +72,18 @@ PortletURL portletURL = ddmDataProviderDisplayContext.getPortletURL();
 	};
 
 	var ACTIONS = {
-		deleteDataProviderInstances: deleteDataProviderInstances
+		deleteDataProviderInstances: deleteDataProviderInstances,
 	};
 
-	Liferay.componentReady('ddmDataProviderManagementToolbar').then(function(
-		managementToolbar
-	) {
-		managementToolbar.on(['actionItemClicked'], function(event) {
-			var itemData = event.data.item.data;
+	Liferay.componentReady('ddmDataProviderManagementToolbar').then(
+		(managementToolbar) => {
+			managementToolbar.on(['actionItemClicked'], (event) => {
+				var itemData = event.data.item.data;
 
-			if (itemData && itemData.action && ACTIONS[itemData.action]) {
-				ACTIONS[itemData.action]();
-			}
-		});
-	});
+				if (itemData && itemData.action && ACTIONS[itemData.action]) {
+					ACTIONS[itemData.action]();
+				}
+			});
+		}
+	);
 </aui:script>

@@ -49,12 +49,32 @@ public abstract class FragmentEntryVerticalCard
 
 	@Override
 	public String getIcon() {
-		return "code";
+		return fragmentEntry.getIcon();
 	}
 
 	@Override
 	public String getImageSrc() {
 		return fragmentEntry.getImagePreviewURL(themeDisplay);
+	}
+
+	@Override
+	public String getInputName() {
+		return rowChecker.getRowIds() + FragmentEntry.class.getSimpleName();
+	}
+
+	@Override
+	public String getInputValue() {
+		return String.valueOf(fragmentEntry.getFragmentEntryId());
+	}
+
+	@Override
+	public String getStickerCssClass() {
+		return "fragment-entry-sticker";
+	}
+
+	@Override
+	public String getStickerIcon() {
+		return getIcon();
 	}
 
 	@Override

@@ -14,6 +14,7 @@
 
 package com.liferay.portal.dao.jdbc;
 
+import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.dao.jdbc.pool.metrics.C3P0ConnectionPoolMetrics;
@@ -31,10 +32,11 @@ import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.jndi.JNDIUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.util.JavaDetector;
+import com.liferay.portal.kernel.util.PortalClassLoaderUtil;
 import com.liferay.portal.kernel.util.PropertiesUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.ServerDetector;
-import com.liferay.portal.kernel.util.SortedProperties;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.kernel.util.Validator;
@@ -54,14 +56,19 @@ import com.zaxxer.hikari.HikariDataSource;
 
 import java.io.Closeable;
 
+import java.lang.reflect.Field;
+
 import java.net.URL;
 import java.net.URLClassLoader;
+
+import java.nio.file.Paths;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -71,6 +78,9 @@ import javax.management.ObjectName;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
+
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLEngine;
 
 import javax.sql.DataSource;
 
@@ -125,13 +135,38 @@ public class DataSourceFactoryImpl implements DataSourceFactory {
 
 	@Override
 	public DataSource initDataSource(Properties properties) throws Exception {
-		testDatabaseClass(properties);
-
-		_waitForJDBCConnection(properties);
-
 		String jndiName = properties.getProperty("jndi.name");
+		String driverClassName = properties.getProperty("driverClassName");
+
+		if (JavaDetector.isIBM() &&
+			(Validator.isNotNull(jndiName) ||
+			 driverClassName.startsWith("com.mysql.cj"))) {
+
+			// LPS-120753
+
+			if (Validator.isNull(jndiName)) {
+				testDatabaseClass(driverClassName);
+			}
+
+			try {
+				_populateIBMCipherSuites(
+					Class.forName("com.mysql.cj.protocol.ExportControlled"));
+			}
+			catch (ClassNotFoundException classNotFoundException) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(classNotFoundException, classNotFoundException);
+				}
+			}
+		}
 
 		if (Validator.isNotNull(jndiName)) {
+			Thread currentThread = Thread.currentThread();
+
+			ClassLoader classLoader = currentThread.getContextClassLoader();
+
+			currentThread.setContextClassLoader(
+				PortalClassLoaderUtil.getClassLoader());
+
 			try {
 				Properties jndiEnvironmentProperties = PropsUtil.getProperties(
 					PropsKeys.JNDI_ENVIRONMENT, true);
@@ -140,18 +175,23 @@ public class DataSourceFactoryImpl implements DataSourceFactory {
 
 				return (DataSource)JNDIUtil.lookup(context, jndiName);
 			}
-			catch (Exception e) {
-				_log.error("Unable to lookup " + jndiName, e);
+			catch (Exception exception) {
+				_log.error("Unable to lookup " + jndiName, exception);
 			}
+			finally {
+				currentThread.setContextClassLoader(classLoader);
+			}
+		}
+		else {
+			testDatabaseClass(driverClassName);
+
+			_waitForJDBCConnection(properties);
 		}
 
 		if (_log.isDebugEnabled()) {
 			_log.debug("Data source properties:\n");
 
-			SortedProperties sortedProperties = new SortedProperties(
-				properties);
-
-			_log.debug(PropertiesUtil.toString(sortedProperties));
+			_log.debug(PropertiesUtil.toString(properties));
 		}
 
 		DataSource dataSource = null;
@@ -229,9 +269,7 @@ public class DataSourceFactoryImpl implements DataSourceFactory {
 		ComboPooledDataSource comboPooledDataSource =
 			new ComboPooledDataSource();
 
-		String identityToken = StringUtil.randomString();
-
-		comboPooledDataSource.setIdentityToken(identityToken);
+		comboPooledDataSource.setIdentityToken(StringUtil.randomString());
 
 		String connectionPropertiesString = (String)properties.remove(
 			"connectionProperties");
@@ -245,11 +283,11 @@ public class DataSourceFactoryImpl implements DataSourceFactory {
 			comboPooledDataSource.setProperties(connectionProperties);
 		}
 
-		Enumeration<String> enu =
+		Enumeration<String> enumeration =
 			(Enumeration<String>)properties.propertyNames();
 
-		while (enu.hasMoreElements()) {
-			String key = enu.nextElement();
+		while (enumeration.hasMoreElements()) {
+			String key = enumeration.nextElement();
 
 			String value = properties.getProperty(key);
 
@@ -294,10 +332,11 @@ public class DataSourceFactoryImpl implements DataSourceFactory {
 			try {
 				BeanUtil.setProperty(comboPooledDataSource, key, value);
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 				if (_log.isWarnEnabled()) {
 					_log.warn(
-						"Property " + key + " is an invalid C3PO property");
+						"Property " + key + " is an invalid C3PO property",
+						exception);
 				}
 			}
 		}
@@ -376,10 +415,11 @@ public class DataSourceFactoryImpl implements DataSourceFactory {
 				BeanUtil.setProperty(
 					hikariDataSource, key, (String)entry.getValue());
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 				if (_log.isWarnEnabled()) {
 					_log.warn(
-						"Property " + key + " is an invalid HikariCP property");
+						"Property " + key + " is an invalid HikariCP property",
+						exception);
 				}
 			}
 		}
@@ -422,12 +462,13 @@ public class DataSourceFactoryImpl implements DataSourceFactory {
 				BeanUtil.setProperty(
 					poolProperties, key, (String)entry.getValue());
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 				if (_log.isWarnEnabled()) {
 					_log.warn(
 						StringBundler.concat(
 							"Property ", key, " is an invalid Tomcat JDBC ",
-							"property"));
+							"property"),
+						exception);
 				}
 			}
 		}
@@ -539,15 +580,13 @@ public class DataSourceFactoryImpl implements DataSourceFactory {
 			ConnectionPoolMetrics.class, connectionPoolMetrics);
 	}
 
-	protected void testDatabaseClass(Properties properties) throws Exception {
-		String driverClassName = properties.getProperty("driverClassName");
-
+	protected void testDatabaseClass(String driverClassName) throws Exception {
 		try {
 			Class.forName(driverClassName);
 		}
-		catch (ClassNotFoundException cnfe) {
+		catch (ClassNotFoundException classNotFoundException) {
 			if (!ServerDetector.isTomcat()) {
-				throw cnfe;
+				throw classNotFoundException;
 			}
 
 			String url = PropsUtil.get(
@@ -556,7 +595,7 @@ public class DataSourceFactoryImpl implements DataSourceFactory {
 				PropsKeys.SETUP_DATABASE_JAR_NAME, new Filter(driverClassName));
 
 			if (Validator.isNull(url) || Validator.isNull(name)) {
-				throw cnfe;
+				throw classNotFoundException;
 			}
 
 			ClassLoader classLoader = SystemException.class.getClassLoader();
@@ -571,18 +610,55 @@ public class DataSourceFactoryImpl implements DataSourceFactory {
 
 			try {
 				JarUtil.downloadAndInstallJar(
-					new URL(url), PropsValues.LIFERAY_LIB_GLOBAL_DIR, name,
+					new URL(url),
+					Paths.get(PropsValues.LIFERAY_LIB_GLOBAL_DIR, name),
 					(URLClassLoader)classLoader);
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 				_log.error(
 					StringBundler.concat(
 						"Unable to download and install ", name, " to ",
 						PropsValues.LIFERAY_LIB_GLOBAL_DIR, " from ", url),
-					e);
+					exception);
 
-				throw cnfe;
+				throw classNotFoundException;
 			}
+		}
+	}
+
+	private void _populateIBMCipherSuites(Class<?> clazz) {
+		try {
+			SSLContext sslContext = SSLContext.getDefault();
+
+			SSLEngine sslEngine = sslContext.createSSLEngine();
+
+			String[] ibmSupportedCipherSuites =
+				sslEngine.getSupportedCipherSuites();
+
+			if ((ibmSupportedCipherSuites == null) ||
+				(ibmSupportedCipherSuites.length == 0)) {
+
+				return;
+			}
+
+			Field allowedCiphersField = ReflectionUtil.getDeclaredField(
+				clazz, "ALLOWED_CIPHERS");
+
+			List<String> allowedCiphers = (List<String>)allowedCiphersField.get(
+				null);
+
+			for (String ibmSupportedCipherSuite : ibmSupportedCipherSuites) {
+				if (!allowedCiphers.contains(ibmSupportedCipherSuite)) {
+					allowedCiphers.add(ibmSupportedCipherSuite);
+				}
+			}
+		}
+		catch (Exception exception) {
+			_log.error(
+				"Unable to populate IBM JDK TLS cipher suite into MySQL " +
+					"Connector/J's allowed cipher list, consider disabling " +
+						"SSL for the connection",
+				exception);
 		}
 	}
 
@@ -617,9 +693,10 @@ public class DataSourceFactoryImpl implements DataSourceFactory {
 					return;
 				}
 			}
-			catch (SQLException sqle) {
+			catch (SQLException sqlException) {
 				if (_log.isDebugEnabled()) {
-					_log.error("Unable to acquire JDBC connection", sqle);
+					_log.error(
+						"Unable to acquire JDBC connection", sqlException);
 				}
 			}
 
@@ -634,9 +711,11 @@ public class DataSourceFactoryImpl implements DataSourceFactory {
 			try {
 				Thread.sleep(delay * Time.SECOND);
 			}
-			catch (InterruptedException ie) {
+			catch (InterruptedException interruptedException) {
 				if (_log.isWarnEnabled()) {
-					_log.warn("Interruptted acquiring a JDBC connection", ie);
+					_log.warn(
+						"Interruptted acquiring a JDBC connection",
+						interruptedException);
 				}
 
 				break;
@@ -689,8 +768,8 @@ public class DataSourceFactoryImpl implements DataSourceFactory {
 
 				mBeanServer.registerMBean(jmxConnectionPool, _objectName);
 			}
-			catch (Exception e) {
-				_log.error(e, e);
+			catch (Exception exception) {
+				_log.error(exception, exception);
 			}
 
 			return mBeanServer;
@@ -714,8 +793,8 @@ public class DataSourceFactoryImpl implements DataSourceFactory {
 			try {
 				mBeanServer.unregisterMBean(_objectName);
 			}
-			catch (Exception e) {
-				_log.error(e, e);
+			catch (Exception exception) {
+				_log.error(exception, exception);
 			}
 		}
 

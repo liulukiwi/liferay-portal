@@ -14,6 +14,7 @@
 
 package com.liferay.message.boards.service;
 
+import com.liferay.message.boards.model.MBMessage;
 import com.liferay.portal.kernel.service.ServiceWrapper;
 
 /**
@@ -30,13 +31,8 @@ public class MBMessageServiceWrapper
 		_mbMessageService = mbMessageService;
 	}
 
-	/**
-	 * NOTE FOR DEVELOPERS:
-	 *
-	 * Never modify or reference this interface directly. Always use {@link MBMessageServiceUtil} to access the message-boards message remote service. Add custom service methods to <code>com.liferay.message.boards.service.impl.MBMessageServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
-	 */
 	@Override
-	public com.liferay.message.boards.model.MBMessage addDiscussionMessage(
+	public MBMessage addDiscussionMessage(
 			long groupId, String className, long classPK, long threadId,
 			long parentMessageId, String subject, String body,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
@@ -47,8 +43,14 @@ public class MBMessageServiceWrapper
 			body, serviceContext);
 	}
 
+	/**
+	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link
+	 #addMessage(String, long, String, String, String, List,
+	 boolean, double, boolean, ServiceContext)}
+	 */
+	@Deprecated
 	@Override
-	public com.liferay.message.boards.model.MBMessage addMessage(
+	public MBMessage addMessage(
 			long groupId, long categoryId, String subject, String body,
 			String format,
 			java.util.List
@@ -63,8 +65,14 @@ public class MBMessageServiceWrapper
 			anonymous, priority, allowPingbacks, serviceContext);
 	}
 
+	/**
+	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link
+	 #addMessage(String, long, String, String, String, List,
+	 boolean, double, boolean, ServiceContext)}
+	 */
+	@Deprecated
 	@Override
-	public com.liferay.message.boards.model.MBMessage addMessage(
+	public MBMessage addMessage(
 			long groupId, long categoryId, String subject, String body,
 			String format, String fileName, java.io.File file,
 			boolean anonymous, double priority, boolean allowPingbacks,
@@ -77,8 +85,14 @@ public class MBMessageServiceWrapper
 			anonymous, priority, allowPingbacks, serviceContext);
 	}
 
+	/**
+	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link
+	 #addMessage(String, long, String, String, String, List,
+	 boolean, double, boolean, ServiceContext)}
+	 */
+	@Deprecated
 	@Override
-	public com.liferay.message.boards.model.MBMessage addMessage(
+	public MBMessage addMessage(
 			long categoryId, String subject, String body,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
@@ -87,8 +101,14 @@ public class MBMessageServiceWrapper
 			categoryId, subject, body, serviceContext);
 	}
 
+	/**
+	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link
+	 #addMessage(String, long, String, String, String, List,
+	 boolean, double, boolean, ServiceContext)}
+	 */
+	@Deprecated
 	@Override
-	public com.liferay.message.boards.model.MBMessage addMessage(
+	public MBMessage addMessage(
 			long parentMessageId, String subject, String body, String format,
 			java.util.List
 				<com.liferay.portal.kernel.util.ObjectValuePair
@@ -100,6 +120,23 @@ public class MBMessageServiceWrapper
 		return _mbMessageService.addMessage(
 			parentMessageId, subject, body, format, inputStreamOVPs, anonymous,
 			priority, allowPingbacks, serviceContext);
+	}
+
+	@Override
+	public MBMessage addMessage(
+			String externalReferenceCode, long parentMessageId, String subject,
+			String body, String format,
+			java.util.List
+				<com.liferay.portal.kernel.util.ObjectValuePair
+					<String, java.io.InputStream>> inputStreamOVPs,
+			boolean anonymous, double priority, boolean allowPingbacks,
+			com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _mbMessageService.addMessage(
+			externalReferenceCode, parentMessageId, subject, body, format,
+			inputStreamOVPs, anonymous, priority, allowPingbacks,
+			serviceContext);
 	}
 
 	@Override
@@ -168,9 +205,16 @@ public class MBMessageServiceWrapper
 	}
 
 	@Override
-	public java.util.List<com.liferay.message.boards.model.MBMessage>
-			getCategoryMessages(
-				long groupId, long categoryId, int status, int start, int end)
+	public MBMessage fetchMBMessageByUrlSubject(long groupId, String urlSubject)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _mbMessageService.fetchMBMessageByUrlSubject(
+			groupId, urlSubject);
+	}
+
+	@Override
+	public java.util.List<MBMessage> getCategoryMessages(
+			long groupId, long categoryId, int status, int start, int end)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _mbMessageService.getCategoryMessages(
@@ -241,7 +285,7 @@ public class MBMessageServiceWrapper
 	}
 
 	@Override
-	public com.liferay.message.boards.model.MBMessage getMessage(long messageId)
+	public MBMessage getMessage(long messageId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _mbMessageService.getMessage(messageId);
@@ -281,10 +325,9 @@ public class MBMessageServiceWrapper
 	}
 
 	@Override
-	public java.util.List<com.liferay.message.boards.model.MBMessage>
-		getThreadMessages(
-			long groupId, long categoryId, long threadId, int status, int start,
-			int end) {
+	public java.util.List<MBMessage> getThreadMessages(
+		long groupId, long categoryId, long threadId, int status, int start,
+		int end) {
 
 		return _mbMessageService.getThreadMessages(
 			groupId, categoryId, threadId, status, start, end);
@@ -348,7 +391,7 @@ public class MBMessageServiceWrapper
 	}
 
 	@Override
-	public com.liferay.message.boards.model.MBMessage updateDiscussionMessage(
+	public MBMessage updateDiscussionMessage(
 			String className, long classPK, long messageId, String subject,
 			String body,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
@@ -359,7 +402,7 @@ public class MBMessageServiceWrapper
 	}
 
 	@Override
-	public com.liferay.message.boards.model.MBMessage updateMessage(
+	public MBMessage updateMessage(
 			long messageId, String subject, String body,
 			java.util.List
 				<com.liferay.portal.kernel.util.ObjectValuePair

@@ -92,7 +92,7 @@ public class DDMWebDAVImpl implements DDMWebDAV {
 			_ddmStructureLocalService.addStructure(
 				webDAVRequest.getUserId(), webDAVRequest.getGroupId(),
 				classNameId, nameMap, null, ddmForm, ddmFormLayout,
-				StorageType.JSON.toString(), serviceContext);
+				StorageType.DEFAULT.toString(), serviceContext);
 
 			return HttpServletResponse.SC_CREATED;
 		}
@@ -141,15 +141,15 @@ public class DDMWebDAVImpl implements DDMWebDAV {
 
 			return HttpServletResponse.SC_FORBIDDEN;
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			if (_log.isDebugEnabled()) {
-				_log.debug(pe, pe);
+				_log.debug(portalException, portalException);
 			}
 
 			return HttpServletResponse.SC_FORBIDDEN;
 		}
-		catch (Exception e) {
-			throw new WebDAVException(e);
+		catch (Exception exception) {
+			throw new WebDAVException(exception);
 		}
 	}
 
@@ -213,8 +213,8 @@ public class DDMWebDAVImpl implements DDMWebDAV {
 
 			return null;
 		}
-		catch (Exception e) {
-			throw new WebDAVException(e);
+		catch (Exception exception) {
+			throw new WebDAVException(exception);
 		}
 	}
 
@@ -278,15 +278,15 @@ public class DDMWebDAVImpl implements DDMWebDAV {
 
 			return HttpServletResponse.SC_FORBIDDEN;
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			if (_log.isDebugEnabled()) {
-				_log.debug(pe, pe);
+				_log.debug(portalException, portalException);
 			}
 
 			return HttpServletResponse.SC_FORBIDDEN;
 		}
-		catch (Exception e) {
-			throw new WebDAVException(e);
+		catch (Exception exception) {
+			throw new WebDAVException(exception);
 		}
 	}
 

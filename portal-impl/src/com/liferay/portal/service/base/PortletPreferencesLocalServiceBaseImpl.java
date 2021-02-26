@@ -15,6 +15,7 @@
 package com.liferay.portal.service.base;
 
 import com.liferay.petra.function.UnsafeFunction;
+import com.liferay.petra.sql.dsl.query.DSLQuery;
 import com.liferay.portal.kernel.bean.BeanReference;
 import com.liferay.portal.kernel.dao.db.DB;
 import com.liferay.portal.kernel.dao.db.DBManagerUtil;
@@ -36,11 +37,13 @@ import com.liferay.portal.kernel.search.IndexableType;
 import com.liferay.portal.kernel.service.BaseLocalServiceImpl;
 import com.liferay.portal.kernel.service.PersistedModelLocalServiceRegistry;
 import com.liferay.portal.kernel.service.PortletPreferencesLocalService;
+import com.liferay.portal.kernel.service.persistence.BasePersistence;
 import com.liferay.portal.kernel.service.persistence.LayoutFinder;
 import com.liferay.portal.kernel.service.persistence.LayoutPersistence;
 import com.liferay.portal.kernel.service.persistence.LayoutRevisionPersistence;
 import com.liferay.portal.kernel.service.persistence.PortletItemPersistence;
 import com.liferay.portal.kernel.service.persistence.PortletPersistence;
+import com.liferay.portal.kernel.service.persistence.PortletPreferenceValuePersistence;
 import com.liferay.portal.kernel.service.persistence.PortletPreferencesFinder;
 import com.liferay.portal.kernel.service.persistence.PortletPreferencesPersistence;
 import com.liferay.portal.kernel.service.persistence.UserFinder;
@@ -71,7 +74,7 @@ public abstract class PortletPreferencesLocalServiceBaseImpl
 	extends BaseLocalServiceImpl
 	implements IdentifiableOSGiService, PortletPreferencesLocalService {
 
-	/**
+	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this class directly. Use <code>PortletPreferencesLocalService</code> via injection or a <code>org.osgi.util.tracker.ServiceTracker</code> or use <code>com.liferay.portal.kernel.service.PortletPreferencesLocalServiceUtil</code>.
@@ -79,6 +82,10 @@ public abstract class PortletPreferencesLocalServiceBaseImpl
 
 	/**
 	 * Adds the portlet preferences to the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect PortletPreferencesLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param portletPreferences the portlet preferences
 	 * @return the portlet preferences that was added
@@ -110,6 +117,10 @@ public abstract class PortletPreferencesLocalServiceBaseImpl
 	/**
 	 * Deletes the portlet preferences with the primary key from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect PortletPreferencesLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param portletPreferencesId the primary key of the portlet preferences
 	 * @return the portlet preferences that was removed
 	 * @throws PortalException if a portlet preferences with the primary key could not be found
@@ -126,6 +137,10 @@ public abstract class PortletPreferencesLocalServiceBaseImpl
 	/**
 	 * Deletes the portlet preferences from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect PortletPreferencesLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param portletPreferences the portlet preferences
 	 * @return the portlet preferences that was removed
 	 */
@@ -135,6 +150,11 @@ public abstract class PortletPreferencesLocalServiceBaseImpl
 		PortletPreferences portletPreferences) {
 
 		return portletPreferencesPersistence.remove(portletPreferences);
+	}
+
+	@Override
+	public <T> T dslQuery(DSLQuery dslQuery) {
+		return portletPreferencesPersistence.dslQuery(dslQuery);
 	}
 
 	@Override
@@ -298,6 +318,17 @@ public abstract class PortletPreferencesLocalServiceBaseImpl
 	 * @throws PortalException
 	 */
 	@Override
+	public PersistedModel createPersistedModel(Serializable primaryKeyObj)
+		throws PortalException {
+
+		return portletPreferencesPersistence.create(
+			((Long)primaryKeyObj).longValue());
+	}
+
+	/**
+	 * @throws PortalException
+	 */
+	@Override
 	public PersistedModel deletePersistedModel(PersistedModel persistedModel)
 		throws PortalException {
 
@@ -305,6 +336,14 @@ public abstract class PortletPreferencesLocalServiceBaseImpl
 			(PortletPreferences)persistedModel);
 	}
 
+	@Override
+	public BasePersistence<PortletPreferences> getBasePersistence() {
+		return portletPreferencesPersistence;
+	}
+
+	/**
+	 * @throws PortalException
+	 */
 	@Override
 	public PersistedModel getPersistedModel(Serializable primaryKeyObj)
 		throws PortalException {
@@ -342,6 +381,10 @@ public abstract class PortletPreferencesLocalServiceBaseImpl
 
 	/**
 	 * Updates the portlet preferences in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect PortletPreferencesLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param portletPreferences the portlet preferences
 	 * @return the portlet preferences that was updated
@@ -624,6 +667,53 @@ public abstract class PortletPreferencesLocalServiceBaseImpl
 	}
 
 	/**
+	 * Returns the portlet preference value local service.
+	 *
+	 * @return the portlet preference value local service
+	 */
+	public com.liferay.portal.kernel.service.PortletPreferenceValueLocalService
+		getPortletPreferenceValueLocalService() {
+
+		return portletPreferenceValueLocalService;
+	}
+
+	/**
+	 * Sets the portlet preference value local service.
+	 *
+	 * @param portletPreferenceValueLocalService the portlet preference value local service
+	 */
+	public void setPortletPreferenceValueLocalService(
+		com.liferay.portal.kernel.service.PortletPreferenceValueLocalService
+			portletPreferenceValueLocalService) {
+
+		this.portletPreferenceValueLocalService =
+			portletPreferenceValueLocalService;
+	}
+
+	/**
+	 * Returns the portlet preference value persistence.
+	 *
+	 * @return the portlet preference value persistence
+	 */
+	public PortletPreferenceValuePersistence
+		getPortletPreferenceValuePersistence() {
+
+		return portletPreferenceValuePersistence;
+	}
+
+	/**
+	 * Sets the portlet preference value persistence.
+	 *
+	 * @param portletPreferenceValuePersistence the portlet preference value persistence
+	 */
+	public void setPortletPreferenceValuePersistence(
+		PortletPreferenceValuePersistence portletPreferenceValuePersistence) {
+
+		this.portletPreferenceValuePersistence =
+			portletPreferenceValuePersistence;
+	}
+
+	/**
 	 * Returns the user local service.
 	 *
 	 * @return the user local service
@@ -745,8 +835,8 @@ public abstract class PortletPreferencesLocalServiceBaseImpl
 
 			sqlUpdate.update();
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 	}
 
@@ -803,6 +893,17 @@ public abstract class PortletPreferencesLocalServiceBaseImpl
 
 	@BeanReference(type = PortletItemPersistence.class)
 	protected PortletItemPersistence portletItemPersistence;
+
+	@BeanReference(
+		type = com.liferay.portal.kernel.service.PortletPreferenceValueLocalService.class
+	)
+	protected
+		com.liferay.portal.kernel.service.PortletPreferenceValueLocalService
+			portletPreferenceValueLocalService;
+
+	@BeanReference(type = PortletPreferenceValuePersistence.class)
+	protected PortletPreferenceValuePersistence
+		portletPreferenceValuePersistence;
 
 	@BeanReference(
 		type = com.liferay.portal.kernel.service.UserLocalService.class

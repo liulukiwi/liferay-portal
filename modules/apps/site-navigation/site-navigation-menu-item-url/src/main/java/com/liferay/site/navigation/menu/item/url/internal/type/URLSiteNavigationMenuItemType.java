@@ -15,8 +15,10 @@
 package com.liferay.site.navigation.menu.item.url.internal.type;
 
 import com.liferay.frontend.taglib.servlet.taglib.util.JSPRenderer;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.search.Field;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.site.navigation.constants.SiteNavigationWebKeys;
@@ -61,32 +63,54 @@ public class URLSiteNavigationMenuItemType
 		HttpServletRequest httpServletRequest,
 		SiteNavigationMenuItem siteNavigationMenuItem) {
 
-		UnicodeProperties typeSettingsProperties = new UnicodeProperties();
+		UnicodeProperties typeSettingsUnicodeProperties =
+			new UnicodeProperties();
 
-		typeSettingsProperties.fastLoad(
+		typeSettingsUnicodeProperties.fastLoad(
 			siteNavigationMenuItem.getTypeSettings());
 
-		return typeSettingsProperties.get("url");
+		return typeSettingsUnicodeProperties.get("url");
+	}
+
+	@Override
+	public String getTarget(SiteNavigationMenuItem siteNavigationMenuItem) {
+		UnicodeProperties typeSettingsUnicodeProperties =
+			new UnicodeProperties();
+
+		typeSettingsUnicodeProperties.fastLoad(
+			siteNavigationMenuItem.getTypeSettings());
+
+		boolean useNewTab = GetterUtil.getBoolean(
+			typeSettingsUnicodeProperties.getProperty(
+				"useNewTab", Boolean.FALSE.toString()));
+
+		if (!useNewTab) {
+			return StringPool.BLANK;
+		}
+
+		return "target=\"_blank\"";
 	}
 
 	@Override
 	public String getTitle(
 		SiteNavigationMenuItem siteNavigationMenuItem, Locale locale) {
 
-		UnicodeProperties typeSettingsProperties = new UnicodeProperties();
+		UnicodeProperties typeSettingsUnicodeProperties =
+			new UnicodeProperties();
 
-		typeSettingsProperties.fastLoad(
+		typeSettingsUnicodeProperties.fastLoad(
 			siteNavigationMenuItem.getTypeSettings());
 
-		String defaultLanguageId = typeSettingsProperties.getProperty(
+		String defaultLanguageId = typeSettingsUnicodeProperties.getProperty(
 			Field.DEFAULT_LANGUAGE_ID,
 			LocaleUtil.toLanguageId(LocaleUtil.getMostRelevantLocale()));
 
-		String defaultTitle = typeSettingsProperties.getProperty(
+		String defaultTitle = typeSettingsUnicodeProperties.getProperty(
 			"name_" + defaultLanguageId,
-			typeSettingsProperties.getProperty("name", getLabel(locale)));
+			typeSettingsUnicodeProperties.getProperty(
+				"name", getLabel(locale)));
 
-		return typeSettingsProperties.getProperty(
+		return typeSettingsUnicodeProperties.getProperty(
 			"name_" + LocaleUtil.toLanguageId(locale), defaultTitle);
 	}
 

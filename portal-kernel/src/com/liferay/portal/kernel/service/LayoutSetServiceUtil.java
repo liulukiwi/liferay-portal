@@ -30,7 +30,7 @@ import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
  */
 public class LayoutSetServiceUtil {
 
-	/**
+	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify this class directly. Add custom service methods to <code>com.liferay.portal.service.impl.LayoutSetServiceImpl</code> and rerun ServiceBuilder to regenerate this class.
@@ -120,19 +120,6 @@ public class LayoutSetServiceUtil {
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return getService().updateSettings(groupId, privateLayout, settings);
-	}
-
-	/**
-	 * @deprecated As of Mueller (7.2.x), replaced by {@link
-	 #updateVirtualHosts(long, boolean, TreeMap)}
-	 */
-	@Deprecated
-	public static com.liferay.portal.kernel.model.LayoutSet updateVirtualHost(
-			long groupId, boolean privateLayout, String virtualHostname)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return getService().updateVirtualHost(
-			groupId, privateLayout, virtualHostname);
 	}
 
 	public static com.liferay.portal.kernel.model.LayoutSet updateVirtualHosts(

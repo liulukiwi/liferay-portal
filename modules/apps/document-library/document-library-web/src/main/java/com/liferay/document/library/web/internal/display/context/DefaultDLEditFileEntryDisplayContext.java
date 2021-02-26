@@ -25,6 +25,8 @@ import com.liferay.document.library.web.internal.display.context.logic.FileVersi
 import com.liferay.document.library.web.internal.display.context.util.DLRequestHelper;
 import com.liferay.document.library.web.internal.settings.DLPortletInstanceSettings;
 import com.liferay.dynamic.data.mapping.exception.StorageException;
+import com.liferay.dynamic.data.mapping.kernel.DDMForm;
+import com.liferay.dynamic.data.mapping.kernel.DDMFormField;
 import com.liferay.dynamic.data.mapping.kernel.DDMStructure;
 import com.liferay.dynamic.data.mapping.storage.DDMFormValues;
 import com.liferay.dynamic.data.mapping.storage.StorageEngine;
@@ -39,6 +41,7 @@ import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.util.RepositoryUtil;
 
+import java.util.List;
 import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
@@ -166,7 +169,11 @@ public class DefaultDLEditFileEntryDisplayContext
 
 	@Override
 	public boolean isDDMStructureVisible(DDMStructure ddmStructure) {
-		return true;
+		DDMForm ddmForm = ddmStructure.getDDMForm();
+
+		List<DDMFormField> ddmFormFields = ddmForm.getDDMFormFields();
+
+		return !ddmFormFields.isEmpty();
 	}
 
 	@Override
@@ -236,10 +243,11 @@ public class DefaultDLEditFileEntryDisplayContext
 		StorageEngine storageEngine) {
 
 		try {
-			_dlRequestHelper = new DLRequestHelper(httpServletRequest);
 			_dlValidator = dlValidator;
 			_fileEntry = fileEntry;
 			_storageEngine = storageEngine;
+
+			_dlRequestHelper = new DLRequestHelper(httpServletRequest);
 
 			ThemeDisplay themeDisplay =
 				(ThemeDisplay)httpServletRequest.getAttribute(
@@ -269,11 +277,11 @@ public class DefaultDLEditFileEntryDisplayContext
 			_showSelectFolder = ParamUtil.getBoolean(
 				httpServletRequest, "showSelectFolder");
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			throw new SystemException(
 				"Unable to build DefaultDLEditFileEntryDisplayContext for " +
 					fileEntry,
-				pe);
+				portalException);
 		}
 	}
 
@@ -293,9 +301,10 @@ public class DefaultDLEditFileEntryDisplayContext
 				_dlRequestHelper.getCompanyId(),
 				_dlRequestHelper.getScopeGroupId(), folderId, fileEntryTypeId);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			throw new SystemException(
-				"Unable to check if folder has workflow definition link", e);
+				"Unable to check if folder has workflow definition link",
+				exception);
 		}
 	}
 

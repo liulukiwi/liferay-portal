@@ -123,12 +123,15 @@ public class DDMFormContextToDDMFormValues
 					DDMFormFieldValue ddmFormFieldValue =
 						new DDMFormFieldValue();
 
+					ddmFormFieldValue.setFieldReference(
+						fieldJSONObject.getString("fieldReference"));
+
 					String name = fieldJSONObject.getString("fieldName");
 
-					String instanceId = fieldJSONObject.getString("instanceId");
-
 					ddmFormFieldValue.setName(name);
-					ddmFormFieldValue.setInstanceId(instanceId);
+
+					ddmFormFieldValue.setInstanceId(
+						fieldJSONObject.getString("instanceId"));
 
 					setDDMFormFieldValueValue(
 						fieldJSONObject, ddmFormFieldsMap.get(name),
@@ -147,10 +150,10 @@ public class DDMFormContextToDDMFormValues
 	protected Value getLocalizedValue(JSONObject jsonObject) {
 		Value value = new LocalizedValue(LocaleUtil.getSiteDefault());
 
-		Iterator<String> itr = jsonObject.keys();
+		Iterator<String> iterator = jsonObject.keys();
 
-		while (itr.hasNext()) {
-			String languageId = itr.next();
+		while (iterator.hasNext()) {
+			String languageId = iterator.next();
 
 			value.addString(
 				LocaleUtil.fromLanguageId(languageId),

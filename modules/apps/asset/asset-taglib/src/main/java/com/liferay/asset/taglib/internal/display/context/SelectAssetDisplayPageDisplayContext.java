@@ -18,20 +18,21 @@ import com.liferay.asset.display.page.constants.AssetDisplayPageConstants;
 import com.liferay.asset.display.page.item.selector.criterion.AssetDisplayPageSelectorCriterion;
 import com.liferay.asset.display.page.model.AssetDisplayPageEntry;
 import com.liferay.asset.display.page.service.AssetDisplayPageEntryLocalServiceUtil;
-import com.liferay.asset.display.page.util.AssetDisplayPageHelper;
+import com.liferay.asset.display.page.util.AssetDisplayPageUtil;
 import com.liferay.asset.kernel.AssetRendererFactoryRegistryUtil;
 import com.liferay.asset.kernel.model.AssetEntry;
 import com.liferay.asset.kernel.model.AssetRenderer;
 import com.liferay.asset.kernel.model.AssetRendererFactory;
 import com.liferay.asset.kernel.service.AssetEntryLocalServiceUtil;
-import com.liferay.asset.taglib.internal.info.display.contributor.InfoDisplayContributorTrackerUtil;
+import com.liferay.asset.taglib.internal.info.display.contributor.LayoutDisplayPageProviderTrackerUtil;
 import com.liferay.asset.taglib.internal.item.selector.ItemSelectorUtil;
-import com.liferay.info.display.contributor.InfoDisplayContributor;
-import com.liferay.info.display.contributor.InfoDisplayContributorTracker;
-import com.liferay.info.display.contributor.InfoDisplayObjectProvider;
+import com.liferay.info.item.InfoItemReference;
 import com.liferay.item.selector.ItemSelector;
 import com.liferay.item.selector.ItemSelectorCriterion;
 import com.liferay.item.selector.criteria.UUIDItemSelectorReturnType;
+import com.liferay.layout.display.page.LayoutDisplayPageObjectProvider;
+import com.liferay.layout.display.page.LayoutDisplayPageProvider;
+import com.liferay.layout.display.page.LayoutDisplayPageProviderTracker;
 import com.liferay.layout.item.selector.criterion.LayoutItemSelectorCriterion;
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalServiceUtil;
@@ -40,6 +41,8 @@ import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
@@ -261,13 +264,14 @@ public class SelectAssetDisplayPageDisplayContext {
 			(ThemeDisplay)_httpServletRequest.getAttribute(
 				WebKeys.THEME_DISPLAY);
 
-		AssetRendererFactory assetRendererFactory =
+		AssetRendererFactory<?> assetRendererFactory =
 			AssetRendererFactoryRegistryUtil.
 				getAssetRendererFactoryByClassNameId(_classNameId);
 
 		try {
-			AssetRenderer assetRenderer = assetRendererFactory.getAssetRenderer(
-				_classPK);
+			AssetRenderer<?> assetRenderer =
+				assetRendererFactory.getAssetRenderer(
+					_classPK, AssetRendererFactory.TYPE_LATEST);
 
 			String viewInContextURL = assetRenderer.getURLViewInContext(
 				_liferayPortletRequest, _liferayPortletResponse,
@@ -276,7 +280,10 @@ public class SelectAssetDisplayPageDisplayContext {
 			return HttpUtil.addParameter(
 				viewInContextURL, "p_l_mode", Constants.PREVIEW);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
 		}
 
 		return StringPool.BLANK;
@@ -312,35 +319,43 @@ public class SelectAssetDisplayPageDisplayContext {
 				WebKeys.THEME_DISPLAY);
 
 		try {
-			InfoDisplayContributorTracker infoDisplayContributorTracker =
-				InfoDisplayContributorTrackerUtil.
-					getInfoDisplayContributorTracker();
+			LayoutDisplayPageProviderTracker layoutDisplayPageProviderTracker =
+				LayoutDisplayPageProviderTrackerUtil.
+					getLayoutDisplayPageProviderTracker();
 
-			InfoDisplayContributor infoDisplayContributor =
-				infoDisplayContributorTracker.getInfoDisplayContributor(
-					PortalUtil.getClassName(_classNameId));
+			LayoutDisplayPageProvider<?> layoutDisplayPageProvider =
+				layoutDisplayPageProviderTracker.
+					getLayoutDisplayPageProviderByClassName(
+						PortalUtil.getClassName(_classNameId));
 
-			if (infoDisplayContributor == null) {
+			if (layoutDisplayPageProvider == null) {
 				return false;
 			}
 
-			InfoDisplayObjectProvider infoDisplayObjectProvider =
-				infoDisplayContributor.getInfoDisplayObjectProvider(_classPK);
+			InfoItemReference infoItemReference = new InfoItemReference(
+				PortalUtil.getClassName(_classNameId), _classPK);
 
-			if (infoDisplayObjectProvider == null) {
+			LayoutDisplayPageObjectProvider<?> layoutDisplayPageObjectProvider =
+				layoutDisplayPageProvider.getLayoutDisplayPageObjectProvider(
+					infoItemReference);
+
+			if (layoutDisplayPageObjectProvider == null) {
 				return false;
 			}
 
-			if (!AssetDisplayPageHelper.hasAssetDisplayPage(
+			if (!AssetDisplayPageUtil.hasAssetDisplayPage(
 					themeDisplay.getScopeGroupId(),
-					infoDisplayObjectProvider.getClassNameId(),
-					infoDisplayObjectProvider.getClassPK(),
-					infoDisplayObjectProvider.getClassTypeId())) {
+					layoutDisplayPageObjectProvider.getClassNameId(),
+					layoutDisplayPageObjectProvider.getClassPK(),
+					layoutDisplayPageObjectProvider.getClassTypeId())) {
 
 				return false;
 			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
 		}
 
 		return true;
@@ -416,7 +431,7 @@ public class SelectAssetDisplayPageDisplayContext {
 
 		List<Layout> ancestors = layout.getAncestors();
 
-		StringBundler sb = new StringBundler(4 * ancestors.size() + 5);
+		StringBundler sb = new StringBundler((4 * ancestors.size()) + 5);
 
 		if (layout.isPrivateLayout()) {
 			sb.append(LanguageUtil.get(_httpServletRequest, "private-pages"));
@@ -442,6 +457,9 @@ public class SelectAssetDisplayPageDisplayContext {
 
 		return sb.toString();
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		SelectAssetDisplayPageDisplayContext.class);
 
 	private AssetDisplayPageEntry _assetDisplayPageEntry;
 	private Long _assetDisplayPageId;

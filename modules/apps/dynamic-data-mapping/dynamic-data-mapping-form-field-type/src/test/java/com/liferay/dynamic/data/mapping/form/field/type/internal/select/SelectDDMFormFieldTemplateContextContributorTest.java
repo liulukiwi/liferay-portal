@@ -20,15 +20,16 @@ import com.liferay.dynamic.data.mapping.model.DDMFormField;
 import com.liferay.dynamic.data.mapping.model.DDMFormFieldOptions;
 import com.liferay.dynamic.data.mapping.model.LocalizedValue;
 import com.liferay.dynamic.data.mapping.render.DDMFormFieldRenderingContext;
+import com.liferay.dynamic.data.mapping.test.util.DDMFormFieldOptionsTestUtil;
 import com.liferay.portal.json.JSONFactoryImpl;
-import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.util.HashMapBuilder;
+import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.LocaleThreadLocal;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.PortalClassLoaderUtil;
-import com.liferay.portal.kernel.util.ResourceBundleLoader;
 import com.liferay.portal.kernel.util.ResourceBundleUtil;
+import com.liferay.portal.util.HtmlImpl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -69,9 +70,9 @@ public class SelectDDMFormFieldTemplateContextContributorTest
 	public void setUp() throws Exception {
 		super.setUp();
 
+		_setUpHtmlUtil();
+		_setUpJSONFactory();
 		_setUpLocaleThreadLocal();
-
-		setUpJSONFactory();
 	}
 
 	@Test
@@ -122,13 +123,11 @@ public class SelectDDMFormFieldTemplateContextContributorTest
 		DDMFormFieldRenderingContext ddmFormFieldRenderingContext =
 			new DDMFormFieldRenderingContext();
 
-		Map<String, Object> changedProperties =
+		ddmFormFieldRenderingContext.setProperty(
+			"changedProperties",
 			HashMapBuilder.<String, Object>put(
 				"multiple", true
-			).build();
-
-		ddmFormFieldRenderingContext.setProperty(
-			"changedProperties", changedProperties);
+			).build());
 
 		Assert.assertEquals(
 			true,
@@ -140,14 +139,60 @@ public class SelectDDMFormFieldTemplateContextContributorTest
 	public void testGetOptions() {
 		List<Object> expectedOptions = new ArrayList<>();
 
-		expectedOptions.add(createOption("Label 1", "value 1"));
-		expectedOptions.add(createOption("Label 2", "value 2"));
-		expectedOptions.add(createOption("Label 3", "value 3"));
+		expectedOptions.add(
+			DDMFormFieldOptionsTestUtil.createOption(
+				"Label 1", "Reference 1", "value 1"));
+		expectedOptions.add(
+			DDMFormFieldOptionsTestUtil.createOption(
+				"Label 2", "Reference 2", "value 2"));
+		expectedOptions.add(
+			DDMFormFieldOptionsTestUtil.createOption(
+				"Label 3", "Reference 3", "value 3"));
 
-		DDMFormFieldOptions ddmFormFieldOptions = createDDMFormFieldOptions();
+		DDMFormFieldOptions ddmFormFieldOptions =
+			DDMFormFieldOptionsTestUtil.createDDMFormFieldOptions();
 
-		List<Object> actualOptions = getActualOptions(
-			ddmFormFieldOptions, LocaleUtil.US);
+		List<Map<String, String>> actualOptions = _getActualOptions(
+			new DDMFormField("field", "select"), ddmFormFieldOptions,
+			LocaleUtil.US);
+
+		Assert.assertEquals(expectedOptions, actualOptions);
+	}
+
+	@Test
+	public void testGetOptionsAlphabeticallyOrdered() {
+		List<Object> expectedOptions = new ArrayList<>();
+
+		expectedOptions.add(
+			DDMFormFieldOptionsTestUtil.createOption(
+				"Label 1", "Reference 1", "value 1"));
+		expectedOptions.add(
+			DDMFormFieldOptionsTestUtil.createOption(
+				"Label 2", "Reference 2", "value 2"));
+		expectedOptions.add(
+			DDMFormFieldOptionsTestUtil.createOption(
+				"Label 3", "Reference 3", "value 3"));
+
+		DDMFormField ddmFormField = new DDMFormField("field", "select");
+
+		DDMFormFieldOptions ddmFormFieldOptions = new DDMFormFieldOptions();
+
+		for (int i = 3; i > 0; i--) {
+			ddmFormFieldOptions.addOptionLabel(
+				"value " + i, LocaleUtil.US, "Label " + i);
+			ddmFormFieldOptions.addOptionReference(
+				"value " + i, "Reference " + i);
+		}
+
+		List<Map<String, String>> actualOptions = _getActualOptions(
+			ddmFormField, ddmFormFieldOptions, LocaleUtil.US);
+
+		Assert.assertNotEquals(expectedOptions, actualOptions);
+
+		ddmFormField.setProperty("alphabeticalOrder", "true");
+
+		actualOptions = _getActualOptions(
+			ddmFormField, ddmFormFieldOptions, LocaleUtil.US);
 
 		Assert.assertEquals(expectedOptions, actualOptions);
 	}
@@ -164,13 +209,15 @@ public class SelectDDMFormFieldTemplateContextContributorTest
 		ddmFormFieldRenderingContext.setLocale(LocaleUtil.US);
 		ddmFormFieldRenderingContext.setValue("[\"value 1\"]");
 
-		setUpDDMFormFieldOptionsFactory(
+		_setUpDDMFormFieldOptionsFactory(
 			ddmFormField, ddmFormFieldRenderingContext);
 
-		SelectDDMFormFieldTemplateContextContributor spy = createSpy();
+		SelectDDMFormFieldTemplateContextContributor
+			selectDDMFormFieldTemplateContextContributor = _createSpy();
 
-		Map<String, Object> parameters = spy.getParameters(
-			ddmFormField, ddmFormFieldRenderingContext);
+		Map<String, Object> parameters =
+			selectDDMFormFieldTemplateContextContributor.getParameters(
+				ddmFormField, ddmFormFieldRenderingContext);
 
 		Assert.assertTrue(parameters.containsKey("dataSourceType"));
 		Assert.assertEquals("data-provider", parameters.get("dataSourceType"));
@@ -224,13 +271,15 @@ public class SelectDDMFormFieldTemplateContextContributorTest
 
 		ddmFormField.setPredefinedValue(predefinedValue);
 
-		setUpDDMFormFieldOptionsFactory(
+		_setUpDDMFormFieldOptionsFactory(
 			ddmFormField, ddmFormFieldRenderingContext);
 
-		SelectDDMFormFieldTemplateContextContributor spy = createSpy();
+		SelectDDMFormFieldTemplateContextContributor
+			selectDDMFormFieldTemplateContextContributor = _createSpy();
 
-		Map<String, Object> parameters = spy.getParameters(
-			ddmFormField, ddmFormFieldRenderingContext);
+		Map<String, Object> parameters =
+			selectDDMFormFieldTemplateContextContributor.getParameters(
+				ddmFormField, ddmFormFieldRenderingContext);
 
 		Assert.assertTrue(parameters.containsKey("dataSourceType"));
 		Assert.assertEquals("manual", parameters.get("dataSourceType"));
@@ -292,51 +341,36 @@ public class SelectDDMFormFieldTemplateContextContributorTest
 		Assert.assertTrue(values.toString(), values.isEmpty());
 	}
 
-	protected DDMFormFieldOptions createDDMFormFieldOptions() {
-		DDMFormFieldOptions ddmFormFieldOptions = new DDMFormFieldOptions();
-
-		ddmFormFieldOptions.addOptionLabel("value 1", LocaleUtil.US, "Label 1");
-		ddmFormFieldOptions.addOptionLabel("value 2", LocaleUtil.US, "Label 2");
-		ddmFormFieldOptions.addOptionLabel("value 3", LocaleUtil.US, "Label 3");
-
-		return ddmFormFieldOptions;
-	}
-
-	protected Map<String, String> createOption(String label, String value) {
-		return HashMapBuilder.put(
-			"label", label
-		).put(
-			"value", value
-		).build();
-	}
-
-	protected SelectDDMFormFieldTemplateContextContributor createSpy() {
-		SelectDDMFormFieldTemplateContextContributor spy = PowerMockito.spy(
-			_selectDDMFormFieldTemplateContextContributor);
+	private SelectDDMFormFieldTemplateContextContributor _createSpy() {
+		SelectDDMFormFieldTemplateContextContributor
+			selectDDMFormFieldTemplateContextContributor = PowerMockito.spy(
+				_selectDDMFormFieldTemplateContextContributor);
 
 		PowerMockitoStubber powerMockitoStubber = PowerMockito.doReturn(
 			_resourceBundle);
 
 		powerMockitoStubber.when(
-			spy
+			selectDDMFormFieldTemplateContextContributor
 		).getResourceBundle(
 			Matchers.any(Locale.class)
 		);
 
-		return spy;
+		return selectDDMFormFieldTemplateContextContributor;
 	}
 
-	protected List<Object> getActualOptions(
-		DDMFormFieldOptions ddmFormFieldOptions, Locale locale) {
+	private List<Map<String, String>> _getActualOptions(
+		DDMFormField ddmFormField, DDMFormFieldOptions ddmFormFieldOptions,
+		Locale locale) {
 
 		DDMFormFieldRenderingContext ddmFormFieldRenderingContext =
 			new DDMFormFieldRenderingContext();
 
 		return _selectDDMFormFieldTemplateContextContributor.getOptions(
-			ddmFormFieldOptions, locale, ddmFormFieldRenderingContext);
+			ddmFormField, ddmFormFieldOptions, locale,
+			ddmFormFieldRenderingContext);
 	}
 
-	protected void setUpDDMFormFieldOptionsFactory(
+	private void _setUpDDMFormFieldOptionsFactory(
 			DDMFormField ddmFormField,
 			DDMFormFieldRenderingContext ddmFormFieldRenderingContext)
 		throws Exception {
@@ -349,7 +383,8 @@ public class SelectDDMFormFieldTemplateContextContributorTest
 			_ddmFormFieldOptionsFactory
 		);
 
-		DDMFormFieldOptions ddmFormFieldOptions = createDDMFormFieldOptions();
+		DDMFormFieldOptions ddmFormFieldOptions =
+			DDMFormFieldOptionsTestUtil.createDDMFormFieldOptions();
 
 		PowerMockito.when(
 			_ddmFormFieldOptionsFactory.create(
@@ -359,22 +394,18 @@ public class SelectDDMFormFieldTemplateContextContributorTest
 		);
 	}
 
-	protected void setUpJSONFactory() throws Exception {
+	private void _setUpHtmlUtil() {
+		HtmlUtil htmlUtil = new HtmlUtil();
+
+		htmlUtil.setHtml(new HtmlImpl());
+	}
+
+	private void _setUpJSONFactory() throws Exception {
 		MemberMatcher.field(
 			SelectDDMFormFieldTemplateContextContributor.class, "jsonFactory"
 		).set(
 			_selectDDMFormFieldTemplateContextContributor, _jsonFactory
 		);
-	}
-
-	protected JSONArray toJSONArray(String... strings) {
-		JSONArray jsonArray = _jsonFactory.createJSONArray();
-
-		for (String string : strings) {
-			jsonArray.put(string);
-		}
-
-		return jsonArray;
 	}
 
 	private void _setUpLocaleThreadLocal() {
@@ -394,9 +425,6 @@ public class SelectDDMFormFieldTemplateContextContributorTest
 
 	@Mock
 	private ResourceBundle _resourceBundle;
-
-	@Mock
-	private ResourceBundleLoader _resourceBundleLoader;
 
 	private final SelectDDMFormFieldTemplateContextContributor
 		_selectDDMFormFieldTemplateContextContributor =

@@ -46,6 +46,8 @@ import com.liferay.portal.kernel.service.permission.OrganizationPermissionUtil;
 import com.liferay.portal.kernel.service.permission.UserGroupPermissionUtil;
 import com.liferay.portal.kernel.service.permission.UserPermissionUtil;
 import com.liferay.portal.kernel.spring.osgi.OSGiBeanProperties;
+import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.workflow.permission.WorkflowPermissionUtil;
 import com.liferay.portal.util.LayoutTypeControllerTracker;
 import com.liferay.portal.util.PropsValues;
 import com.liferay.sites.kernel.util.SitesUtil;
@@ -225,6 +227,16 @@ public class LayoutPermissionImpl
 			return false;
 		}
 
+		if (layout.isPending()) {
+			Boolean hasPermission = WorkflowPermissionUtil.hasPermission(
+				permissionChecker, layout.getGroupId(), Layout.class.getName(),
+				layout.getPlid(), actionId);
+
+			if (hasPermission != null) {
+				return hasPermission;
+			}
+		}
+
 		Group group = layout.getGroup();
 
 		if (checkLayoutUpdateable && !group.isLayoutSetPrototype() &&
@@ -266,6 +278,15 @@ public class LayoutPermissionImpl
 
 				parentLayoutId = parentLayout.getParentLayoutId();
 			}
+		}
+
+		if ((layout.getClassNameId() == PortalUtil.getClassNameId(
+				Layout.class)) &&
+			(layout.getClassPK() != 0) &&
+			permissionChecker.hasPermission(
+				group, Layout.class.getName(), layout.getClassPK(), actionId)) {
+
+			return true;
 		}
 
 		if (permissionChecker.hasPermission(
@@ -584,11 +605,11 @@ public class LayoutPermissionImpl
 
 				return false;
 			}
-			catch (PortalException | RuntimeException e) {
-				throw e;
+			catch (PortalException | RuntimeException exception) {
+				throw exception;
 			}
-			catch (Exception e) {
-				throw new PortalException(e);
+			catch (Exception exception) {
+				throw new PortalException(exception);
 			}
 		}
 
@@ -599,16 +620,16 @@ public class LayoutPermissionImpl
 	private static class CacheKey {
 
 		@Override
-		public boolean equals(Object obj) {
-			if (this == obj) {
+		public boolean equals(Object object) {
+			if (this == object) {
 				return true;
 			}
 
-			if (!(obj instanceof CacheKey)) {
+			if (!(object instanceof CacheKey)) {
 				return false;
 			}
 
-			CacheKey cacheKey = (CacheKey)obj;
+			CacheKey cacheKey = (CacheKey)object;
 
 			if ((_plid == cacheKey._plid) &&
 				(_mvccVersion == cacheKey._mvccVersion) &&

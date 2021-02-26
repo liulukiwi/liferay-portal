@@ -33,14 +33,18 @@ import com.liferay.portal.kernel.search.IndexerRegistry;
 import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.search.SearchException;
 import com.liferay.portal.kernel.search.highlight.HighlightUtil;
+import com.liferay.portal.kernel.security.permission.PermissionChecker;
+import com.liferay.portal.kernel.security.permission.PermissionCheckerFactoryUtil;
+import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
+import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.search.test.util.SearchContextTestUtil;
+import com.liferay.portal.search.test.util.SearchTestRule;
 import com.liferay.portal.search.test.util.SummaryFixture;
-import com.liferay.portal.service.test.ServiceTestUtil;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.users.admin.test.util.search.UserSearchFixture;
@@ -72,7 +76,7 @@ public class JournalArticleMultiLanguageSearchSummaryTest {
 
 	@Before
 	public void setUp() throws Exception {
-		ServiceTestUtil.setUser(TestPropsValues.getUser());
+		UserTestUtil.setUser(TestPropsValues.getUser());
 
 		_indexer = indexerRegistry.getIndexer(JournalArticle.class);
 
@@ -96,7 +100,12 @@ public class JournalArticleMultiLanguageSearchSummaryTest {
 			RandomTestUtil.randomString(), _group);
 
 		_summaryFixture = new SummaryFixture<>(
-			JournalArticle.class, _group, null, _user);
+			JournalArticle.class, _group, LocaleUtil.US, _user);
+
+		_permissionChecker = PermissionThreadLocal.getPermissionChecker();
+
+		PermissionThreadLocal.setPermissionChecker(
+			PermissionCheckerFactoryUtil.create(_user));
 	}
 
 	@After
@@ -104,6 +113,8 @@ public class JournalArticleMultiLanguageSearchSummaryTest {
 		_journalArticleSearchFixture.tearDown();
 
 		_userSearchFixture.tearDown();
+
+		PermissionThreadLocal.setPermissionChecker(_permissionChecker);
 	}
 
 	@Test
@@ -275,6 +286,9 @@ public class JournalArticleMultiLanguageSearchSummaryTest {
 		Assert.assertEquals(documents.toString(), 2, documents.size());
 	}
 
+	@Rule
+	public SearchTestRule searchTestRule = new SearchTestRule();
+
 	protected void addArticleTranslated(
 		String usTitle, String usContent, String brTitle, String brContent) {
 
@@ -421,8 +435,8 @@ public class JournalArticleMultiLanguageSearchSummaryTest {
 
 			return hits.toList();
 		}
-		catch (SearchException se) {
-			throw new RuntimeException(se);
+		catch (SearchException searchException) {
+			throw new RuntimeException(searchException);
 		}
 	}
 
@@ -443,6 +457,7 @@ public class JournalArticleMultiLanguageSearchSummaryTest {
 	private List<JournalArticle> _journalArticles;
 
 	private JournalArticleSearchFixture _journalArticleSearchFixture;
+	private PermissionChecker _permissionChecker;
 	private SummaryFixture<JournalArticle> _summaryFixture;
 	private User _user;
 

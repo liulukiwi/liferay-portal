@@ -77,22 +77,20 @@ public class NonSerializableObjectRequestWrapper
 		try {
 			object = super.getAttribute(name);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 
 			// LPS-31885
 
-			String message = e.getMessage();
+			String message = exception.getMessage();
 
 			if ((message == null) || !message.contains("BEA-101362")) {
-				_log.error(e, e);
+				_log.error(exception, exception);
 			}
 
 			return null;
 		}
 
-		object = NonSerializableObjectHandler.getValue(object);
-
-		return object;
+		return NonSerializableObjectHandler.getValue(object);
 	}
 
 	@Override
@@ -134,19 +132,21 @@ public class NonSerializableObjectRequestWrapper
 
 			isWebLogicClassLoaderField.set(attribute, false);
 		}
-		catch (NoSuchFieldException nsfe) {
+		catch (NoSuchFieldException noSuchFieldException) {
 			if (_log.isDebugEnabled()) {
 				_log.debug(
-					"Unable to get fields from a Weblogic servlet request");
+					"Unable to get fields from a Weblogic servlet request",
+					noSuchFieldException);
 			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isDebugEnabled()) {
 				_log.debug(
 					StringBundler.concat(
 						"Unable to set WebLogic class loader flag for ",
 						"attribute ", attributeName, " in servlet request ",
-						servletRequest));
+						servletRequest),
+					exception);
 			}
 		}
 	}

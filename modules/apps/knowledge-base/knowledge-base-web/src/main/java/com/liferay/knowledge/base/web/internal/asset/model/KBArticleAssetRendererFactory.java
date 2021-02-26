@@ -25,6 +25,8 @@ import com.liferay.knowledge.base.exception.NoSuchArticleException;
 import com.liferay.knowledge.base.model.KBArticle;
 import com.liferay.knowledge.base.service.KBArticleLocalService;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
@@ -161,7 +163,11 @@ public class KBArticleAssetRendererFactory
 		try {
 			kbArticle = _kbArticleLocalService.getKBArticle(classPK);
 		}
-		catch (NoSuchArticleException nsae) {
+		catch (NoSuchArticleException noSuchArticleException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(noSuchArticleException, noSuchArticleException);
+			}
+
 			kbArticle = _kbArticleLocalService.getLatestKBArticle(
 				classPK, status);
 		}
@@ -175,6 +181,9 @@ public class KBArticleAssetRendererFactory
 
 		_kbArticleLocalService = kbArticleLocalService;
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		KBArticleAssetRendererFactory.class);
 
 	private KBArticleLocalService _kbArticleLocalService;
 

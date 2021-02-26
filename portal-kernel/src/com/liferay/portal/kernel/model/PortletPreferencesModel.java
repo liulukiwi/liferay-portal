@@ -35,7 +35,7 @@ public interface PortletPreferencesModel
 	extends BaseModel<PortletPreferences>, CTModel<PortletPreferences>,
 			MVCCModel, ShardedModel {
 
-	/**
+	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this interface directly. All methods that expect a portlet preferences model instance should use the {@link PortletPreferences} interface instead.
@@ -175,20 +175,5 @@ public interface PortletPreferencesModel
 	 * @param portletId the portlet ID of this portlet preferences
 	 */
 	public void setPortletId(String portletId);
-
-	/**
-	 * Returns the preferences of this portlet preferences.
-	 *
-	 * @return the preferences of this portlet preferences
-	 */
-	@AutoEscape
-	public String getPreferences();
-
-	/**
-	 * Sets the preferences of this portlet preferences.
-	 *
-	 * @param preferences the preferences of this portlet preferences
-	 */
-	public void setPreferences(String preferences);
 
 }

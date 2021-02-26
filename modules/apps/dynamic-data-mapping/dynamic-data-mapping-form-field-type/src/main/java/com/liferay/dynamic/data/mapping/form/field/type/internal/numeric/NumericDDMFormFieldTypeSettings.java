@@ -51,7 +51,10 @@ import com.liferay.dynamic.data.mapping.model.LocalizedValue;
 					{
 						@DDMFormLayoutColumn(
 							size = 12,
-							value = {"label", "tip", "dataType", "required"}
+							value = {
+								"label", "placeholder", "tip", "dataType",
+								"required"
+							}
 						)
 					}
 				)
@@ -65,11 +68,11 @@ import com.liferay.dynamic.data.mapping.model.LocalizedValue;
 						@DDMFormLayoutColumn(
 							size = 12,
 							value = {
-								"predefinedValue", "placeholder",
+								"name", "fieldReference", "predefinedValue",
 								"visibilityExpression", "fieldNamespace",
-								"indexType", "localizable", "readOnly", "type",
-								"name", "showLabel", "repeatable", "validation",
-								"tooltip"
+								"indexType", "localizable", "nativeField",
+								"readOnly", "type", "showLabel", "repeatable",
+								"validation", "tooltip"
 							}
 						)
 					}
@@ -92,8 +95,8 @@ public interface NumericDDMFormFieldTypeSettings
 	@DDMFormField(
 		dataType = "string", label = "%placeholder-text",
 		properties = {
-			"placeholder=%enter-placeholder-text",
-			"tooltip=%enter-text-that-assists-the-user-but-is-not-submitted-as-a-field-value"
+			"tooltip=%enter-text-that-assists-the-user-but-is-not-submitted-as-a-field-value",
+			"visualProperty=true"
 		},
 		type = "text"
 	)
@@ -103,7 +106,8 @@ public interface NumericDDMFormFieldTypeSettings
 		label = "%predefined-value",
 		properties = {
 			"placeholder=%enter-a-default-value",
-			"tooltip=%enter-a-default-value-that-is-submitted-if-no-other-value-is-entered"
+			"tooltip=%enter-a-default-value-that-is-submitted-if-no-other-value-is-entered",
+			"visualProperty=true"
 		},
 		type = "numeric"
 	)

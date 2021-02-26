@@ -34,6 +34,8 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONException;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
@@ -96,6 +98,8 @@ public class DDMFormInstanceFieldSettingsValidator {
 
 					ddmFormFieldValue.setDDMFormValues(
 						fieldSettingsDDMFormValues);
+					ddmFormFieldValue.setFieldReference(
+						jsonObject.getString("fieldReference"));
 					ddmFormFieldValue.setInstanceId(
 						jsonObject.getString("instanceId"));
 					ddmFormFieldValue.setName(
@@ -130,7 +134,10 @@ public class DDMFormInstanceFieldSettingsValidator {
 								availableLocale, valueString);
 						}
 					}
-					catch (Exception e) {
+					catch (Exception exception) {
+						if (_log.isDebugEnabled()) {
+							_log.debug(exception, exception);
+						}
 					}
 
 					return localizedValue;
@@ -198,12 +205,16 @@ public class DDMFormInstanceFieldSettingsValidator {
 
 				@Override
 				public void accept(JSONObject jsonObject) {
-					DDMFormField field = ddmFormFieldsMap.get(
+					DDMFormField ddmFormField = ddmFormFieldsMap.get(
 						jsonObject.getString("fieldName"));
+
+					if (ddmFormField == null) {
+						return;
+					}
 
 					DDMFormFieldType ddmFormFieldType =
 						_ddmFormFieldTypeServicesTracker.getDDMFormFieldType(
-							field.getType());
+							ddmFormField.getType());
 
 					DDMForm fieldDDMForm = DDMFormFactory.create(
 						ddmFormFieldType.getDDMFormFieldTypeSettings());
@@ -223,11 +234,13 @@ public class DDMFormInstanceFieldSettingsValidator {
 						fieldDDMForm, ddmFormEvaluatorEvaluateResponse,
 						fieldDDMForm.getDefaultLocale());
 
-					if (!invalidDDMFormFields.isEmpty()) {
-						fieldNamePropertiesMap.put(
-							getFieldLabel(field, ddmForm.getDefaultLocale()),
-							invalidDDMFormFields);
+					if (invalidDDMFormFields.isEmpty()) {
+						return;
 					}
+
+					fieldNamePropertiesMap.put(
+						getFieldLabel(ddmFormField, ddmForm.getDefaultLocale()),
+						invalidDDMFormFields);
 				}
 
 			});
@@ -284,6 +297,9 @@ public class DDMFormInstanceFieldSettingsValidator {
 
 		return ddmFormFieldList;
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		DDMFormInstanceFieldSettingsValidator.class);
 
 	@Reference
 	private DDMFormEvaluator _ddmFormEvaluator;

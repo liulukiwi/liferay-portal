@@ -103,34 +103,6 @@ public class WorkflowInstanceSerDes {
 			sb.append("\"");
 		}
 
-		if (workflowInstance.getDefinitionName() != null) {
-			if (sb.length() > 1) {
-				sb.append(", ");
-			}
-
-			sb.append("\"definitionName\": ");
-
-			sb.append("\"");
-
-			sb.append(_escape(workflowInstance.getDefinitionName()));
-
-			sb.append("\"");
-		}
-
-		if (workflowInstance.getDefinitionVersion() != null) {
-			if (sb.length() > 1) {
-				sb.append(", ");
-			}
-
-			sb.append("\"definitionVersion\": ");
-
-			sb.append("\"");
-
-			sb.append(_escape(workflowInstance.getDefinitionVersion()));
-
-			sb.append("\"");
-		}
-
 		if (workflowInstance.getId() != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
@@ -149,6 +121,48 @@ public class WorkflowInstanceSerDes {
 			sb.append("\"objectReviewed\": ");
 
 			sb.append(String.valueOf(workflowInstance.getObjectReviewed()));
+		}
+
+		if (workflowInstance.getState() != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"state\": ");
+
+			sb.append("\"");
+
+			sb.append(_escape(workflowInstance.getState()));
+
+			sb.append("\"");
+		}
+
+		if (workflowInstance.getWorkflowDefinitionName() != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"workflowDefinitionName\": ");
+
+			sb.append("\"");
+
+			sb.append(_escape(workflowInstance.getWorkflowDefinitionName()));
+
+			sb.append("\"");
+		}
+
+		if (workflowInstance.getWorkflowDefinitionVersion() != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"workflowDefinitionVersion\": ");
+
+			sb.append("\"");
+
+			sb.append(_escape(workflowInstance.getWorkflowDefinitionVersion()));
+
+			sb.append("\"");
 		}
 
 		sb.append("}");
@@ -181,31 +195,24 @@ public class WorkflowInstanceSerDes {
 				"completed", String.valueOf(workflowInstance.getCompleted()));
 		}
 
-		map.put(
-			"dateCompletion",
-			liferayToJSONDateFormat.format(
-				workflowInstance.getDateCompletion()));
-
-		map.put(
-			"dateCreated",
-			liferayToJSONDateFormat.format(workflowInstance.getDateCreated()));
-
-		if (workflowInstance.getDefinitionName() == null) {
-			map.put("definitionName", null);
+		if (workflowInstance.getDateCompletion() == null) {
+			map.put("dateCompletion", null);
 		}
 		else {
 			map.put(
-				"definitionName",
-				String.valueOf(workflowInstance.getDefinitionName()));
+				"dateCompletion",
+				liferayToJSONDateFormat.format(
+					workflowInstance.getDateCompletion()));
 		}
 
-		if (workflowInstance.getDefinitionVersion() == null) {
-			map.put("definitionVersion", null);
+		if (workflowInstance.getDateCreated() == null) {
+			map.put("dateCreated", null);
 		}
 		else {
 			map.put(
-				"definitionVersion",
-				String.valueOf(workflowInstance.getDefinitionVersion()));
+				"dateCreated",
+				liferayToJSONDateFormat.format(
+					workflowInstance.getDateCreated()));
 		}
 
 		if (workflowInstance.getId() == null) {
@@ -222,6 +229,32 @@ public class WorkflowInstanceSerDes {
 			map.put(
 				"objectReviewed",
 				String.valueOf(workflowInstance.getObjectReviewed()));
+		}
+
+		if (workflowInstance.getState() == null) {
+			map.put("state", null);
+		}
+		else {
+			map.put("state", String.valueOf(workflowInstance.getState()));
+		}
+
+		if (workflowInstance.getWorkflowDefinitionName() == null) {
+			map.put("workflowDefinitionName", null);
+		}
+		else {
+			map.put(
+				"workflowDefinitionName",
+				String.valueOf(workflowInstance.getWorkflowDefinitionName()));
+		}
+
+		if (workflowInstance.getWorkflowDefinitionVersion() == null) {
+			map.put("workflowDefinitionVersion", null);
+		}
+		else {
+			map.put(
+				"workflowDefinitionVersion",
+				String.valueOf(
+					workflowInstance.getWorkflowDefinitionVersion()));
 		}
 
 		return map;
@@ -263,18 +296,6 @@ public class WorkflowInstanceSerDes {
 						toDate((String)jsonParserFieldValue));
 				}
 			}
-			else if (Objects.equals(jsonParserFieldName, "definitionName")) {
-				if (jsonParserFieldValue != null) {
-					workflowInstance.setDefinitionName(
-						(String)jsonParserFieldValue);
-				}
-			}
-			else if (Objects.equals(jsonParserFieldName, "definitionVersion")) {
-				if (jsonParserFieldValue != null) {
-					workflowInstance.setDefinitionVersion(
-						(String)jsonParserFieldValue);
-				}
-			}
 			else if (Objects.equals(jsonParserFieldName, "id")) {
 				if (jsonParserFieldValue != null) {
 					workflowInstance.setId(
@@ -288,9 +309,29 @@ public class WorkflowInstanceSerDes {
 							(String)jsonParserFieldValue));
 				}
 			}
-			else {
-				throw new IllegalArgumentException(
-					"Unsupported field name " + jsonParserFieldName);
+			else if (Objects.equals(jsonParserFieldName, "state")) {
+				if (jsonParserFieldValue != null) {
+					workflowInstance.setState((String)jsonParserFieldValue);
+				}
+			}
+			else if (Objects.equals(
+						jsonParserFieldName, "workflowDefinitionName")) {
+
+				if (jsonParserFieldValue != null) {
+					workflowInstance.setWorkflowDefinitionName(
+						(String)jsonParserFieldValue);
+				}
+			}
+			else if (Objects.equals(
+						jsonParserFieldName, "workflowDefinitionVersion")) {
+
+				if (jsonParserFieldValue != null) {
+					workflowInstance.setWorkflowDefinitionVersion(
+						(String)jsonParserFieldValue);
+				}
+			}
+			else if (jsonParserFieldName.equals("status")) {
+				throw new IllegalArgumentException();
 			}
 		}
 
@@ -346,10 +387,13 @@ public class WorkflowInstanceSerDes {
 
 				sb.append("]");
 			}
-			else {
+			else if (value instanceof String) {
 				sb.append("\"");
 				sb.append(_escape(entry.getValue()));
 				sb.append("\"");
+			}
+			else {
+				sb.append(String.valueOf(entry.getValue()));
 			}
 
 			if (iterator.hasNext()) {

@@ -56,8 +56,7 @@ public class DDMFormFieldOptionsFactoryImpl
 		DDMFormField ddmFormField,
 		DDMFormFieldRenderingContext ddmFormFieldRenderingContext) {
 
-		String dataSourceType = GetterUtil.getString(
-			ddmFormField.getProperty("dataSourceType"), "manual");
+		String dataSourceType = ddmFormField.getDataSourceType();
 
 		if (Objects.equals(dataSourceType, "data-provider")) {
 			return createDDMFormFieldOptionsFromDataProvider(
@@ -94,6 +93,8 @@ public class DDMFormFieldOptionsFactoryImpl
 			ddmFormFieldOptions.addOptionLabel(
 				option.get("value"), ddmFormFieldRenderingContext.getLocale(),
 				option.get("label"));
+			ddmFormFieldOptions.addOptionReference(
+				option.get("value"), option.get("reference"));
 		}
 
 		return ddmFormFieldOptions;
@@ -159,9 +160,9 @@ public class DDMFormFieldOptionsFactoryImpl
 					keyValuePair.getValue());
 			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isWarnEnabled()) {
-				_log.warn(e, e);
+				_log.warn(exception, exception);
 			}
 		}
 
@@ -189,7 +190,11 @@ public class DDMFormFieldOptionsFactoryImpl
 
 			return jsonArray.getString(0);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
+
 			return value;
 		}
 	}

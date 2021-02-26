@@ -55,22 +55,18 @@ public class ConfigurationProviderImpl implements ConfigurationProvider {
 	public <T> void deleteCompanyConfiguration(Class<T> clazz, long companyId)
 		throws ConfigurationException {
 
-		String configurationPid = _getConfigurationPid(clazz);
-
 		_deleteFactoryConfiguration(
-			configurationPid, ExtendedObjectClassDefinition.Scope.COMPANY,
-			companyId);
+			_getConfigurationPid(clazz),
+			ExtendedObjectClassDefinition.Scope.COMPANY, companyId);
 	}
 
 	@Override
 	public <T> void deleteGroupConfiguration(Class<T> clazz, long groupId)
 		throws ConfigurationException {
 
-		String configurationPid = _getConfigurationPid(clazz);
-
 		_deleteFactoryConfiguration(
-			configurationPid, ExtendedObjectClassDefinition.Scope.GROUP,
-			groupId);
+			_getConfigurationPid(clazz),
+			ExtendedObjectClassDefinition.Scope.GROUP, groupId);
 	}
 
 	@Override
@@ -78,10 +74,8 @@ public class ConfigurationProviderImpl implements ConfigurationProvider {
 			Class<T> clazz, String portletId)
 		throws ConfigurationException {
 
-		String configurationPid = _getConfigurationPid(clazz);
-
 		_deleteFactoryConfiguration(
-			configurationPid,
+			_getConfigurationPid(clazz),
 			ExtendedObjectClassDefinition.Scope.PORTLET_INSTANCE, portletId);
 	}
 
@@ -89,9 +83,7 @@ public class ConfigurationProviderImpl implements ConfigurationProvider {
 	public <T> void deleteSystemConfiguration(Class<T> clazz)
 		throws ConfigurationException {
 
-		String configurationPid = _getConfigurationPid(clazz);
-
-		_deleteConfiguration(configurationPid);
+		_deleteConfiguration(_getConfigurationPid(clazz));
 	}
 
 	@Override
@@ -121,9 +113,10 @@ public class ConfigurationProviderImpl implements ConfigurationProvider {
 
 			return configurationInvocationHandler.createProxy();
 		}
-		catch (ReflectiveOperationException | SettingsException e) {
+		catch (ReflectiveOperationException | SettingsException exception) {
 			throw new ConfigurationException(
-				"Unable to load configuration of type " + clazz.getName(), e);
+				"Unable to load configuration of type " + clazz.getName(),
+				exception);
 		}
 	}
 
@@ -174,11 +167,9 @@ public class ConfigurationProviderImpl implements ConfigurationProvider {
 			Dictionary<String, Object> properties)
 		throws ConfigurationException {
 
-		String configurationPid = _getConfigurationPid(clazz);
-
 		_saveFactoryConfiguration(
-			configurationPid, ExtendedObjectClassDefinition.Scope.COMPANY,
-			companyId, properties);
+			_getConfigurationPid(clazz),
+			ExtendedObjectClassDefinition.Scope.COMPANY, companyId, properties);
 	}
 
 	@Override
@@ -186,11 +177,9 @@ public class ConfigurationProviderImpl implements ConfigurationProvider {
 			Class<T> clazz, long groupId, Dictionary<String, Object> properties)
 		throws ConfigurationException {
 
-		String configurationPid = _getConfigurationPid(clazz);
-
 		_saveFactoryConfiguration(
-			configurationPid, ExtendedObjectClassDefinition.Scope.GROUP,
-			groupId, properties);
+			_getConfigurationPid(clazz),
+			ExtendedObjectClassDefinition.Scope.GROUP, groupId, properties);
 	}
 
 	@Override
@@ -199,10 +188,8 @@ public class ConfigurationProviderImpl implements ConfigurationProvider {
 			Dictionary<String, Object> properties)
 		throws ConfigurationException {
 
-		String configurationPid = _getConfigurationPid(clazz);
-
 		_saveFactoryConfiguration(
-			configurationPid,
+			_getConfigurationPid(clazz),
 			ExtendedObjectClassDefinition.Scope.PORTLET_INSTANCE, portletId,
 			properties);
 	}
@@ -212,9 +199,7 @@ public class ConfigurationProviderImpl implements ConfigurationProvider {
 			Class<T> clazz, Dictionary<String, Object> properties)
 		throws ConfigurationException {
 
-		String configurationPid = _getConfigurationPid(clazz);
-
-		_saveConfiguration(configurationPid, properties);
+		_saveConfiguration(_getConfigurationPid(clazz), properties);
 	}
 
 	private void _deleteConfiguration(String pid)
@@ -232,9 +217,9 @@ public class ConfigurationProviderImpl implements ConfigurationProvider {
 				configurations[0].delete();
 			}
 		}
-		catch (InvalidSyntaxException | IOException e) {
+		catch (InvalidSyntaxException | IOException exception) {
 			throw new ConfigurationException(
-				"Unable to delete configuration " + pid, e);
+				"Unable to delete configuration " + pid, exception);
 		}
 	}
 
@@ -253,10 +238,10 @@ public class ConfigurationProviderImpl implements ConfigurationProvider {
 				configuration.delete();
 			}
 		}
-		catch (IOException ioe) {
+		catch (IOException ioException) {
 			throw new ConfigurationException(
 				"Unable to delete factory configuration " + scopedFactoryPid,
-				ioe);
+				ioException);
 		}
 	}
 
@@ -289,9 +274,10 @@ public class ConfigurationProviderImpl implements ConfigurationProvider {
 
 			return null;
 		}
-		catch (InvalidSyntaxException | IOException e) {
+		catch (InvalidSyntaxException | IOException exception) {
 			throw new ConfigurationException(
-				"Unable to retrieve factory configuration " + factoryPid, e);
+				"Unable to retrieve factory configuration " + factoryPid,
+				exception);
 		}
 	}
 
@@ -322,9 +308,9 @@ public class ConfigurationProviderImpl implements ConfigurationProvider {
 
 			configuration.update(properties);
 		}
-		catch (IOException ioe) {
+		catch (IOException ioException) {
 			throw new ConfigurationException(
-				"Unable to save configuration " + pid, ioe);
+				"Unable to save configuration " + pid, ioException);
 		}
 	}
 
@@ -348,10 +334,10 @@ public class ConfigurationProviderImpl implements ConfigurationProvider {
 
 			configuration.update(properties);
 		}
-		catch (IOException ioe) {
+		catch (IOException ioException) {
 			throw new ConfigurationException(
 				"Unable to save factory configuration " + scopedFactoryPid,
-				ioe);
+				ioException);
 		}
 	}
 

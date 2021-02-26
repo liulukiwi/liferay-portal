@@ -17,6 +17,7 @@ package com.liferay.dynamic.data.mapping.service.persistence;
 import com.liferay.dynamic.data.mapping.exception.NoSuchContentException;
 import com.liferay.dynamic.data.mapping.model.DDMContent;
 import com.liferay.portal.kernel.service.persistence.BasePersistence;
+import com.liferay.portal.kernel.service.persistence.change.tracking.CTPersistence;
 
 import org.osgi.annotation.versioning.ProviderType;
 
@@ -29,12 +30,15 @@ import org.osgi.annotation.versioning.ProviderType;
  *
  * @author Brian Wing Shun Chan
  * @see DDMContentUtil
+ * @deprecated
  * @generated
  */
+@Deprecated
 @ProviderType
-public interface DDMContentPersistence extends BasePersistence<DDMContent> {
+public interface DDMContentPersistence
+	extends BasePersistence<DDMContent>, CTPersistence<DDMContent> {
 
-	/**
+	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this interface directly. Always use {@link DDMContentUtil} to access the ddm content persistence. Modify <code>service.xml</code> and rerun ServiceBuilder to regenerate this interface.

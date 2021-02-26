@@ -16,19 +16,11 @@ package com.liferay.document.library.web.internal.portlet.action;
 
 import com.liferay.document.library.constants.DLPortletKeys;
 import com.liferay.document.library.kernel.exception.NoSuchFileEntryTypeException;
-import com.liferay.document.library.kernel.model.DLFileEntryMetadata;
 import com.liferay.document.library.kernel.model.DLFileEntryType;
 import com.liferay.document.library.kernel.service.DLFileEntryTypeService;
-import com.liferay.document.library.kernel.util.DLUtil;
 import com.liferay.document.library.web.internal.constants.DLWebKeys;
-import com.liferay.document.library.web.internal.display.context.DLEditFileEntryTypeDisplayContext;
-import com.liferay.dynamic.data.mapping.kernel.DDMStructure;
-import com.liferay.dynamic.data.mapping.kernel.DDMStructureManagerUtil;
-import com.liferay.dynamic.data.mapping.service.DDMStorageLinkLocalService;
-import com.liferay.dynamic.data.mapping.service.DDMStructureLocalService;
-import com.liferay.dynamic.data.mapping.util.DDM;
+import com.liferay.document.library.web.internal.display.context.DLEditFileEntryTypeDataEngineDisplayContext;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCRenderCommand;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
@@ -69,11 +61,10 @@ public class EditFileEntryTypeMVCRenderCommand implements MVCRenderCommand {
 		try {
 			renderRequest.setAttribute(
 				DLWebKeys.
-					DOCUMENT_LIBRARY_EDIT_EDIT_FILE_ENTRY_TYPE_DISPLAY_CONTEXT,
-				new DLEditFileEntryTypeDisplayContext(
-					_ddm, _ddmStorageLinkLocalService,
-					_ddmStructureLocalService, _language,
-					_portal.getLiferayPortletRequest(renderRequest)));
+					DOCUMENT_LIBRARY_EDIT_FILE_ENTRY_TYPE_DATA_ENGINE_DISPLAY_CONTEXT,
+				new DLEditFileEntryTypeDataEngineDisplayContext(
+					_portal.getLiferayPortletRequest(renderRequest),
+					_portal.getLiferayPortletResponse(renderResponse)));
 
 			long fileEntryTypeId = ParamUtil.getLong(
 				renderRequest, "fileEntryTypeId");
@@ -95,55 +86,17 @@ public class EditFileEntryTypeMVCRenderCommand implements MVCRenderCommand {
 			renderRequest.setAttribute(
 				WebKeys.DOCUMENT_LIBRARY_FILE_ENTRY_TYPE, dlFileEntryType);
 
-			renderRequest.setAttribute(
-				WebKeys.DOCUMENT_LIBRARY_DYNAMIC_DATA_MAPPING_STRUCTURE,
-				_getDDMStructure(dlFileEntryType));
-
 			return "/document_library/edit_file_entry_type.jsp";
 		}
-		catch (NoSuchFileEntryTypeException | PrincipalException e) {
-			SessionErrors.add(renderRequest, e.getClass());
+		catch (NoSuchFileEntryTypeException | PrincipalException exception) {
+			SessionErrors.add(renderRequest, exception.getClass());
 
 			return "/document_library/error.jsp";
 		}
-		catch (PortalException pe) {
-			throw new PortletException(pe);
+		catch (PortalException portalException) {
+			throw new PortletException(portalException);
 		}
 	}
-
-	private DDMStructure _getDDMStructure(DLFileEntryType dlFileEntryType) {
-		DDMStructure ddmStructure = DDMStructureManagerUtil.fetchStructure(
-			dlFileEntryType.getGroupId(),
-			_portal.getClassNameId(DLFileEntryMetadata.class),
-			DLUtil.getDDMStructureKey(dlFileEntryType));
-
-		if (ddmStructure != null) {
-			return ddmStructure;
-		}
-
-		ddmStructure = DDMStructureManagerUtil.fetchStructure(
-			dlFileEntryType.getGroupId(),
-			_portal.getClassNameId(DLFileEntryMetadata.class),
-			DLUtil.getDeprecatedDDMStructureKey(dlFileEntryType));
-
-		if (ddmStructure != null) {
-			return ddmStructure;
-		}
-
-		return DDMStructureManagerUtil.fetchStructure(
-			dlFileEntryType.getGroupId(),
-			_portal.getClassNameId(DLFileEntryMetadata.class),
-			dlFileEntryType.getFileEntryTypeKey());
-	}
-
-	@Reference
-	private DDM _ddm;
-
-	@Reference
-	private DDMStorageLinkLocalService _ddmStorageLinkLocalService;
-
-	@Reference
-	private DDMStructureLocalService _ddmStructureLocalService;
 
 	@Reference(
 		target = "(model.class.name=com.liferay.document.library.kernel.model.DLFileEntryType)"
@@ -153,9 +106,6 @@ public class EditFileEntryTypeMVCRenderCommand implements MVCRenderCommand {
 
 	@Reference
 	private DLFileEntryTypeService _dlFileEntryTypeService;
-
-	@Reference
-	private Language _language;
 
 	@Reference
 	private Portal _portal;

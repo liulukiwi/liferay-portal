@@ -43,7 +43,7 @@ import org.osgi.service.component.annotations.Reference;
 	immediate = true,
 	property = {
 		"javax.portlet.name=" + LayoutPageTemplateAdminPortletKeys.LAYOUT_PAGE_TEMPLATES,
-		"mvc.command.name=/layout_page_template/delete_master_layout"
+		"mvc.command.name=/layout_page_template_admin/delete_master_layout"
 	},
 	service = MVCActionCommand.class
 )
@@ -87,9 +87,9 @@ public class DeleteMasterLayoutMVCActionCommand extends BaseMVCActionCommand {
 				continue;
 			}
 
-			int count = _layoutLocalService.getLayoutsCount(
+			int count = _layoutLocalService.getMasterLayoutsCount(
 				layoutPageTemplateEntry.getGroupId(),
-				layoutPageTemplateEntry.getLayoutPageTemplateEntryId());
+				layoutPageTemplateEntry.getPlid());
 
 			if (count > 0) {
 				SessionErrors.add(
@@ -106,9 +106,9 @@ public class DeleteMasterLayoutMVCActionCommand extends BaseMVCActionCommand {
 				_layoutPageTemplateEntryService.deleteLayoutPageTemplateEntry(
 					deleteLayoutPageTemplateEntryId);
 			}
-			catch (PortalException pe) {
+			catch (PortalException portalException) {
 				if (_log.isDebugEnabled()) {
-					_log.debug(pe, pe);
+					_log.debug(portalException, portalException);
 				}
 
 				SessionErrors.add(actionRequest, PortalException.class);

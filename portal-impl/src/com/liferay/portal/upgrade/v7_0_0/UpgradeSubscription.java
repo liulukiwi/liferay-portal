@@ -166,15 +166,6 @@ public class UpgradeSubscription extends UpgradeProcess {
 		}
 	}
 
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), with no direct replacement
-	 */
-	@Deprecated
-	protected void updateSubscriptionGroupId(
-			long subscriptionId, long classNameId, long classPK)
-		throws Exception {
-	}
-
 	protected void updateSubscriptionGroupIds() throws Exception {
 		try (LoggingTimer loggingTimer = new LoggingTimer();
 			PreparedStatement ps1 = connection.prepareStatement(
@@ -226,6 +217,9 @@ public class UpgradeSubscription extends UpgradeProcess {
 		).put(
 			Layout.class.getName(), "Layout,groupId,plid"
 		).put(
+			"com.liferay.calendar.model.CalendarBooking",
+			"CalendarBooking,groupId,calendarBookingId"
+		).put(
 			"com.liferay.message.boards.kernel.model.MBCategory",
 			"MBCategory,groupId,categoryId"
 		).put(
@@ -238,6 +232,12 @@ public class UpgradeSubscription extends UpgradeProcess {
 			"com.liferay.blogs.kernel.model.BlogsEntry",
 			"BlogsEntry,groupId,entryId"
 		).put(
+			"com.liferay.journal.model.JournalArticle",
+			"JournalArticle,groupId,resourcePrimKey"
+		).put(
+			"com.liferay.journal.model.JournalFolder",
+			"JournalFolder,groupId,folderId"
+		).put(
 			"com.liferay.portlet.bookmarks.model.BookmarksEntry",
 			"BookmarksEntry,groupId,entryId"
 		).put(
@@ -246,9 +246,6 @@ public class UpgradeSubscription extends UpgradeProcess {
 		).put(
 			"com.liferay.portlet.dynamic.data.mapping.kernel.DDMStructure",
 			"DDMStructure,groupId,structureId"
-		).put(
-			"com.liferay.portlet.journal.model.JournalFolder",
-			"JournalFolder,groupId,folderId"
 		).put(
 			"com.liferay.portlet.wiki.model.WikiNode", "WikiNode,groupId,nodeId"
 		).put(

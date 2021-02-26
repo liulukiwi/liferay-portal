@@ -16,7 +16,7 @@ package com.liferay.dynamic.data.mapping.form.taglib.servlet.taglib;
 
 import com.liferay.dynamic.data.mapping.form.renderer.DDMFormRenderingContext;
 import com.liferay.dynamic.data.mapping.form.taglib.internal.security.permission.DDMFormInstancePermission;
-import com.liferay.dynamic.data.mapping.form.taglib.servlet.taglib.util.DDMFormTaglibUtil;
+import com.liferay.dynamic.data.mapping.form.taglib.internal.servlet.taglib.util.DDMFormTaglibUtil;
 import com.liferay.dynamic.data.mapping.form.values.factory.DDMFormValuesFactory;
 import com.liferay.dynamic.data.mapping.model.DDMForm;
 import com.liferay.dynamic.data.mapping.model.DDMFormInstance;
@@ -45,6 +45,7 @@ import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.portletmvc4spring.test.mock.web.portlet.MockRenderResponse;
 
 import java.lang.reflect.Field;
 
@@ -74,7 +75,6 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
-import org.springframework.mock.web.portlet.MockRenderResponse;
 
 /**
  * @author Pedro Queiroz
@@ -83,15 +83,7 @@ import org.springframework.mock.web.portlet.MockRenderResponse;
 	{DDMFormInstancePermission.class, DDMFormTaglibUtil.class, LocaleUtil.class}
 )
 @RunWith(PowerMockRunner.class)
-@SuppressStaticInitializationFor(
-	{
-		"com.liferay.dynamic.data.mapping.model.impl.DDMFormInstanceModelImpl",
-		"com.liferay.dynamic.data.mapping.model.impl.DDMFormInstanceRecordModelImpl",
-		"com.liferay.dynamic.data.mapping.model.impl.DDMFormInstanceRecordVersionModelImpl",
-		"com.liferay.dynamic.data.mapping.model.impl.DDMFormInstanceVersionModelImpl",
-		"com.liferay.taglib.util.IncludeTag"
-	}
-)
+@SuppressStaticInitializationFor("com.liferay.taglib.util.IncludeTag")
 public class DDMFormRendererTagTest extends PowerMockito {
 
 	@Before
@@ -241,9 +233,8 @@ public class DDMFormRendererTagTest extends PowerMockito {
 	public void testGetRedirectURLWhenFormInstanceIsNull() {
 		setDDMFormRendererTagInputs(null, null, null, null);
 
-		String redirectURL = _ddmFormRendererTag.getRedirectURL();
-
-		Assert.assertEquals(StringPool.BLANK, redirectURL);
+		Assert.assertEquals(
+			StringPool.BLANK, _ddmFormRendererTag.getRedirectURL());
 	}
 
 	protected Set<Locale> createAvailableLocales(Locale... locales) {

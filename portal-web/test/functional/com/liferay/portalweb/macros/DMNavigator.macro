@@ -7,6 +7,8 @@ definition {
 			Check(locator1 = "DocumentsAndMedia#DESCRIPTIVE_LIST_DOCUMENT_CHECKBOX");
 		}
 
+		AssertElementPresent.assertVisible(locator1 = "Icon#EDIT_CATEGORIES");
+
 		Click(locator1 = "Icon#EDIT_CATEGORIES");
 	}
 
@@ -65,7 +67,7 @@ definition {
 			menuItem = "Permissions",
 			rowEntry = "${dmDocumentTitle}");
 
-		SelectFrame(locator1 = "IFrame#DIALOG");
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
 	}
 
 	macro gotoDocumentPG {
@@ -74,6 +76,10 @@ definition {
 		AssertClick(
 			locator1 = "DocumentsAndMedia#DESCRIPTIVE_LIST_DOCUMENT_TITLE",
 			value1 = "${dmDocumentTitle}");
+	}
+
+	macro gotoDocumentsAndMedia {
+		Navigator.gotoNavItem(navItem = "Documents and Media");
 	}
 
 	macro gotoDocumentType {
@@ -88,6 +94,16 @@ definition {
 		AssertClick(
 			locator1 = "NavTab#TAB_LINK",
 			value1 = "Versions");
+	}
+
+	macro gotoEditDocumentType {
+		DMDocumentType.selectDocumentTypeFrame();
+
+		var key_dmDocumentTypeName = "${dmDocumentTypeName}";
+
+		LexiconEntry.openEntryMenu(rowEntry = "${dmDocumentTypeName}");
+
+		MenuItem.click(menuItem = "Edit");
 	}
 
 	macro gotoFolder {
@@ -107,7 +123,7 @@ definition {
 
 		MenuItem.click(menuItem = "Permissions");
 
-		SelectFrame(locator1 = "IFrame#DIALOG");
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
 	}
 
 	macro gotoFolderViaBreadcrumb {
@@ -161,17 +177,26 @@ definition {
 			locator1 = "DocumentsAndMedia#DESCRIPTIVE_LIST_FOLDER_TITLE",
 			value1 = "${dmRepositoryName}");
 
-		AssertVisible(locator1 = "DocumentsAndMedia#BREADCRUMB_FOLDER_NAME");
+		if (isSet(guest)) {
+			AssertElementPresent(locator1 = "MicrosoftLogin#LOGIN_EMAIL_FIELD");
+		}
+		else {
+			AssertVisible(locator1 = "DocumentsAndMedia#BREADCRUMB_FOLDER_NAME");
+		}
 	}
 
 	macro gotoShare {
 		var key_dmDocumentTitle = "${dmDocumentTitle}";
+
+		AssertElementPresent(locator1 = "DocumentsAndMedia#DESCRIPTIVE_LIST_DOCUMENT_TITLE");
 
 		AssertClick(
 			locator1 = "DocumentsAndMedia#DESCRIPTIVE_LIST_DOCUMENT_TITLE",
 			value1 = "${dmDocumentTitle}");
 
 		DMDocument.viewDocumentTitleCmdPG(dmDocumentTitle = "${dmDocumentTitle}");
+
+		WaitForLiferayEvent.initializeLiferayEventLog();
 
 		var key_text = "Share";
 
@@ -213,7 +238,9 @@ definition {
 	}
 
 	macro openDocumentsAndMediaAdmin {
-		Navigator.openWithAppendToBaseURL(urlAppend = "group/${siteURLKey}/~/control_panel/manage?p_p_id=com_liferay_document_library_web_portlet_DLAdminPortlet");
+		Navigator.openWithAppendToBaseURL(
+			baseURL = "${baseURL}",
+			urlAppend = "group/${siteURLKey}/~/control_panel/manage?p_p_id=com_liferay_document_library_web_portlet_DLAdminPortlet");
 	}
 
 }

@@ -16,6 +16,8 @@ package com.liferay.rss.internal.export;
 
 import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.exception.SystemException;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.rss.export.RSSExporter;
 import com.liferay.rss.model.SyndContent;
 import com.liferay.rss.model.SyndEnclosure;
@@ -54,7 +56,10 @@ public class RSSExporterImpl implements RSSExporter {
 		try {
 			return output.outputString(realSyndFeed);
 		}
-		catch (IllegalDataException ide) {
+		catch (IllegalDataException illegalDataException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(illegalDataException, illegalDataException);
+			}
 
 			// LEP-4450
 
@@ -63,12 +68,12 @@ public class RSSExporterImpl implements RSSExporter {
 			try {
 				return output.outputString(realSyndFeed);
 			}
-			catch (FeedException fe) {
-				throw new SystemException(fe);
+			catch (FeedException feedException) {
+				throw new SystemException(feedException);
 			}
 		}
-		catch (FeedException fe) {
-			throw new SystemException(fe);
+		catch (FeedException feedException) {
+			throw new SystemException(feedException);
 		}
 	}
 
@@ -219,5 +224,8 @@ public class RSSExporterImpl implements RSSExporter {
 	}
 
 	private static final String _REGEXP_STRIP = "[\\d\\w]";
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		RSSExporterImpl.class);
 
 }

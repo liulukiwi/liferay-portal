@@ -64,9 +64,9 @@ public class AMJournalArticleContentHTMLReplacer {
 
 			return document.asXML();
 		}
-		catch (DocumentException de) {
+		catch (DocumentException documentException) {
 			if (_log.isDebugEnabled()) {
-				_log.debug("Invalid content:\n" + content);
+				_log.debug("Invalid content:\n" + content, documentException);
 			}
 
 			return content;

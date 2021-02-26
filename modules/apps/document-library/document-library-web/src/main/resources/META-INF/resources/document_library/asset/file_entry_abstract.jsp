@@ -32,28 +32,20 @@ FileVersion fileVersion = (FileVersion)request.getAttribute(WebKeys.DOCUMENT_LIB
 		String previewURL = StringPool.BLANK;
 
 		if (Objects.equals(fileEntry.getVersion(), fileVersion.getVersion())) {
-			if (ImageProcessorUtil.hasImages(fileVersion)) {
-				previewURL = DLURLHelperUtil.getPreviewURL(fileEntry, fileVersion, themeDisplay, "&imagePreview=1");
-			}
-			else if (PDFProcessorUtil.hasImages(fileVersion)) {
-				previewURL = DLURLHelperUtil.getPreviewURL(fileEntry, fileVersion, themeDisplay, "&previewFileIndex=1");
-			}
-			else if (VideoProcessorUtil.hasVideo(fileVersion)) {
-				previewURL = DLURLHelperUtil.getPreviewURL(fileEntry, fileVersion, themeDisplay, "&videoThumbnail=1");
-			}
+			previewURL = DLURLHelperUtil.getImagePreviewURL(fileEntry, fileVersion, themeDisplay);
 		}
 		%>
 
 		<c:choose>
 			<c:when test="<%= Validator.isNotNull(previewURL) %>">
-				<div class="aspect-ratio aspect-ratio-8-to-3 aspect-ratio-bg-cover cover-image mb-4" style="background-image: url(<%= previewURL %>)"></div>
+				<div class="aspect-ratio aspect-ratio-8-to-3 aspect-ratio-bg-cover cover-image mb-4" style="background-image: url(<%= previewURL %>);"></div>
 			</c:when>
 			<c:otherwise>
 				<div class="aspect-ratio aspect-ratio-8-to-3 bg-light mb-4">
 					<div class="aspect-ratio-item-center-middle aspect-ratio-item-fluid card-type-asset-icon">
 						<div class="text-secondary">
-							<svg aria-hidden="true" class="lexicon-icon reference-mark user-icon-xl">
-								<use xlink:href="<%= themeDisplay.getPathThemeImages() %>/lexicon/icons.svg#<%= assetRenderer.getIconCssClass() %>" />
+							<svg aria-hidden="true" class="h4 lexicon-icon reference-mark">
+								<use xlink:href="<%= themeDisplay.getPathThemeImages() %>/clay/icons.svg#<%= assetRenderer.getIconCssClass() %>" />
 							</svg>
 						</div>
 					</div>

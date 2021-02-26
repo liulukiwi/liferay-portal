@@ -35,7 +35,7 @@ import org.osgi.service.component.annotations.Reference;
 	immediate = true,
 	property = {
 		"javax.portlet.name=" + LayoutPageTemplateAdminPortletKeys.LAYOUT_PAGE_TEMPLATES,
-		"mvc.command.name=/layout_prototype/delete_layout_prototype"
+		"mvc.command.name=/layout_page_template_admin/delete_layout_prototype"
 	},
 	service = MVCActionCommand.class
 )
@@ -65,8 +65,11 @@ public class DeleteLayoutPrototypeMVCActionCommand
 				_layoutPrototypeService.deleteLayoutPrototype(
 					curLayoutPrototypeId);
 			}
-			catch (RequiredLayoutPrototypeException rlpe) {
-				SessionErrors.add(actionRequest, rlpe.getClass());
+			catch (RequiredLayoutPrototypeException
+						requiredLayoutPrototypeException) {
+
+				SessionErrors.add(
+					actionRequest, requiredLayoutPrototypeException.getClass());
 
 				hideDefaultErrorMessage(actionRequest);
 

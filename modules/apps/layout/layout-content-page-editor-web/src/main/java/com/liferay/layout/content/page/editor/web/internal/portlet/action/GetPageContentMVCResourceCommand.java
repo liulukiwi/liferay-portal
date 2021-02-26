@@ -20,7 +20,6 @@ import com.liferay.portal.kernel.portlet.JSONPortletResponseUtil;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCResourceCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCResourceCommand;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
-import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.WebKeys;
 
@@ -37,7 +36,7 @@ import org.osgi.service.component.annotations.Reference;
 	immediate = true,
 	property = {
 		"javax.portlet.name=" + ContentPageEditorPortletKeys.CONTENT_PAGE_EDITOR_PORTLET,
-		"mvc.command.name=/content_layout/get_page_contents"
+		"mvc.command.name=/layout_content_page_editor/get_page_content"
 	},
 	service = MVCResourceCommand.class
 )
@@ -51,12 +50,10 @@ public class GetPageContentMVCResourceCommand extends BaseMVCResourceCommand {
 		ThemeDisplay themeDisplay = (ThemeDisplay)resourceRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 
-		String backURL = ParamUtil.getString(resourceRequest, "backURL");
-
 		JSONPortletResponseUtil.writeJSON(
 			resourceRequest, resourceResponse,
 			ContentUtil.getPageContentsJSONArray(
-				themeDisplay.getPlid(), backURL,
+				themeDisplay.getPlid(),
 				_portal.getHttpServletRequest(resourceRequest)));
 	}
 

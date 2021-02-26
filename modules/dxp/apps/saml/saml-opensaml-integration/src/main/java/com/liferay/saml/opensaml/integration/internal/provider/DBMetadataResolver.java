@@ -14,6 +14,8 @@
 
 package com.liferay.saml.opensaml.integration.internal.provider;
 
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.saml.opensaml.integration.internal.util.SamlUtil;
@@ -81,8 +83,8 @@ public class DBMetadataResolver extends AbstractMetadataResolver {
 
 			return Collections.emptyList();
 		}
-		catch (Exception e) {
-			throw new ResolverException(e);
+		catch (Exception exception) {
+			throw new ResolverException(exception);
 		}
 	}
 
@@ -107,16 +109,16 @@ public class DBMetadataResolver extends AbstractMetadataResolver {
 			return null;
 		}
 
-		XMLObject metadataXmlObject = XMLObjectSupport.unmarshallFromReader(
+		XMLObject metadataXMLObject = XMLObjectSupport.unmarshallFromReader(
 			_parserPool, new StringReader(metadataXml));
 
 		MetadataFilter metadataFilter = getMetadataFilter();
 
 		if (metadataFilter != null) {
-			metadataXmlObject = metadataFilter.filter(metadataXmlObject);
+			metadataXMLObject = metadataFilter.filter(metadataXMLObject);
 		}
 
-		return metadataXmlObject;
+		return metadataXMLObject;
 	}
 
 	protected String getMetadataXml(String entityId) throws Exception {
@@ -134,7 +136,15 @@ public class DBMetadataResolver extends AbstractMetadataResolver {
 
 				return samlIdpSpConnection.getMetadataXml();
 			}
-			catch (NoSuchIdpSpConnectionException nsisce) {
+			catch (NoSuchIdpSpConnectionException
+						noSuchIdpSpConnectionException) {
+
+				if (_log.isDebugEnabled()) {
+					_log.debug(
+						noSuchIdpSpConnectionException,
+						noSuchIdpSpConnectionException);
+				}
+
 				return null;
 			}
 		}
@@ -150,7 +160,15 @@ public class DBMetadataResolver extends AbstractMetadataResolver {
 
 				return samlSpIdpConnection.getMetadataXml();
 			}
-			catch (NoSuchSpIdpConnectionException nssice) {
+			catch (NoSuchSpIdpConnectionException
+						noSuchSpIdpConnectionException) {
+
+				if (_log.isDebugEnabled()) {
+					_log.debug(
+						noSuchSpIdpConnectionException,
+						noSuchSpIdpConnectionException);
+				}
+
 				return null;
 			}
 		}
@@ -172,10 +190,13 @@ public class DBMetadataResolver extends AbstractMetadataResolver {
 
 			return Collections.singletonList(entityDescriptor);
 		}
-		catch (Exception e) {
-			throw new ResolverException(e);
+		catch (Exception exception) {
+			throw new ResolverException(exception);
 		}
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		DBMetadataResolver.class);
 
 	@Reference
 	private ParserPool _parserPool;

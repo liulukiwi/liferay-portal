@@ -16,13 +16,16 @@ package com.liferay.jenkins.results.parser;
 
 import java.io.IOException;
 
+import java.text.DateFormat;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
@@ -41,48 +44,71 @@ public class GitCommitFactory {
 		}
 
 		try {
-			JSONObject jsonObject = JenkinsResultsParserUtil.toJSONObject(
-				gitHubCommitURL);
+			return newGitHubRemoteGitCommit(
+				gitHubUsername, gitRepositoryName, sha,
+				JenkinsResultsParserUtil.toJSONObject(gitHubCommitURL));
+		}
+		catch (IOException ioException) {
+			throw new RuntimeException(
+				"Unable to get commit details", ioException);
+		}
+	}
 
-			JSONObject commitJSONObject = jsonObject.getJSONObject("commit");
+	public static GitHubRemoteGitCommit newGitHubRemoteGitCommit(
+		String gitHubUsername, String gitRepositoryName, String sha,
+		JSONObject jsonObject) {
 
-			String message = commitJSONObject.getString("message");
+		JSONObject commitJSONObject = jsonObject.getJSONObject("commit");
 
-			JSONObject committerJSONObject = commitJSONObject.getJSONObject(
-				"committer");
+		String message = commitJSONObject.getString("message");
 
-			try {
-				SimpleDateFormat simpleDateFormat = new SimpleDateFormat(
-					"yyyy-MM-dd'T'HH:mm:ss");
+		JSONObject committerJSONObject = commitJSONObject.getJSONObject(
+			"committer");
 
-				Date date = simpleDateFormat.parse(
-					committerJSONObject.getString("date"));
+		JSONArray filesJSONArray = jsonObject.optJSONArray("files");
 
-				GitHubRemoteGitCommit remoteGitCommit =
-					new GitHubRemoteGitCommit(
-						gitHubUsername, gitRepositoryName, message, sha,
-						_getGitCommitType(message), date.getTime());
+		List<String> fileNames = null;
 
-				_gitHubRemoteGitCommits.put(gitHubCommitURL, remoteGitCommit);
+		if (filesJSONArray != null) {
+			fileNames = new ArrayList<>(filesJSONArray.length());
 
-				return remoteGitCommit;
-			}
-			catch (ParseException pe) {
-				throw new RuntimeException(pe);
+			for (int i = 0; i < filesJSONArray.length(); i++) {
+				JSONObject fileJSONObject = filesJSONArray.getJSONObject(i);
+
+				fileNames.add(fileJSONObject.getString("filename"));
 			}
 		}
-		catch (IOException ioe) {
-			throw new RuntimeException("Unable to get commit details", ioe);
+
+		try {
+			DateFormat gitHubDateFormat =
+				JenkinsResultsParserUtil.getGitHubDateFormat();
+
+			Date date = gitHubDateFormat.parse(
+				committerJSONObject.getString("date"));
+
+			GitHubRemoteGitCommit remoteGitCommit = new GitHubRemoteGitCommit(
+				committerJSONObject.getString("email"), gitHubUsername,
+				gitRepositoryName, message, fileNames,
+				jsonObject.getString("sha"), _getGitCommitType(message),
+				date.getTime());
+
+			_gitHubRemoteGitCommits.put(
+				jsonObject.getString("url"), remoteGitCommit);
+
+			return remoteGitCommit;
+		}
+		catch (ParseException parseException) {
+			throw new RuntimeException(parseException);
 		}
 	}
 
 	public static LocalGitCommit newLocalGitCommit(
-		GitWorkingDirectory gitWorkingDirectory, String message, String sha,
-		long commitTime) {
+		String emailAddress, GitWorkingDirectory gitWorkingDirectory,
+		String message, String sha, long commitTime) {
 
 		return new DefaultLocalGitCommit(
-			gitWorkingDirectory, message, sha, _getGitCommitType(message),
-			commitTime);
+			emailAddress, gitWorkingDirectory, message, sha,
+			_getGitCommitType(message), commitTime);
 	}
 
 	private static GitCommit.Type _getGitCommitType(String message) {

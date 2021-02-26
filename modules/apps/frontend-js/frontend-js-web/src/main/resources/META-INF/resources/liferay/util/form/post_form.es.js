@@ -12,9 +12,7 @@
  * details.
  */
 
-import {isDef, isObject, isString} from 'metal';
-import dom from 'metal-dom';
-
+import isObject from './../is_object';
 import setFormValues from './set_form_values.es';
 
 /**
@@ -28,7 +26,9 @@ import setFormValues from './set_form_values.es';
  */
 
 export default function postForm(form, options) {
-	form = dom.toElement(form);
+	if (typeof form === 'string') {
+		form = document.querySelector(form);
+	}
 
 	if (form && form.nodeName === 'FORM') {
 		form.setAttribute('method', 'post');
@@ -38,16 +38,19 @@ export default function postForm(form, options) {
 
 			if (isObject(data)) {
 				setFormValues(form, data);
-			} else {
+			}
+			else {
 				return;
 			}
 
-			if (!isDef(url)) {
+			if (url === undefined) {
 				submitForm(form);
-			} else if (isString(url)) {
+			}
+			else if (typeof url === 'string') {
 				submitForm(form, url);
 			}
-		} else {
+		}
+		else {
 			submitForm(form);
 		}
 	}

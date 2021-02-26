@@ -15,8 +15,10 @@
 package com.liferay.portal.service.persistence.impl;
 
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.dao.orm.ArgumentsResolver;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.EntityCacheUtil;
+import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderCacheUtil;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
 import com.liferay.portal.kernel.dao.orm.Query;
@@ -26,7 +28,9 @@ import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.exception.NoSuchLayoutRevisionException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.BaseModel;
 import com.liferay.portal.kernel.model.LayoutRevision;
+import com.liferay.portal.kernel.model.LayoutRevisionTable;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
@@ -37,6 +41,9 @@ import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.model.impl.LayoutRevisionImpl;
 import com.liferay.portal.model.impl.LayoutRevisionModelImpl;
+import com.liferay.registry.Registry;
+import com.liferay.registry.RegistryUtil;
+import com.liferay.registry.ServiceRegistration;
 
 import java.io.Serializable;
 
@@ -47,6 +54,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * The persistence implementation for the layout revision service.
@@ -62,7 +70,7 @@ public class LayoutRevisionPersistenceImpl
 	extends BasePersistenceImpl<LayoutRevision>
 	implements LayoutRevisionPersistence {
 
-	/**
+	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this class directly. Always use <code>LayoutRevisionUtil</code> to access the layout revision persistence. Modify <code>service.xml</code> and rerun ServiceBuilder to regenerate this class.
@@ -181,7 +189,7 @@ public class LayoutRevisionPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<LayoutRevision>)FinderCacheUtil.getResult(
-				finderPath, finderArgs, this);
+				finderPath, finderArgs);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (LayoutRevision layoutRevision : list) {
@@ -197,43 +205,43 @@ public class LayoutRevisionPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					3 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(3);
+				sb = new StringBundler(3);
 			}
 
-			query.append(_SQL_SELECT_LAYOUTREVISION_WHERE);
+			sb.append(_SQL_SELECT_LAYOUTREVISION_WHERE);
 
-			query.append(_FINDER_COLUMN_LAYOUTSETBRANCHID_LAYOUTSETBRANCHID_2);
+			sb.append(_FINDER_COLUMN_LAYOUTSETBRANCHID_LAYOUTSETBRANCHID_2);
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
 			else {
-				query.append(LayoutRevisionModelImpl.ORDER_BY_JPQL);
+				sb.append(LayoutRevisionModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(layoutSetBranchId);
+				queryPos.add(layoutSetBranchId);
 
 				list = (List<LayoutRevision>)QueryUtil.list(
-					q, getDialect(), start, end);
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
@@ -241,12 +249,8 @@ public class LayoutRevisionPersistenceImpl
 					FinderCacheUtil.putResult(finderPath, finderArgs, list);
 				}
 			}
-			catch (Exception e) {
-				if (useFinderCache) {
-					FinderCacheUtil.removeResult(finderPath, finderArgs);
-				}
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -277,16 +281,16 @@ public class LayoutRevisionPersistenceImpl
 			return layoutRevision;
 		}
 
-		StringBundler msg = new StringBundler(4);
+		StringBundler sb = new StringBundler(4);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("layoutSetBranchId=");
-		msg.append(layoutSetBranchId);
+		sb.append("layoutSetBranchId=");
+		sb.append(layoutSetBranchId);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchLayoutRevisionException(msg.toString());
+		throw new NoSuchLayoutRevisionException(sb.toString());
 	}
 
 	/**
@@ -332,16 +336,16 @@ public class LayoutRevisionPersistenceImpl
 			return layoutRevision;
 		}
 
-		StringBundler msg = new StringBundler(4);
+		StringBundler sb = new StringBundler(4);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("layoutSetBranchId=");
-		msg.append(layoutSetBranchId);
+		sb.append("layoutSetBranchId=");
+		sb.append(layoutSetBranchId);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchLayoutRevisionException(msg.toString());
+		throw new NoSuchLayoutRevisionException(sb.toString());
 	}
 
 	/**
@@ -408,8 +412,8 @@ public class LayoutRevisionPersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -420,102 +424,102 @@ public class LayoutRevisionPersistenceImpl
 		Session session, LayoutRevision layoutRevision, long layoutSetBranchId,
 		OrderByComparator<LayoutRevision> orderByComparator, boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				4 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(3);
+			sb = new StringBundler(3);
 		}
 
-		query.append(_SQL_SELECT_LAYOUTREVISION_WHERE);
+		sb.append(_SQL_SELECT_LAYOUTREVISION_WHERE);
 
-		query.append(_FINDER_COLUMN_LAYOUTSETBRANCHID_LAYOUTSETBRANCHID_2);
+		sb.append(_FINDER_COLUMN_LAYOUTSETBRANCHID_LAYOUTSETBRANCHID_2);
 
 		if (orderByComparator != null) {
 			String[] orderByConditionFields =
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(LayoutRevisionModelImpl.ORDER_BY_JPQL);
+			sb.append(LayoutRevisionModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
-		qPos.add(layoutSetBranchId);
+		queryPos.add(layoutSetBranchId);
 
 		if (orderByComparator != null) {
 			for (Object orderByConditionValue :
 					orderByComparator.getOrderByConditionValues(
 						layoutRevision)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<LayoutRevision> list = q.list();
+		List<LayoutRevision> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -553,37 +557,34 @@ public class LayoutRevisionPersistenceImpl
 
 		Object[] finderArgs = new Object[] {layoutSetBranchId};
 
-		Long count = (Long)FinderCacheUtil.getResult(
-			finderPath, finderArgs, this);
+		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
 
 		if (count == null) {
-			StringBundler query = new StringBundler(2);
+			StringBundler sb = new StringBundler(2);
 
-			query.append(_SQL_COUNT_LAYOUTREVISION_WHERE);
+			sb.append(_SQL_COUNT_LAYOUTREVISION_WHERE);
 
-			query.append(_FINDER_COLUMN_LAYOUTSETBRANCHID_LAYOUTSETBRANCHID_2);
+			sb.append(_FINDER_COLUMN_LAYOUTSETBRANCHID_LAYOUTSETBRANCHID_2);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(layoutSetBranchId);
+				queryPos.add(layoutSetBranchId);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
 				FinderCacheUtil.putResult(finderPath, finderArgs, count);
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -690,7 +691,7 @@ public class LayoutRevisionPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<LayoutRevision>)FinderCacheUtil.getResult(
-				finderPath, finderArgs, this);
+				finderPath, finderArgs);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (LayoutRevision layoutRevision : list) {
@@ -704,43 +705,43 @@ public class LayoutRevisionPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					3 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(3);
+				sb = new StringBundler(3);
 			}
 
-			query.append(_SQL_SELECT_LAYOUTREVISION_WHERE);
+			sb.append(_SQL_SELECT_LAYOUTREVISION_WHERE);
 
-			query.append(_FINDER_COLUMN_PLID_PLID_2);
+			sb.append(_FINDER_COLUMN_PLID_PLID_2);
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
 			else {
-				query.append(LayoutRevisionModelImpl.ORDER_BY_JPQL);
+				sb.append(LayoutRevisionModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(plid);
+				queryPos.add(plid);
 
 				list = (List<LayoutRevision>)QueryUtil.list(
-					q, getDialect(), start, end);
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
@@ -748,12 +749,8 @@ public class LayoutRevisionPersistenceImpl
 					FinderCacheUtil.putResult(finderPath, finderArgs, list);
 				}
 			}
-			catch (Exception e) {
-				if (useFinderCache) {
-					FinderCacheUtil.removeResult(finderPath, finderArgs);
-				}
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -783,16 +780,16 @@ public class LayoutRevisionPersistenceImpl
 			return layoutRevision;
 		}
 
-		StringBundler msg = new StringBundler(4);
+		StringBundler sb = new StringBundler(4);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("plid=");
-		msg.append(plid);
+		sb.append("plid=");
+		sb.append(plid);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchLayoutRevisionException(msg.toString());
+		throw new NoSuchLayoutRevisionException(sb.toString());
 	}
 
 	/**
@@ -835,16 +832,16 @@ public class LayoutRevisionPersistenceImpl
 			return layoutRevision;
 		}
 
-		StringBundler msg = new StringBundler(4);
+		StringBundler sb = new StringBundler(4);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("plid=");
-		msg.append(plid);
+		sb.append("plid=");
+		sb.append(plid);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchLayoutRevisionException(msg.toString());
+		throw new NoSuchLayoutRevisionException(sb.toString());
 	}
 
 	/**
@@ -908,8 +905,8 @@ public class LayoutRevisionPersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -920,102 +917,102 @@ public class LayoutRevisionPersistenceImpl
 		Session session, LayoutRevision layoutRevision, long plid,
 		OrderByComparator<LayoutRevision> orderByComparator, boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				4 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(3);
+			sb = new StringBundler(3);
 		}
 
-		query.append(_SQL_SELECT_LAYOUTREVISION_WHERE);
+		sb.append(_SQL_SELECT_LAYOUTREVISION_WHERE);
 
-		query.append(_FINDER_COLUMN_PLID_PLID_2);
+		sb.append(_FINDER_COLUMN_PLID_PLID_2);
 
 		if (orderByComparator != null) {
 			String[] orderByConditionFields =
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(LayoutRevisionModelImpl.ORDER_BY_JPQL);
+			sb.append(LayoutRevisionModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
-		qPos.add(plid);
+		queryPos.add(plid);
 
 		if (orderByComparator != null) {
 			for (Object orderByConditionValue :
 					orderByComparator.getOrderByConditionValues(
 						layoutRevision)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<LayoutRevision> list = q.list();
+		List<LayoutRevision> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -1051,37 +1048,34 @@ public class LayoutRevisionPersistenceImpl
 
 		Object[] finderArgs = new Object[] {plid};
 
-		Long count = (Long)FinderCacheUtil.getResult(
-			finderPath, finderArgs, this);
+		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
 
 		if (count == null) {
-			StringBundler query = new StringBundler(2);
+			StringBundler sb = new StringBundler(2);
 
-			query.append(_SQL_COUNT_LAYOUTREVISION_WHERE);
+			sb.append(_SQL_COUNT_LAYOUTREVISION_WHERE);
 
-			query.append(_FINDER_COLUMN_PLID_PLID_2);
+			sb.append(_FINDER_COLUMN_PLID_PLID_2);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(plid);
+				queryPos.add(plid);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
 				FinderCacheUtil.putResult(finderPath, finderArgs, count);
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -1187,7 +1181,7 @@ public class LayoutRevisionPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<LayoutRevision>)FinderCacheUtil.getResult(
-				finderPath, finderArgs, this);
+				finderPath, finderArgs);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (LayoutRevision layoutRevision : list) {
@@ -1201,43 +1195,43 @@ public class LayoutRevisionPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					3 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(3);
+				sb = new StringBundler(3);
 			}
 
-			query.append(_SQL_SELECT_LAYOUTREVISION_WHERE);
+			sb.append(_SQL_SELECT_LAYOUTREVISION_WHERE);
 
-			query.append(_FINDER_COLUMN_STATUS_STATUS_2);
+			sb.append(_FINDER_COLUMN_STATUS_STATUS_2);
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
 			else {
-				query.append(LayoutRevisionModelImpl.ORDER_BY_JPQL);
+				sb.append(LayoutRevisionModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(status);
+				queryPos.add(status);
 
 				list = (List<LayoutRevision>)QueryUtil.list(
-					q, getDialect(), start, end);
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
@@ -1245,12 +1239,8 @@ public class LayoutRevisionPersistenceImpl
 					FinderCacheUtil.putResult(finderPath, finderArgs, list);
 				}
 			}
-			catch (Exception e) {
-				if (useFinderCache) {
-					FinderCacheUtil.removeResult(finderPath, finderArgs);
-				}
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -1280,16 +1270,16 @@ public class LayoutRevisionPersistenceImpl
 			return layoutRevision;
 		}
 
-		StringBundler msg = new StringBundler(4);
+		StringBundler sb = new StringBundler(4);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("status=");
-		msg.append(status);
+		sb.append("status=");
+		sb.append(status);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchLayoutRevisionException(msg.toString());
+		throw new NoSuchLayoutRevisionException(sb.toString());
 	}
 
 	/**
@@ -1333,16 +1323,16 @@ public class LayoutRevisionPersistenceImpl
 			return layoutRevision;
 		}
 
-		StringBundler msg = new StringBundler(4);
+		StringBundler sb = new StringBundler(4);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("status=");
-		msg.append(status);
+		sb.append("status=");
+		sb.append(status);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchLayoutRevisionException(msg.toString());
+		throw new NoSuchLayoutRevisionException(sb.toString());
 	}
 
 	/**
@@ -1406,8 +1396,8 @@ public class LayoutRevisionPersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -1418,102 +1408,102 @@ public class LayoutRevisionPersistenceImpl
 		Session session, LayoutRevision layoutRevision, int status,
 		OrderByComparator<LayoutRevision> orderByComparator, boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				4 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(3);
+			sb = new StringBundler(3);
 		}
 
-		query.append(_SQL_SELECT_LAYOUTREVISION_WHERE);
+		sb.append(_SQL_SELECT_LAYOUTREVISION_WHERE);
 
-		query.append(_FINDER_COLUMN_STATUS_STATUS_2);
+		sb.append(_FINDER_COLUMN_STATUS_STATUS_2);
 
 		if (orderByComparator != null) {
 			String[] orderByConditionFields =
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(LayoutRevisionModelImpl.ORDER_BY_JPQL);
+			sb.append(LayoutRevisionModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
-		qPos.add(status);
+		queryPos.add(status);
 
 		if (orderByComparator != null) {
 			for (Object orderByConditionValue :
 					orderByComparator.getOrderByConditionValues(
 						layoutRevision)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<LayoutRevision> list = q.list();
+		List<LayoutRevision> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -1550,37 +1540,34 @@ public class LayoutRevisionPersistenceImpl
 
 		Object[] finderArgs = new Object[] {status};
 
-		Long count = (Long)FinderCacheUtil.getResult(
-			finderPath, finderArgs, this);
+		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
 
 		if (count == null) {
-			StringBundler query = new StringBundler(2);
+			StringBundler sb = new StringBundler(2);
 
-			query.append(_SQL_COUNT_LAYOUTREVISION_WHERE);
+			sb.append(_SQL_COUNT_LAYOUTREVISION_WHERE);
 
-			query.append(_FINDER_COLUMN_STATUS_STATUS_2);
+			sb.append(_FINDER_COLUMN_STATUS_STATUS_2);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(status);
+				queryPos.add(status);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
 				FinderCacheUtil.putResult(finderPath, finderArgs, count);
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -1699,7 +1686,7 @@ public class LayoutRevisionPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<LayoutRevision>)FinderCacheUtil.getResult(
-				finderPath, finderArgs, this);
+				finderPath, finderArgs);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (LayoutRevision layoutRevision : list) {
@@ -1716,47 +1703,47 @@ public class LayoutRevisionPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					4 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(4);
+				sb = new StringBundler(4);
 			}
 
-			query.append(_SQL_SELECT_LAYOUTREVISION_WHERE);
+			sb.append(_SQL_SELECT_LAYOUTREVISION_WHERE);
 
-			query.append(_FINDER_COLUMN_L_H_LAYOUTSETBRANCHID_2);
+			sb.append(_FINDER_COLUMN_L_H_LAYOUTSETBRANCHID_2);
 
-			query.append(_FINDER_COLUMN_L_H_HEAD_2);
+			sb.append(_FINDER_COLUMN_L_H_HEAD_2);
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
 			else {
-				query.append(LayoutRevisionModelImpl.ORDER_BY_JPQL);
+				sb.append(LayoutRevisionModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(layoutSetBranchId);
+				queryPos.add(layoutSetBranchId);
 
-				qPos.add(head);
+				queryPos.add(head);
 
 				list = (List<LayoutRevision>)QueryUtil.list(
-					q, getDialect(), start, end);
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
@@ -1764,12 +1751,8 @@ public class LayoutRevisionPersistenceImpl
 					FinderCacheUtil.putResult(finderPath, finderArgs, list);
 				}
 			}
-			catch (Exception e) {
-				if (useFinderCache) {
-					FinderCacheUtil.removeResult(finderPath, finderArgs);
-				}
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -1801,19 +1784,19 @@ public class LayoutRevisionPersistenceImpl
 			return layoutRevision;
 		}
 
-		StringBundler msg = new StringBundler(6);
+		StringBundler sb = new StringBundler(6);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("layoutSetBranchId=");
-		msg.append(layoutSetBranchId);
+		sb.append("layoutSetBranchId=");
+		sb.append(layoutSetBranchId);
 
-		msg.append(", head=");
-		msg.append(head);
+		sb.append(", head=");
+		sb.append(head);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchLayoutRevisionException(msg.toString());
+		throw new NoSuchLayoutRevisionException(sb.toString());
 	}
 
 	/**
@@ -1861,19 +1844,19 @@ public class LayoutRevisionPersistenceImpl
 			return layoutRevision;
 		}
 
-		StringBundler msg = new StringBundler(6);
+		StringBundler sb = new StringBundler(6);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("layoutSetBranchId=");
-		msg.append(layoutSetBranchId);
+		sb.append("layoutSetBranchId=");
+		sb.append(layoutSetBranchId);
 
-		msg.append(", head=");
-		msg.append(head);
+		sb.append(", head=");
+		sb.append(head);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchLayoutRevisionException(msg.toString());
+		throw new NoSuchLayoutRevisionException(sb.toString());
 	}
 
 	/**
@@ -1942,8 +1925,8 @@ public class LayoutRevisionPersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -1955,106 +1938,106 @@ public class LayoutRevisionPersistenceImpl
 		boolean head, OrderByComparator<LayoutRevision> orderByComparator,
 		boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				5 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(4);
+			sb = new StringBundler(4);
 		}
 
-		query.append(_SQL_SELECT_LAYOUTREVISION_WHERE);
+		sb.append(_SQL_SELECT_LAYOUTREVISION_WHERE);
 
-		query.append(_FINDER_COLUMN_L_H_LAYOUTSETBRANCHID_2);
+		sb.append(_FINDER_COLUMN_L_H_LAYOUTSETBRANCHID_2);
 
-		query.append(_FINDER_COLUMN_L_H_HEAD_2);
+		sb.append(_FINDER_COLUMN_L_H_HEAD_2);
 
 		if (orderByComparator != null) {
 			String[] orderByConditionFields =
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(LayoutRevisionModelImpl.ORDER_BY_JPQL);
+			sb.append(LayoutRevisionModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
-		qPos.add(layoutSetBranchId);
+		queryPos.add(layoutSetBranchId);
 
-		qPos.add(head);
+		queryPos.add(head);
 
 		if (orderByComparator != null) {
 			for (Object orderByConditionValue :
 					orderByComparator.getOrderByConditionValues(
 						layoutRevision)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<LayoutRevision> list = q.list();
+		List<LayoutRevision> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -2094,41 +2077,38 @@ public class LayoutRevisionPersistenceImpl
 
 		Object[] finderArgs = new Object[] {layoutSetBranchId, head};
 
-		Long count = (Long)FinderCacheUtil.getResult(
-			finderPath, finderArgs, this);
+		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
 
 		if (count == null) {
-			StringBundler query = new StringBundler(3);
+			StringBundler sb = new StringBundler(3);
 
-			query.append(_SQL_COUNT_LAYOUTREVISION_WHERE);
+			sb.append(_SQL_COUNT_LAYOUTREVISION_WHERE);
 
-			query.append(_FINDER_COLUMN_L_H_LAYOUTSETBRANCHID_2);
+			sb.append(_FINDER_COLUMN_L_H_LAYOUTSETBRANCHID_2);
 
-			query.append(_FINDER_COLUMN_L_H_HEAD_2);
+			sb.append(_FINDER_COLUMN_L_H_HEAD_2);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(layoutSetBranchId);
+				queryPos.add(layoutSetBranchId);
 
-				qPos.add(head);
+				queryPos.add(head);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
 				FinderCacheUtil.putResult(finderPath, finderArgs, count);
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -2248,7 +2228,7 @@ public class LayoutRevisionPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<LayoutRevision>)FinderCacheUtil.getResult(
-				finderPath, finderArgs, this);
+				finderPath, finderArgs);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (LayoutRevision layoutRevision : list) {
@@ -2265,47 +2245,47 @@ public class LayoutRevisionPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					4 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(4);
+				sb = new StringBundler(4);
 			}
 
-			query.append(_SQL_SELECT_LAYOUTREVISION_WHERE);
+			sb.append(_SQL_SELECT_LAYOUTREVISION_WHERE);
 
-			query.append(_FINDER_COLUMN_L_P_LAYOUTSETBRANCHID_2);
+			sb.append(_FINDER_COLUMN_L_P_LAYOUTSETBRANCHID_2);
 
-			query.append(_FINDER_COLUMN_L_P_PLID_2);
+			sb.append(_FINDER_COLUMN_L_P_PLID_2);
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
 			else {
-				query.append(LayoutRevisionModelImpl.ORDER_BY_JPQL);
+				sb.append(LayoutRevisionModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(layoutSetBranchId);
+				queryPos.add(layoutSetBranchId);
 
-				qPos.add(plid);
+				queryPos.add(plid);
 
 				list = (List<LayoutRevision>)QueryUtil.list(
-					q, getDialect(), start, end);
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
@@ -2313,12 +2293,8 @@ public class LayoutRevisionPersistenceImpl
 					FinderCacheUtil.putResult(finderPath, finderArgs, list);
 				}
 			}
-			catch (Exception e) {
-				if (useFinderCache) {
-					FinderCacheUtil.removeResult(finderPath, finderArgs);
-				}
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -2350,19 +2326,19 @@ public class LayoutRevisionPersistenceImpl
 			return layoutRevision;
 		}
 
-		StringBundler msg = new StringBundler(6);
+		StringBundler sb = new StringBundler(6);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("layoutSetBranchId=");
-		msg.append(layoutSetBranchId);
+		sb.append("layoutSetBranchId=");
+		sb.append(layoutSetBranchId);
 
-		msg.append(", plid=");
-		msg.append(plid);
+		sb.append(", plid=");
+		sb.append(plid);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchLayoutRevisionException(msg.toString());
+		throw new NoSuchLayoutRevisionException(sb.toString());
 	}
 
 	/**
@@ -2410,19 +2386,19 @@ public class LayoutRevisionPersistenceImpl
 			return layoutRevision;
 		}
 
-		StringBundler msg = new StringBundler(6);
+		StringBundler sb = new StringBundler(6);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("layoutSetBranchId=");
-		msg.append(layoutSetBranchId);
+		sb.append("layoutSetBranchId=");
+		sb.append(layoutSetBranchId);
 
-		msg.append(", plid=");
-		msg.append(plid);
+		sb.append(", plid=");
+		sb.append(plid);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchLayoutRevisionException(msg.toString());
+		throw new NoSuchLayoutRevisionException(sb.toString());
 	}
 
 	/**
@@ -2491,8 +2467,8 @@ public class LayoutRevisionPersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -2504,106 +2480,106 @@ public class LayoutRevisionPersistenceImpl
 		long plid, OrderByComparator<LayoutRevision> orderByComparator,
 		boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				5 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(4);
+			sb = new StringBundler(4);
 		}
 
-		query.append(_SQL_SELECT_LAYOUTREVISION_WHERE);
+		sb.append(_SQL_SELECT_LAYOUTREVISION_WHERE);
 
-		query.append(_FINDER_COLUMN_L_P_LAYOUTSETBRANCHID_2);
+		sb.append(_FINDER_COLUMN_L_P_LAYOUTSETBRANCHID_2);
 
-		query.append(_FINDER_COLUMN_L_P_PLID_2);
+		sb.append(_FINDER_COLUMN_L_P_PLID_2);
 
 		if (orderByComparator != null) {
 			String[] orderByConditionFields =
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(LayoutRevisionModelImpl.ORDER_BY_JPQL);
+			sb.append(LayoutRevisionModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
-		qPos.add(layoutSetBranchId);
+		queryPos.add(layoutSetBranchId);
 
-		qPos.add(plid);
+		queryPos.add(plid);
 
 		if (orderByComparator != null) {
 			for (Object orderByConditionValue :
 					orderByComparator.getOrderByConditionValues(
 						layoutRevision)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<LayoutRevision> list = q.list();
+		List<LayoutRevision> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -2643,41 +2619,38 @@ public class LayoutRevisionPersistenceImpl
 
 		Object[] finderArgs = new Object[] {layoutSetBranchId, plid};
 
-		Long count = (Long)FinderCacheUtil.getResult(
-			finderPath, finderArgs, this);
+		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
 
 		if (count == null) {
-			StringBundler query = new StringBundler(3);
+			StringBundler sb = new StringBundler(3);
 
-			query.append(_SQL_COUNT_LAYOUTREVISION_WHERE);
+			sb.append(_SQL_COUNT_LAYOUTREVISION_WHERE);
 
-			query.append(_FINDER_COLUMN_L_P_LAYOUTSETBRANCHID_2);
+			sb.append(_FINDER_COLUMN_L_P_LAYOUTSETBRANCHID_2);
 
-			query.append(_FINDER_COLUMN_L_P_PLID_2);
+			sb.append(_FINDER_COLUMN_L_P_PLID_2);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(layoutSetBranchId);
+				queryPos.add(layoutSetBranchId);
 
-				qPos.add(plid);
+				queryPos.add(plid);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
 				FinderCacheUtil.putResult(finderPath, finderArgs, count);
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -2797,7 +2770,7 @@ public class LayoutRevisionPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<LayoutRevision>)FinderCacheUtil.getResult(
-				finderPath, finderArgs, this);
+				finderPath, finderArgs);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (LayoutRevision layoutRevision : list) {
@@ -2814,47 +2787,47 @@ public class LayoutRevisionPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					4 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(4);
+				sb = new StringBundler(4);
 			}
 
-			query.append(_SQL_SELECT_LAYOUTREVISION_WHERE);
+			sb.append(_SQL_SELECT_LAYOUTREVISION_WHERE);
 
-			query.append(_FINDER_COLUMN_L_S_LAYOUTSETBRANCHID_2);
+			sb.append(_FINDER_COLUMN_L_S_LAYOUTSETBRANCHID_2);
 
-			query.append(_FINDER_COLUMN_L_S_STATUS_2);
+			sb.append(_FINDER_COLUMN_L_S_STATUS_2);
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
 			else {
-				query.append(LayoutRevisionModelImpl.ORDER_BY_JPQL);
+				sb.append(LayoutRevisionModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(layoutSetBranchId);
+				queryPos.add(layoutSetBranchId);
 
-				qPos.add(status);
+				queryPos.add(status);
 
 				list = (List<LayoutRevision>)QueryUtil.list(
-					q, getDialect(), start, end);
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
@@ -2862,12 +2835,8 @@ public class LayoutRevisionPersistenceImpl
 					FinderCacheUtil.putResult(finderPath, finderArgs, list);
 				}
 			}
-			catch (Exception e) {
-				if (useFinderCache) {
-					FinderCacheUtil.removeResult(finderPath, finderArgs);
-				}
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -2899,19 +2868,19 @@ public class LayoutRevisionPersistenceImpl
 			return layoutRevision;
 		}
 
-		StringBundler msg = new StringBundler(6);
+		StringBundler sb = new StringBundler(6);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("layoutSetBranchId=");
-		msg.append(layoutSetBranchId);
+		sb.append("layoutSetBranchId=");
+		sb.append(layoutSetBranchId);
 
-		msg.append(", status=");
-		msg.append(status);
+		sb.append(", status=");
+		sb.append(status);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchLayoutRevisionException(msg.toString());
+		throw new NoSuchLayoutRevisionException(sb.toString());
 	}
 
 	/**
@@ -2959,19 +2928,19 @@ public class LayoutRevisionPersistenceImpl
 			return layoutRevision;
 		}
 
-		StringBundler msg = new StringBundler(6);
+		StringBundler sb = new StringBundler(6);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("layoutSetBranchId=");
-		msg.append(layoutSetBranchId);
+		sb.append("layoutSetBranchId=");
+		sb.append(layoutSetBranchId);
 
-		msg.append(", status=");
-		msg.append(status);
+		sb.append(", status=");
+		sb.append(status);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchLayoutRevisionException(msg.toString());
+		throw new NoSuchLayoutRevisionException(sb.toString());
 	}
 
 	/**
@@ -3040,8 +3009,8 @@ public class LayoutRevisionPersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -3053,106 +3022,106 @@ public class LayoutRevisionPersistenceImpl
 		int status, OrderByComparator<LayoutRevision> orderByComparator,
 		boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				5 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(4);
+			sb = new StringBundler(4);
 		}
 
-		query.append(_SQL_SELECT_LAYOUTREVISION_WHERE);
+		sb.append(_SQL_SELECT_LAYOUTREVISION_WHERE);
 
-		query.append(_FINDER_COLUMN_L_S_LAYOUTSETBRANCHID_2);
+		sb.append(_FINDER_COLUMN_L_S_LAYOUTSETBRANCHID_2);
 
-		query.append(_FINDER_COLUMN_L_S_STATUS_2);
+		sb.append(_FINDER_COLUMN_L_S_STATUS_2);
 
 		if (orderByComparator != null) {
 			String[] orderByConditionFields =
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(LayoutRevisionModelImpl.ORDER_BY_JPQL);
+			sb.append(LayoutRevisionModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
-		qPos.add(layoutSetBranchId);
+		queryPos.add(layoutSetBranchId);
 
-		qPos.add(status);
+		queryPos.add(status);
 
 		if (orderByComparator != null) {
 			for (Object orderByConditionValue :
 					orderByComparator.getOrderByConditionValues(
 						layoutRevision)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<LayoutRevision> list = q.list();
+		List<LayoutRevision> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -3192,41 +3161,38 @@ public class LayoutRevisionPersistenceImpl
 
 		Object[] finderArgs = new Object[] {layoutSetBranchId, status};
 
-		Long count = (Long)FinderCacheUtil.getResult(
-			finderPath, finderArgs, this);
+		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
 
 		if (count == null) {
-			StringBundler query = new StringBundler(3);
+			StringBundler sb = new StringBundler(3);
 
-			query.append(_SQL_COUNT_LAYOUTREVISION_WHERE);
+			sb.append(_SQL_COUNT_LAYOUTREVISION_WHERE);
 
-			query.append(_FINDER_COLUMN_L_S_LAYOUTSETBRANCHID_2);
+			sb.append(_FINDER_COLUMN_L_S_LAYOUTSETBRANCHID_2);
 
-			query.append(_FINDER_COLUMN_L_S_STATUS_2);
+			sb.append(_FINDER_COLUMN_L_S_STATUS_2);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(layoutSetBranchId);
+				queryPos.add(layoutSetBranchId);
 
-				qPos.add(status);
+				queryPos.add(status);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
 				FinderCacheUtil.putResult(finderPath, finderArgs, count);
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -3344,7 +3310,7 @@ public class LayoutRevisionPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<LayoutRevision>)FinderCacheUtil.getResult(
-				finderPath, finderArgs, this);
+				finderPath, finderArgs);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (LayoutRevision layoutRevision : list) {
@@ -3360,47 +3326,47 @@ public class LayoutRevisionPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					4 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(4);
+				sb = new StringBundler(4);
 			}
 
-			query.append(_SQL_SELECT_LAYOUTREVISION_WHERE);
+			sb.append(_SQL_SELECT_LAYOUTREVISION_WHERE);
 
-			query.append(_FINDER_COLUMN_H_P_HEAD_2);
+			sb.append(_FINDER_COLUMN_H_P_HEAD_2);
 
-			query.append(_FINDER_COLUMN_H_P_PLID_2);
+			sb.append(_FINDER_COLUMN_H_P_PLID_2);
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
 			else {
-				query.append(LayoutRevisionModelImpl.ORDER_BY_JPQL);
+				sb.append(LayoutRevisionModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(head);
+				queryPos.add(head);
 
-				qPos.add(plid);
+				queryPos.add(plid);
 
 				list = (List<LayoutRevision>)QueryUtil.list(
-					q, getDialect(), start, end);
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
@@ -3408,12 +3374,8 @@ public class LayoutRevisionPersistenceImpl
 					FinderCacheUtil.putResult(finderPath, finderArgs, list);
 				}
 			}
-			catch (Exception e) {
-				if (useFinderCache) {
-					FinderCacheUtil.removeResult(finderPath, finderArgs);
-				}
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -3445,19 +3407,19 @@ public class LayoutRevisionPersistenceImpl
 			return layoutRevision;
 		}
 
-		StringBundler msg = new StringBundler(6);
+		StringBundler sb = new StringBundler(6);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("head=");
-		msg.append(head);
+		sb.append("head=");
+		sb.append(head);
 
-		msg.append(", plid=");
-		msg.append(plid);
+		sb.append(", plid=");
+		sb.append(plid);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchLayoutRevisionException(msg.toString());
+		throw new NoSuchLayoutRevisionException(sb.toString());
 	}
 
 	/**
@@ -3505,19 +3467,19 @@ public class LayoutRevisionPersistenceImpl
 			return layoutRevision;
 		}
 
-		StringBundler msg = new StringBundler(6);
+		StringBundler sb = new StringBundler(6);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("head=");
-		msg.append(head);
+		sb.append("head=");
+		sb.append(head);
 
-		msg.append(", plid=");
-		msg.append(plid);
+		sb.append(", plid=");
+		sb.append(plid);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchLayoutRevisionException(msg.toString());
+		throw new NoSuchLayoutRevisionException(sb.toString());
 	}
 
 	/**
@@ -3584,8 +3546,8 @@ public class LayoutRevisionPersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -3596,106 +3558,106 @@ public class LayoutRevisionPersistenceImpl
 		Session session, LayoutRevision layoutRevision, boolean head, long plid,
 		OrderByComparator<LayoutRevision> orderByComparator, boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				5 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(4);
+			sb = new StringBundler(4);
 		}
 
-		query.append(_SQL_SELECT_LAYOUTREVISION_WHERE);
+		sb.append(_SQL_SELECT_LAYOUTREVISION_WHERE);
 
-		query.append(_FINDER_COLUMN_H_P_HEAD_2);
+		sb.append(_FINDER_COLUMN_H_P_HEAD_2);
 
-		query.append(_FINDER_COLUMN_H_P_PLID_2);
+		sb.append(_FINDER_COLUMN_H_P_PLID_2);
 
 		if (orderByComparator != null) {
 			String[] orderByConditionFields =
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(LayoutRevisionModelImpl.ORDER_BY_JPQL);
+			sb.append(LayoutRevisionModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
-		qPos.add(head);
+		queryPos.add(head);
 
-		qPos.add(plid);
+		queryPos.add(plid);
 
 		if (orderByComparator != null) {
 			for (Object orderByConditionValue :
 					orderByComparator.getOrderByConditionValues(
 						layoutRevision)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<LayoutRevision> list = q.list();
+		List<LayoutRevision> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -3734,41 +3696,38 @@ public class LayoutRevisionPersistenceImpl
 
 		Object[] finderArgs = new Object[] {head, plid};
 
-		Long count = (Long)FinderCacheUtil.getResult(
-			finderPath, finderArgs, this);
+		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
 
 		if (count == null) {
-			StringBundler query = new StringBundler(3);
+			StringBundler sb = new StringBundler(3);
 
-			query.append(_SQL_COUNT_LAYOUTREVISION_WHERE);
+			sb.append(_SQL_COUNT_LAYOUTREVISION_WHERE);
 
-			query.append(_FINDER_COLUMN_H_P_HEAD_2);
+			sb.append(_FINDER_COLUMN_H_P_HEAD_2);
 
-			query.append(_FINDER_COLUMN_H_P_PLID_2);
+			sb.append(_FINDER_COLUMN_H_P_PLID_2);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(head);
+				queryPos.add(head);
 
-				qPos.add(plid);
+				queryPos.add(plid);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
 				FinderCacheUtil.putResult(finderPath, finderArgs, count);
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -3873,7 +3832,7 @@ public class LayoutRevisionPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<LayoutRevision>)FinderCacheUtil.getResult(
-				finderPath, finderArgs, this);
+				finderPath, finderArgs);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (LayoutRevision layoutRevision : list) {
@@ -3889,47 +3848,47 @@ public class LayoutRevisionPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					4 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(4);
+				sb = new StringBundler(4);
 			}
 
-			query.append(_SQL_SELECT_LAYOUTREVISION_WHERE);
+			sb.append(_SQL_SELECT_LAYOUTREVISION_WHERE);
 
-			query.append(_FINDER_COLUMN_P_NOTS_PLID_2);
+			sb.append(_FINDER_COLUMN_P_NOTS_PLID_2);
 
-			query.append(_FINDER_COLUMN_P_NOTS_STATUS_2);
+			sb.append(_FINDER_COLUMN_P_NOTS_STATUS_2);
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
 			else {
-				query.append(LayoutRevisionModelImpl.ORDER_BY_JPQL);
+				sb.append(LayoutRevisionModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(plid);
+				queryPos.add(plid);
 
-				qPos.add(status);
+				queryPos.add(status);
 
 				list = (List<LayoutRevision>)QueryUtil.list(
-					q, getDialect(), start, end);
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
@@ -3937,12 +3896,8 @@ public class LayoutRevisionPersistenceImpl
 					FinderCacheUtil.putResult(finderPath, finderArgs, list);
 				}
 			}
-			catch (Exception e) {
-				if (useFinderCache) {
-					FinderCacheUtil.removeResult(finderPath, finderArgs);
-				}
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -3974,19 +3929,19 @@ public class LayoutRevisionPersistenceImpl
 			return layoutRevision;
 		}
 
-		StringBundler msg = new StringBundler(6);
+		StringBundler sb = new StringBundler(6);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("plid=");
-		msg.append(plid);
+		sb.append("plid=");
+		sb.append(plid);
 
-		msg.append(", status!=");
-		msg.append(status);
+		sb.append(", status!=");
+		sb.append(status);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchLayoutRevisionException(msg.toString());
+		throw new NoSuchLayoutRevisionException(sb.toString());
 	}
 
 	/**
@@ -4034,19 +3989,19 @@ public class LayoutRevisionPersistenceImpl
 			return layoutRevision;
 		}
 
-		StringBundler msg = new StringBundler(6);
+		StringBundler sb = new StringBundler(6);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("plid=");
-		msg.append(plid);
+		sb.append("plid=");
+		sb.append(plid);
 
-		msg.append(", status!=");
-		msg.append(status);
+		sb.append(", status!=");
+		sb.append(status);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchLayoutRevisionException(msg.toString());
+		throw new NoSuchLayoutRevisionException(sb.toString());
 	}
 
 	/**
@@ -4114,8 +4069,8 @@ public class LayoutRevisionPersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -4126,106 +4081,106 @@ public class LayoutRevisionPersistenceImpl
 		Session session, LayoutRevision layoutRevision, long plid, int status,
 		OrderByComparator<LayoutRevision> orderByComparator, boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				5 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(4);
+			sb = new StringBundler(4);
 		}
 
-		query.append(_SQL_SELECT_LAYOUTREVISION_WHERE);
+		sb.append(_SQL_SELECT_LAYOUTREVISION_WHERE);
 
-		query.append(_FINDER_COLUMN_P_NOTS_PLID_2);
+		sb.append(_FINDER_COLUMN_P_NOTS_PLID_2);
 
-		query.append(_FINDER_COLUMN_P_NOTS_STATUS_2);
+		sb.append(_FINDER_COLUMN_P_NOTS_STATUS_2);
 
 		if (orderByComparator != null) {
 			String[] orderByConditionFields =
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(LayoutRevisionModelImpl.ORDER_BY_JPQL);
+			sb.append(LayoutRevisionModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
-		qPos.add(plid);
+		queryPos.add(plid);
 
-		qPos.add(status);
+		queryPos.add(status);
 
 		if (orderByComparator != null) {
 			for (Object orderByConditionValue :
 					orderByComparator.getOrderByConditionValues(
 						layoutRevision)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<LayoutRevision> list = q.list();
+		List<LayoutRevision> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -4264,41 +4219,38 @@ public class LayoutRevisionPersistenceImpl
 
 		Object[] finderArgs = new Object[] {plid, status};
 
-		Long count = (Long)FinderCacheUtil.getResult(
-			finderPath, finderArgs, this);
+		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
 
 		if (count == null) {
-			StringBundler query = new StringBundler(3);
+			StringBundler sb = new StringBundler(3);
 
-			query.append(_SQL_COUNT_LAYOUTREVISION_WHERE);
+			sb.append(_SQL_COUNT_LAYOUTREVISION_WHERE);
 
-			query.append(_FINDER_COLUMN_P_NOTS_PLID_2);
+			sb.append(_FINDER_COLUMN_P_NOTS_PLID_2);
 
-			query.append(_FINDER_COLUMN_P_NOTS_STATUS_2);
+			sb.append(_FINDER_COLUMN_P_NOTS_STATUS_2);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(plid);
+				queryPos.add(plid);
 
-				qPos.add(status);
+				queryPos.add(status);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
 				FinderCacheUtil.putResult(finderPath, finderArgs, count);
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -4430,7 +4382,7 @@ public class LayoutRevisionPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<LayoutRevision>)FinderCacheUtil.getResult(
-				finderPath, finderArgs, this);
+				finderPath, finderArgs);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (LayoutRevision layoutRevision : list) {
@@ -4449,51 +4401,51 @@ public class LayoutRevisionPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					5 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(5);
+				sb = new StringBundler(5);
 			}
 
-			query.append(_SQL_SELECT_LAYOUTREVISION_WHERE);
+			sb.append(_SQL_SELECT_LAYOUTREVISION_WHERE);
 
-			query.append(_FINDER_COLUMN_L_L_P_LAYOUTSETBRANCHID_2);
+			sb.append(_FINDER_COLUMN_L_L_P_LAYOUTSETBRANCHID_2);
 
-			query.append(_FINDER_COLUMN_L_L_P_LAYOUTBRANCHID_2);
+			sb.append(_FINDER_COLUMN_L_L_P_LAYOUTBRANCHID_2);
 
-			query.append(_FINDER_COLUMN_L_L_P_PLID_2);
+			sb.append(_FINDER_COLUMN_L_L_P_PLID_2);
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
 			else {
-				query.append(LayoutRevisionModelImpl.ORDER_BY_JPQL);
+				sb.append(LayoutRevisionModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(layoutSetBranchId);
+				queryPos.add(layoutSetBranchId);
 
-				qPos.add(layoutBranchId);
+				queryPos.add(layoutBranchId);
 
-				qPos.add(plid);
+				queryPos.add(plid);
 
 				list = (List<LayoutRevision>)QueryUtil.list(
-					q, getDialect(), start, end);
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
@@ -4501,12 +4453,8 @@ public class LayoutRevisionPersistenceImpl
 					FinderCacheUtil.putResult(finderPath, finderArgs, list);
 				}
 			}
-			catch (Exception e) {
-				if (useFinderCache) {
-					FinderCacheUtil.removeResult(finderPath, finderArgs);
-				}
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -4539,22 +4487,22 @@ public class LayoutRevisionPersistenceImpl
 			return layoutRevision;
 		}
 
-		StringBundler msg = new StringBundler(8);
+		StringBundler sb = new StringBundler(8);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("layoutSetBranchId=");
-		msg.append(layoutSetBranchId);
+		sb.append("layoutSetBranchId=");
+		sb.append(layoutSetBranchId);
 
-		msg.append(", layoutBranchId=");
-		msg.append(layoutBranchId);
+		sb.append(", layoutBranchId=");
+		sb.append(layoutBranchId);
 
-		msg.append(", plid=");
-		msg.append(plid);
+		sb.append(", plid=");
+		sb.append(plid);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchLayoutRevisionException(msg.toString());
+		throw new NoSuchLayoutRevisionException(sb.toString());
 	}
 
 	/**
@@ -4604,22 +4552,22 @@ public class LayoutRevisionPersistenceImpl
 			return layoutRevision;
 		}
 
-		StringBundler msg = new StringBundler(8);
+		StringBundler sb = new StringBundler(8);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("layoutSetBranchId=");
-		msg.append(layoutSetBranchId);
+		sb.append("layoutSetBranchId=");
+		sb.append(layoutSetBranchId);
 
-		msg.append(", layoutBranchId=");
-		msg.append(layoutBranchId);
+		sb.append(", layoutBranchId=");
+		sb.append(layoutBranchId);
 
-		msg.append(", plid=");
-		msg.append(plid);
+		sb.append(", plid=");
+		sb.append(plid);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchLayoutRevisionException(msg.toString());
+		throw new NoSuchLayoutRevisionException(sb.toString());
 	}
 
 	/**
@@ -4691,8 +4639,8 @@ public class LayoutRevisionPersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -4704,110 +4652,110 @@ public class LayoutRevisionPersistenceImpl
 		long layoutBranchId, long plid,
 		OrderByComparator<LayoutRevision> orderByComparator, boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				6 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(5);
+			sb = new StringBundler(5);
 		}
 
-		query.append(_SQL_SELECT_LAYOUTREVISION_WHERE);
+		sb.append(_SQL_SELECT_LAYOUTREVISION_WHERE);
 
-		query.append(_FINDER_COLUMN_L_L_P_LAYOUTSETBRANCHID_2);
+		sb.append(_FINDER_COLUMN_L_L_P_LAYOUTSETBRANCHID_2);
 
-		query.append(_FINDER_COLUMN_L_L_P_LAYOUTBRANCHID_2);
+		sb.append(_FINDER_COLUMN_L_L_P_LAYOUTBRANCHID_2);
 
-		query.append(_FINDER_COLUMN_L_L_P_PLID_2);
+		sb.append(_FINDER_COLUMN_L_L_P_PLID_2);
 
 		if (orderByComparator != null) {
 			String[] orderByConditionFields =
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(LayoutRevisionModelImpl.ORDER_BY_JPQL);
+			sb.append(LayoutRevisionModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
-		qPos.add(layoutSetBranchId);
+		queryPos.add(layoutSetBranchId);
 
-		qPos.add(layoutBranchId);
+		queryPos.add(layoutBranchId);
 
-		qPos.add(plid);
+		queryPos.add(plid);
 
 		if (orderByComparator != null) {
 			for (Object orderByConditionValue :
 					orderByComparator.getOrderByConditionValues(
 						layoutRevision)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<LayoutRevision> list = q.list();
+		List<LayoutRevision> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -4855,45 +4803,42 @@ public class LayoutRevisionPersistenceImpl
 			layoutSetBranchId, layoutBranchId, plid
 		};
 
-		Long count = (Long)FinderCacheUtil.getResult(
-			finderPath, finderArgs, this);
+		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
 
 		if (count == null) {
-			StringBundler query = new StringBundler(4);
+			StringBundler sb = new StringBundler(4);
 
-			query.append(_SQL_COUNT_LAYOUTREVISION_WHERE);
+			sb.append(_SQL_COUNT_LAYOUTREVISION_WHERE);
 
-			query.append(_FINDER_COLUMN_L_L_P_LAYOUTSETBRANCHID_2);
+			sb.append(_FINDER_COLUMN_L_L_P_LAYOUTSETBRANCHID_2);
 
-			query.append(_FINDER_COLUMN_L_L_P_LAYOUTBRANCHID_2);
+			sb.append(_FINDER_COLUMN_L_L_P_LAYOUTBRANCHID_2);
 
-			query.append(_FINDER_COLUMN_L_L_P_PLID_2);
+			sb.append(_FINDER_COLUMN_L_L_P_PLID_2);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(layoutSetBranchId);
+				queryPos.add(layoutSetBranchId);
 
-				qPos.add(layoutBranchId);
+				queryPos.add(layoutBranchId);
 
-				qPos.add(plid);
+				queryPos.add(plid);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
 				FinderCacheUtil.putResult(finderPath, finderArgs, count);
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -5029,7 +4974,7 @@ public class LayoutRevisionPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<LayoutRevision>)FinderCacheUtil.getResult(
-				finderPath, finderArgs, this);
+				finderPath, finderArgs);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (LayoutRevision layoutRevision : list) {
@@ -5048,51 +4993,51 @@ public class LayoutRevisionPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					5 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(5);
+				sb = new StringBundler(5);
 			}
 
-			query.append(_SQL_SELECT_LAYOUTREVISION_WHERE);
+			sb.append(_SQL_SELECT_LAYOUTREVISION_WHERE);
 
-			query.append(_FINDER_COLUMN_L_P_P_LAYOUTSETBRANCHID_2);
+			sb.append(_FINDER_COLUMN_L_P_P_LAYOUTSETBRANCHID_2);
 
-			query.append(_FINDER_COLUMN_L_P_P_PARENTLAYOUTREVISIONID_2);
+			sb.append(_FINDER_COLUMN_L_P_P_PARENTLAYOUTREVISIONID_2);
 
-			query.append(_FINDER_COLUMN_L_P_P_PLID_2);
+			sb.append(_FINDER_COLUMN_L_P_P_PLID_2);
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
 			else {
-				query.append(LayoutRevisionModelImpl.ORDER_BY_JPQL);
+				sb.append(LayoutRevisionModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(layoutSetBranchId);
+				queryPos.add(layoutSetBranchId);
 
-				qPos.add(parentLayoutRevisionId);
+				queryPos.add(parentLayoutRevisionId);
 
-				qPos.add(plid);
+				queryPos.add(plid);
 
 				list = (List<LayoutRevision>)QueryUtil.list(
-					q, getDialect(), start, end);
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
@@ -5100,12 +5045,8 @@ public class LayoutRevisionPersistenceImpl
 					FinderCacheUtil.putResult(finderPath, finderArgs, list);
 				}
 			}
-			catch (Exception e) {
-				if (useFinderCache) {
-					FinderCacheUtil.removeResult(finderPath, finderArgs);
-				}
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -5138,22 +5079,22 @@ public class LayoutRevisionPersistenceImpl
 			return layoutRevision;
 		}
 
-		StringBundler msg = new StringBundler(8);
+		StringBundler sb = new StringBundler(8);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("layoutSetBranchId=");
-		msg.append(layoutSetBranchId);
+		sb.append("layoutSetBranchId=");
+		sb.append(layoutSetBranchId);
 
-		msg.append(", parentLayoutRevisionId=");
-		msg.append(parentLayoutRevisionId);
+		sb.append(", parentLayoutRevisionId=");
+		sb.append(parentLayoutRevisionId);
 
-		msg.append(", plid=");
-		msg.append(plid);
+		sb.append(", plid=");
+		sb.append(plid);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchLayoutRevisionException(msg.toString());
+		throw new NoSuchLayoutRevisionException(sb.toString());
 	}
 
 	/**
@@ -5204,22 +5145,22 @@ public class LayoutRevisionPersistenceImpl
 			return layoutRevision;
 		}
 
-		StringBundler msg = new StringBundler(8);
+		StringBundler sb = new StringBundler(8);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("layoutSetBranchId=");
-		msg.append(layoutSetBranchId);
+		sb.append("layoutSetBranchId=");
+		sb.append(layoutSetBranchId);
 
-		msg.append(", parentLayoutRevisionId=");
-		msg.append(parentLayoutRevisionId);
+		sb.append(", parentLayoutRevisionId=");
+		sb.append(parentLayoutRevisionId);
 
-		msg.append(", plid=");
-		msg.append(plid);
+		sb.append(", plid=");
+		sb.append(plid);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchLayoutRevisionException(msg.toString());
+		throw new NoSuchLayoutRevisionException(sb.toString());
 	}
 
 	/**
@@ -5293,8 +5234,8 @@ public class LayoutRevisionPersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -5306,110 +5247,110 @@ public class LayoutRevisionPersistenceImpl
 		long parentLayoutRevisionId, long plid,
 		OrderByComparator<LayoutRevision> orderByComparator, boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				6 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(5);
+			sb = new StringBundler(5);
 		}
 
-		query.append(_SQL_SELECT_LAYOUTREVISION_WHERE);
+		sb.append(_SQL_SELECT_LAYOUTREVISION_WHERE);
 
-		query.append(_FINDER_COLUMN_L_P_P_LAYOUTSETBRANCHID_2);
+		sb.append(_FINDER_COLUMN_L_P_P_LAYOUTSETBRANCHID_2);
 
-		query.append(_FINDER_COLUMN_L_P_P_PARENTLAYOUTREVISIONID_2);
+		sb.append(_FINDER_COLUMN_L_P_P_PARENTLAYOUTREVISIONID_2);
 
-		query.append(_FINDER_COLUMN_L_P_P_PLID_2);
+		sb.append(_FINDER_COLUMN_L_P_P_PLID_2);
 
 		if (orderByComparator != null) {
 			String[] orderByConditionFields =
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(LayoutRevisionModelImpl.ORDER_BY_JPQL);
+			sb.append(LayoutRevisionModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
-		qPos.add(layoutSetBranchId);
+		queryPos.add(layoutSetBranchId);
 
-		qPos.add(parentLayoutRevisionId);
+		queryPos.add(parentLayoutRevisionId);
 
-		qPos.add(plid);
+		queryPos.add(plid);
 
 		if (orderByComparator != null) {
 			for (Object orderByConditionValue :
 					orderByComparator.getOrderByConditionValues(
 						layoutRevision)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<LayoutRevision> list = q.list();
+		List<LayoutRevision> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -5457,45 +5398,42 @@ public class LayoutRevisionPersistenceImpl
 			layoutSetBranchId, parentLayoutRevisionId, plid
 		};
 
-		Long count = (Long)FinderCacheUtil.getResult(
-			finderPath, finderArgs, this);
+		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
 
 		if (count == null) {
-			StringBundler query = new StringBundler(4);
+			StringBundler sb = new StringBundler(4);
 
-			query.append(_SQL_COUNT_LAYOUTREVISION_WHERE);
+			sb.append(_SQL_COUNT_LAYOUTREVISION_WHERE);
 
-			query.append(_FINDER_COLUMN_L_P_P_LAYOUTSETBRANCHID_2);
+			sb.append(_FINDER_COLUMN_L_P_P_LAYOUTSETBRANCHID_2);
 
-			query.append(_FINDER_COLUMN_L_P_P_PARENTLAYOUTREVISIONID_2);
+			sb.append(_FINDER_COLUMN_L_P_P_PARENTLAYOUTREVISIONID_2);
 
-			query.append(_FINDER_COLUMN_L_P_P_PLID_2);
+			sb.append(_FINDER_COLUMN_L_P_P_PLID_2);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(layoutSetBranchId);
+				queryPos.add(layoutSetBranchId);
 
-				qPos.add(parentLayoutRevisionId);
+				queryPos.add(parentLayoutRevisionId);
 
-				qPos.add(plid);
+				queryPos.add(plid);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
 				FinderCacheUtil.putResult(finderPath, finderArgs, count);
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -5535,26 +5473,26 @@ public class LayoutRevisionPersistenceImpl
 			layoutSetBranchId, head, plid);
 
 		if (layoutRevision == null) {
-			StringBundler msg = new StringBundler(8);
+			StringBundler sb = new StringBundler(8);
 
-			msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+			sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-			msg.append("layoutSetBranchId=");
-			msg.append(layoutSetBranchId);
+			sb.append("layoutSetBranchId=");
+			sb.append(layoutSetBranchId);
 
-			msg.append(", head=");
-			msg.append(head);
+			sb.append(", head=");
+			sb.append(head);
 
-			msg.append(", plid=");
-			msg.append(plid);
+			sb.append(", plid=");
+			sb.append(plid);
 
-			msg.append("}");
+			sb.append("}");
 
 			if (_log.isDebugEnabled()) {
-				_log.debug(msg.toString());
+				_log.debug(sb.toString());
 			}
 
-			throw new NoSuchLayoutRevisionException(msg.toString());
+			throw new NoSuchLayoutRevisionException(sb.toString());
 		}
 
 		return layoutRevision;
@@ -5599,7 +5537,7 @@ public class LayoutRevisionPersistenceImpl
 
 		if (useFinderCache) {
 			result = FinderCacheUtil.getResult(
-				_finderPathFetchByL_H_P, finderArgs, this);
+				_finderPathFetchByL_H_P, finderArgs);
 		}
 
 		if (result instanceof LayoutRevision) {
@@ -5614,34 +5552,34 @@ public class LayoutRevisionPersistenceImpl
 		}
 
 		if (result == null) {
-			StringBundler query = new StringBundler(5);
+			StringBundler sb = new StringBundler(5);
 
-			query.append(_SQL_SELECT_LAYOUTREVISION_WHERE);
+			sb.append(_SQL_SELECT_LAYOUTREVISION_WHERE);
 
-			query.append(_FINDER_COLUMN_L_H_P_LAYOUTSETBRANCHID_2);
+			sb.append(_FINDER_COLUMN_L_H_P_LAYOUTSETBRANCHID_2);
 
-			query.append(_FINDER_COLUMN_L_H_P_HEAD_2);
+			sb.append(_FINDER_COLUMN_L_H_P_HEAD_2);
 
-			query.append(_FINDER_COLUMN_L_H_P_PLID_2);
+			sb.append(_FINDER_COLUMN_L_H_P_PLID_2);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(layoutSetBranchId);
+				queryPos.add(layoutSetBranchId);
 
-				qPos.add(head);
+				queryPos.add(head);
 
-				qPos.add(plid);
+				queryPos.add(plid);
 
-				List<LayoutRevision> list = q.list();
+				List<LayoutRevision> list = query.list();
 
 				if (list.isEmpty()) {
 					if (useFinderCache) {
@@ -5674,13 +5612,8 @@ public class LayoutRevisionPersistenceImpl
 					cacheResult(layoutRevision);
 				}
 			}
-			catch (Exception e) {
-				if (useFinderCache) {
-					FinderCacheUtil.removeResult(
-						_finderPathFetchByL_H_P, finderArgs);
-				}
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -5728,45 +5661,42 @@ public class LayoutRevisionPersistenceImpl
 
 		Object[] finderArgs = new Object[] {layoutSetBranchId, head, plid};
 
-		Long count = (Long)FinderCacheUtil.getResult(
-			finderPath, finderArgs, this);
+		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
 
 		if (count == null) {
-			StringBundler query = new StringBundler(4);
+			StringBundler sb = new StringBundler(4);
 
-			query.append(_SQL_COUNT_LAYOUTREVISION_WHERE);
+			sb.append(_SQL_COUNT_LAYOUTREVISION_WHERE);
 
-			query.append(_FINDER_COLUMN_L_H_P_LAYOUTSETBRANCHID_2);
+			sb.append(_FINDER_COLUMN_L_H_P_LAYOUTSETBRANCHID_2);
 
-			query.append(_FINDER_COLUMN_L_H_P_HEAD_2);
+			sb.append(_FINDER_COLUMN_L_H_P_HEAD_2);
 
-			query.append(_FINDER_COLUMN_L_H_P_PLID_2);
+			sb.append(_FINDER_COLUMN_L_H_P_PLID_2);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(layoutSetBranchId);
+				queryPos.add(layoutSetBranchId);
 
-				qPos.add(head);
+				queryPos.add(head);
 
-				qPos.add(plid);
+				queryPos.add(plid);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
 				FinderCacheUtil.putResult(finderPath, finderArgs, count);
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -5896,7 +5826,7 @@ public class LayoutRevisionPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<LayoutRevision>)FinderCacheUtil.getResult(
-				finderPath, finderArgs, this);
+				finderPath, finderArgs);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (LayoutRevision layoutRevision : list) {
@@ -5914,51 +5844,51 @@ public class LayoutRevisionPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					5 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(5);
+				sb = new StringBundler(5);
 			}
 
-			query.append(_SQL_SELECT_LAYOUTREVISION_WHERE);
+			sb.append(_SQL_SELECT_LAYOUTREVISION_WHERE);
 
-			query.append(_FINDER_COLUMN_L_H_P_COLLECTION_LAYOUTSETBRANCHID_2);
+			sb.append(_FINDER_COLUMN_L_H_P_COLLECTION_LAYOUTSETBRANCHID_2);
 
-			query.append(_FINDER_COLUMN_L_H_P_COLLECTION_HEAD_2);
+			sb.append(_FINDER_COLUMN_L_H_P_COLLECTION_HEAD_2);
 
-			query.append(_FINDER_COLUMN_L_H_P_COLLECTION_PLID_2);
+			sb.append(_FINDER_COLUMN_L_H_P_COLLECTION_PLID_2);
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
 			else {
-				query.append(LayoutRevisionModelImpl.ORDER_BY_JPQL);
+				sb.append(LayoutRevisionModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(layoutSetBranchId);
+				queryPos.add(layoutSetBranchId);
 
-				qPos.add(head);
+				queryPos.add(head);
 
-				qPos.add(plid);
+				queryPos.add(plid);
 
 				list = (List<LayoutRevision>)QueryUtil.list(
-					q, getDialect(), start, end);
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
@@ -5966,12 +5896,8 @@ public class LayoutRevisionPersistenceImpl
 					FinderCacheUtil.putResult(finderPath, finderArgs, list);
 				}
 			}
-			catch (Exception e) {
-				if (useFinderCache) {
-					FinderCacheUtil.removeResult(finderPath, finderArgs);
-				}
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -6004,22 +5930,22 @@ public class LayoutRevisionPersistenceImpl
 			return layoutRevision;
 		}
 
-		StringBundler msg = new StringBundler(8);
+		StringBundler sb = new StringBundler(8);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("layoutSetBranchId=");
-		msg.append(layoutSetBranchId);
+		sb.append("layoutSetBranchId=");
+		sb.append(layoutSetBranchId);
 
-		msg.append(", head=");
-		msg.append(head);
+		sb.append(", head=");
+		sb.append(head);
 
-		msg.append(", plid=");
-		msg.append(plid);
+		sb.append(", plid=");
+		sb.append(plid);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchLayoutRevisionException(msg.toString());
+		throw new NoSuchLayoutRevisionException(sb.toString());
 	}
 
 	/**
@@ -6069,22 +5995,22 @@ public class LayoutRevisionPersistenceImpl
 			return layoutRevision;
 		}
 
-		StringBundler msg = new StringBundler(8);
+		StringBundler sb = new StringBundler(8);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("layoutSetBranchId=");
-		msg.append(layoutSetBranchId);
+		sb.append("layoutSetBranchId=");
+		sb.append(layoutSetBranchId);
 
-		msg.append(", head=");
-		msg.append(head);
+		sb.append(", head=");
+		sb.append(head);
 
-		msg.append(", plid=");
-		msg.append(plid);
+		sb.append(", plid=");
+		sb.append(plid);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchLayoutRevisionException(msg.toString());
+		throw new NoSuchLayoutRevisionException(sb.toString());
 	}
 
 	/**
@@ -6155,8 +6081,8 @@ public class LayoutRevisionPersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -6168,110 +6094,110 @@ public class LayoutRevisionPersistenceImpl
 		boolean head, long plid,
 		OrderByComparator<LayoutRevision> orderByComparator, boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				6 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(5);
+			sb = new StringBundler(5);
 		}
 
-		query.append(_SQL_SELECT_LAYOUTREVISION_WHERE);
+		sb.append(_SQL_SELECT_LAYOUTREVISION_WHERE);
 
-		query.append(_FINDER_COLUMN_L_H_P_COLLECTION_LAYOUTSETBRANCHID_2);
+		sb.append(_FINDER_COLUMN_L_H_P_COLLECTION_LAYOUTSETBRANCHID_2);
 
-		query.append(_FINDER_COLUMN_L_H_P_COLLECTION_HEAD_2);
+		sb.append(_FINDER_COLUMN_L_H_P_COLLECTION_HEAD_2);
 
-		query.append(_FINDER_COLUMN_L_H_P_COLLECTION_PLID_2);
+		sb.append(_FINDER_COLUMN_L_H_P_COLLECTION_PLID_2);
 
 		if (orderByComparator != null) {
 			String[] orderByConditionFields =
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(LayoutRevisionModelImpl.ORDER_BY_JPQL);
+			sb.append(LayoutRevisionModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
-		qPos.add(layoutSetBranchId);
+		queryPos.add(layoutSetBranchId);
 
-		qPos.add(head);
+		queryPos.add(head);
 
-		qPos.add(plid);
+		queryPos.add(plid);
 
 		if (orderByComparator != null) {
 			for (Object orderByConditionValue :
 					orderByComparator.getOrderByConditionValues(
 						layoutRevision)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<LayoutRevision> list = q.list();
+		List<LayoutRevision> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -6317,45 +6243,42 @@ public class LayoutRevisionPersistenceImpl
 
 		Object[] finderArgs = new Object[] {layoutSetBranchId, head, plid};
 
-		Long count = (Long)FinderCacheUtil.getResult(
-			finderPath, finderArgs, this);
+		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
 
 		if (count == null) {
-			StringBundler query = new StringBundler(4);
+			StringBundler sb = new StringBundler(4);
 
-			query.append(_SQL_COUNT_LAYOUTREVISION_WHERE);
+			sb.append(_SQL_COUNT_LAYOUTREVISION_WHERE);
 
-			query.append(_FINDER_COLUMN_L_H_P_COLLECTION_LAYOUTSETBRANCHID_2);
+			sb.append(_FINDER_COLUMN_L_H_P_COLLECTION_LAYOUTSETBRANCHID_2);
 
-			query.append(_FINDER_COLUMN_L_H_P_COLLECTION_HEAD_2);
+			sb.append(_FINDER_COLUMN_L_H_P_COLLECTION_HEAD_2);
 
-			query.append(_FINDER_COLUMN_L_H_P_COLLECTION_PLID_2);
+			sb.append(_FINDER_COLUMN_L_H_P_COLLECTION_PLID_2);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(layoutSetBranchId);
+				queryPos.add(layoutSetBranchId);
 
-				qPos.add(head);
+				queryPos.add(head);
 
-				qPos.add(plid);
+				queryPos.add(plid);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
 				FinderCacheUtil.putResult(finderPath, finderArgs, count);
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -6486,7 +6409,7 @@ public class LayoutRevisionPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<LayoutRevision>)FinderCacheUtil.getResult(
-				finderPath, finderArgs, this);
+				finderPath, finderArgs);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (LayoutRevision layoutRevision : list) {
@@ -6504,51 +6427,51 @@ public class LayoutRevisionPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					5 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(5);
+				sb = new StringBundler(5);
 			}
 
-			query.append(_SQL_SELECT_LAYOUTREVISION_WHERE);
+			sb.append(_SQL_SELECT_LAYOUTREVISION_WHERE);
 
-			query.append(_FINDER_COLUMN_L_H_S_LAYOUTSETBRANCHID_2);
+			sb.append(_FINDER_COLUMN_L_H_S_LAYOUTSETBRANCHID_2);
 
-			query.append(_FINDER_COLUMN_L_H_S_HEAD_2);
+			sb.append(_FINDER_COLUMN_L_H_S_HEAD_2);
 
-			query.append(_FINDER_COLUMN_L_H_S_STATUS_2);
+			sb.append(_FINDER_COLUMN_L_H_S_STATUS_2);
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
 			else {
-				query.append(LayoutRevisionModelImpl.ORDER_BY_JPQL);
+				sb.append(LayoutRevisionModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(layoutSetBranchId);
+				queryPos.add(layoutSetBranchId);
 
-				qPos.add(head);
+				queryPos.add(head);
 
-				qPos.add(status);
+				queryPos.add(status);
 
 				list = (List<LayoutRevision>)QueryUtil.list(
-					q, getDialect(), start, end);
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
@@ -6556,12 +6479,8 @@ public class LayoutRevisionPersistenceImpl
 					FinderCacheUtil.putResult(finderPath, finderArgs, list);
 				}
 			}
-			catch (Exception e) {
-				if (useFinderCache) {
-					FinderCacheUtil.removeResult(finderPath, finderArgs);
-				}
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -6594,22 +6513,22 @@ public class LayoutRevisionPersistenceImpl
 			return layoutRevision;
 		}
 
-		StringBundler msg = new StringBundler(8);
+		StringBundler sb = new StringBundler(8);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("layoutSetBranchId=");
-		msg.append(layoutSetBranchId);
+		sb.append("layoutSetBranchId=");
+		sb.append(layoutSetBranchId);
 
-		msg.append(", head=");
-		msg.append(head);
+		sb.append(", head=");
+		sb.append(head);
 
-		msg.append(", status=");
-		msg.append(status);
+		sb.append(", status=");
+		sb.append(status);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchLayoutRevisionException(msg.toString());
+		throw new NoSuchLayoutRevisionException(sb.toString());
 	}
 
 	/**
@@ -6659,22 +6578,22 @@ public class LayoutRevisionPersistenceImpl
 			return layoutRevision;
 		}
 
-		StringBundler msg = new StringBundler(8);
+		StringBundler sb = new StringBundler(8);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("layoutSetBranchId=");
-		msg.append(layoutSetBranchId);
+		sb.append("layoutSetBranchId=");
+		sb.append(layoutSetBranchId);
 
-		msg.append(", head=");
-		msg.append(head);
+		sb.append(", head=");
+		sb.append(head);
 
-		msg.append(", status=");
-		msg.append(status);
+		sb.append(", status=");
+		sb.append(status);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchLayoutRevisionException(msg.toString());
+		throw new NoSuchLayoutRevisionException(sb.toString());
 	}
 
 	/**
@@ -6746,8 +6665,8 @@ public class LayoutRevisionPersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -6759,110 +6678,110 @@ public class LayoutRevisionPersistenceImpl
 		boolean head, int status,
 		OrderByComparator<LayoutRevision> orderByComparator, boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				6 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(5);
+			sb = new StringBundler(5);
 		}
 
-		query.append(_SQL_SELECT_LAYOUTREVISION_WHERE);
+		sb.append(_SQL_SELECT_LAYOUTREVISION_WHERE);
 
-		query.append(_FINDER_COLUMN_L_H_S_LAYOUTSETBRANCHID_2);
+		sb.append(_FINDER_COLUMN_L_H_S_LAYOUTSETBRANCHID_2);
 
-		query.append(_FINDER_COLUMN_L_H_S_HEAD_2);
+		sb.append(_FINDER_COLUMN_L_H_S_HEAD_2);
 
-		query.append(_FINDER_COLUMN_L_H_S_STATUS_2);
+		sb.append(_FINDER_COLUMN_L_H_S_STATUS_2);
 
 		if (orderByComparator != null) {
 			String[] orderByConditionFields =
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(LayoutRevisionModelImpl.ORDER_BY_JPQL);
+			sb.append(LayoutRevisionModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
-		qPos.add(layoutSetBranchId);
+		queryPos.add(layoutSetBranchId);
 
-		qPos.add(head);
+		queryPos.add(head);
 
-		qPos.add(status);
+		queryPos.add(status);
 
 		if (orderByComparator != null) {
 			for (Object orderByConditionValue :
 					orderByComparator.getOrderByConditionValues(
 						layoutRevision)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<LayoutRevision> list = q.list();
+		List<LayoutRevision> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -6906,45 +6825,42 @@ public class LayoutRevisionPersistenceImpl
 
 		Object[] finderArgs = new Object[] {layoutSetBranchId, head, status};
 
-		Long count = (Long)FinderCacheUtil.getResult(
-			finderPath, finderArgs, this);
+		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
 
 		if (count == null) {
-			StringBundler query = new StringBundler(4);
+			StringBundler sb = new StringBundler(4);
 
-			query.append(_SQL_COUNT_LAYOUTREVISION_WHERE);
+			sb.append(_SQL_COUNT_LAYOUTREVISION_WHERE);
 
-			query.append(_FINDER_COLUMN_L_H_S_LAYOUTSETBRANCHID_2);
+			sb.append(_FINDER_COLUMN_L_H_S_LAYOUTSETBRANCHID_2);
 
-			query.append(_FINDER_COLUMN_L_H_S_HEAD_2);
+			sb.append(_FINDER_COLUMN_L_H_S_HEAD_2);
 
-			query.append(_FINDER_COLUMN_L_H_S_STATUS_2);
+			sb.append(_FINDER_COLUMN_L_H_S_STATUS_2);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(layoutSetBranchId);
+				queryPos.add(layoutSetBranchId);
 
-				qPos.add(head);
+				queryPos.add(head);
 
-				qPos.add(status);
+				queryPos.add(status);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
 				FinderCacheUtil.putResult(finderPath, finderArgs, count);
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -7074,7 +6990,7 @@ public class LayoutRevisionPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<LayoutRevision>)FinderCacheUtil.getResult(
-				finderPath, finderArgs, this);
+				finderPath, finderArgs);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (LayoutRevision layoutRevision : list) {
@@ -7092,51 +7008,51 @@ public class LayoutRevisionPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					5 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(5);
+				sb = new StringBundler(5);
 			}
 
-			query.append(_SQL_SELECT_LAYOUTREVISION_WHERE);
+			sb.append(_SQL_SELECT_LAYOUTREVISION_WHERE);
 
-			query.append(_FINDER_COLUMN_L_P_S_LAYOUTSETBRANCHID_2);
+			sb.append(_FINDER_COLUMN_L_P_S_LAYOUTSETBRANCHID_2);
 
-			query.append(_FINDER_COLUMN_L_P_S_PLID_2);
+			sb.append(_FINDER_COLUMN_L_P_S_PLID_2);
 
-			query.append(_FINDER_COLUMN_L_P_S_STATUS_2);
+			sb.append(_FINDER_COLUMN_L_P_S_STATUS_2);
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
 			else {
-				query.append(LayoutRevisionModelImpl.ORDER_BY_JPQL);
+				sb.append(LayoutRevisionModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(layoutSetBranchId);
+				queryPos.add(layoutSetBranchId);
 
-				qPos.add(plid);
+				queryPos.add(plid);
 
-				qPos.add(status);
+				queryPos.add(status);
 
 				list = (List<LayoutRevision>)QueryUtil.list(
-					q, getDialect(), start, end);
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
@@ -7144,12 +7060,8 @@ public class LayoutRevisionPersistenceImpl
 					FinderCacheUtil.putResult(finderPath, finderArgs, list);
 				}
 			}
-			catch (Exception e) {
-				if (useFinderCache) {
-					FinderCacheUtil.removeResult(finderPath, finderArgs);
-				}
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -7182,22 +7094,22 @@ public class LayoutRevisionPersistenceImpl
 			return layoutRevision;
 		}
 
-		StringBundler msg = new StringBundler(8);
+		StringBundler sb = new StringBundler(8);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("layoutSetBranchId=");
-		msg.append(layoutSetBranchId);
+		sb.append("layoutSetBranchId=");
+		sb.append(layoutSetBranchId);
 
-		msg.append(", plid=");
-		msg.append(plid);
+		sb.append(", plid=");
+		sb.append(plid);
 
-		msg.append(", status=");
-		msg.append(status);
+		sb.append(", status=");
+		sb.append(status);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchLayoutRevisionException(msg.toString());
+		throw new NoSuchLayoutRevisionException(sb.toString());
 	}
 
 	/**
@@ -7247,22 +7159,22 @@ public class LayoutRevisionPersistenceImpl
 			return layoutRevision;
 		}
 
-		StringBundler msg = new StringBundler(8);
+		StringBundler sb = new StringBundler(8);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("layoutSetBranchId=");
-		msg.append(layoutSetBranchId);
+		sb.append("layoutSetBranchId=");
+		sb.append(layoutSetBranchId);
 
-		msg.append(", plid=");
-		msg.append(plid);
+		sb.append(", plid=");
+		sb.append(plid);
 
-		msg.append(", status=");
-		msg.append(status);
+		sb.append(", status=");
+		sb.append(status);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchLayoutRevisionException(msg.toString());
+		throw new NoSuchLayoutRevisionException(sb.toString());
 	}
 
 	/**
@@ -7334,8 +7246,8 @@ public class LayoutRevisionPersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -7347,110 +7259,110 @@ public class LayoutRevisionPersistenceImpl
 		long plid, int status,
 		OrderByComparator<LayoutRevision> orderByComparator, boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				6 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(5);
+			sb = new StringBundler(5);
 		}
 
-		query.append(_SQL_SELECT_LAYOUTREVISION_WHERE);
+		sb.append(_SQL_SELECT_LAYOUTREVISION_WHERE);
 
-		query.append(_FINDER_COLUMN_L_P_S_LAYOUTSETBRANCHID_2);
+		sb.append(_FINDER_COLUMN_L_P_S_LAYOUTSETBRANCHID_2);
 
-		query.append(_FINDER_COLUMN_L_P_S_PLID_2);
+		sb.append(_FINDER_COLUMN_L_P_S_PLID_2);
 
-		query.append(_FINDER_COLUMN_L_P_S_STATUS_2);
+		sb.append(_FINDER_COLUMN_L_P_S_STATUS_2);
 
 		if (orderByComparator != null) {
 			String[] orderByConditionFields =
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(LayoutRevisionModelImpl.ORDER_BY_JPQL);
+			sb.append(LayoutRevisionModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
-		qPos.add(layoutSetBranchId);
+		queryPos.add(layoutSetBranchId);
 
-		qPos.add(plid);
+		queryPos.add(plid);
 
-		qPos.add(status);
+		queryPos.add(status);
 
 		if (orderByComparator != null) {
 			for (Object orderByConditionValue :
 					orderByComparator.getOrderByConditionValues(
 						layoutRevision)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<LayoutRevision> list = q.list();
+		List<LayoutRevision> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -7492,45 +7404,42 @@ public class LayoutRevisionPersistenceImpl
 
 		Object[] finderArgs = new Object[] {layoutSetBranchId, plid, status};
 
-		Long count = (Long)FinderCacheUtil.getResult(
-			finderPath, finderArgs, this);
+		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
 
 		if (count == null) {
-			StringBundler query = new StringBundler(4);
+			StringBundler sb = new StringBundler(4);
 
-			query.append(_SQL_COUNT_LAYOUTREVISION_WHERE);
+			sb.append(_SQL_COUNT_LAYOUTREVISION_WHERE);
 
-			query.append(_FINDER_COLUMN_L_P_S_LAYOUTSETBRANCHID_2);
+			sb.append(_FINDER_COLUMN_L_P_S_LAYOUTSETBRANCHID_2);
 
-			query.append(_FINDER_COLUMN_L_P_S_PLID_2);
+			sb.append(_FINDER_COLUMN_L_P_S_PLID_2);
 
-			query.append(_FINDER_COLUMN_L_P_S_STATUS_2);
+			sb.append(_FINDER_COLUMN_L_P_S_STATUS_2);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(layoutSetBranchId);
+				queryPos.add(layoutSetBranchId);
 
-				qPos.add(plid);
+				queryPos.add(plid);
 
-				qPos.add(status);
+				queryPos.add(status);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
 				FinderCacheUtil.putResult(finderPath, finderArgs, count);
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -7572,29 +7481,29 @@ public class LayoutRevisionPersistenceImpl
 			layoutSetBranchId, layoutBranchId, head, plid);
 
 		if (layoutRevision == null) {
-			StringBundler msg = new StringBundler(10);
+			StringBundler sb = new StringBundler(10);
 
-			msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+			sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-			msg.append("layoutSetBranchId=");
-			msg.append(layoutSetBranchId);
+			sb.append("layoutSetBranchId=");
+			sb.append(layoutSetBranchId);
 
-			msg.append(", layoutBranchId=");
-			msg.append(layoutBranchId);
+			sb.append(", layoutBranchId=");
+			sb.append(layoutBranchId);
 
-			msg.append(", head=");
-			msg.append(head);
+			sb.append(", head=");
+			sb.append(head);
 
-			msg.append(", plid=");
-			msg.append(plid);
+			sb.append(", plid=");
+			sb.append(plid);
 
-			msg.append("}");
+			sb.append("}");
 
 			if (_log.isDebugEnabled()) {
-				_log.debug(msg.toString());
+				_log.debug(sb.toString());
 			}
 
-			throw new NoSuchLayoutRevisionException(msg.toString());
+			throw new NoSuchLayoutRevisionException(sb.toString());
 		}
 
 		return layoutRevision;
@@ -7644,7 +7553,7 @@ public class LayoutRevisionPersistenceImpl
 
 		if (useFinderCache) {
 			result = FinderCacheUtil.getResult(
-				_finderPathFetchByL_L_H_P, finderArgs, this);
+				_finderPathFetchByL_L_H_P, finderArgs);
 		}
 
 		if (result instanceof LayoutRevision) {
@@ -7660,38 +7569,38 @@ public class LayoutRevisionPersistenceImpl
 		}
 
 		if (result == null) {
-			StringBundler query = new StringBundler(6);
+			StringBundler sb = new StringBundler(6);
 
-			query.append(_SQL_SELECT_LAYOUTREVISION_WHERE);
+			sb.append(_SQL_SELECT_LAYOUTREVISION_WHERE);
 
-			query.append(_FINDER_COLUMN_L_L_H_P_LAYOUTSETBRANCHID_2);
+			sb.append(_FINDER_COLUMN_L_L_H_P_LAYOUTSETBRANCHID_2);
 
-			query.append(_FINDER_COLUMN_L_L_H_P_LAYOUTBRANCHID_2);
+			sb.append(_FINDER_COLUMN_L_L_H_P_LAYOUTBRANCHID_2);
 
-			query.append(_FINDER_COLUMN_L_L_H_P_HEAD_2);
+			sb.append(_FINDER_COLUMN_L_L_H_P_HEAD_2);
 
-			query.append(_FINDER_COLUMN_L_L_H_P_PLID_2);
+			sb.append(_FINDER_COLUMN_L_L_H_P_PLID_2);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(layoutSetBranchId);
+				queryPos.add(layoutSetBranchId);
 
-				qPos.add(layoutBranchId);
+				queryPos.add(layoutBranchId);
 
-				qPos.add(head);
+				queryPos.add(head);
 
-				qPos.add(plid);
+				queryPos.add(plid);
 
-				List<LayoutRevision> list = q.list();
+				List<LayoutRevision> list = query.list();
 
 				if (list.isEmpty()) {
 					if (useFinderCache) {
@@ -7725,13 +7634,8 @@ public class LayoutRevisionPersistenceImpl
 					cacheResult(layoutRevision);
 				}
 			}
-			catch (Exception e) {
-				if (useFinderCache) {
-					FinderCacheUtil.removeResult(
-						_finderPathFetchByL_L_H_P, finderArgs);
-				}
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -7786,49 +7690,46 @@ public class LayoutRevisionPersistenceImpl
 			layoutSetBranchId, layoutBranchId, head, plid
 		};
 
-		Long count = (Long)FinderCacheUtil.getResult(
-			finderPath, finderArgs, this);
+		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
 
 		if (count == null) {
-			StringBundler query = new StringBundler(5);
+			StringBundler sb = new StringBundler(5);
 
-			query.append(_SQL_COUNT_LAYOUTREVISION_WHERE);
+			sb.append(_SQL_COUNT_LAYOUTREVISION_WHERE);
 
-			query.append(_FINDER_COLUMN_L_L_H_P_LAYOUTSETBRANCHID_2);
+			sb.append(_FINDER_COLUMN_L_L_H_P_LAYOUTSETBRANCHID_2);
 
-			query.append(_FINDER_COLUMN_L_L_H_P_LAYOUTBRANCHID_2);
+			sb.append(_FINDER_COLUMN_L_L_H_P_LAYOUTBRANCHID_2);
 
-			query.append(_FINDER_COLUMN_L_L_H_P_HEAD_2);
+			sb.append(_FINDER_COLUMN_L_L_H_P_HEAD_2);
 
-			query.append(_FINDER_COLUMN_L_L_H_P_PLID_2);
+			sb.append(_FINDER_COLUMN_L_L_H_P_PLID_2);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(layoutSetBranchId);
+				queryPos.add(layoutSetBranchId);
 
-				qPos.add(layoutBranchId);
+				queryPos.add(layoutBranchId);
 
-				qPos.add(head);
+				queryPos.add(head);
 
-				qPos.add(plid);
+				queryPos.add(plid);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
 				FinderCacheUtil.putResult(finderPath, finderArgs, count);
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -7855,7 +7756,8 @@ public class LayoutRevisionPersistenceImpl
 
 		setModelImplClass(LayoutRevisionImpl.class);
 		setModelPKClass(long.class);
-		setEntityCacheEnabled(LayoutRevisionModelImpl.ENTITY_CACHE_ENABLED);
+
+		setTable(LayoutRevisionTable.INSTANCE);
 	}
 
 	/**
@@ -7866,7 +7768,6 @@ public class LayoutRevisionPersistenceImpl
 	@Override
 	public void cacheResult(LayoutRevision layoutRevision) {
 		EntityCacheUtil.putResult(
-			LayoutRevisionModelImpl.ENTITY_CACHE_ENABLED,
 			LayoutRevisionImpl.class, layoutRevision.getPrimaryKey(),
 			layoutRevision);
 
@@ -7886,8 +7787,6 @@ public class LayoutRevisionPersistenceImpl
 				layoutRevision.getPlid()
 			},
 			layoutRevision);
-
-		layoutRevision.resetOriginalValues();
 	}
 
 	/**
@@ -7899,14 +7798,10 @@ public class LayoutRevisionPersistenceImpl
 	public void cacheResult(List<LayoutRevision> layoutRevisions) {
 		for (LayoutRevision layoutRevision : layoutRevisions) {
 			if (EntityCacheUtil.getResult(
-					LayoutRevisionModelImpl.ENTITY_CACHE_ENABLED,
 					LayoutRevisionImpl.class, layoutRevision.getPrimaryKey()) ==
 						null) {
 
 				cacheResult(layoutRevision);
-			}
-			else {
-				layoutRevision.resetOriginalValues();
 			}
 		}
 	}
@@ -7915,62 +7810,42 @@ public class LayoutRevisionPersistenceImpl
 	 * Clears the cache for all layout revisions.
 	 *
 	 * <p>
-	 * The <code>EntityCache</code> and <code>com.liferay.portal.kernel.dao.orm.FinderCache</code> are both cleared by this method.
+	 * The <code>EntityCache</code> and <code>FinderCache</code> are both cleared by this method.
 	 * </p>
 	 */
 	@Override
 	public void clearCache() {
 		EntityCacheUtil.clearCache(LayoutRevisionImpl.class);
 
-		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_ENTITY);
-		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
-		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+		FinderCacheUtil.clearCache(LayoutRevisionImpl.class);
 	}
 
 	/**
 	 * Clears the cache for the layout revision.
 	 *
 	 * <p>
-	 * The <code>EntityCache</code> and <code>com.liferay.portal.kernel.dao.orm.FinderCache</code> are both cleared by this method.
+	 * The <code>EntityCache</code> and <code>FinderCache</code> are both cleared by this method.
 	 * </p>
 	 */
 	@Override
 	public void clearCache(LayoutRevision layoutRevision) {
-		EntityCacheUtil.removeResult(
-			LayoutRevisionModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutRevisionImpl.class, layoutRevision.getPrimaryKey());
-
-		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
-		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
-
-		clearUniqueFindersCache((LayoutRevisionModelImpl)layoutRevision, true);
+		EntityCacheUtil.removeResult(LayoutRevisionImpl.class, layoutRevision);
 	}
 
 	@Override
 	public void clearCache(List<LayoutRevision> layoutRevisions) {
-		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
-		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
-
 		for (LayoutRevision layoutRevision : layoutRevisions) {
 			EntityCacheUtil.removeResult(
-				LayoutRevisionModelImpl.ENTITY_CACHE_ENABLED,
-				LayoutRevisionImpl.class, layoutRevision.getPrimaryKey());
-
-			clearUniqueFindersCache(
-				(LayoutRevisionModelImpl)layoutRevision, true);
+				LayoutRevisionImpl.class, layoutRevision);
 		}
 	}
 
 	@Override
 	public void clearCache(Set<Serializable> primaryKeys) {
-		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_ENTITY);
-		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
-		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+		FinderCacheUtil.clearCache(LayoutRevisionImpl.class);
 
 		for (Serializable primaryKey : primaryKeys) {
-			EntityCacheUtil.removeResult(
-				LayoutRevisionModelImpl.ENTITY_CACHE_ENABLED,
-				LayoutRevisionImpl.class, primaryKey);
+			EntityCacheUtil.removeResult(LayoutRevisionImpl.class, primaryKey);
 		}
 	}
 
@@ -7983,9 +7858,9 @@ public class LayoutRevisionPersistenceImpl
 		};
 
 		FinderCacheUtil.putResult(
-			_finderPathCountByL_H_P, args, Long.valueOf(1), false);
+			_finderPathCountByL_H_P, args, Long.valueOf(1));
 		FinderCacheUtil.putResult(
-			_finderPathFetchByL_H_P, args, layoutRevisionModelImpl, false);
+			_finderPathFetchByL_H_P, args, layoutRevisionModelImpl);
 
 		args = new Object[] {
 			layoutRevisionModelImpl.getLayoutSetBranchId(),
@@ -7994,63 +7869,9 @@ public class LayoutRevisionPersistenceImpl
 		};
 
 		FinderCacheUtil.putResult(
-			_finderPathCountByL_L_H_P, args, Long.valueOf(1), false);
+			_finderPathCountByL_L_H_P, args, Long.valueOf(1));
 		FinderCacheUtil.putResult(
-			_finderPathFetchByL_L_H_P, args, layoutRevisionModelImpl, false);
-	}
-
-	protected void clearUniqueFindersCache(
-		LayoutRevisionModelImpl layoutRevisionModelImpl, boolean clearCurrent) {
-
-		if (clearCurrent) {
-			Object[] args = new Object[] {
-				layoutRevisionModelImpl.getLayoutSetBranchId(),
-				layoutRevisionModelImpl.isHead(),
-				layoutRevisionModelImpl.getPlid()
-			};
-
-			FinderCacheUtil.removeResult(_finderPathCountByL_H_P, args);
-			FinderCacheUtil.removeResult(_finderPathFetchByL_H_P, args);
-		}
-
-		if ((layoutRevisionModelImpl.getColumnBitmask() &
-			 _finderPathFetchByL_H_P.getColumnBitmask()) != 0) {
-
-			Object[] args = new Object[] {
-				layoutRevisionModelImpl.getOriginalLayoutSetBranchId(),
-				layoutRevisionModelImpl.getOriginalHead(),
-				layoutRevisionModelImpl.getOriginalPlid()
-			};
-
-			FinderCacheUtil.removeResult(_finderPathCountByL_H_P, args);
-			FinderCacheUtil.removeResult(_finderPathFetchByL_H_P, args);
-		}
-
-		if (clearCurrent) {
-			Object[] args = new Object[] {
-				layoutRevisionModelImpl.getLayoutSetBranchId(),
-				layoutRevisionModelImpl.getLayoutBranchId(),
-				layoutRevisionModelImpl.isHead(),
-				layoutRevisionModelImpl.getPlid()
-			};
-
-			FinderCacheUtil.removeResult(_finderPathCountByL_L_H_P, args);
-			FinderCacheUtil.removeResult(_finderPathFetchByL_L_H_P, args);
-		}
-
-		if ((layoutRevisionModelImpl.getColumnBitmask() &
-			 _finderPathFetchByL_L_H_P.getColumnBitmask()) != 0) {
-
-			Object[] args = new Object[] {
-				layoutRevisionModelImpl.getOriginalLayoutSetBranchId(),
-				layoutRevisionModelImpl.getOriginalLayoutBranchId(),
-				layoutRevisionModelImpl.getOriginalHead(),
-				layoutRevisionModelImpl.getOriginalPlid()
-			};
-
-			FinderCacheUtil.removeResult(_finderPathCountByL_L_H_P, args);
-			FinderCacheUtil.removeResult(_finderPathFetchByL_L_H_P, args);
-		}
+			_finderPathFetchByL_L_H_P, args, layoutRevisionModelImpl);
 	}
 
 	/**
@@ -8115,11 +7936,11 @@ public class LayoutRevisionPersistenceImpl
 
 			return remove(layoutRevision);
 		}
-		catch (NoSuchLayoutRevisionException nsee) {
-			throw nsee;
+		catch (NoSuchLayoutRevisionException noSuchEntityException) {
+			throw noSuchEntityException;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -8143,8 +7964,8 @@ public class LayoutRevisionPersistenceImpl
 				session.delete(layoutRevision);
 			}
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -8210,431 +8031,28 @@ public class LayoutRevisionPersistenceImpl
 		try {
 			session = openSession();
 
-			if (layoutRevision.isNew()) {
+			if (isNew) {
 				session.save(layoutRevision);
-
-				layoutRevision.setNew(false);
 			}
 			else {
 				layoutRevision = (LayoutRevision)session.merge(layoutRevision);
 			}
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
 		}
 
-		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
-
-		if (!LayoutRevisionModelImpl.COLUMN_BITMASK_ENABLED) {
-			FinderCacheUtil.clearCache(
-				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
-		}
-		else if (isNew) {
-			Object[] args = new Object[] {
-				layoutRevisionModelImpl.getLayoutSetBranchId()
-			};
-
-			FinderCacheUtil.removeResult(
-				_finderPathCountByLayoutSetBranchId, args);
-			FinderCacheUtil.removeResult(
-				_finderPathWithoutPaginationFindByLayoutSetBranchId, args);
-
-			args = new Object[] {layoutRevisionModelImpl.getPlid()};
-
-			FinderCacheUtil.removeResult(_finderPathCountByPlid, args);
-			FinderCacheUtil.removeResult(
-				_finderPathWithoutPaginationFindByPlid, args);
-
-			args = new Object[] {layoutRevisionModelImpl.getStatus()};
-
-			FinderCacheUtil.removeResult(_finderPathCountByStatus, args);
-			FinderCacheUtil.removeResult(
-				_finderPathWithoutPaginationFindByStatus, args);
-
-			args = new Object[] {
-				layoutRevisionModelImpl.getLayoutSetBranchId(),
-				layoutRevisionModelImpl.isHead()
-			};
-
-			FinderCacheUtil.removeResult(_finderPathCountByL_H, args);
-			FinderCacheUtil.removeResult(
-				_finderPathWithoutPaginationFindByL_H, args);
-
-			args = new Object[] {
-				layoutRevisionModelImpl.getLayoutSetBranchId(),
-				layoutRevisionModelImpl.getPlid()
-			};
-
-			FinderCacheUtil.removeResult(_finderPathCountByL_P, args);
-			FinderCacheUtil.removeResult(
-				_finderPathWithoutPaginationFindByL_P, args);
-
-			args = new Object[] {
-				layoutRevisionModelImpl.getLayoutSetBranchId(),
-				layoutRevisionModelImpl.getStatus()
-			};
-
-			FinderCacheUtil.removeResult(_finderPathCountByL_S, args);
-			FinderCacheUtil.removeResult(
-				_finderPathWithoutPaginationFindByL_S, args);
-
-			args = new Object[] {
-				layoutRevisionModelImpl.isHead(),
-				layoutRevisionModelImpl.getPlid()
-			};
-
-			FinderCacheUtil.removeResult(_finderPathCountByH_P, args);
-			FinderCacheUtil.removeResult(
-				_finderPathWithoutPaginationFindByH_P, args);
-
-			args = new Object[] {
-				layoutRevisionModelImpl.getLayoutSetBranchId(),
-				layoutRevisionModelImpl.getLayoutBranchId(),
-				layoutRevisionModelImpl.getPlid()
-			};
-
-			FinderCacheUtil.removeResult(_finderPathCountByL_L_P, args);
-			FinderCacheUtil.removeResult(
-				_finderPathWithoutPaginationFindByL_L_P, args);
-
-			args = new Object[] {
-				layoutRevisionModelImpl.getLayoutSetBranchId(),
-				layoutRevisionModelImpl.getParentLayoutRevisionId(),
-				layoutRevisionModelImpl.getPlid()
-			};
-
-			FinderCacheUtil.removeResult(_finderPathCountByL_P_P, args);
-			FinderCacheUtil.removeResult(
-				_finderPathWithoutPaginationFindByL_P_P, args);
-
-			args = new Object[] {
-				layoutRevisionModelImpl.getLayoutSetBranchId(),
-				layoutRevisionModelImpl.isHead(),
-				layoutRevisionModelImpl.getPlid()
-			};
-
-			FinderCacheUtil.removeResult(
-				_finderPathCountByL_H_P_Collection, args);
-			FinderCacheUtil.removeResult(
-				_finderPathWithoutPaginationFindByL_H_P_Collection, args);
-
-			args = new Object[] {
-				layoutRevisionModelImpl.getLayoutSetBranchId(),
-				layoutRevisionModelImpl.isHead(),
-				layoutRevisionModelImpl.getStatus()
-			};
-
-			FinderCacheUtil.removeResult(_finderPathCountByL_H_S, args);
-			FinderCacheUtil.removeResult(
-				_finderPathWithoutPaginationFindByL_H_S, args);
-
-			args = new Object[] {
-				layoutRevisionModelImpl.getLayoutSetBranchId(),
-				layoutRevisionModelImpl.getPlid(),
-				layoutRevisionModelImpl.getStatus()
-			};
-
-			FinderCacheUtil.removeResult(_finderPathCountByL_P_S, args);
-			FinderCacheUtil.removeResult(
-				_finderPathWithoutPaginationFindByL_P_S, args);
-
-			FinderCacheUtil.removeResult(
-				_finderPathCountAll, FINDER_ARGS_EMPTY);
-			FinderCacheUtil.removeResult(
-				_finderPathWithoutPaginationFindAll, FINDER_ARGS_EMPTY);
-		}
-		else {
-			if ((layoutRevisionModelImpl.getColumnBitmask() &
-				 _finderPathWithoutPaginationFindByLayoutSetBranchId.
-					 getColumnBitmask()) != 0) {
-
-				Object[] args = new Object[] {
-					layoutRevisionModelImpl.getOriginalLayoutSetBranchId()
-				};
-
-				FinderCacheUtil.removeResult(
-					_finderPathCountByLayoutSetBranchId, args);
-				FinderCacheUtil.removeResult(
-					_finderPathWithoutPaginationFindByLayoutSetBranchId, args);
-
-				args = new Object[] {
-					layoutRevisionModelImpl.getLayoutSetBranchId()
-				};
-
-				FinderCacheUtil.removeResult(
-					_finderPathCountByLayoutSetBranchId, args);
-				FinderCacheUtil.removeResult(
-					_finderPathWithoutPaginationFindByLayoutSetBranchId, args);
-			}
-
-			if ((layoutRevisionModelImpl.getColumnBitmask() &
-				 _finderPathWithoutPaginationFindByPlid.getColumnBitmask()) !=
-					 0) {
-
-				Object[] args = new Object[] {
-					layoutRevisionModelImpl.getOriginalPlid()
-				};
-
-				FinderCacheUtil.removeResult(_finderPathCountByPlid, args);
-				FinderCacheUtil.removeResult(
-					_finderPathWithoutPaginationFindByPlid, args);
-
-				args = new Object[] {layoutRevisionModelImpl.getPlid()};
-
-				FinderCacheUtil.removeResult(_finderPathCountByPlid, args);
-				FinderCacheUtil.removeResult(
-					_finderPathWithoutPaginationFindByPlid, args);
-			}
-
-			if ((layoutRevisionModelImpl.getColumnBitmask() &
-				 _finderPathWithoutPaginationFindByStatus.getColumnBitmask()) !=
-					 0) {
-
-				Object[] args = new Object[] {
-					layoutRevisionModelImpl.getOriginalStatus()
-				};
-
-				FinderCacheUtil.removeResult(_finderPathCountByStatus, args);
-				FinderCacheUtil.removeResult(
-					_finderPathWithoutPaginationFindByStatus, args);
-
-				args = new Object[] {layoutRevisionModelImpl.getStatus()};
-
-				FinderCacheUtil.removeResult(_finderPathCountByStatus, args);
-				FinderCacheUtil.removeResult(
-					_finderPathWithoutPaginationFindByStatus, args);
-			}
-
-			if ((layoutRevisionModelImpl.getColumnBitmask() &
-				 _finderPathWithoutPaginationFindByL_H.getColumnBitmask()) !=
-					 0) {
-
-				Object[] args = new Object[] {
-					layoutRevisionModelImpl.getOriginalLayoutSetBranchId(),
-					layoutRevisionModelImpl.getOriginalHead()
-				};
-
-				FinderCacheUtil.removeResult(_finderPathCountByL_H, args);
-				FinderCacheUtil.removeResult(
-					_finderPathWithoutPaginationFindByL_H, args);
-
-				args = new Object[] {
-					layoutRevisionModelImpl.getLayoutSetBranchId(),
-					layoutRevisionModelImpl.isHead()
-				};
-
-				FinderCacheUtil.removeResult(_finderPathCountByL_H, args);
-				FinderCacheUtil.removeResult(
-					_finderPathWithoutPaginationFindByL_H, args);
-			}
-
-			if ((layoutRevisionModelImpl.getColumnBitmask() &
-				 _finderPathWithoutPaginationFindByL_P.getColumnBitmask()) !=
-					 0) {
-
-				Object[] args = new Object[] {
-					layoutRevisionModelImpl.getOriginalLayoutSetBranchId(),
-					layoutRevisionModelImpl.getOriginalPlid()
-				};
-
-				FinderCacheUtil.removeResult(_finderPathCountByL_P, args);
-				FinderCacheUtil.removeResult(
-					_finderPathWithoutPaginationFindByL_P, args);
-
-				args = new Object[] {
-					layoutRevisionModelImpl.getLayoutSetBranchId(),
-					layoutRevisionModelImpl.getPlid()
-				};
-
-				FinderCacheUtil.removeResult(_finderPathCountByL_P, args);
-				FinderCacheUtil.removeResult(
-					_finderPathWithoutPaginationFindByL_P, args);
-			}
-
-			if ((layoutRevisionModelImpl.getColumnBitmask() &
-				 _finderPathWithoutPaginationFindByL_S.getColumnBitmask()) !=
-					 0) {
-
-				Object[] args = new Object[] {
-					layoutRevisionModelImpl.getOriginalLayoutSetBranchId(),
-					layoutRevisionModelImpl.getOriginalStatus()
-				};
-
-				FinderCacheUtil.removeResult(_finderPathCountByL_S, args);
-				FinderCacheUtil.removeResult(
-					_finderPathWithoutPaginationFindByL_S, args);
-
-				args = new Object[] {
-					layoutRevisionModelImpl.getLayoutSetBranchId(),
-					layoutRevisionModelImpl.getStatus()
-				};
-
-				FinderCacheUtil.removeResult(_finderPathCountByL_S, args);
-				FinderCacheUtil.removeResult(
-					_finderPathWithoutPaginationFindByL_S, args);
-			}
-
-			if ((layoutRevisionModelImpl.getColumnBitmask() &
-				 _finderPathWithoutPaginationFindByH_P.getColumnBitmask()) !=
-					 0) {
-
-				Object[] args = new Object[] {
-					layoutRevisionModelImpl.getOriginalHead(),
-					layoutRevisionModelImpl.getOriginalPlid()
-				};
-
-				FinderCacheUtil.removeResult(_finderPathCountByH_P, args);
-				FinderCacheUtil.removeResult(
-					_finderPathWithoutPaginationFindByH_P, args);
-
-				args = new Object[] {
-					layoutRevisionModelImpl.isHead(),
-					layoutRevisionModelImpl.getPlid()
-				};
-
-				FinderCacheUtil.removeResult(_finderPathCountByH_P, args);
-				FinderCacheUtil.removeResult(
-					_finderPathWithoutPaginationFindByH_P, args);
-			}
-
-			if ((layoutRevisionModelImpl.getColumnBitmask() &
-				 _finderPathWithoutPaginationFindByL_L_P.getColumnBitmask()) !=
-					 0) {
-
-				Object[] args = new Object[] {
-					layoutRevisionModelImpl.getOriginalLayoutSetBranchId(),
-					layoutRevisionModelImpl.getOriginalLayoutBranchId(),
-					layoutRevisionModelImpl.getOriginalPlid()
-				};
-
-				FinderCacheUtil.removeResult(_finderPathCountByL_L_P, args);
-				FinderCacheUtil.removeResult(
-					_finderPathWithoutPaginationFindByL_L_P, args);
-
-				args = new Object[] {
-					layoutRevisionModelImpl.getLayoutSetBranchId(),
-					layoutRevisionModelImpl.getLayoutBranchId(),
-					layoutRevisionModelImpl.getPlid()
-				};
-
-				FinderCacheUtil.removeResult(_finderPathCountByL_L_P, args);
-				FinderCacheUtil.removeResult(
-					_finderPathWithoutPaginationFindByL_L_P, args);
-			}
-
-			if ((layoutRevisionModelImpl.getColumnBitmask() &
-				 _finderPathWithoutPaginationFindByL_P_P.getColumnBitmask()) !=
-					 0) {
-
-				Object[] args = new Object[] {
-					layoutRevisionModelImpl.getOriginalLayoutSetBranchId(),
-					layoutRevisionModelImpl.getOriginalParentLayoutRevisionId(),
-					layoutRevisionModelImpl.getOriginalPlid()
-				};
-
-				FinderCacheUtil.removeResult(_finderPathCountByL_P_P, args);
-				FinderCacheUtil.removeResult(
-					_finderPathWithoutPaginationFindByL_P_P, args);
-
-				args = new Object[] {
-					layoutRevisionModelImpl.getLayoutSetBranchId(),
-					layoutRevisionModelImpl.getParentLayoutRevisionId(),
-					layoutRevisionModelImpl.getPlid()
-				};
-
-				FinderCacheUtil.removeResult(_finderPathCountByL_P_P, args);
-				FinderCacheUtil.removeResult(
-					_finderPathWithoutPaginationFindByL_P_P, args);
-			}
-
-			if ((layoutRevisionModelImpl.getColumnBitmask() &
-				 _finderPathWithoutPaginationFindByL_H_P_Collection.
-					 getColumnBitmask()) != 0) {
-
-				Object[] args = new Object[] {
-					layoutRevisionModelImpl.getOriginalLayoutSetBranchId(),
-					layoutRevisionModelImpl.getOriginalHead(),
-					layoutRevisionModelImpl.getOriginalPlid()
-				};
-
-				FinderCacheUtil.removeResult(
-					_finderPathCountByL_H_P_Collection, args);
-				FinderCacheUtil.removeResult(
-					_finderPathWithoutPaginationFindByL_H_P_Collection, args);
-
-				args = new Object[] {
-					layoutRevisionModelImpl.getLayoutSetBranchId(),
-					layoutRevisionModelImpl.isHead(),
-					layoutRevisionModelImpl.getPlid()
-				};
-
-				FinderCacheUtil.removeResult(
-					_finderPathCountByL_H_P_Collection, args);
-				FinderCacheUtil.removeResult(
-					_finderPathWithoutPaginationFindByL_H_P_Collection, args);
-			}
-
-			if ((layoutRevisionModelImpl.getColumnBitmask() &
-				 _finderPathWithoutPaginationFindByL_H_S.getColumnBitmask()) !=
-					 0) {
-
-				Object[] args = new Object[] {
-					layoutRevisionModelImpl.getOriginalLayoutSetBranchId(),
-					layoutRevisionModelImpl.getOriginalHead(),
-					layoutRevisionModelImpl.getOriginalStatus()
-				};
-
-				FinderCacheUtil.removeResult(_finderPathCountByL_H_S, args);
-				FinderCacheUtil.removeResult(
-					_finderPathWithoutPaginationFindByL_H_S, args);
-
-				args = new Object[] {
-					layoutRevisionModelImpl.getLayoutSetBranchId(),
-					layoutRevisionModelImpl.isHead(),
-					layoutRevisionModelImpl.getStatus()
-				};
-
-				FinderCacheUtil.removeResult(_finderPathCountByL_H_S, args);
-				FinderCacheUtil.removeResult(
-					_finderPathWithoutPaginationFindByL_H_S, args);
-			}
-
-			if ((layoutRevisionModelImpl.getColumnBitmask() &
-				 _finderPathWithoutPaginationFindByL_P_S.getColumnBitmask()) !=
-					 0) {
-
-				Object[] args = new Object[] {
-					layoutRevisionModelImpl.getOriginalLayoutSetBranchId(),
-					layoutRevisionModelImpl.getOriginalPlid(),
-					layoutRevisionModelImpl.getOriginalStatus()
-				};
-
-				FinderCacheUtil.removeResult(_finderPathCountByL_P_S, args);
-				FinderCacheUtil.removeResult(
-					_finderPathWithoutPaginationFindByL_P_S, args);
-
-				args = new Object[] {
-					layoutRevisionModelImpl.getLayoutSetBranchId(),
-					layoutRevisionModelImpl.getPlid(),
-					layoutRevisionModelImpl.getStatus()
-				};
-
-				FinderCacheUtil.removeResult(_finderPathCountByL_P_S, args);
-				FinderCacheUtil.removeResult(
-					_finderPathWithoutPaginationFindByL_P_S, args);
-			}
-		}
-
 		EntityCacheUtil.putResult(
-			LayoutRevisionModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutRevisionImpl.class, layoutRevision.getPrimaryKey(),
-			layoutRevision, false);
+			LayoutRevisionImpl.class, layoutRevisionModelImpl, false, true);
 
-		clearUniqueFindersCache(layoutRevisionModelImpl, false);
 		cacheUniqueFindersCache(layoutRevisionModelImpl);
+
+		if (isNew) {
+			layoutRevision.setNew(false);
+		}
 
 		layoutRevision.resetOriginalValues();
 
@@ -8775,23 +8193,23 @@ public class LayoutRevisionPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<LayoutRevision>)FinderCacheUtil.getResult(
-				finderPath, finderArgs, this);
+				finderPath, finderArgs);
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 			String sql = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					2 + (orderByComparator.getOrderByFields().length * 2));
 
-				query.append(_SQL_SELECT_LAYOUTREVISION);
+				sb.append(_SQL_SELECT_LAYOUTREVISION);
 
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 
-				sql = query.toString();
+				sql = sb.toString();
 			}
 			else {
 				sql = _SQL_SELECT_LAYOUTREVISION;
@@ -8804,10 +8222,10 @@ public class LayoutRevisionPersistenceImpl
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
 				list = (List<LayoutRevision>)QueryUtil.list(
-					q, getDialect(), start, end);
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
@@ -8815,12 +8233,8 @@ public class LayoutRevisionPersistenceImpl
 					FinderCacheUtil.putResult(finderPath, finderArgs, list);
 				}
 			}
-			catch (Exception e) {
-				if (useFinderCache) {
-					FinderCacheUtil.removeResult(finderPath, finderArgs);
-				}
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -8849,7 +8263,7 @@ public class LayoutRevisionPersistenceImpl
 	@Override
 	public int countAll() {
 		Long count = (Long)FinderCacheUtil.getResult(
-			_finderPathCountAll, FINDER_ARGS_EMPTY, this);
+			_finderPathCountAll, FINDER_ARGS_EMPTY);
 
 		if (count == null) {
 			Session session = null;
@@ -8857,18 +8271,15 @@ public class LayoutRevisionPersistenceImpl
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(_SQL_COUNT_LAYOUTREVISION);
+				Query query = session.createQuery(_SQL_COUNT_LAYOUTREVISION);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
 				FinderCacheUtil.putResult(
 					_finderPathCountAll, FINDER_ARGS_EMPTY, count);
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(
-					_finderPathCountAll, FINDER_ARGS_EMPTY);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -8902,438 +8313,341 @@ public class LayoutRevisionPersistenceImpl
 	 * Initializes the layout revision persistence.
 	 */
 	public void afterPropertiesSet() {
+		Registry registry = RegistryUtil.getRegistry();
+
+		_argumentsResolverServiceRegistration = registry.registerService(
+			ArgumentsResolver.class,
+			new LayoutRevisionModelArgumentsResolver());
+
 		_finderPathWithPaginationFindAll = new FinderPath(
-			LayoutRevisionModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutRevisionModelImpl.FINDER_CACHE_ENABLED,
-			LayoutRevisionImpl.class, FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
-			"findAll", new String[0]);
+			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findAll", new String[0],
+			new String[0], true);
 
 		_finderPathWithoutPaginationFindAll = new FinderPath(
-			LayoutRevisionModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutRevisionModelImpl.FINDER_CACHE_ENABLED,
-			LayoutRevisionImpl.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-			"findAll", new String[0]);
+			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findAll", new String[0],
+			new String[0], true);
 
 		_finderPathCountAll = new FinderPath(
-			LayoutRevisionModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutRevisionModelImpl.FINDER_CACHE_ENABLED, Long.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countAll",
-			new String[0]);
+			new String[0], new String[0], false);
 
 		_finderPathWithPaginationFindByLayoutSetBranchId = new FinderPath(
-			LayoutRevisionModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutRevisionModelImpl.FINDER_CACHE_ENABLED,
-			LayoutRevisionImpl.class, FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
-			"findByLayoutSetBranchId",
+			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByLayoutSetBranchId",
 			new String[] {
 				Long.class.getName(), Integer.class.getName(),
 				Integer.class.getName(), OrderByComparator.class.getName()
-			});
+			},
+			new String[] {"layoutSetBranchId"}, true);
 
 		_finderPathWithoutPaginationFindByLayoutSetBranchId = new FinderPath(
-			LayoutRevisionModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutRevisionModelImpl.FINDER_CACHE_ENABLED,
-			LayoutRevisionImpl.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
 			"findByLayoutSetBranchId", new String[] {Long.class.getName()},
-			LayoutRevisionModelImpl.LAYOUTSETBRANCHID_COLUMN_BITMASK |
-			LayoutRevisionModelImpl.MODIFIEDDATE_COLUMN_BITMASK);
+			new String[] {"layoutSetBranchId"}, true);
 
 		_finderPathCountByLayoutSetBranchId = new FinderPath(
-			LayoutRevisionModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutRevisionModelImpl.FINDER_CACHE_ENABLED, Long.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-			"countByLayoutSetBranchId", new String[] {Long.class.getName()});
+			"countByLayoutSetBranchId", new String[] {Long.class.getName()},
+			new String[] {"layoutSetBranchId"}, false);
 
 		_finderPathWithPaginationFindByPlid = new FinderPath(
-			LayoutRevisionModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutRevisionModelImpl.FINDER_CACHE_ENABLED,
-			LayoutRevisionImpl.class, FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
-			"findByPlid",
+			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByPlid",
 			new String[] {
 				Long.class.getName(), Integer.class.getName(),
 				Integer.class.getName(), OrderByComparator.class.getName()
-			});
+			},
+			new String[] {"plid"}, true);
 
 		_finderPathWithoutPaginationFindByPlid = new FinderPath(
-			LayoutRevisionModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutRevisionModelImpl.FINDER_CACHE_ENABLED,
-			LayoutRevisionImpl.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-			"findByPlid", new String[] {Long.class.getName()},
-			LayoutRevisionModelImpl.PLID_COLUMN_BITMASK |
-			LayoutRevisionModelImpl.MODIFIEDDATE_COLUMN_BITMASK);
+			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByPlid",
+			new String[] {Long.class.getName()}, new String[] {"plid"}, true);
 
 		_finderPathCountByPlid = new FinderPath(
-			LayoutRevisionModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutRevisionModelImpl.FINDER_CACHE_ENABLED, Long.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByPlid",
-			new String[] {Long.class.getName()});
+			new String[] {Long.class.getName()}, new String[] {"plid"}, false);
 
 		_finderPathWithPaginationFindByStatus = new FinderPath(
-			LayoutRevisionModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutRevisionModelImpl.FINDER_CACHE_ENABLED,
-			LayoutRevisionImpl.class, FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
-			"findByStatus",
+			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByStatus",
 			new String[] {
 				Integer.class.getName(), Integer.class.getName(),
 				Integer.class.getName(), OrderByComparator.class.getName()
-			});
+			},
+			new String[] {"status"}, true);
 
 		_finderPathWithoutPaginationFindByStatus = new FinderPath(
-			LayoutRevisionModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutRevisionModelImpl.FINDER_CACHE_ENABLED,
-			LayoutRevisionImpl.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-			"findByStatus", new String[] {Integer.class.getName()},
-			LayoutRevisionModelImpl.STATUS_COLUMN_BITMASK |
-			LayoutRevisionModelImpl.MODIFIEDDATE_COLUMN_BITMASK);
+			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByStatus",
+			new String[] {Integer.class.getName()}, new String[] {"status"},
+			true);
 
 		_finderPathCountByStatus = new FinderPath(
-			LayoutRevisionModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutRevisionModelImpl.FINDER_CACHE_ENABLED, Long.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByStatus",
-			new String[] {Integer.class.getName()});
+			new String[] {Integer.class.getName()}, new String[] {"status"},
+			false);
 
 		_finderPathWithPaginationFindByL_H = new FinderPath(
-			LayoutRevisionModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutRevisionModelImpl.FINDER_CACHE_ENABLED,
-			LayoutRevisionImpl.class, FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
-			"findByL_H",
+			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByL_H",
 			new String[] {
 				Long.class.getName(), Boolean.class.getName(),
 				Integer.class.getName(), Integer.class.getName(),
 				OrderByComparator.class.getName()
-			});
+			},
+			new String[] {"layoutSetBranchId", "head"}, true);
 
 		_finderPathWithoutPaginationFindByL_H = new FinderPath(
-			LayoutRevisionModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutRevisionModelImpl.FINDER_CACHE_ENABLED,
-			LayoutRevisionImpl.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-			"findByL_H",
+			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByL_H",
 			new String[] {Long.class.getName(), Boolean.class.getName()},
-			LayoutRevisionModelImpl.LAYOUTSETBRANCHID_COLUMN_BITMASK |
-			LayoutRevisionModelImpl.HEAD_COLUMN_BITMASK |
-			LayoutRevisionModelImpl.MODIFIEDDATE_COLUMN_BITMASK);
+			new String[] {"layoutSetBranchId", "head"}, true);
 
 		_finderPathCountByL_H = new FinderPath(
-			LayoutRevisionModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutRevisionModelImpl.FINDER_CACHE_ENABLED, Long.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByL_H",
-			new String[] {Long.class.getName(), Boolean.class.getName()});
+			new String[] {Long.class.getName(), Boolean.class.getName()},
+			new String[] {"layoutSetBranchId", "head"}, false);
 
 		_finderPathWithPaginationFindByL_P = new FinderPath(
-			LayoutRevisionModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutRevisionModelImpl.FINDER_CACHE_ENABLED,
-			LayoutRevisionImpl.class, FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
-			"findByL_P",
+			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByL_P",
 			new String[] {
 				Long.class.getName(), Long.class.getName(),
 				Integer.class.getName(), Integer.class.getName(),
 				OrderByComparator.class.getName()
-			});
+			},
+			new String[] {"layoutSetBranchId", "plid"}, true);
 
 		_finderPathWithoutPaginationFindByL_P = new FinderPath(
-			LayoutRevisionModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutRevisionModelImpl.FINDER_CACHE_ENABLED,
-			LayoutRevisionImpl.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-			"findByL_P",
+			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByL_P",
 			new String[] {Long.class.getName(), Long.class.getName()},
-			LayoutRevisionModelImpl.LAYOUTSETBRANCHID_COLUMN_BITMASK |
-			LayoutRevisionModelImpl.PLID_COLUMN_BITMASK |
-			LayoutRevisionModelImpl.MODIFIEDDATE_COLUMN_BITMASK);
+			new String[] {"layoutSetBranchId", "plid"}, true);
 
 		_finderPathCountByL_P = new FinderPath(
-			LayoutRevisionModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutRevisionModelImpl.FINDER_CACHE_ENABLED, Long.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByL_P",
-			new String[] {Long.class.getName(), Long.class.getName()});
+			new String[] {Long.class.getName(), Long.class.getName()},
+			new String[] {"layoutSetBranchId", "plid"}, false);
 
 		_finderPathWithPaginationFindByL_S = new FinderPath(
-			LayoutRevisionModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutRevisionModelImpl.FINDER_CACHE_ENABLED,
-			LayoutRevisionImpl.class, FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
-			"findByL_S",
+			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByL_S",
 			new String[] {
 				Long.class.getName(), Integer.class.getName(),
 				Integer.class.getName(), Integer.class.getName(),
 				OrderByComparator.class.getName()
-			});
+			},
+			new String[] {"layoutSetBranchId", "status"}, true);
 
 		_finderPathWithoutPaginationFindByL_S = new FinderPath(
-			LayoutRevisionModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutRevisionModelImpl.FINDER_CACHE_ENABLED,
-			LayoutRevisionImpl.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-			"findByL_S",
+			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByL_S",
 			new String[] {Long.class.getName(), Integer.class.getName()},
-			LayoutRevisionModelImpl.LAYOUTSETBRANCHID_COLUMN_BITMASK |
-			LayoutRevisionModelImpl.STATUS_COLUMN_BITMASK |
-			LayoutRevisionModelImpl.MODIFIEDDATE_COLUMN_BITMASK);
+			new String[] {"layoutSetBranchId", "status"}, true);
 
 		_finderPathCountByL_S = new FinderPath(
-			LayoutRevisionModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutRevisionModelImpl.FINDER_CACHE_ENABLED, Long.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByL_S",
-			new String[] {Long.class.getName(), Integer.class.getName()});
+			new String[] {Long.class.getName(), Integer.class.getName()},
+			new String[] {"layoutSetBranchId", "status"}, false);
 
 		_finderPathWithPaginationFindByH_P = new FinderPath(
-			LayoutRevisionModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutRevisionModelImpl.FINDER_CACHE_ENABLED,
-			LayoutRevisionImpl.class, FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
-			"findByH_P",
+			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByH_P",
 			new String[] {
 				Boolean.class.getName(), Long.class.getName(),
 				Integer.class.getName(), Integer.class.getName(),
 				OrderByComparator.class.getName()
-			});
+			},
+			new String[] {"head", "plid"}, true);
 
 		_finderPathWithoutPaginationFindByH_P = new FinderPath(
-			LayoutRevisionModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutRevisionModelImpl.FINDER_CACHE_ENABLED,
-			LayoutRevisionImpl.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-			"findByH_P",
+			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByH_P",
 			new String[] {Boolean.class.getName(), Long.class.getName()},
-			LayoutRevisionModelImpl.HEAD_COLUMN_BITMASK |
-			LayoutRevisionModelImpl.PLID_COLUMN_BITMASK |
-			LayoutRevisionModelImpl.MODIFIEDDATE_COLUMN_BITMASK);
+			new String[] {"head", "plid"}, true);
 
 		_finderPathCountByH_P = new FinderPath(
-			LayoutRevisionModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutRevisionModelImpl.FINDER_CACHE_ENABLED, Long.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByH_P",
-			new String[] {Boolean.class.getName(), Long.class.getName()});
+			new String[] {Boolean.class.getName(), Long.class.getName()},
+			new String[] {"head", "plid"}, false);
 
 		_finderPathWithPaginationFindByP_NotS = new FinderPath(
-			LayoutRevisionModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutRevisionModelImpl.FINDER_CACHE_ENABLED,
-			LayoutRevisionImpl.class, FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
-			"findByP_NotS",
+			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByP_NotS",
 			new String[] {
 				Long.class.getName(), Integer.class.getName(),
 				Integer.class.getName(), Integer.class.getName(),
 				OrderByComparator.class.getName()
-			});
+			},
+			new String[] {"plid", "status"}, true);
 
 		_finderPathWithPaginationCountByP_NotS = new FinderPath(
-			LayoutRevisionModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutRevisionModelImpl.FINDER_CACHE_ENABLED, Long.class,
 			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByP_NotS",
-			new String[] {Long.class.getName(), Integer.class.getName()});
+			new String[] {Long.class.getName(), Integer.class.getName()},
+			new String[] {"plid", "status"}, false);
 
 		_finderPathWithPaginationFindByL_L_P = new FinderPath(
-			LayoutRevisionModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutRevisionModelImpl.FINDER_CACHE_ENABLED,
-			LayoutRevisionImpl.class, FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
-			"findByL_L_P",
+			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByL_L_P",
 			new String[] {
 				Long.class.getName(), Long.class.getName(),
 				Long.class.getName(), Integer.class.getName(),
 				Integer.class.getName(), OrderByComparator.class.getName()
-			});
+			},
+			new String[] {"layoutSetBranchId", "layoutBranchId", "plid"}, true);
 
 		_finderPathWithoutPaginationFindByL_L_P = new FinderPath(
-			LayoutRevisionModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutRevisionModelImpl.FINDER_CACHE_ENABLED,
-			LayoutRevisionImpl.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-			"findByL_L_P",
+			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByL_L_P",
 			new String[] {
 				Long.class.getName(), Long.class.getName(), Long.class.getName()
 			},
-			LayoutRevisionModelImpl.LAYOUTSETBRANCHID_COLUMN_BITMASK |
-			LayoutRevisionModelImpl.LAYOUTBRANCHID_COLUMN_BITMASK |
-			LayoutRevisionModelImpl.PLID_COLUMN_BITMASK |
-			LayoutRevisionModelImpl.MODIFIEDDATE_COLUMN_BITMASK);
+			new String[] {"layoutSetBranchId", "layoutBranchId", "plid"}, true);
 
 		_finderPathCountByL_L_P = new FinderPath(
-			LayoutRevisionModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutRevisionModelImpl.FINDER_CACHE_ENABLED, Long.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByL_L_P",
 			new String[] {
 				Long.class.getName(), Long.class.getName(), Long.class.getName()
-			});
+			},
+			new String[] {"layoutSetBranchId", "layoutBranchId", "plid"},
+			false);
 
 		_finderPathWithPaginationFindByL_P_P = new FinderPath(
-			LayoutRevisionModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutRevisionModelImpl.FINDER_CACHE_ENABLED,
-			LayoutRevisionImpl.class, FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
-			"findByL_P_P",
+			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByL_P_P",
 			new String[] {
 				Long.class.getName(), Long.class.getName(),
 				Long.class.getName(), Integer.class.getName(),
 				Integer.class.getName(), OrderByComparator.class.getName()
-			});
+			},
+			new String[] {
+				"layoutSetBranchId", "parentLayoutRevisionId", "plid"
+			},
+			true);
 
 		_finderPathWithoutPaginationFindByL_P_P = new FinderPath(
-			LayoutRevisionModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutRevisionModelImpl.FINDER_CACHE_ENABLED,
-			LayoutRevisionImpl.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-			"findByL_P_P",
+			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByL_P_P",
 			new String[] {
 				Long.class.getName(), Long.class.getName(), Long.class.getName()
 			},
-			LayoutRevisionModelImpl.LAYOUTSETBRANCHID_COLUMN_BITMASK |
-			LayoutRevisionModelImpl.PARENTLAYOUTREVISIONID_COLUMN_BITMASK |
-			LayoutRevisionModelImpl.PLID_COLUMN_BITMASK |
-			LayoutRevisionModelImpl.MODIFIEDDATE_COLUMN_BITMASK);
+			new String[] {
+				"layoutSetBranchId", "parentLayoutRevisionId", "plid"
+			},
+			true);
 
 		_finderPathCountByL_P_P = new FinderPath(
-			LayoutRevisionModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutRevisionModelImpl.FINDER_CACHE_ENABLED, Long.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByL_P_P",
 			new String[] {
 				Long.class.getName(), Long.class.getName(), Long.class.getName()
-			});
+			},
+			new String[] {
+				"layoutSetBranchId", "parentLayoutRevisionId", "plid"
+			},
+			false);
 
 		_finderPathFetchByL_H_P = new FinderPath(
-			LayoutRevisionModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutRevisionModelImpl.FINDER_CACHE_ENABLED,
-			LayoutRevisionImpl.class, FINDER_CLASS_NAME_ENTITY, "fetchByL_H_P",
+			FINDER_CLASS_NAME_ENTITY, "fetchByL_H_P",
 			new String[] {
 				Long.class.getName(), Boolean.class.getName(),
 				Long.class.getName()
 			},
-			LayoutRevisionModelImpl.LAYOUTSETBRANCHID_COLUMN_BITMASK |
-			LayoutRevisionModelImpl.HEAD_COLUMN_BITMASK |
-			LayoutRevisionModelImpl.PLID_COLUMN_BITMASK);
+			new String[] {"layoutSetBranchId", "head", "plid"}, true);
 
 		_finderPathCountByL_H_P = new FinderPath(
-			LayoutRevisionModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutRevisionModelImpl.FINDER_CACHE_ENABLED, Long.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByL_H_P",
 			new String[] {
 				Long.class.getName(), Boolean.class.getName(),
 				Long.class.getName()
-			});
+			},
+			new String[] {"layoutSetBranchId", "head", "plid"}, false);
 
 		_finderPathWithPaginationFindByL_H_P_Collection = new FinderPath(
-			LayoutRevisionModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutRevisionModelImpl.FINDER_CACHE_ENABLED,
-			LayoutRevisionImpl.class, FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
-			"findByL_H_P_Collection",
+			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByL_H_P_Collection",
 			new String[] {
 				Long.class.getName(), Boolean.class.getName(),
 				Long.class.getName(), Integer.class.getName(),
 				Integer.class.getName(), OrderByComparator.class.getName()
-			});
+			},
+			new String[] {"layoutSetBranchId", "head", "plid"}, true);
 
 		_finderPathWithoutPaginationFindByL_H_P_Collection = new FinderPath(
-			LayoutRevisionModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutRevisionModelImpl.FINDER_CACHE_ENABLED,
-			LayoutRevisionImpl.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-			"findByL_H_P_Collection",
+			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByL_H_P_Collection",
 			new String[] {
 				Long.class.getName(), Boolean.class.getName(),
 				Long.class.getName()
 			},
-			LayoutRevisionModelImpl.LAYOUTSETBRANCHID_COLUMN_BITMASK |
-			LayoutRevisionModelImpl.HEAD_COLUMN_BITMASK |
-			LayoutRevisionModelImpl.PLID_COLUMN_BITMASK |
-			LayoutRevisionModelImpl.MODIFIEDDATE_COLUMN_BITMASK);
+			new String[] {"layoutSetBranchId", "head", "plid"}, true);
 
 		_finderPathCountByL_H_P_Collection = new FinderPath(
-			LayoutRevisionModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutRevisionModelImpl.FINDER_CACHE_ENABLED, Long.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
 			"countByL_H_P_Collection",
 			new String[] {
 				Long.class.getName(), Boolean.class.getName(),
 				Long.class.getName()
-			});
+			},
+			new String[] {"layoutSetBranchId", "head", "plid"}, false);
 
 		_finderPathWithPaginationFindByL_H_S = new FinderPath(
-			LayoutRevisionModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutRevisionModelImpl.FINDER_CACHE_ENABLED,
-			LayoutRevisionImpl.class, FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
-			"findByL_H_S",
+			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByL_H_S",
 			new String[] {
 				Long.class.getName(), Boolean.class.getName(),
 				Integer.class.getName(), Integer.class.getName(),
 				Integer.class.getName(), OrderByComparator.class.getName()
-			});
+			},
+			new String[] {"layoutSetBranchId", "head", "status"}, true);
 
 		_finderPathWithoutPaginationFindByL_H_S = new FinderPath(
-			LayoutRevisionModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutRevisionModelImpl.FINDER_CACHE_ENABLED,
-			LayoutRevisionImpl.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-			"findByL_H_S",
+			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByL_H_S",
 			new String[] {
 				Long.class.getName(), Boolean.class.getName(),
 				Integer.class.getName()
 			},
-			LayoutRevisionModelImpl.LAYOUTSETBRANCHID_COLUMN_BITMASK |
-			LayoutRevisionModelImpl.HEAD_COLUMN_BITMASK |
-			LayoutRevisionModelImpl.STATUS_COLUMN_BITMASK |
-			LayoutRevisionModelImpl.MODIFIEDDATE_COLUMN_BITMASK);
+			new String[] {"layoutSetBranchId", "head", "status"}, true);
 
 		_finderPathCountByL_H_S = new FinderPath(
-			LayoutRevisionModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutRevisionModelImpl.FINDER_CACHE_ENABLED, Long.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByL_H_S",
 			new String[] {
 				Long.class.getName(), Boolean.class.getName(),
 				Integer.class.getName()
-			});
+			},
+			new String[] {"layoutSetBranchId", "head", "status"}, false);
 
 		_finderPathWithPaginationFindByL_P_S = new FinderPath(
-			LayoutRevisionModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutRevisionModelImpl.FINDER_CACHE_ENABLED,
-			LayoutRevisionImpl.class, FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
-			"findByL_P_S",
+			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByL_P_S",
 			new String[] {
 				Long.class.getName(), Long.class.getName(),
 				Integer.class.getName(), Integer.class.getName(),
 				Integer.class.getName(), OrderByComparator.class.getName()
-			});
+			},
+			new String[] {"layoutSetBranchId", "plid", "status"}, true);
 
 		_finderPathWithoutPaginationFindByL_P_S = new FinderPath(
-			LayoutRevisionModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutRevisionModelImpl.FINDER_CACHE_ENABLED,
-			LayoutRevisionImpl.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-			"findByL_P_S",
+			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByL_P_S",
 			new String[] {
 				Long.class.getName(), Long.class.getName(),
 				Integer.class.getName()
 			},
-			LayoutRevisionModelImpl.LAYOUTSETBRANCHID_COLUMN_BITMASK |
-			LayoutRevisionModelImpl.PLID_COLUMN_BITMASK |
-			LayoutRevisionModelImpl.STATUS_COLUMN_BITMASK |
-			LayoutRevisionModelImpl.MODIFIEDDATE_COLUMN_BITMASK);
+			new String[] {"layoutSetBranchId", "plid", "status"}, true);
 
 		_finderPathCountByL_P_S = new FinderPath(
-			LayoutRevisionModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutRevisionModelImpl.FINDER_CACHE_ENABLED, Long.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByL_P_S",
 			new String[] {
 				Long.class.getName(), Long.class.getName(),
 				Integer.class.getName()
-			});
+			},
+			new String[] {"layoutSetBranchId", "plid", "status"}, false);
 
 		_finderPathFetchByL_L_H_P = new FinderPath(
-			LayoutRevisionModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutRevisionModelImpl.FINDER_CACHE_ENABLED,
-			LayoutRevisionImpl.class, FINDER_CLASS_NAME_ENTITY,
-			"fetchByL_L_H_P",
+			FINDER_CLASS_NAME_ENTITY, "fetchByL_L_H_P",
 			new String[] {
 				Long.class.getName(), Long.class.getName(),
 				Boolean.class.getName(), Long.class.getName()
 			},
-			LayoutRevisionModelImpl.LAYOUTSETBRANCHID_COLUMN_BITMASK |
-			LayoutRevisionModelImpl.LAYOUTBRANCHID_COLUMN_BITMASK |
-			LayoutRevisionModelImpl.HEAD_COLUMN_BITMASK |
-			LayoutRevisionModelImpl.PLID_COLUMN_BITMASK);
+			new String[] {
+				"layoutSetBranchId", "layoutBranchId", "head", "plid"
+			},
+			true);
 
 		_finderPathCountByL_L_H_P = new FinderPath(
-			LayoutRevisionModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutRevisionModelImpl.FINDER_CACHE_ENABLED, Long.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByL_L_H_P",
 			new String[] {
 				Long.class.getName(), Long.class.getName(),
 				Boolean.class.getName(), Long.class.getName()
-			});
+			},
+			new String[] {
+				"layoutSetBranchId", "layoutBranchId", "head", "plid"
+			},
+			false);
 	}
 
 	public void destroy() {
 		EntityCacheUtil.removeCache(LayoutRevisionImpl.class.getName());
-		FinderCacheUtil.removeCache(FINDER_CLASS_NAME_ENTITY);
-		FinderCacheUtil.removeCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
-		FinderCacheUtil.removeCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+
+		_argumentsResolverServiceRegistration.unregister();
 	}
 
 	private static final String _SQL_SELECT_LAYOUTREVISION =
@@ -9358,5 +8672,102 @@ public class LayoutRevisionPersistenceImpl
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		LayoutRevisionPersistenceImpl.class);
+
+	@Override
+	protected FinderCache getFinderCache() {
+		return FinderCacheUtil.getFinderCache();
+	}
+
+	private ServiceRegistration<ArgumentsResolver>
+		_argumentsResolverServiceRegistration;
+
+	private static class LayoutRevisionModelArgumentsResolver
+		implements ArgumentsResolver {
+
+		@Override
+		public Object[] getArguments(
+			FinderPath finderPath, BaseModel<?> baseModel, boolean checkColumn,
+			boolean original) {
+
+			String[] columnNames = finderPath.getColumnNames();
+
+			if ((columnNames == null) || (columnNames.length == 0)) {
+				if (baseModel.isNew()) {
+					return FINDER_ARGS_EMPTY;
+				}
+
+				return null;
+			}
+
+			LayoutRevisionModelImpl layoutRevisionModelImpl =
+				(LayoutRevisionModelImpl)baseModel;
+
+			long columnBitmask = layoutRevisionModelImpl.getColumnBitmask();
+
+			if (!checkColumn || (columnBitmask == 0)) {
+				return _getValue(
+					layoutRevisionModelImpl, columnNames, original);
+			}
+
+			Long finderPathColumnBitmask = _finderPathColumnBitmasksCache.get(
+				finderPath);
+
+			if (finderPathColumnBitmask == null) {
+				finderPathColumnBitmask = 0L;
+
+				for (String columnName : columnNames) {
+					finderPathColumnBitmask |=
+						layoutRevisionModelImpl.getColumnBitmask(columnName);
+				}
+
+				_finderPathColumnBitmasksCache.put(
+					finderPath, finderPathColumnBitmask);
+			}
+
+			if ((columnBitmask & finderPathColumnBitmask) != 0) {
+				return _getValue(
+					layoutRevisionModelImpl, columnNames, original);
+			}
+
+			return null;
+		}
+
+		@Override
+		public String getClassName() {
+			return LayoutRevisionImpl.class.getName();
+		}
+
+		@Override
+		public String getTableName() {
+			return LayoutRevisionTable.INSTANCE.getTableName();
+		}
+
+		private Object[] _getValue(
+			LayoutRevisionModelImpl layoutRevisionModelImpl,
+			String[] columnNames, boolean original) {
+
+			Object[] arguments = new Object[columnNames.length];
+
+			for (int i = 0; i < arguments.length; i++) {
+				String columnName = columnNames[i];
+
+				if (original) {
+					arguments[i] =
+						layoutRevisionModelImpl.getColumnOriginalValue(
+							columnName);
+				}
+				else {
+					arguments[i] = layoutRevisionModelImpl.getColumnValue(
+						columnName);
+				}
+			}
+
+			return arguments;
+		}
+
+		private static Map<FinderPath, Long> _finderPathColumnBitmasksCache =
+			new ConcurrentHashMap<>();
+
+	}
 
 }

@@ -14,15 +14,17 @@
 
 package com.liferay.password.policies.admin.web.internal.display.context;
 
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenu;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenuBuilder;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemList;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemListBuilder;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.ViewTypeItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.ViewTypeItemList;
 import com.liferay.password.policies.admin.web.internal.search.AddOrganizationPasswordPolicyChecker;
 import com.liferay.password.policies.admin.web.internal.search.AddUserPasswordPolicyChecker;
 import com.liferay.password.policies.admin.web.internal.search.DeleteOrganizationPasswordPolicyChecker;
 import com.liferay.password.policies.admin.web.internal.search.DeleteUserPasswordPolicyChecker;
-import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.search.RowChecker;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
@@ -79,30 +81,24 @@ public class EditPasswordPolicyAssignmentsManagementToolbarDisplayContext {
 	}
 
 	public List<DropdownItem> getActionDropdownItems() {
-		return new DropdownItemList() {
-			{
-				add(
-					dropdownItem -> {
-						String methodName = StringPool.BLANK;
+		return DropdownItemListBuilder.add(
+			dropdownItem -> {
+				String action = StringPool.BLANK;
 
-						if (_tabs2.equals("users")) {
-							methodName = "deleteUsers();";
-						}
-						else if (_tabs2.equals("organizations")) {
-							methodName = "deleteOrganizations();";
-						}
+				if (_tabs2.equals("users")) {
+					action = "deleteUsers";
+				}
+				else if (_tabs2.equals("organizations")) {
+					action = "deleteOrganizations";
+				}
 
-						dropdownItem.setHref(
-							StringBundler.concat(
-								"javascript:", _renderResponse.getNamespace(),
-								methodName));
-						dropdownItem.setIcon("trash");
-						dropdownItem.setLabel(
-							LanguageUtil.get(_httpServletRequest, "delete"));
-						dropdownItem.setQuickAction(true);
-					});
+				dropdownItem.putData("action", action);
+				dropdownItem.setIcon("trash");
+				dropdownItem.setLabel(
+					LanguageUtil.get(_httpServletRequest, "delete"));
+				dropdownItem.setQuickAction(true);
 			}
-		};
+		).build();
 	}
 
 	public String getClearResultsURL() {
@@ -113,18 +109,21 @@ public class EditPasswordPolicyAssignmentsManagementToolbarDisplayContext {
 		return clearResultsURL.toString();
 	}
 
-	public List<DropdownItem> getFilterDropdownItems() {
-		return new DropdownItemList() {
-			{
-				addGroup(
-					dropdownGroupItem -> {
-						dropdownGroupItem.setDropdownItems(
-							_getOrderByDropdownItems());
-						dropdownGroupItem.setLabel(
-							LanguageUtil.get(_httpServletRequest, "order-by"));
-					});
+	public CreationMenu getCreationMenu() {
+		return CreationMenuBuilder.addPrimaryDropdownItem(
+			dropdownItem -> {
 			}
-		};
+		).build();
+	}
+
+	public List<DropdownItem> getFilterDropdownItems() {
+		return DropdownItemListBuilder.addGroup(
+			dropdownGroupItem -> {
+				dropdownGroupItem.setDropdownItems(_getOrderByDropdownItems());
+				dropdownGroupItem.setLabel(
+					LanguageUtil.get(_httpServletRequest, "order-by"));
+			}
+		).build();
 	}
 
 	public String getKeywords() {
@@ -157,7 +156,7 @@ public class EditPasswordPolicyAssignmentsManagementToolbarDisplayContext {
 		return _orderByType;
 	}
 
-	public SearchContainer getOrganizationSearchContainer()
+	public SearchContainer<Organization> getOrganizationSearchContainer()
 		throws PortalException {
 
 		OrganizationSearch organizationSearch = new OrganizationSearch(
@@ -250,7 +249,7 @@ public class EditPasswordPolicyAssignmentsManagementToolbarDisplayContext {
 		return searchActionURL.toString();
 	}
 
-	public SearchContainer getSearchContainer() throws Exception {
+	public SearchContainer<?> getSearchContainer() throws Exception {
 		if (Objects.equals(getTabs2(), "organizations")) {
 			_searchContainer = getOrganizationSearchContainer();
 		}
@@ -279,7 +278,7 @@ public class EditPasswordPolicyAssignmentsManagementToolbarDisplayContext {
 		return _tabs2;
 	}
 
-	public SearchContainer getUserSearchContainer() {
+	public SearchContainer<User> getUserSearchContainer() {
 		UserSearch userSearch = new UserSearch(_renderRequest, getPortletURL());
 
 		RowChecker rowChecker = new AddUserPasswordPolicyChecker(
@@ -378,7 +377,7 @@ public class EditPasswordPolicyAssignmentsManagementToolbarDisplayContext {
 	private final PasswordPolicy _passwordPolicy;
 	private final RenderRequest _renderRequest;
 	private final RenderResponse _renderResponse;
-	private SearchContainer _searchContainer;
+	private SearchContainer<?> _searchContainer;
 	private String _tabs2;
 
 }

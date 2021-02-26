@@ -92,7 +92,7 @@ public class OrganizationSegmentsFieldCustomizer
 				PortletRequest.RENDER_PHASE);
 
 			portletURL.setParameter(
-				"mvcRenderCommandName", "selectOrganizations");
+				"mvcRenderCommandName", "/segments/select_organizations");
 			portletURL.setParameter("eventName", "selectEntity");
 			portletURL.setWindowState(LiferayWindowState.POP_UP);
 
@@ -103,9 +103,9 @@ public class OrganizationSegmentsFieldCustomizer
 					Organization.class.getName()),
 				portletURL.toString(), true);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isWarnEnabled()) {
-				_log.warn("Unable to get select entity", e);
+				_log.warn("Unable to get select entity", exception);
 			}
 
 			return null;

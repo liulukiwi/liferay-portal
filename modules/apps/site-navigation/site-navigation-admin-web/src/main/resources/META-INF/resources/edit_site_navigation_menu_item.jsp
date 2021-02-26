@@ -26,7 +26,7 @@ SiteNavigationMenuItem siteNavigationMenuItem = SiteNavigationMenuItemLocalServi
 SiteNavigationMenuItemType siteNavigationMenuItemType = siteNavigationMenuItemTypeRegistry.getSiteNavigationMenuItemType(siteNavigationMenuItem.getType());
 %>
 
-<portlet:actionURL name="/navigation_menu/edit_site_navigation_menu_item" var="editSiteNavigationMenuItemURL" />
+<portlet:actionURL name="/site_navigation_admin/edit_site_navigation_menu_item" var="editSiteNavigationMenuItemURL" />
 
 <aui:form action="<%= editSiteNavigationMenuItemURL %>">
 	<aui:input name="redirect" type="hidden" value="<%= redirect %>" />
@@ -37,6 +37,15 @@ SiteNavigationMenuItemType siteNavigationMenuItemType = siteNavigationMenuItemTy
 	<%
 	siteNavigationMenuItemType.renderEditPage(request, PipingServletResponse.createPipingServletResponse(pageContext), siteNavigationMenuItem);
 	%>
+
+	<c:if test="<%= CustomAttributesUtil.hasCustomAttributes(company.getCompanyId(), SiteNavigationMenuItem.class.getName(), siteNavigationMenuItemId, null) %>">
+		<liferay-expando:custom-attribute-list
+			className="<%= SiteNavigationMenuItem.class.getName() %>"
+			classPK="<%= siteNavigationMenuItemId %>"
+			editable="<%= true %>"
+			label="<%= true %>"
+		/>
+	</c:if>
 
 	<aui:button-row>
 		<aui:button cssClass="btn-block" type="submit" />

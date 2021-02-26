@@ -85,8 +85,9 @@ public class BufferedProcess extends Process {
 	private class InputStreamBuffer extends Thread {
 
 		public InputStreamBuffer(int bufferSize, InputStream inputStream) {
-			_buffer = new byte[bufferSize];
 			_inputStream = inputStream;
+
+			_buffer = new byte[bufferSize];
 		}
 
 		public void run() {
@@ -119,8 +120,8 @@ public class BufferedProcess extends Process {
 					}
 				}
 			}
-			catch (IOException ioe) {
-				throw new RuntimeException(ioe);
+			catch (IOException ioException) {
+				throw new RuntimeException(ioException);
 			}
 		}
 

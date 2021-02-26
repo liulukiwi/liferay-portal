@@ -5,7 +5,7 @@ create table DEDataDefinitionFieldLink (
 	classNameId LONG,
 	classPK LONG,
 	ddmStructureId LONG,
-	fieldName LONG
+	fieldName VARCHAR(75) null
 );
 
 create unique index IX_2CEE588F on DEDataDefinitionFieldLink (classNameId, classPK, ddmStructureId, fieldName);
@@ -20,9 +20,9 @@ create table DEDataListView (
 	userName VARCHAR(75) null,
 	createDate DATE null,
 	modifiedDate DATE null,
-	appliedFilters VARCHAR(75) null,
+	appliedFilters STRING null,
 	ddmStructureId LONG,
-	fieldNames VARCHAR(75) null,
+	fieldNames STRING null,
 	name STRING null,
 	sortField VARCHAR(75) null
 );

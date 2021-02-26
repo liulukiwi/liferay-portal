@@ -18,6 +18,8 @@ import com.liferay.data.engine.rest.client.dto.v2_0.DataRecordCollection;
 import com.liferay.data.engine.rest.client.http.HttpInvoker;
 import com.liferay.data.engine.rest.client.pagination.Page;
 import com.liferay.data.engine.rest.client.pagination.Pagination;
+import com.liferay.data.engine.rest.client.permission.Permission;
+import com.liferay.data.engine.rest.client.problem.Problem;
 import com.liferay.data.engine.rest.client.serdes.v2_0.DataRecordCollectionSerDes;
 
 import java.util.LinkedHashMap;
@@ -25,6 +27,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.annotation.Generated;
 
@@ -68,11 +72,28 @@ public interface DataRecordCollectionResource {
 				DataRecordCollection dataRecordCollection)
 		throws Exception;
 
+	public void postDataDefinitionDataRecordCollectionBatch(
+			Long dataDefinitionId, String callbackURL, Object object)
+		throws Exception;
+
+	public HttpInvoker.HttpResponse
+			postDataDefinitionDataRecordCollectionBatchHttpResponse(
+				Long dataDefinitionId, String callbackURL, Object object)
+		throws Exception;
+
 	public void deleteDataRecordCollection(Long dataRecordCollectionId)
 		throws Exception;
 
 	public HttpInvoker.HttpResponse deleteDataRecordCollectionHttpResponse(
 			Long dataRecordCollectionId)
+		throws Exception;
+
+	public void deleteDataRecordCollectionBatch(
+			String callbackURL, Object object)
+		throws Exception;
+
+	public HttpInvoker.HttpResponse deleteDataRecordCollectionBatchHttpResponse(
+			String callbackURL, Object object)
 		throws Exception;
 
 	public DataRecordCollection getDataRecordCollection(
@@ -93,49 +114,48 @@ public interface DataRecordCollectionResource {
 			DataRecordCollection dataRecordCollection)
 		throws Exception;
 
-	public void postDataRecordCollectionDataRecordCollectionPermission(
-			Long dataRecordCollectionId, String operation,
-			com.liferay.data.engine.rest.client.dto.v2_0.
-				DataRecordCollectionPermission dataRecordCollectionPermission)
+	public void putDataRecordCollectionBatch(String callbackURL, Object object)
+		throws Exception;
+
+	public HttpInvoker.HttpResponse putDataRecordCollectionBatchHttpResponse(
+			String callbackURL, Object object)
+		throws Exception;
+
+	public Page<Permission> getDataRecordCollectionPermissionsPage(
+			Long dataRecordCollectionId, String roleNames)
 		throws Exception;
 
 	public HttpInvoker.HttpResponse
-			postDataRecordCollectionDataRecordCollectionPermissionHttpResponse(
-				Long dataRecordCollectionId, String operation,
-				com.liferay.data.engine.rest.client.dto.v2_0.
-					DataRecordCollectionPermission
-						dataRecordCollectionPermission)
+			getDataRecordCollectionPermissionsPageHttpResponse(
+				Long dataRecordCollectionId, String roleNames)
 		throws Exception;
 
-	public void postSiteDataRecordCollectionPermission(
-			Long siteId, String operation,
-			com.liferay.data.engine.rest.client.dto.v2_0.
-				DataRecordCollectionPermission dataRecordCollectionPermission)
+	public void putDataRecordCollectionPermission(
+			Long dataRecordCollectionId, Permission[] permissions)
 		throws Exception;
 
 	public HttpInvoker.HttpResponse
-			postSiteDataRecordCollectionPermissionHttpResponse(
-				Long siteId, String operation,
-				com.liferay.data.engine.rest.client.dto.v2_0.
-					DataRecordCollectionPermission
-						dataRecordCollectionPermission)
+			putDataRecordCollectionPermissionHttpResponse(
+				Long dataRecordCollectionId, Permission[] permissions)
 		throws Exception;
 
-	public Page<DataRecordCollection> getSiteDataRecordCollectionsPage(
-			Long siteId, String keywords, Pagination pagination)
+	public String getDataRecordCollectionPermissionByCurrentUser(
+			Long dataRecordCollectionId)
 		throws Exception;
 
 	public HttpInvoker.HttpResponse
-			getSiteDataRecordCollectionsPageHttpResponse(
-				Long siteId, String keywords, Pagination pagination)
+			getDataRecordCollectionPermissionByCurrentUserHttpResponse(
+				Long dataRecordCollectionId)
 		throws Exception;
 
-	public DataRecordCollection getSiteDataRecordCollection(
-			Long siteId, String dataRecordCollectionKey)
+	public DataRecordCollection
+			getSiteDataRecordCollectionByDataRecordCollectionKey(
+				Long siteId, String dataRecordCollectionKey)
 		throws Exception;
 
-	public HttpInvoker.HttpResponse getSiteDataRecordCollectionHttpResponse(
-			Long siteId, String dataRecordCollectionKey)
+	public HttpInvoker.HttpResponse
+			getSiteDataRecordCollectionByDataRecordCollectionKeyHttpResponse(
+				Long siteId, String dataRecordCollectionKey)
 		throws Exception;
 
 	public static class Builder {
@@ -183,8 +203,8 @@ public interface DataRecordCollectionResource {
 		private Map<String, String> _headers = new LinkedHashMap<>();
 		private String _host = "localhost";
 		private Locale _locale;
-		private String _login = "test@liferay.com";
-		private String _password = "test";
+		private String _login = "";
+		private String _password = "";
 		private Map<String, String> _parameters = new LinkedHashMap<>();
 		private int _port = 8080;
 		private String _scheme = "http";
@@ -218,7 +238,7 @@ public interface DataRecordCollectionResource {
 					Level.WARNING,
 					"Unable to process HTTP response: " + content, e);
 
-				throw e;
+				throw new Problem.ProblemException(Problem.toDTO(content));
 			}
 		}
 
@@ -251,8 +271,9 @@ public interface DataRecordCollectionResource {
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port +
-						"/o/data-engine/v2.0/data-definitions/{dataDefinitionId}/data-record-collection",
-				dataDefinitionId);
+						"/o/data-engine/v2.0/data-definitions/{dataDefinitionId}/data-record-collection");
+
+			httpInvoker.path("dataDefinitionId", dataDefinitionId);
 
 			httpInvoker.userNameAndPassword(
 				_builder._login + ":" + _builder._password);
@@ -278,7 +299,16 @@ public interface DataRecordCollectionResource {
 			_logger.fine(
 				"HTTP response status code: " + httpResponse.getStatusCode());
 
-			return Page.of(content, DataRecordCollectionSerDes::toDTO);
+			try {
+				return Page.of(content, DataRecordCollectionSerDes::toDTO);
+			}
+			catch (Exception e) {
+				_logger.log(
+					Level.WARNING,
+					"Unable to process HTTP response: " + content, e);
+
+				throw new Problem.ProblemException(Problem.toDTO(content));
+			}
 		}
 
 		public HttpInvoker.HttpResponse
@@ -322,8 +352,9 @@ public interface DataRecordCollectionResource {
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port +
-						"/o/data-engine/v2.0/data-definitions/{dataDefinitionId}/data-record-collections",
-				dataDefinitionId);
+						"/o/data-engine/v2.0/data-definitions/{dataDefinitionId}/data-record-collections");
+
+			httpInvoker.path("dataDefinitionId", dataDefinitionId);
 
 			httpInvoker.userNameAndPassword(
 				_builder._login + ":" + _builder._password);
@@ -356,7 +387,7 @@ public interface DataRecordCollectionResource {
 					Level.WARNING,
 					"Unable to process HTTP response: " + content, e);
 
-				throw e;
+				throw new Problem.ProblemException(Problem.toDTO(content));
 			}
 		}
 
@@ -393,8 +424,72 @@ public interface DataRecordCollectionResource {
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port +
-						"/o/data-engine/v2.0/data-definitions/{dataDefinitionId}/data-record-collections",
-				dataDefinitionId);
+						"/o/data-engine/v2.0/data-definitions/{dataDefinitionId}/data-record-collections");
+
+			httpInvoker.path("dataDefinitionId", dataDefinitionId);
+
+			httpInvoker.userNameAndPassword(
+				_builder._login + ":" + _builder._password);
+
+			return httpInvoker.invoke();
+		}
+
+		public void postDataDefinitionDataRecordCollectionBatch(
+				Long dataDefinitionId, String callbackURL, Object object)
+			throws Exception {
+
+			HttpInvoker.HttpResponse httpResponse =
+				postDataDefinitionDataRecordCollectionBatchHttpResponse(
+					dataDefinitionId, callbackURL, object);
+
+			String content = httpResponse.getContent();
+
+			_logger.fine("HTTP response content: " + content);
+
+			_logger.fine("HTTP response message: " + httpResponse.getMessage());
+			_logger.fine(
+				"HTTP response status code: " + httpResponse.getStatusCode());
+		}
+
+		public HttpInvoker.HttpResponse
+				postDataDefinitionDataRecordCollectionBatchHttpResponse(
+					Long dataDefinitionId, String callbackURL, Object object)
+			throws Exception {
+
+			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+			httpInvoker.body(object.toString(), "application/json");
+
+			if (_builder._locale != null) {
+				httpInvoker.header(
+					"Accept-Language", _builder._locale.toLanguageTag());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
+			}
+
+			httpInvoker.httpMethod(HttpInvoker.HttpMethod.POST);
+
+			if (callbackURL != null) {
+				httpInvoker.parameter(
+					"callbackURL", String.valueOf(callbackURL));
+			}
+
+			httpInvoker.path(
+				_builder._scheme + "://" + _builder._host + ":" +
+					_builder._port +
+						"/o/data-engine/v2.0/data-definitions/{dataDefinitionId}/data-record-collections/batch");
+
+			httpInvoker.path("dataDefinitionId", dataDefinitionId);
 
 			httpInvoker.userNameAndPassword(
 				_builder._login + ":" + _builder._password);
@@ -415,6 +510,17 @@ public interface DataRecordCollectionResource {
 			_logger.fine("HTTP response message: " + httpResponse.getMessage());
 			_logger.fine(
 				"HTTP response status code: " + httpResponse.getStatusCode());
+
+			try {
+				return;
+			}
+			catch (Exception e) {
+				_logger.log(
+					Level.WARNING,
+					"Unable to process HTTP response: " + content, e);
+
+				throw new Problem.ProblemException(Problem.toDTO(content));
+			}
 		}
 
 		public HttpInvoker.HttpResponse deleteDataRecordCollectionHttpResponse(
@@ -445,8 +551,68 @@ public interface DataRecordCollectionResource {
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port +
-						"/o/data-engine/v2.0/data-record-collections/{dataRecordCollectionId}",
-				dataRecordCollectionId);
+						"/o/data-engine/v2.0/data-record-collections/{dataRecordCollectionId}");
+
+			httpInvoker.path("dataRecordCollectionId", dataRecordCollectionId);
+
+			httpInvoker.userNameAndPassword(
+				_builder._login + ":" + _builder._password);
+
+			return httpInvoker.invoke();
+		}
+
+		public void deleteDataRecordCollectionBatch(
+				String callbackURL, Object object)
+			throws Exception {
+
+			HttpInvoker.HttpResponse httpResponse =
+				deleteDataRecordCollectionBatchHttpResponse(
+					callbackURL, object);
+
+			String content = httpResponse.getContent();
+
+			_logger.fine("HTTP response content: " + content);
+
+			_logger.fine("HTTP response message: " + httpResponse.getMessage());
+			_logger.fine(
+				"HTTP response status code: " + httpResponse.getStatusCode());
+		}
+
+		public HttpInvoker.HttpResponse
+				deleteDataRecordCollectionBatchHttpResponse(
+					String callbackURL, Object object)
+			throws Exception {
+
+			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+			if (_builder._locale != null) {
+				httpInvoker.header(
+					"Accept-Language", _builder._locale.toLanguageTag());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
+			}
+
+			httpInvoker.httpMethod(HttpInvoker.HttpMethod.DELETE);
+
+			if (callbackURL != null) {
+				httpInvoker.parameter(
+					"callbackURL", String.valueOf(callbackURL));
+			}
+
+			httpInvoker.path(
+				_builder._scheme + "://" + _builder._host + ":" +
+					_builder._port +
+						"/o/data-engine/v2.0/data-record-collections/batch");
 
 			httpInvoker.userNameAndPassword(
 				_builder._login + ":" + _builder._password);
@@ -477,7 +643,7 @@ public interface DataRecordCollectionResource {
 					Level.WARNING,
 					"Unable to process HTTP response: " + content, e);
 
-				throw e;
+				throw new Problem.ProblemException(Problem.toDTO(content));
 			}
 		}
 
@@ -509,8 +675,9 @@ public interface DataRecordCollectionResource {
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port +
-						"/o/data-engine/v2.0/data-record-collections/{dataRecordCollectionId}",
-				dataRecordCollectionId);
+						"/o/data-engine/v2.0/data-record-collections/{dataRecordCollectionId}");
+
+			httpInvoker.path("dataRecordCollectionId", dataRecordCollectionId);
 
 			httpInvoker.userNameAndPassword(
 				_builder._login + ":" + _builder._password);
@@ -543,7 +710,7 @@ public interface DataRecordCollectionResource {
 					Level.WARNING,
 					"Unable to process HTTP response: " + content, e);
 
-				throw e;
+				throw new Problem.ProblemException(Problem.toDTO(content));
 			}
 		}
 
@@ -579,8 +746,9 @@ public interface DataRecordCollectionResource {
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port +
-						"/o/data-engine/v2.0/data-record-collections/{dataRecordCollectionId}",
-				dataRecordCollectionId);
+						"/o/data-engine/v2.0/data-record-collections/{dataRecordCollectionId}");
+
+			httpInvoker.path("dataRecordCollectionId", dataRecordCollectionId);
 
 			httpInvoker.userNameAndPassword(
 				_builder._login + ":" + _builder._password);
@@ -588,17 +756,12 @@ public interface DataRecordCollectionResource {
 			return httpInvoker.invoke();
 		}
 
-		public void postDataRecordCollectionDataRecordCollectionPermission(
-				Long dataRecordCollectionId, String operation,
-				com.liferay.data.engine.rest.client.dto.v2_0.
-					DataRecordCollectionPermission
-						dataRecordCollectionPermission)
+		public void putDataRecordCollectionBatch(
+				String callbackURL, Object object)
 			throws Exception {
 
 			HttpInvoker.HttpResponse httpResponse =
-				postDataRecordCollectionDataRecordCollectionPermissionHttpResponse(
-					dataRecordCollectionId, operation,
-					dataRecordCollectionPermission);
+				putDataRecordCollectionBatchHttpResponse(callbackURL, object);
 
 			String content = httpResponse.getContent();
 
@@ -610,17 +773,13 @@ public interface DataRecordCollectionResource {
 		}
 
 		public HttpInvoker.HttpResponse
-				postDataRecordCollectionDataRecordCollectionPermissionHttpResponse(
-					Long dataRecordCollectionId, String operation,
-					com.liferay.data.engine.rest.client.dto.v2_0.
-						DataRecordCollectionPermission
-							dataRecordCollectionPermission)
+				putDataRecordCollectionBatchHttpResponse(
+					String callbackURL, Object object)
 			throws Exception {
 
 			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
 
-			httpInvoker.body(
-				dataRecordCollectionPermission.toString(), "application/json");
+			httpInvoker.body(object.toString(), "application/json");
 
 			if (_builder._locale != null) {
 				httpInvoker.header(
@@ -639,17 +798,17 @@ public interface DataRecordCollectionResource {
 				httpInvoker.parameter(entry.getKey(), entry.getValue());
 			}
 
-			httpInvoker.httpMethod(HttpInvoker.HttpMethod.POST);
+			httpInvoker.httpMethod(HttpInvoker.HttpMethod.PUT);
 
-			if (operation != null) {
-				httpInvoker.parameter("operation", String.valueOf(operation));
+			if (callbackURL != null) {
+				httpInvoker.parameter(
+					"callbackURL", String.valueOf(callbackURL));
 			}
 
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port +
-						"/o/data-engine/v2.0/data-record-collections/{dataRecordCollectionId}/data-record-collection-permissions",
-				dataRecordCollectionId);
+						"/o/data-engine/v2.0/data-record-collections/batch");
 
 			httpInvoker.userNameAndPassword(
 				_builder._login + ":" + _builder._password);
@@ -657,81 +816,13 @@ public interface DataRecordCollectionResource {
 			return httpInvoker.invoke();
 		}
 
-		public void postSiteDataRecordCollectionPermission(
-				Long siteId, String operation,
-				com.liferay.data.engine.rest.client.dto.v2_0.
-					DataRecordCollectionPermission
-						dataRecordCollectionPermission)
+		public Page<Permission> getDataRecordCollectionPermissionsPage(
+				Long dataRecordCollectionId, String roleNames)
 			throws Exception {
 
 			HttpInvoker.HttpResponse httpResponse =
-				postSiteDataRecordCollectionPermissionHttpResponse(
-					siteId, operation, dataRecordCollectionPermission);
-
-			String content = httpResponse.getContent();
-
-			_logger.fine("HTTP response content: " + content);
-
-			_logger.fine("HTTP response message: " + httpResponse.getMessage());
-			_logger.fine(
-				"HTTP response status code: " + httpResponse.getStatusCode());
-		}
-
-		public HttpInvoker.HttpResponse
-				postSiteDataRecordCollectionPermissionHttpResponse(
-					Long siteId, String operation,
-					com.liferay.data.engine.rest.client.dto.v2_0.
-						DataRecordCollectionPermission
-							dataRecordCollectionPermission)
-			throws Exception {
-
-			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
-
-			httpInvoker.body(
-				dataRecordCollectionPermission.toString(), "application/json");
-
-			if (_builder._locale != null) {
-				httpInvoker.header(
-					"Accept-Language", _builder._locale.toLanguageTag());
-			}
-
-			for (Map.Entry<String, String> entry :
-					_builder._headers.entrySet()) {
-
-				httpInvoker.header(entry.getKey(), entry.getValue());
-			}
-
-			for (Map.Entry<String, String> entry :
-					_builder._parameters.entrySet()) {
-
-				httpInvoker.parameter(entry.getKey(), entry.getValue());
-			}
-
-			httpInvoker.httpMethod(HttpInvoker.HttpMethod.POST);
-
-			if (operation != null) {
-				httpInvoker.parameter("operation", String.valueOf(operation));
-			}
-
-			httpInvoker.path(
-				_builder._scheme + "://" + _builder._host + ":" +
-					_builder._port +
-						"/o/data-engine/v2.0/sites/{siteId}/data-record-collection-permissions",
-				siteId);
-
-			httpInvoker.userNameAndPassword(
-				_builder._login + ":" + _builder._password);
-
-			return httpInvoker.invoke();
-		}
-
-		public Page<DataRecordCollection> getSiteDataRecordCollectionsPage(
-				Long siteId, String keywords, Pagination pagination)
-			throws Exception {
-
-			HttpInvoker.HttpResponse httpResponse =
-				getSiteDataRecordCollectionsPageHttpResponse(
-					siteId, keywords, pagination);
+				getDataRecordCollectionPermissionsPageHttpResponse(
+					dataRecordCollectionId, roleNames);
 
 			String content = httpResponse.getContent();
 
@@ -741,12 +832,21 @@ public interface DataRecordCollectionResource {
 			_logger.fine(
 				"HTTP response status code: " + httpResponse.getStatusCode());
 
-			return Page.of(content, DataRecordCollectionSerDes::toDTO);
+			try {
+				return Page.of(content, Permission::toDTO);
+			}
+			catch (Exception e) {
+				_logger.log(
+					Level.WARNING,
+					"Unable to process HTTP response: " + content, e);
+
+				throw new Problem.ProblemException(Problem.toDTO(content));
+			}
 		}
 
 		public HttpInvoker.HttpResponse
-				getSiteDataRecordCollectionsPageHttpResponse(
-					Long siteId, String keywords, Pagination pagination)
+				getDataRecordCollectionPermissionsPageHttpResponse(
+					Long dataRecordCollectionId, String roleNames)
 			throws Exception {
 
 			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
@@ -770,22 +870,16 @@ public interface DataRecordCollectionResource {
 
 			httpInvoker.httpMethod(HttpInvoker.HttpMethod.GET);
 
-			if (keywords != null) {
-				httpInvoker.parameter("keywords", String.valueOf(keywords));
-			}
-
-			if (pagination != null) {
-				httpInvoker.parameter(
-					"page", String.valueOf(pagination.getPage()));
-				httpInvoker.parameter(
-					"pageSize", String.valueOf(pagination.getPageSize()));
+			if (roleNames != null) {
+				httpInvoker.parameter("roleNames", String.valueOf(roleNames));
 			}
 
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port +
-						"/o/data-engine/v2.0/sites/{siteId}/data-record-collections",
-				siteId);
+						"/o/data-engine/v2.0/data-record-collections/{dataRecordCollectionId}/permissions");
+
+			httpInvoker.path("dataRecordCollectionId", dataRecordCollectionId);
 
 			httpInvoker.userNameAndPassword(
 				_builder._login + ":" + _builder._password);
@@ -793,12 +887,157 @@ public interface DataRecordCollectionResource {
 			return httpInvoker.invoke();
 		}
 
-		public DataRecordCollection getSiteDataRecordCollection(
-				Long siteId, String dataRecordCollectionKey)
+		public void putDataRecordCollectionPermission(
+				Long dataRecordCollectionId, Permission[] permissions)
 			throws Exception {
 
 			HttpInvoker.HttpResponse httpResponse =
-				getSiteDataRecordCollectionHttpResponse(
+				putDataRecordCollectionPermissionHttpResponse(
+					dataRecordCollectionId, permissions);
+
+			String content = httpResponse.getContent();
+
+			_logger.fine("HTTP response content: " + content);
+
+			_logger.fine("HTTP response message: " + httpResponse.getMessage());
+			_logger.fine(
+				"HTTP response status code: " + httpResponse.getStatusCode());
+
+			try {
+				return;
+			}
+			catch (Exception e) {
+				_logger.log(
+					Level.WARNING,
+					"Unable to process HTTP response: " + content, e);
+
+				throw new Problem.ProblemException(Problem.toDTO(content));
+			}
+		}
+
+		public HttpInvoker.HttpResponse
+				putDataRecordCollectionPermissionHttpResponse(
+					Long dataRecordCollectionId, Permission[] permissions)
+			throws Exception {
+
+			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+			httpInvoker.body(
+				Stream.of(
+					permissions
+				).map(
+					value -> String.valueOf(value)
+				).collect(
+					Collectors.toList()
+				).toString(),
+				"application/json");
+
+			if (_builder._locale != null) {
+				httpInvoker.header(
+					"Accept-Language", _builder._locale.toLanguageTag());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
+			}
+
+			httpInvoker.httpMethod(HttpInvoker.HttpMethod.PUT);
+
+			httpInvoker.path(
+				_builder._scheme + "://" + _builder._host + ":" +
+					_builder._port +
+						"/o/data-engine/v2.0/data-record-collections/{dataRecordCollectionId}/permissions");
+
+			httpInvoker.path("dataRecordCollectionId", dataRecordCollectionId);
+
+			httpInvoker.userNameAndPassword(
+				_builder._login + ":" + _builder._password);
+
+			return httpInvoker.invoke();
+		}
+
+		public String getDataRecordCollectionPermissionByCurrentUser(
+				Long dataRecordCollectionId)
+			throws Exception {
+
+			HttpInvoker.HttpResponse httpResponse =
+				getDataRecordCollectionPermissionByCurrentUserHttpResponse(
+					dataRecordCollectionId);
+
+			String content = httpResponse.getContent();
+
+			_logger.fine("HTTP response content: " + content);
+
+			_logger.fine("HTTP response message: " + httpResponse.getMessage());
+			_logger.fine(
+				"HTTP response status code: " + httpResponse.getStatusCode());
+
+			try {
+				return content;
+			}
+			catch (Exception e) {
+				_logger.log(
+					Level.WARNING,
+					"Unable to process HTTP response: " + content, e);
+
+				throw new Problem.ProblemException(Problem.toDTO(content));
+			}
+		}
+
+		public HttpInvoker.HttpResponse
+				getDataRecordCollectionPermissionByCurrentUserHttpResponse(
+					Long dataRecordCollectionId)
+			throws Exception {
+
+			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+			if (_builder._locale != null) {
+				httpInvoker.header(
+					"Accept-Language", _builder._locale.toLanguageTag());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
+			}
+
+			httpInvoker.httpMethod(HttpInvoker.HttpMethod.GET);
+
+			httpInvoker.path(
+				_builder._scheme + "://" + _builder._host + ":" +
+					_builder._port +
+						"/o/data-engine/v2.0/data-record-collections/{dataRecordCollectionId}/permissions/by-current-user");
+
+			httpInvoker.path("dataRecordCollectionId", dataRecordCollectionId);
+
+			httpInvoker.userNameAndPassword(
+				_builder._login + ":" + _builder._password);
+
+			return httpInvoker.invoke();
+		}
+
+		public DataRecordCollection
+				getSiteDataRecordCollectionByDataRecordCollectionKey(
+					Long siteId, String dataRecordCollectionKey)
+			throws Exception {
+
+			HttpInvoker.HttpResponse httpResponse =
+				getSiteDataRecordCollectionByDataRecordCollectionKeyHttpResponse(
 					siteId, dataRecordCollectionKey);
 
 			String content = httpResponse.getContent();
@@ -817,12 +1056,13 @@ public interface DataRecordCollectionResource {
 					Level.WARNING,
 					"Unable to process HTTP response: " + content, e);
 
-				throw e;
+				throw new Problem.ProblemException(Problem.toDTO(content));
 			}
 		}
 
-		public HttpInvoker.HttpResponse getSiteDataRecordCollectionHttpResponse(
-				Long siteId, String dataRecordCollectionKey)
+		public HttpInvoker.HttpResponse
+				getSiteDataRecordCollectionByDataRecordCollectionKeyHttpResponse(
+					Long siteId, String dataRecordCollectionKey)
 			throws Exception {
 
 			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
@@ -849,8 +1089,11 @@ public interface DataRecordCollectionResource {
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port +
-						"/o/data-engine/v2.0/sites/{siteId}/data-record-collections/{dataRecordCollectionKey}",
-				siteId, dataRecordCollectionKey);
+						"/o/data-engine/v2.0/sites/{siteId}/data-record-collections/by-data-record-collection-key/{dataRecordCollectionKey}");
+
+			httpInvoker.path("siteId", siteId);
+			httpInvoker.path(
+				"dataRecordCollectionKey", dataRecordCollectionKey);
 
 			httpInvoker.userNameAndPassword(
 				_builder._login + ":" + _builder._password);

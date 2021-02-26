@@ -15,6 +15,7 @@
 package com.liferay.dynamic.data.mapping.form.field.type.internal.checkbox.multiple;
 
 import com.liferay.dynamic.data.mapping.form.field.type.DDMFormFieldValueRequestParameterRetriever;
+import com.liferay.dynamic.data.mapping.form.field.type.constants.DDMFormFieldTypeConstants;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -36,7 +37,8 @@ import org.osgi.service.component.annotations.Reference;
  * @author Dylan Rebelak
  */
 @Component(
-	immediate = true, property = "ddm.form.field.type.name=checkbox_multiple",
+	immediate = true,
+	property = "ddm.form.field.type.name=" + DDMFormFieldTypeConstants.CHECKBOX_MULTIPLE,
 	service = DDMFormFieldValueRequestParameterRetriever.class
 )
 public class CheckboxMultipleDDMFormFieldValueRequestParameterRetriever
@@ -68,9 +70,9 @@ public class CheckboxMultipleDDMFormFieldValueRequestParameterRetriever
 			return jsonFactory.looseDeserialize(
 				defaultDDMFormFieldParameterValue, String[].class);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isDebugEnabled()) {
-				_log.debug(e, e);
+				_log.debug(exception, exception);
 			}
 
 			return StringUtil.split(defaultDDMFormFieldParameterValue);

@@ -14,11 +14,12 @@
 
 package com.liferay.talend.runtime;
 
+import java.util.Optional;
+
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
-
-import org.talend.components.api.container.RuntimeContainer;
+import javax.json.JsonValue;
 
 /**
  * @author Igor Beslic
@@ -26,44 +27,49 @@ import org.talend.components.api.container.RuntimeContainer;
 public class LiferayRequestContentAggregatorSink extends LiferaySink {
 
 	@Override
-	public JsonObject doPatchRequest(
-		RuntimeContainer runtimeContainer, String resourceURL,
-		JsonObject jsonObject) {
+	public Optional<JsonObject> doPatchRequest(
+		String resourceURL, JsonValue jsonValue) {
 
-		return _processRequest(resourceURL, jsonObject);
+		return _processRequest(resourceURL, jsonValue);
 	}
 
 	@Override
-	public JsonObject doPostRequest(
-		RuntimeContainer runtimeContainer, String resourceURL,
-		JsonObject jsonObject) {
+	public Optional<JsonObject> doPostRequest(
+		String resourceURL, JsonValue jsonValue) {
 
-		return _processRequest(resourceURL, jsonObject);
+		return _processRequest(resourceURL, jsonValue);
 	}
 
-	public JsonObject getOutputJsonObject() {
-		return _outputJsonObject;
+	public JsonValue getOutputJsonValue() {
+		return _outputJsonValue;
 	}
 
 	public String getOutputResourceURL() {
 		return _outputResourceURL;
 	}
 
-	private JsonObject _processRequest(
-		String resourceURL, JsonObject jsonObject) {
+	private Optional<JsonObject> _processRequest(
+		String resourceURL, JsonValue jsonValue) {
 
 		_outputResourceURL = resourceURL;
-		_outputJsonObject = jsonObject;
+		_outputJsonValue = jsonValue;
 
-		JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder(
-			jsonObject);
+		JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+
+		if (jsonValue instanceof JsonObject) {
+			jsonObjectBuilder = Json.createObjectBuilder(
+				jsonValue.asJsonObject());
+		}
+		else {
+			jsonObjectBuilder.add("iterable", jsonValue);
+		}
 
 		jsonObjectBuilder.add("success", "true");
 
-		return jsonObjectBuilder.build();
+		return Optional.of(jsonObjectBuilder.build());
 	}
 
-	private JsonObject _outputJsonObject;
+	private JsonValue _outputJsonValue;
 	private String _outputResourceURL;
 
 }

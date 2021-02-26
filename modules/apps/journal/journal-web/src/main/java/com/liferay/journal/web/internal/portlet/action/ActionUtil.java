@@ -17,12 +17,12 @@ package com.liferay.journal.web.internal.portlet.action;
 import com.liferay.dynamic.data.mapping.exception.TemplateScriptException;
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
 import com.liferay.dynamic.data.mapping.service.DDMStructureServiceUtil;
+import com.liferay.journal.constants.JournalArticleConstants;
+import com.liferay.journal.constants.JournalFolderConstants;
 import com.liferay.journal.exception.NoSuchArticleException;
 import com.liferay.journal.model.JournalArticle;
-import com.liferay.journal.model.JournalArticleConstants;
 import com.liferay.journal.model.JournalFeed;
 import com.liferay.journal.model.JournalFolder;
-import com.liferay.journal.model.JournalFolderConstants;
 import com.liferay.journal.service.JournalArticleLocalServiceUtil;
 import com.liferay.journal.service.JournalArticleServiceUtil;
 import com.liferay.journal.service.JournalFeedServiceUtil;
@@ -35,6 +35,8 @@ import com.liferay.journal.web.internal.util.JournalUtil;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.diff.CompareVersionsException;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.portlet.PortletRequestModel;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.service.ServiceContext;
@@ -153,8 +155,9 @@ public class ActionUtil {
 				new PortletRequestModel(renderRequest, renderResponse),
 				themeDisplay);
 		}
-		catch (CompareVersionsException cve) {
-			renderRequest.setAttribute(WebKeys.DIFF_VERSION, cve.getVersion());
+		catch (CompareVersionsException compareVersionsException) {
+			renderRequest.setAttribute(
+				WebKeys.DIFF_VERSION, compareVersionsException.getVersion());
 		}
 
 		renderRequest.setAttribute(WebKeys.DIFF_HTML_RESULTS, diffHtmlResults);
@@ -284,7 +287,7 @@ public class ActionUtil {
 				groupId, articleId, status);
 		}
 		else if ((classNameId > 0) &&
-				 (classPK > JournalArticleConstants.CLASSNAME_ID_DEFAULT)) {
+				 (classPK > JournalArticleConstants.CLASS_NAME_ID_DEFAULT)) {
 
 			String className = PortalUtil.getClassName(classNameId);
 
@@ -292,7 +295,11 @@ public class ActionUtil {
 				article = JournalArticleServiceUtil.getLatestArticle(
 					groupId, className, classPK);
 			}
-			catch (NoSuchArticleException nsae) {
+			catch (NoSuchArticleException noSuchArticleException) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(noSuchArticleException, noSuchArticleException);
+				}
+
 				return null;
 			}
 		}
@@ -309,7 +316,10 @@ public class ActionUtil {
 					ddmStructure = DDMStructureServiceUtil.getStructure(
 						ddmStructureId);
 				}
-				catch (Exception e) {
+				catch (Exception exception) {
+					if (_log.isDebugEnabled()) {
+						_log.debug(exception, exception);
+					}
 				}
 			}
 
@@ -329,12 +339,16 @@ public class ActionUtil {
 				article.setId(0);
 				article.setGroupId(groupId);
 				article.setClassNameId(
-					JournalArticleConstants.CLASSNAME_ID_DEFAULT);
+					JournalArticleConstants.CLASS_NAME_ID_DEFAULT);
 				article.setClassPK(0);
 				article.setArticleId(null);
 				article.setVersion(0);
 			}
-			catch (NoSuchArticleException nsae) {
+			catch (NoSuchArticleException noSuchArticleException) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(noSuchArticleException, noSuchArticleException);
+				}
+
 				return null;
 			}
 		}
@@ -376,12 +390,13 @@ public class ActionUtil {
 	public static JournalFeed getFeed(HttpServletRequest httpServletRequest)
 		throws Exception {
 
-		long groupId = ParamUtil.getLong(httpServletRequest, "groupId");
 		String feedId = ParamUtil.getString(httpServletRequest, "feedId");
 
 		JournalFeed feed = null;
 
 		if (Validator.isNotNull(feedId)) {
+			long groupId = ParamUtil.getLong(httpServletRequest, "groupId");
+
 			feed = JournalFeedServiceUtil.getFeed(groupId, feedId);
 		}
 
@@ -598,5 +613,7 @@ public class ActionUtil {
 
 		return false;
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(ActionUtil.class);
 
 }

@@ -19,6 +19,8 @@ import com.liferay.dynamic.data.mapping.service.DDMTemplateVersionLocalServiceUt
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Image;
 import com.liferay.portal.kernel.model.cache.CacheField;
@@ -53,7 +55,10 @@ public class DDMTemplateImpl extends DDMTemplateBaseImpl {
 				return rootElement.attributeValue("default-locale");
 			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
 		}
 
 		Locale locale = LocaleUtil.getSiteDefault();
@@ -172,6 +177,9 @@ public class DDMTemplateImpl extends DDMTemplateBaseImpl {
 	public void setSmallImageType(String smallImageType) {
 		_smallImageType = smallImageType;
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		DDMTemplateImpl.class);
 
 	@CacheField(propagateToInterface = true)
 	private String _resourceClassName;

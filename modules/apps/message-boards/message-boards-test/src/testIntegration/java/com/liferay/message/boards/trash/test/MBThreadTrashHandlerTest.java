@@ -28,6 +28,8 @@ import com.liferay.message.boards.service.MBThreadLocalServiceUtil;
 import com.liferay.message.boards.service.MBThreadServiceUtil;
 import com.liferay.message.boards.test.util.MBTestUtil;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.BaseModel;
 import com.liferay.portal.kernel.model.ClassedModel;
 import com.liferay.portal.kernel.model.Group;
@@ -36,9 +38,11 @@ import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
+import com.liferay.portal.kernel.test.util.UserTestUtil;
+import com.liferay.portal.kernel.trash.TrashHandler;
 import com.liferay.portal.kernel.util.ObjectValuePair;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
-import com.liferay.portal.service.test.ServiceTestUtil;
+import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.trash.exception.RestoreEntryException;
 import com.liferay.trash.exception.TrashEntryException;
@@ -177,7 +181,7 @@ public class MBThreadTrashHandlerTest
 	public void setUp() throws Exception {
 		super.setUp();
 
-		ServiceTestUtil.setUser(TestPropsValues.getUser());
+		UserTestUtil.setUser(TestPropsValues.getUser());
 	}
 
 	@Test
@@ -222,7 +226,13 @@ public class MBThreadTrashHandlerTest
 		try {
 			super.testTrashParentAndBaseModel();
 		}
-		catch (com.liferay.trash.kernel.exception.TrashEntryException tee) {
+		catch (com.liferay.trash.kernel.exception.TrashEntryException
+					trashEntryException) {
+
+			if (_log.isDebugEnabled()) {
+				_log.debug(trashEntryException, trashEntryException);
+			}
+
 			throw new TrashEntryException();
 		}
 	}
@@ -233,7 +243,13 @@ public class MBThreadTrashHandlerTest
 		try {
 			super.testTrashParentAndRestoreParentAndBaseModel();
 		}
-		catch (com.liferay.trash.kernel.exception.RestoreEntryException ree) {
+		catch (com.liferay.trash.kernel.exception.RestoreEntryException
+					restoreEntryException) {
+
+			if (_log.isDebugEnabled()) {
+				_log.debug(restoreEntryException, restoreEntryException);
+			}
+
 			throw new RestoreEntryException();
 		}
 	}
@@ -345,6 +361,19 @@ public class MBThreadTrashHandlerTest
 	}
 
 	@Override
+	protected TrashHandler getTrashHandler(String className) {
+		if (className.equals(MBCategory.class.getName())) {
+			return _mbCategoryTrashHandler;
+		}
+
+		if (className.equals(MBThread.class.getName())) {
+			return _mbThreadTrashHandler;
+		}
+
+		return null;
+	}
+
+	@Override
 	protected String getUniqueTitle(BaseModel<?> baseModel) {
 		return null;
 	}
@@ -376,6 +405,19 @@ public class MBThreadTrashHandlerTest
 	}
 
 	private static final String _SUBJECT = "Subject";
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		MBThreadTrashHandlerTest.class);
+
+	@Inject(
+		filter = "model.class.name=com.liferay.message.boards.model.MBCategory"
+	)
+	private static TrashHandler _mbCategoryTrashHandler;
+
+	@Inject(
+		filter = "model.class.name=com.liferay.message.boards.model.MBThread"
+	)
+	private static TrashHandler _mbThreadTrashHandler;
 
 	private final WhenIsAssetable _whenIsAssetable =
 		new DefaultWhenIsAssetable();

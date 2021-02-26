@@ -93,9 +93,7 @@ public class SiteNavigationMenuItemLocalServiceImpl
 		siteNavigationMenuItem.setTypeSettings(typeSettings);
 		siteNavigationMenuItem.setOrder(order);
 
-		siteNavigationMenuItemPersistence.update(siteNavigationMenuItem);
-
-		return siteNavigationMenuItem;
+		return siteNavigationMenuItemPersistence.update(siteNavigationMenuItem);
 	}
 
 	@Override
@@ -128,28 +126,26 @@ public class SiteNavigationMenuItemLocalServiceImpl
 				siteNavigationMenuItem.getSiteNavigationMenuId(),
 				siteNavigationMenuItemId);
 
-		if (!siteNavigationMenuItems.isEmpty()) {
-			List<SiteNavigationMenuItem> siblingsSiteNavigationMenuItems =
-				getSiteNavigationMenuItems(
-					siteNavigationMenuItem.getSiteNavigationMenuId(),
-					siteNavigationMenuItem.getParentSiteNavigationMenuItemId());
+		List<SiteNavigationMenuItem> siblingsSiteNavigationMenuItems =
+			getSiteNavigationMenuItems(
+				siteNavigationMenuItem.getSiteNavigationMenuId(),
+				siteNavigationMenuItem.getParentSiteNavigationMenuItemId());
 
-			for (SiteNavigationMenuItem siblingSiteNavigationMenuItem :
-					siblingsSiteNavigationMenuItems) {
+		for (SiteNavigationMenuItem siblingSiteNavigationMenuItem :
+				siblingsSiteNavigationMenuItems) {
 
-				if (siblingSiteNavigationMenuItem.getOrder() <=
-						siteNavigationMenuItem.getOrder()) {
+			if (siblingSiteNavigationMenuItem.getOrder() <=
+					siteNavigationMenuItem.getOrder()) {
 
-					continue;
-				}
-
-				siblingSiteNavigationMenuItem.setOrder(
-					siteNavigationMenuItems.size() +
-						siteNavigationMenuItem.getOrder());
-
-				siteNavigationMenuItemPersistence.update(
-					siblingSiteNavigationMenuItem);
+				continue;
 			}
+
+			siblingSiteNavigationMenuItem.setOrder(
+				siteNavigationMenuItems.size() +
+					siblingSiteNavigationMenuItem.getOrder() - 1);
+
+			siteNavigationMenuItemPersistence.update(
+				siblingSiteNavigationMenuItem);
 		}
 
 		for (int i = 0; i < siteNavigationMenuItems.size(); i++) {
@@ -237,12 +233,14 @@ public class SiteNavigationMenuItemLocalServiceImpl
 
 		long oldParentSiteNavigationMenuItemId =
 			siteNavigationMenuItem.getParentSiteNavigationMenuItemId();
+		int oldOrder = siteNavigationMenuItem.getOrder();
 
 		siteNavigationMenuItem.setParentSiteNavigationMenuItemId(
 			parentSiteNavigationMenuItemId);
 		siteNavigationMenuItem.setOrder(order);
 
-		siteNavigationMenuItemPersistence.update(siteNavigationMenuItem);
+		siteNavigationMenuItem = siteNavigationMenuItemPersistence.update(
+			siteNavigationMenuItem);
 
 		// Child site navigation menu item
 
@@ -277,7 +275,7 @@ public class SiteNavigationMenuItemLocalServiceImpl
 					oldParentSiteNavigationMenuItemId);
 
 			for (SiteNavigationMenuItem oldChild : oldChildren) {
-				if (oldChild.getOrder() <= order) {
+				if (oldChild.getOrder() <= oldOrder) {
 					continue;
 				}
 
@@ -346,10 +344,9 @@ public class SiteNavigationMenuItemLocalServiceImpl
 			serviceContext.getModifiedDate(new Date()));
 		siteNavigationMenuItem.setName(name);
 		siteNavigationMenuItem.setTypeSettings(typeSettings);
+		siteNavigationMenuItem.setExpandoBridgeAttributes(serviceContext);
 
-		siteNavigationMenuItemPersistence.update(siteNavigationMenuItem);
-
-		return siteNavigationMenuItem;
+		return siteNavigationMenuItemPersistence.update(siteNavigationMenuItem);
 	}
 
 	protected void validate(
@@ -378,20 +375,22 @@ public class SiteNavigationMenuItemLocalServiceImpl
 	}
 
 	protected void validateLayout(String typeSettings) throws PortalException {
-		UnicodeProperties typeSettingsProperties = new UnicodeProperties(true);
+		UnicodeProperties typeSettingsUnicodeProperties = new UnicodeProperties(
+			true);
 
-		typeSettingsProperties.fastLoad(typeSettings);
+		typeSettingsUnicodeProperties.fastLoad(typeSettings);
 
-		String layoutUuid = typeSettingsProperties.getProperty("layoutUuid");
+		String layoutUuid = typeSettingsUnicodeProperties.getProperty(
+			"layoutUuid");
 
 		if (Validator.isNull(layoutUuid)) {
 			return;
 		}
 
 		long groupId = GetterUtil.getLong(
-			typeSettingsProperties.getProperty("groupId"));
+			typeSettingsUnicodeProperties.getProperty("groupId"));
 		boolean privateLayout = GetterUtil.getBoolean(
-			typeSettingsProperties.getProperty("privateLayout"));
+			typeSettingsUnicodeProperties.getProperty("privateLayout"));
 
 		_layoutService.getLayoutByUuidAndGroupId(
 			layoutUuid, groupId, privateLayout);

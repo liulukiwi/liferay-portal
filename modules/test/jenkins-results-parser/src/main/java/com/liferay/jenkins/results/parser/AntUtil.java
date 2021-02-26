@@ -80,6 +80,16 @@ public class AntUtil {
 			Map<String, String> parameters, Map<String, String> envVariables)
 		throws AntException {
 
+		callTarget(
+			baseDir, buildFileName, targetName, parameters, envVariables, null);
+	}
+
+	public static void callTarget(
+			File baseDir, String buildFileName, String targetName,
+			Map<String, String> parameters, Map<String, String> envVariables,
+			File antLibDir)
+		throws AntException {
+
 		String[] bashCommands = new String[3];
 
 		if (JenkinsResultsParserUtil.isWindows()) {
@@ -117,16 +127,6 @@ public class AntUtil {
 
 		sb.append("ant");
 
-		if (buildFileName != null) {
-			sb.append(" -f ");
-			sb.append(buildFileName);
-		}
-
-		if (targetName != null) {
-			sb.append(" ");
-			sb.append(targetName);
-		}
-
 		if (parameters != null) {
 			for (Map.Entry<String, String> parameter : parameters.entrySet()) {
 				sb.append(" -D");
@@ -143,6 +143,21 @@ public class AntUtil {
 				sb.append(value);
 				sb.append("\"");
 			}
+		}
+
+		if (buildFileName != null) {
+			sb.append(" -f ");
+			sb.append(buildFileName);
+		}
+
+		if ((antLibDir != null) && antLibDir.exists()) {
+			sb.append(" -lib ");
+			sb.append(JenkinsResultsParserUtil.getCanonicalPath(antLibDir));
+		}
+
+		if (targetName != null) {
+			sb.append(" ");
+			sb.append(targetName);
 		}
 
 		System.out.println(sb.toString());
@@ -175,8 +190,8 @@ public class AntUtil {
 							line = bufferedReader.readLine();
 						}
 					}
-					catch (IOException ioe) {
-						ioe.printStackTrace();
+					catch (IOException ioException) {
+						ioException.printStackTrace();
 					}
 				}
 
@@ -196,10 +211,10 @@ public class AntUtil {
 				throw new AntException();
 			}
 		}
-		catch (InterruptedException | IOException e) {
-			e.printStackTrace();
+		catch (InterruptedException | IOException exception) {
+			exception.printStackTrace();
 
-			throw new AntException(e);
+			throw new AntException(exception);
 		}
 	}
 

@@ -1,8 +1,21 @@
-@import './miller_columns/Layout';
-@import './miller_columns/LayoutColumn';
-@import './seo';
+@import './miller_columns/DragPreview';
+@import './miller_columns/MillerColumns';
+@import 'atlas-variables';
 
 .portlet-layouts-admin {
+	@import './FriendlyURLHistory';
+
+	.active > .card {
+		box-shadow: 0 0 0 2px $primary-l1;
+	}
+
+	.card-page-item-directory {
+		@include media-breakpoint-up(lg) {
+			flex-basis: 33.33333%;
+			max-width: 33.33333%;
+		}
+	}
+
 	.customization-settings #main-content {
 		.portlet-column {
 			border: 1px solid #0b5fff;

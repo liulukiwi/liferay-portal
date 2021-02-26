@@ -36,16 +36,14 @@ public class DocumentToSynonymSetTranslatorImpl
 		return builder(
 		).id(
 			id
-		).index(
-			document.getString("index")
 		).synonyms(
 			document.getString(SynonymSetFields.SYNONYMS)
 		).build();
 	}
 
 	@Override
-	public SynonymSet translate(SearchHit searHit) {
-		return translate(searHit.getDocument(), searHit.getId());
+	public SynonymSet translate(SearchHit searchHit) {
+		return translate(searchHit.getDocument(), searchHit.getId());
 	}
 
 	@Override

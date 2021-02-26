@@ -32,8 +32,18 @@ public class DefaultWorkflowDefinition
 	implements Serializable, WorkflowDefinition {
 
 	@Override
+	public long getCompanyId() {
+		return _companyId;
+	}
+
+	@Override
 	public String getContent() {
 		return _content;
+	}
+
+	@Override
+	public Date getCreateDate() {
+		return _createDate;
 	}
 
 	@Override
@@ -66,6 +76,11 @@ public class DefaultWorkflowDefinition
 	}
 
 	@Override
+	public String getScope() {
+		return _scope;
+	}
+
+	@Override
 	public String getTitle() {
 		if (_title == null) {
 			return StringPool.BLANK;
@@ -90,6 +105,11 @@ public class DefaultWorkflowDefinition
 	}
 
 	@Override
+	public long getWorkflowDefinitionId() {
+		return _workflowDefinitionId;
+	}
+
+	@Override
 	public boolean isActive() {
 		return _active;
 	}
@@ -98,8 +118,16 @@ public class DefaultWorkflowDefinition
 		_active = active;
 	}
 
+	public void setCompanyId(long companyId) {
+		_companyId = companyId;
+	}
+
 	public void setContent(String content) {
 		_content = content;
+	}
+
+	public void setCreateDate(Date createDate) {
+		_createDate = createDate;
 	}
 
 	public void setDescription(String description) {
@@ -122,6 +150,10 @@ public class DefaultWorkflowDefinition
 		_optionalAttributes = optionalAttributes;
 	}
 
+	public void setScope(String scope) {
+		_scope = scope;
+	}
+
 	public void setTitle(String title) {
 		_title = title;
 	}
@@ -134,15 +166,23 @@ public class DefaultWorkflowDefinition
 		_version = version;
 	}
 
+	public void setWorkflowDefinitionId(long workflowDefinitionId) {
+		_workflowDefinitionId = workflowDefinitionId;
+	}
+
 	private boolean _active;
+	private long _companyId;
 	private String _content;
+	private Date _createDate;
 	private String _description;
 	private InputStream _inputStream;
 	private Date _modifiedDate;
 	private String _name;
 	private Map<String, Object> _optionalAttributes;
+	private String _scope;
 	private String _title;
 	private long _userId;
 	private int _version;
+	private long _workflowDefinitionId;
 
 }
