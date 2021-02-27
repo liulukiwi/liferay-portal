@@ -29,9 +29,9 @@ import com.liferay.portal.kernel.util.StringUtil;
 
 import java.util.Locale;
 
-/**
- * @author
- */
+
+@author
+ 
 public class BookmarksInfoDisplayObjectProvider
 	implements InfoDisplayObjectProvider<BookmarksEntry> {
 

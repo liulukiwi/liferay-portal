@@ -51,9 +51,9 @@ import javax.portlet.RenderResponse;
 
 import javax.servlet.http.HttpServletRequest;
 
-/**
- * @author 
- */
+
+@author 
+
 public class BookmarkEntriesItemSelectorDisplayContext {
 
 	public BookmarkEntriesItemSelectorDisplayContext(

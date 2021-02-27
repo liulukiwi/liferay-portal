@@ -21,9 +21,9 @@ import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 
 import javax.servlet.http.HttpServletRequest;
 
-/**
- * @author
- */
+
+ @author
+
 public class BookmarkEntriesItemSelectorManagementToolbarDisplayContext
 	extends SearchContainerManagementToolbarDisplayContext {
 

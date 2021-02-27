@@ -34,9 +34,9 @@ import java.util.Set;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
-/**
- * @author
- */
+
+@author
+
 @Component(service = InfoDisplayContributor.class)
 public class BookmarksEntryInfoDisplayContributor
         implements InfoDisplayContributor<BookmarksEntry> {

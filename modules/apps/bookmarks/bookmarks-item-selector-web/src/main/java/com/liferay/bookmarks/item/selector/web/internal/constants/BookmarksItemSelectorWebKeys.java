@@ -14,9 +14,9 @@
 
 package com.liferay.bookmarks.item.selector.web.internal.constants;
 
-/**
- * @author
- */
+
+@author
+
 public class BookmarksItemSelectorWebKeys {
 
     public static final String BOOKMARKS_ITEM_SELECTOR_VIEW_DISPLAY_CONTEXT =

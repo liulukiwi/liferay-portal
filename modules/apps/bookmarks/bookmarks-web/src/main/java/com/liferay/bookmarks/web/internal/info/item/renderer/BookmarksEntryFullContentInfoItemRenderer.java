@@ -30,9 +30,9 @@ import javax.servlet.http.HttpServletResponse;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
-/**
- * @author
- */
+
+@author
+
 @Component(service = InfoItemRenderer.class)
 public class BookmarksEntryFullContentInfoItemRenderer
         implements InfoItemRenderer<BookmarksEntry> {
