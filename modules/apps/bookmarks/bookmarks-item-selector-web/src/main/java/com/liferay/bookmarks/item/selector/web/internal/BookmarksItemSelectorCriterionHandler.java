@@ -23,9 +23,9 @@ import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
 
-/**
- * @author
- */
+
+@author
+
 @Component(service = ItemSelectorCriterionHandler.class)
 public class BookmarksItemSelectorCriterionHandler
         extends BaseItemSelectorCriterionHandler<BookmarksItemSelectorCriterion> {
