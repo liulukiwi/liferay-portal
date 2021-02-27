@@ -43,9 +43,9 @@ import javax.servlet.http.HttpServletRequest;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
-/**
- * @author
- */
+
+@author
+
 @Component(
 	property = "item.selector.view.order:Integer=200",
 	service = ItemSelectorView.class

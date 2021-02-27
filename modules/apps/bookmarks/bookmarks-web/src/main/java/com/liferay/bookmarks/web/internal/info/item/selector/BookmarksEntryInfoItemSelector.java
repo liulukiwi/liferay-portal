@@ -29,9 +29,8 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.osgi.service.component.annotations.Component;
 
-/**
- * @author
- */
+@author
+
 @Component(service = InfoItemSelector.class)
 public class BookmarksEntryInfoItemSelector
         implements InfoItemSelector<BookmarksEntry> {
