@@ -16,11 +16,14 @@ package com.liferay.site.admin.web.internal.display.context;
 
 import com.liferay.frontend.taglib.clay.servlet.taglib.display.context.SearchContainerManagementToolbarDisplayContext;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenu;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenuBuilder;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
-import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemList;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemListBuilder;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
@@ -44,14 +47,14 @@ public class SiteAdminManagementToolbarDisplayContext
 	extends SearchContainerManagementToolbarDisplayContext {
 
 	public SiteAdminManagementToolbarDisplayContext(
+			HttpServletRequest httpServletRequest,
 			LiferayPortletRequest liferayPortletRequest,
 			LiferayPortletResponse liferayPortletResponse,
-			HttpServletRequest httpServletRequest,
 			SiteAdminDisplayContext siteAdminDisplayContext)
 		throws PortalException {
 
 		super(
-			liferayPortletRequest, liferayPortletResponse, httpServletRequest,
+			httpServletRequest, liferayPortletRequest, liferayPortletResponse,
 			siteAdminDisplayContext.getGroupSearch());
 
 		_siteAdminDisplayContext = siteAdminDisplayContext;
@@ -59,18 +62,15 @@ public class SiteAdminManagementToolbarDisplayContext
 
 	@Override
 	public List<DropdownItem> getActionDropdownItems() {
-		return new DropdownItemList() {
-			{
-				add(
-					dropdownItem -> {
-						dropdownItem.putData("action", "deleteSites");
-						dropdownItem.setIcon("times-circle");
-						dropdownItem.setLabel(
-							LanguageUtil.get(request, "delete"));
-						dropdownItem.setQuickAction(true);
-					});
+		return DropdownItemListBuilder.add(
+			dropdownItem -> {
+				dropdownItem.putData("action", "deleteSites");
+				dropdownItem.setIcon("times-circle");
+				dropdownItem.setLabel(
+					LanguageUtil.get(httpServletRequest, "delete"));
+				dropdownItem.setQuickAction(true);
 			}
-		};
+		).build();
 	}
 
 	public String getAvailableActions(Group group) throws PortalException {
@@ -99,8 +99,9 @@ public class SiteAdminManagementToolbarDisplayContext
 
 	@Override
 	public CreationMenu getCreationMenu() {
-		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
-			WebKeys.THEME_DISPLAY);
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
 
 		if (!PortalPermissionUtil.contains(
 				themeDisplay.getPermissionChecker(),
@@ -113,7 +114,7 @@ public class SiteAdminManagementToolbarDisplayContext
 			PortletURL addSiteURL = liferayPortletResponse.createRenderURL();
 
 			addSiteURL.setParameter(
-				"mvcRenderCommandName", "/site/select_site_initializer");
+				"mvcRenderCommandName", "/site_admin/select_site_initializer");
 			addSiteURL.setParameter("redirect", themeDisplay.getURLCurrent());
 
 			Group group = _siteAdminDisplayContext.getGroup();
@@ -125,18 +126,18 @@ public class SiteAdminManagementToolbarDisplayContext
 					"parentGroupId", String.valueOf(group.getGroupId()));
 			}
 
-			return new CreationMenu() {
-				{
-					addPrimaryDropdownItem(
-						dropdownItem -> {
-							dropdownItem.setHref(addSiteURL.toString());
-							dropdownItem.setLabel(
-								LanguageUtil.get(request, "add"));
-						});
+			return CreationMenuBuilder.addPrimaryDropdownItem(
+				dropdownItem -> {
+					dropdownItem.setHref(addSiteURL.toString());
+					dropdownItem.setLabel(
+						LanguageUtil.get(httpServletRequest, "add"));
 				}
-			};
+			).build();
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
 		}
 
 		return null;
@@ -169,8 +170,9 @@ public class SiteAdminManagementToolbarDisplayContext
 
 	@Override
 	public Boolean isShowCreationMenu() {
-		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
-			WebKeys.THEME_DISPLAY);
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
 
 		if (PortalPermissionUtil.contains(
 				themeDisplay.getPermissionChecker(),
@@ -204,8 +206,9 @@ public class SiteAdminManagementToolbarDisplayContext
 			return false;
 		}
 
-		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
-			WebKeys.THEME_DISPLAY);
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
 
 		if (!GroupPermissionUtil.contains(
 				themeDisplay.getPermissionChecker(), group,
@@ -220,6 +223,9 @@ public class SiteAdminManagementToolbarDisplayContext
 
 		return true;
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		SiteAdminManagementToolbarDisplayContext.class);
 
 	private final SiteAdminDisplayContext _siteAdminDisplayContext;
 

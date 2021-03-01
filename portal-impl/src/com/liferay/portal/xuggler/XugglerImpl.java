@@ -19,6 +19,7 @@ import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.xuggler.Xuggler;
 import com.liferay.portal.kernel.xuggler.XugglerInstallException;
 import com.liferay.portal.util.JarUtil;
@@ -30,6 +31,10 @@ import com.xuggle.xuggler.IContainer;
 
 import java.net.URL;
 
+import java.nio.file.Paths;
+
+import java.util.Map;
+
 /**
  * @author Alexander Chow
  */
@@ -40,12 +45,12 @@ public class XugglerImpl implements Xuggler {
 		try {
 			JarUtil.downloadAndInstallJar(
 				new URL(PropsValues.XUGGLER_JAR_URL + name),
-				PropsValues.LIFERAY_LIB_PORTAL_DIR, name);
+				Paths.get(PropsValues.LIFERAY_LIB_PORTAL_DIR, name));
 
 			_nativeLibraryCopied = true;
 		}
-		catch (Exception e) {
-			throw new XugglerInstallException.MustInstallJar(name, e);
+		catch (Exception exception) {
+			throw new XugglerInstallException.MustInstallJar(name, exception);
 		}
 	}
 
@@ -62,9 +67,9 @@ public class XugglerImpl implements Xuggler {
 			enabled = PrefsPropsUtil.getBoolean(
 				PropsKeys.XUGGLER_ENABLED, PropsValues.XUGGLER_ENABLED);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isWarnEnabled()) {
-				_log.warn(e, e);
+				_log.warn(exception, exception);
 			}
 		}
 
@@ -90,8 +95,13 @@ public class XugglerImpl implements Xuggler {
 			return _nativeLibraryInstalled;
 		}
 
-		String originalLevel = Log4JUtil.getOriginalLevel(
-			JNILibraryLoader.class.getName());
+		Map<String, String> priorities = Log4JUtil.getPriorities();
+
+		String priority = priorities.get(JNILibraryLoader.class.getName());
+
+		if (Validator.isNull(priority)) {
+			priority = "ALL";
+		}
 
 		try {
 			Log4JUtil.setLevel(JNILibraryLoader.class.getName(), "OFF", false);
@@ -108,7 +118,7 @@ public class XugglerImpl implements Xuggler {
 		}
 		finally {
 			Log4JUtil.setLevel(
-				JNILibraryLoader.class.getName(), originalLevel, false);
+				JNILibraryLoader.class.getName(), priority, false);
 		}
 
 		return _nativeLibraryInstalled;

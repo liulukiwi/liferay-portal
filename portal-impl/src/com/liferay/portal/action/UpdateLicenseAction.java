@@ -19,6 +19,8 @@ import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.license.util.LicenseManagerUtil;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.servlet.ServletResponseUtil;
 import com.liferay.portal.kernel.util.Constants;
@@ -138,7 +140,10 @@ public class UpdateLicenseAction implements Action {
 		try {
 			user = PortalUtil.getUser(httpServletRequest);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
 		}
 
 		if ((user != null) && OmniadminUtil.isOmniadmin(user)) {
@@ -173,5 +178,8 @@ public class UpdateLicenseAction implements Action {
 
 		return false;
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		UpdateLicenseAction.class);
 
 }

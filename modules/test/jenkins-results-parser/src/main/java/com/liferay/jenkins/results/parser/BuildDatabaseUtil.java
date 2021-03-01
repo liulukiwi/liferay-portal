@@ -18,6 +18,8 @@ import java.io.File;
 import java.io.IOException;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -26,40 +28,57 @@ import java.util.concurrent.TimeoutException;
 public class BuildDatabaseUtil {
 
 	public static BuildDatabase getBuildDatabase() {
-		return getBuildDatabase(null, true);
+		return _getBuildDatabase(null, null, true);
+	}
+
+	public static BuildDatabase getBuildDatabase(Build build) {
+		return _getBuildDatabase(_getDistPath(build), build, true);
 	}
 
 	public static BuildDatabase getBuildDatabase(
 		String baseDirPath, boolean download) {
 
-		if (_buildDatabase != null) {
-			return _buildDatabase;
-		}
+		return _getBuildDatabase(baseDirPath, null, download);
+	}
 
-		if (baseDirPath == null) {
-			baseDirPath = System.getenv("WORKSPACE");
+	private static void _downloadBuildDatabaseFile(File baseDir, Build build) {
+		JenkinsMaster jenkinsMaster = build.getJenkinsMaster();
 
-			if (baseDirPath == null) {
-				throw new RuntimeException("Please set WORKSPACE");
+		String masterName = jenkinsMaster.getName();
+
+		String jobName = build.getJobName();
+		int buildNumber = build.getBuildNumber();
+
+		if (JenkinsResultsParserUtil.isCINode()) {
+			String filePath = JenkinsResultsParserUtil.combine(
+				"/opt/java/jenkins/userContent/jobs/", jobName, "/builds/",
+				String.valueOf(buildNumber));
+
+			try {
+				_downloadBuildDatabaseFile(baseDir, masterName, filePath);
+
+				return;
+			}
+			catch (Exception exception) {
+				exception.printStackTrace();
 			}
 		}
 
-		File baseDir = new File(baseDirPath);
+		try {
+			String buildDatabaseURL = JenkinsResultsParserUtil.combine(
+				"http://", masterName, "/userContent/jobs/", jobName,
+				"/builds/", String.valueOf(buildNumber), "/",
+				BuildDatabase.FILE_NAME_BUILD_DATABASE);
 
-		if (!baseDir.exists()) {
-			baseDir.mkdirs();
+			JenkinsResultsParserUtil.write(
+				JenkinsResultsParserUtil.combine(
+					String.valueOf(baseDir), "/",
+					BuildDatabase.FILE_NAME_BUILD_DATABASE),
+				JenkinsResultsParserUtil.toString(buildDatabaseURL));
 		}
-
-		String distNodes = System.getenv("DIST_NODES");
-		String distPath = System.getenv("DIST_PATH");
-
-		if ((distNodes != null) && (distPath != null) && download) {
-			_downloadBuildDatabaseFile(baseDir, distNodes, distPath);
+		catch (IOException ioException) {
+			throw new RuntimeException(ioException);
 		}
-
-		_buildDatabase = new DefaultBuildDatabase(baseDir);
-
-		return _buildDatabase;
 	}
 
 	private static void _downloadBuildDatabaseFile(
@@ -68,16 +87,12 @@ public class BuildDatabaseUtil {
 		File buildDatabaseFile = new File(
 			baseDir, BuildDatabase.FILE_NAME_BUILD_DATABASE);
 
-		if (buildDatabaseFile.exists()) {
-			return;
-		}
-
 		if (!JenkinsResultsParserUtil.isCINode()) {
 			try {
 				JenkinsResultsParserUtil.write(buildDatabaseFile, "{}");
 			}
-			catch (IOException ioe) {
-				throw new RuntimeException(ioe);
+			catch (IOException ioException) {
+				throw new RuntimeException(ioException);
 			}
 
 			return;
@@ -103,7 +118,7 @@ public class BuildDatabaseUtil {
 				command = command.replaceAll("\\)", "\\\\)");
 
 				Process process = JenkinsResultsParserUtil.executeBashCommands(
-					true, command);
+					true, new File("."), 10 * 60 * 1000, command);
 
 				if (process.exitValue() != 0) {
 					throw new RuntimeException(
@@ -114,25 +129,95 @@ public class BuildDatabaseUtil {
 
 				break;
 			}
-			catch (IOException | RuntimeException | TimeoutException e) {
+			catch (IOException | RuntimeException | TimeoutException
+						exception) {
+
 				if (retries == maxRetries) {
 					throw new RuntimeException(
 						JenkinsResultsParserUtil.combine(
 							"Unable to get ",
 							BuildDatabase.FILE_NAME_BUILD_DATABASE, " file"),
-						e);
+						exception);
 				}
 
 				System.out.println(
 					"Unable to execute bash commands, retrying... ");
 
-				e.printStackTrace();
+				exception.printStackTrace();
 
 				JenkinsResultsParserUtil.sleep(3000);
 			}
 		}
 	}
 
-	private static BuildDatabase _buildDatabase;
+	private static BuildDatabase _getBuildDatabase(
+		String baseDirPath, Build build, boolean download) {
+
+		if (baseDirPath == null) {
+			baseDirPath = System.getenv("WORKSPACE");
+
+			if (baseDirPath == null) {
+				throw new RuntimeException("Please set WORKSPACE");
+			}
+		}
+
+		synchronized (_buildDatabases) {
+			BuildDatabase buildDatabase = _buildDatabases.get(baseDirPath);
+
+			if (buildDatabase == null) {
+				File baseDir = new File(baseDirPath);
+
+				if (!baseDir.exists()) {
+					baseDir.mkdirs();
+				}
+
+				File buildDatabaseFile = new File(
+					baseDir, BuildDatabase.FILE_NAME_BUILD_DATABASE);
+
+				if (!buildDatabaseFile.exists() && download) {
+					String distNodes = System.getenv("DIST_NODES");
+					String distPath = System.getenv("DIST_PATH");
+
+					if ((distNodes != null) && (distPath != null)) {
+						_downloadBuildDatabaseFile(
+							baseDir, distNodes, distPath);
+					}
+					else if (build instanceof TopLevelBuild) {
+						_downloadBuildDatabaseFile(baseDir, build);
+					}
+				}
+
+				buildDatabase = new DefaultBuildDatabase(baseDir);
+
+				_buildDatabases.put(baseDirPath, buildDatabase);
+			}
+
+			return buildDatabase;
+		}
+	}
+
+	private static String _getDistPath(Build build) {
+		StringBuilder sb = new StringBuilder();
+
+		if (JenkinsResultsParserUtil.isWindows()) {
+			sb.append("C:");
+		}
+
+		sb.append("/tmp/jenkins/");
+
+		JenkinsMaster jenkinsMaster = build.getJenkinsMaster();
+
+		sb.append(jenkinsMaster.getName());
+
+		sb.append("/");
+		sb.append(build.getJobName());
+		sb.append("/");
+		sb.append(build.getBuildNumber());
+
+		return sb.toString();
+	}
+
+	private static final Map<String, BuildDatabase> _buildDatabases =
+		new HashMap<>();
 
 }

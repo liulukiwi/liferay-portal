@@ -14,6 +14,8 @@
 
 package com.liferay.portal.template.xsl.internal;
 
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.template.StringTemplateResource;
 import com.liferay.portal.kernel.template.TemplateConstants;
 import com.liferay.portal.kernel.template.TemplateException;
@@ -67,14 +69,21 @@ public class XSLTemplate extends BaseTemplate {
 				XMLConstants.FEATURE_SECURE_PROCESSING,
 				xslEngineConfiguration.secureProcessingEnabled());
 		}
-		catch (TransformerConfigurationException tce) {
+		catch (TransformerConfigurationException
+					transformerConfigurationException) {
+
+			if (_log.isDebugEnabled()) {
+				_log.debug(
+					transformerConfigurationException,
+					transformerConfigurationException);
+			}
 		}
 	}
 
 	@Override
 	protected void handleException(
 			TemplateResource templateResource,
-			TemplateResource errorTemplateResource, Exception exception,
+			TemplateResource errorTemplateResource, Exception exception1,
 			Writer writer)
 		throws TemplateException {
 
@@ -118,11 +127,11 @@ public class XSLTemplate extends BaseTemplate {
 				errorTransformer.transform(
 					_xmlStreamSource, new StreamResult(writer));
 			}
-			catch (Exception e) {
+			catch (Exception exception2) {
 				throw new TemplateException(
 					"Unable to process XSL template " +
 						errorTemplateResource.getTemplateId(),
-					e);
+					exception2);
 			}
 		}
 		finally {
@@ -196,17 +205,19 @@ public class XSLTemplate extends BaseTemplate {
 
 			return transformer;
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			throw new TemplateException(
 				"Unable to get Transformer for template " +
 					templateResource.getTemplateId(),
-				e);
+				exception);
 		}
 	}
 
 	private static final ClassLoader _TRANSFORMER_FACTORY_CLASS_LOADER;
 
 	private static final String _TRANSFORMER_FACTORY_CLASS_NAME;
+
+	private static final Log _log = LogFactoryUtil.getLog(XSLTemplate.class);
 
 	static {
 		Class<?> transformerFactoryClass = TransformerFactoryImpl.class;

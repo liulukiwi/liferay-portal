@@ -25,8 +25,10 @@ import java.util.Date;
 import java.util.Properties;
 
 /**
- * @author Brian Wing Shun Chan
+ * @author     Brian Wing Shun Chan
+ * @deprecated As of Wilberforce (7.0.x)
  */
+@Deprecated
 public class ReleaseInfoBuilder {
 
 	public static void main(String[] args) {
@@ -85,8 +87,8 @@ public class ReleaseInfoBuilder {
 
 			_fileImpl.write(file, content);
 		}
-		catch (Exception e) {
-			e.printStackTrace();
+		catch (Exception exception) {
+			exception.printStackTrace();
 		}
 	}
 

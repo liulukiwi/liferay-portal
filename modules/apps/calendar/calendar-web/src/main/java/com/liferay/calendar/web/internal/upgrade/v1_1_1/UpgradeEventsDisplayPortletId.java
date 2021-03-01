@@ -132,7 +132,6 @@ public class UpgradeEventsDisplayPortletId extends BaseUpgradePortletId {
 
 				dynamicQuery.add(junction);
 			});
-		actionableDynamicQuery.setParallel(true);
 		actionableDynamicQuery.setPerformActionMethod(
 			(PortletPreferences portletPreference) -> updatePortletPreferences(
 				portletPreference, oldRootPortletId, newRootPortletId));
@@ -153,9 +152,9 @@ public class UpgradeEventsDisplayPortletId extends BaseUpgradePortletId {
 
 			updateLayouts(oldRootPortletId, newRootPortletId, false);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isWarnEnabled()) {
-				_log.warn(e, e);
+				_log.warn(exception, exception);
 			}
 		}
 	}
@@ -169,6 +168,9 @@ public class UpgradeEventsDisplayPortletId extends BaseUpgradePortletId {
 			newRootPortletId);
 
 		portletPreferences.setPortletId(newPortletId);
+
+		_portletPreferencesLocalService.updatePortletPreferences(
+			portletPreferences);
 
 		StringBundler sb = new StringBundler(12);
 
@@ -188,10 +190,10 @@ public class UpgradeEventsDisplayPortletId extends BaseUpgradePortletId {
 		sb.append(String.format(_PREFERENCE_FORMAT, "showUserEvents", "false"));
 		sb.append("</portlet-preferences>");
 
-		portletPreferences.setPreferences(sb.toString());
-
-		_portletPreferencesLocalService.updatePortletPreferences(
-			portletPreferences);
+		_portletPreferencesLocalService.updatePreferences(
+			portletPreferences.getOwnerId(), portletPreferences.getOwnerType(),
+			portletPreferences.getPlid(), portletPreferences.getPortletId(),
+			sb.toString());
 	}
 
 	@Override

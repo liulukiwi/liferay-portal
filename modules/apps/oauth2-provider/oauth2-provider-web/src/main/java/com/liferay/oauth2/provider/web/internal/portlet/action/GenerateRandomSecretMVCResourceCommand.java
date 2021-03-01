@@ -33,7 +33,7 @@ import org.osgi.service.component.annotations.Component;
 @Component(
 	property = {
 		"javax.portlet.name=" + OAuth2ProviderPortletKeys.OAUTH2_ADMIN,
-		"mvc.command.name=/admin/generate_random_secret"
+		"mvc.command.name=/oauth2_provider/generate_random_secret"
 	},
 	service = MVCResourceCommand.class
 )
@@ -55,8 +55,8 @@ public class GenerateRandomSecretMVCResourceCommand
 
 			printWriter.write(randomSecret);
 		}
-		catch (IOException ioe) {
-			throw new PortletException(ioe);
+		catch (IOException ioException) {
+			throw new PortletException(ioException);
 		}
 
 		return false;

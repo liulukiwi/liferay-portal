@@ -17,6 +17,8 @@ package com.liferay.source.formatter;
 import com.liferay.petra.nio.CharsetDecoderUtil;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -51,7 +53,6 @@ import java.nio.charset.CodingErrorAction;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -107,7 +108,7 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 
 		_sourceChecks = _getSourceChecks(
 			_sourceFormatterConfiguration, _containsModuleFile(fileNames),
-			_sourceFormatterArgs.getCheckName());
+			_sourceFormatterArgs.getCheckNames());
 
 		addProgressStatusUpdate(
 			new ProgressStatusUpdate(
@@ -480,40 +481,25 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 		}
 	}
 
-	protected synchronized Set<SourceFormatterMessage> processCheckstyle(
+	protected Set<SourceFormatterMessage> processCheckstyle(
 			Configuration configuration, CheckstyleLogger checkstyleLogger,
-			File[] files)
-		throws CheckstyleException {
-
-		if (ArrayUtil.isEmpty(files)) {
-			return Collections.emptySet();
-		}
-
-		Checker checker = new Checker(
-			configuration, checkstyleLogger, checkstyleLogger,
-			getSourceFormatterSuppressions());
-
-		checker.process(Arrays.asList(files));
-
-		return checker.getSourceFormatterMessages();
-	}
-
-	protected synchronized Set<SourceFormatterMessage> processCheckstyle(
-			Configuration configuration, CheckstyleLogger checkstyleLogger,
-			List<String[]> fileContents)
+			Object object)
 		throws CheckstyleException, IOException {
 
-		if (fileContents.isEmpty()) {
-			return Collections.emptySet();
+		synchronized (BaseSourceProcessor.class) {
+			Checker checker = new Checker(
+				configuration, checkstyleLogger, checkstyleLogger,
+				getSourceFormatterSuppressions());
+
+			if (object instanceof File[]) {
+				checker.process(Arrays.asList((File[])object));
+			}
+			else if (object instanceof List<?>) {
+				checker.processFileContents((List<String[]>)object);
+			}
+
+			return checker.getSourceFormatterMessages();
 		}
-
-		Checker checker = new Checker(
-			configuration, checkstyleLogger, checkstyleLogger,
-			getSourceFormatterSuppressions());
-
-		checker.processFileContents(fileContents);
-
-		return checker.getSourceFormatterMessages();
 	}
 
 	protected File processFormattedFile(
@@ -536,10 +522,9 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 					file.delete();
 				}
 			}
-			else {
-				_sourceMismatchExceptions.add(
-					new SourceMismatchException(fileName, content, newContent));
-			}
+
+			_sourceMismatchExceptions.add(
+				new SourceMismatchException(fileName, content, newContent));
 		}
 
 		if (_sourceFormatterArgs.isPrintErrors()) {
@@ -560,13 +545,13 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 						continue;
 					}
 
-					String markdownFilePath =
-						sourceFormatterMessage.getMarkdownFilePath();
+					String documentationURLString =
+						sourceFormatterMessage.getDocumentationURLString();
 
-					if (Validator.isNotNull(markdownFilePath)) {
+					if (Validator.isNotNull(documentationURLString)) {
 						Desktop desktop = Desktop.getDesktop();
 
-						desktop.browse(new URI(markdownFilePath));
+						desktop.browse(new URI(documentationURLString));
 
 						_browserStarted = true;
 					}
@@ -595,11 +580,10 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 	}
 
 	protected void processMessage(String fileName, String message) {
-		processMessage(
-			fileName, new SourceFormatterMessage(fileName, message, null, -1));
+		processMessage(fileName, new SourceFormatterMessage(fileName, message));
 	}
 
-	private void _checkUTF8(File file, String fileName) throws IOException {
+	private void _checkUTF8(File file, String fileName) throws Exception {
 		byte[] bytes = FileUtil.getBytes(file);
 
 		try {
@@ -609,7 +593,11 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 
 			charsetDecoder.decode(ByteBuffer.wrap(bytes));
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
+
 			processMessage(fileName, "UTF-8");
 		}
 	}
@@ -667,7 +655,7 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 
 	private List<SourceCheck> _getSourceChecks(
 			SourceFormatterConfiguration sourceFormatterConfiguration,
-			boolean includeModuleChecks, String checkName)
+			boolean includeModuleChecks, List<String> checkNames)
 		throws Exception {
 
 		Class<?> clazz = getClass();
@@ -675,7 +663,7 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 		List<SourceCheck> sourceChecks = SourceChecksUtil.getSourceChecks(
 			sourceFormatterConfiguration, clazz.getSimpleName(),
 			getPropertiesMap(), _sourceFormatterArgs.getSkipCheckNames(),
-			_portalSource, _subrepository, includeModuleChecks, checkName);
+			_portalSource, _subrepository, includeModuleChecks, checkNames);
 
 		for (SourceCheck sourceCheck : sourceChecks) {
 			_initSourceCheck(sourceCheck);
@@ -736,7 +724,10 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 				}
 			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
 		}
 
 		return absolutePath.contains("/modules/");
@@ -770,8 +761,9 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 
 			DebugUtil.finishTask();
 		}
-		catch (Throwable t) {
-			throw new RuntimeException("Unable to format " + fileName, t);
+		catch (Throwable throwable) {
+			throw new RuntimeException(
+				"Unable to format " + fileName, throwable);
 		}
 	}
 
@@ -795,6 +787,9 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 
 		return sourceChecksResult;
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		BaseSourceProcessor.class);
 
 	private List<String> _allFileNames;
 	private boolean _browserStarted;

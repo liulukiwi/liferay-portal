@@ -32,6 +32,7 @@ import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.lock.LockManager;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.Group;
@@ -42,7 +43,7 @@ import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
-import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermissionHelper;
+import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermissionUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.HtmlUtil;
@@ -107,6 +108,12 @@ public class MBMessageServiceImpl extends MBMessageServiceBaseImpl {
 			parentMessageId, subject, body, serviceContext);
 	}
 
+	/**
+	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link
+	 *             #addMessage(String, long, String, String, String, List,
+	 *             boolean, double, boolean, ServiceContext)}
+	 */
+	@Deprecated
 	@Override
 	public MBMessage addMessage(
 			long groupId, long categoryId, String subject, String body,
@@ -116,18 +123,18 @@ public class MBMessageServiceImpl extends MBMessageServiceBaseImpl {
 			ServiceContext serviceContext)
 		throws PortalException {
 
-		ModelResourcePermissionHelper.check(
+		ModelResourcePermissionUtil.check(
 			_categoryModelResourcePermission, getPermissionChecker(), groupId,
 			categoryId, ActionKeys.ADD_MESSAGE);
 
-		if (!ModelResourcePermissionHelper.contains(
+		if (!ModelResourcePermissionUtil.contains(
 				_categoryModelResourcePermission, getPermissionChecker(),
 				groupId, categoryId, ActionKeys.ADD_FILE)) {
 
 			inputStreamOVPs = Collections.emptyList();
 		}
 
-		if (!ModelResourcePermissionHelper.contains(
+		if (!ModelResourcePermissionUtil.contains(
 				_categoryModelResourcePermission, getPermissionChecker(),
 				groupId, categoryId, ActionKeys.UPDATE_THREAD_PRIORITY)) {
 
@@ -140,6 +147,12 @@ public class MBMessageServiceImpl extends MBMessageServiceBaseImpl {
 			serviceContext);
 	}
 
+	/**
+	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link
+	 *             #addMessage(String, long, String, String, String, List,
+	 *             boolean, double, boolean, ServiceContext)}
+	 */
+	@Deprecated
 	@Override
 	public MBMessage addMessage(
 			long groupId, long categoryId, String subject, String body,
@@ -163,6 +176,12 @@ public class MBMessageServiceImpl extends MBMessageServiceBaseImpl {
 			anonymous, priority, allowPingbacks, serviceContext);
 	}
 
+	/**
+	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link
+	 *             #addMessage(String, long, String, String, String, List,
+	 *             boolean, double, boolean, ServiceContext)}
+	 */
+	@Deprecated
 	@Override
 	public MBMessage addMessage(
 			long categoryId, String subject, String body,
@@ -180,9 +199,29 @@ public class MBMessageServiceImpl extends MBMessageServiceBaseImpl {
 			false, serviceContext);
 	}
 
+	/**
+	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link
+	 *             #addMessage(String, long, String, String, String, List,
+	 *             boolean, double, boolean, ServiceContext)}
+	 */
+	@Deprecated
 	@Override
 	public MBMessage addMessage(
 			long parentMessageId, String subject, String body, String format,
+			List<ObjectValuePair<String, InputStream>> inputStreamOVPs,
+			boolean anonymous, double priority, boolean allowPingbacks,
+			ServiceContext serviceContext)
+		throws PortalException {
+
+		return addMessage(
+			null, parentMessageId, subject, body, format, inputStreamOVPs,
+			anonymous, priority, allowPingbacks, serviceContext);
+	}
+
+	@Override
+	public MBMessage addMessage(
+			String externalReferenceCode, long parentMessageId, String subject,
+			String body, String format,
 			List<ObjectValuePair<String, InputStream>> inputStreamOVPs,
 			boolean anonymous, double priority, boolean allowPingbacks,
 			ServiceContext serviceContext)
@@ -197,9 +236,9 @@ public class MBMessageServiceImpl extends MBMessageServiceBaseImpl {
 
 		boolean preview = ParamUtil.getBoolean(serviceContext, "preview");
 
-		int workFlowAction = serviceContext.getWorkflowAction();
+		int workflowAction = serviceContext.getWorkflowAction();
 
-		if ((workFlowAction == WorkflowConstants.STATUS_DRAFT) && !preview &&
+		if ((workflowAction == WorkflowConstants.STATUS_DRAFT) && !preview &&
 			!serviceContext.isSignedIn()) {
 
 			_messageModelResourcePermission.check(
@@ -219,7 +258,7 @@ public class MBMessageServiceImpl extends MBMessageServiceBaseImpl {
 			throw new LockedThreadException(sb.toString());
 		}
 
-		if (!ModelResourcePermissionHelper.contains(
+		if (!ModelResourcePermissionUtil.contains(
 				_categoryModelResourcePermission, getPermissionChecker(),
 				parentMessage.getGroupId(), parentMessage.getCategoryId(),
 				ActionKeys.ADD_FILE)) {
@@ -227,7 +266,7 @@ public class MBMessageServiceImpl extends MBMessageServiceBaseImpl {
 			inputStreamOVPs = Collections.emptyList();
 		}
 
-		if (!ModelResourcePermissionHelper.contains(
+		if (!ModelResourcePermissionUtil.contains(
 				_categoryModelResourcePermission, getPermissionChecker(),
 				parentMessage.getGroupId(), parentMessage.getCategoryId(),
 				ActionKeys.UPDATE_THREAD_PRIORITY)) {
@@ -236,10 +275,11 @@ public class MBMessageServiceImpl extends MBMessageServiceBaseImpl {
 		}
 
 		return mbMessageLocalService.addMessage(
-			getGuestOrUserId(), null, parentMessage.getGroupId(),
-			parentMessage.getCategoryId(), parentMessage.getThreadId(),
-			parentMessageId, subject, body, format, inputStreamOVPs, anonymous,
-			priority, allowPingbacks, serviceContext);
+			externalReferenceCode, getGuestOrUserId(), null,
+			parentMessage.getGroupId(), parentMessage.getCategoryId(),
+			parentMessage.getThreadId(), parentMessageId, subject, body, format,
+			inputStreamOVPs, anonymous, priority, allowPingbacks,
+			serviceContext);
 	}
 
 	@Override
@@ -262,7 +302,7 @@ public class MBMessageServiceImpl extends MBMessageServiceBaseImpl {
 			throw new LockedThreadException(sb.toString());
 		}
 
-		ModelResourcePermissionHelper.check(
+		ModelResourcePermissionUtil.check(
 			_categoryModelResourcePermission, getPermissionChecker(),
 			message.getGroupId(), message.getCategoryId(), ActionKeys.ADD_FILE);
 
@@ -276,7 +316,7 @@ public class MBMessageServiceImpl extends MBMessageServiceBaseImpl {
 			InputStream inputStream, String mimeType)
 		throws PortalException {
 
-		ModelResourcePermissionHelper.check(
+		ModelResourcePermissionUtil.check(
 			_categoryModelResourcePermission, getPermissionChecker(), groupId,
 			categoryId, ActionKeys.ADD_FILE);
 
@@ -325,7 +365,7 @@ public class MBMessageServiceImpl extends MBMessageServiceBaseImpl {
 			long groupId, long categoryId, String folderName, String fileName)
 		throws PortalException {
 
-		ModelResourcePermissionHelper.check(
+		ModelResourcePermissionUtil.check(
 			_categoryModelResourcePermission, getPermissionChecker(), groupId,
 			categoryId, ActionKeys.ADD_FILE);
 
@@ -339,6 +379,23 @@ public class MBMessageServiceImpl extends MBMessageServiceBaseImpl {
 			getPermissionChecker(), messageId, ActionKeys.DELETE);
 
 		mbMessageLocalService.emptyMessageAttachments(messageId);
+	}
+
+	@Override
+	public MBMessage fetchMBMessageByUrlSubject(long groupId, String urlSubject)
+		throws PortalException {
+
+		MBMessage mbMessage = mbMessageLocalService.fetchMBMessageByUrlSubject(
+			groupId, urlSubject);
+
+		if (mbMessage == null) {
+			return null;
+		}
+
+		_messageModelResourcePermission.check(
+			getPermissionChecker(), mbMessage, ActionKeys.VIEW);
+
+		return mbMessage;
 	}
 
 	@Override
@@ -713,7 +770,7 @@ public class MBMessageServiceImpl extends MBMessageServiceBaseImpl {
 
 		MBMessage message = mbMessagePersistence.findByPrimaryKey(messageId);
 
-		ModelResourcePermissionHelper.check(
+		ModelResourcePermissionUtil.check(
 			_categoryModelResourcePermission, getPermissionChecker(),
 			message.getGroupId(), message.getCategoryId(), ActionKeys.ADD_FILE);
 
@@ -802,7 +859,7 @@ public class MBMessageServiceImpl extends MBMessageServiceBaseImpl {
 			throw new LockedThreadException(sb.toString());
 		}
 
-		if (!ModelResourcePermissionHelper.contains(
+		if (!ModelResourcePermissionUtil.contains(
 				_categoryModelResourcePermission, getPermissionChecker(),
 				message.getGroupId(), message.getCategoryId(),
 				ActionKeys.ADD_FILE)) {
@@ -810,7 +867,7 @@ public class MBMessageServiceImpl extends MBMessageServiceBaseImpl {
 			inputStreamOVPs = Collections.emptyList();
 		}
 
-		if (!ModelResourcePermissionHelper.contains(
+		if (!ModelResourcePermissionUtil.contains(
 				_categoryModelResourcePermission, getPermissionChecker(),
 				message.getGroupId(), message.getCategoryId(),
 				ActionKeys.UPDATE_THREAD_PRIORITY)) {
@@ -833,14 +890,14 @@ public class MBMessageServiceImpl extends MBMessageServiceBaseImpl {
 		PermissionChecker permissionChecker = getPermissionChecker();
 
 		if (parentMessageId > 0) {
-			if (ModelResourcePermissionHelper.contains(
+			if (ModelResourcePermissionUtil.contains(
 					_categoryModelResourcePermission, permissionChecker,
 					groupId, categoryId, ActionKeys.ADD_MESSAGE)) {
 
 				return;
 			}
 
-			if (!ModelResourcePermissionHelper.contains(
+			if (!ModelResourcePermissionUtil.contains(
 					_categoryModelResourcePermission, permissionChecker,
 					groupId, categoryId, ActionKeys.REPLY_TO_MESSAGE)) {
 
@@ -850,7 +907,7 @@ public class MBMessageServiceImpl extends MBMessageServiceBaseImpl {
 			}
 		}
 		else {
-			ModelResourcePermissionHelper.check(
+			ModelResourcePermissionUtil.check(
 				_categoryModelResourcePermission, permissionChecker, groupId,
 				categoryId, ActionKeys.ADD_MESSAGE);
 		}
@@ -872,10 +929,12 @@ public class MBMessageServiceImpl extends MBMessageServiceBaseImpl {
 		for (MBMessage message : messages) {
 			SyndEntry syndEntry = _syndModelFactory.createSyndEntry();
 
-			if (!message.isAnonymous()) {
-				String author = _portal.getUserName(message);
-
-				syndEntry.setAuthor(author);
+			if (message.isAnonymous()) {
+				syndEntry.setAuthor(
+					_language.get(themeDisplay.getLocale(), "anonymous"));
+			}
+			else {
+				syndEntry.setAuthor(_portal.getUserName(message));
 			}
 
 			SyndContent syndContent = _syndModelFactory.createSyndContent();
@@ -943,6 +1002,9 @@ public class MBMessageServiceImpl extends MBMessageServiceBaseImpl {
 	)
 	private ModelResourcePermission<MBCategory>
 		_categoryModelResourcePermission;
+
+	@Reference
+	private Language _language;
 
 	@Reference
 	private LockManager _lockManager;

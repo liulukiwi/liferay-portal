@@ -18,10 +18,8 @@
 
 <clay:management-toolbar
 	clearResultsURL="<%= workflowInstanceViewDisplayContext.getClearResultsURL() %>"
-	disabled="<%= workflowInstanceViewDisplayContext.isDisabledManagementBar() %>"
 	filterDropdownItems="<%= workflowInstanceViewDisplayContext.getFilterOptions(request) %>"
 	itemsTotal="<%= workflowInstanceViewDisplayContext.getTotalItems() %>"
-	namespace="<%= renderResponse.getNamespace() %>"
 	searchActionURL="<%= workflowInstanceViewDisplayContext.getSearchURL() %>"
 	searchContainerId="workflowInstance"
 	searchFormName="fm1"

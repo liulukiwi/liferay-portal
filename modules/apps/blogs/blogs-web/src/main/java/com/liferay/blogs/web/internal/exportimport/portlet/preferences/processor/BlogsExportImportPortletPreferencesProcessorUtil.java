@@ -15,6 +15,8 @@
 package com.liferay.blogs.web.internal.exportimport.portlet.preferences.processor;
 
 import com.liferay.blogs.model.BlogsEntry;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.template.TemplateHandler;
 import com.liferay.portal.kernel.template.TemplateHandlerRegistryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -38,7 +40,10 @@ public class BlogsExportImportPortletPreferencesProcessorUtil {
 				return portletPreferences.getValue("displayStyle", null);
 			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
 		}
 
 		return null;
@@ -57,10 +62,16 @@ public class BlogsExportImportPortletPreferencesProcessorUtil {
 					portletPreferences.getValue("displayStyleGroupId", null));
 			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
 		}
 
 		return 0;
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		BlogsExportImportPortletPreferencesProcessorUtil.class);
 
 }

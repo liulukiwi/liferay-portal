@@ -17,26 +17,26 @@
 <%@ include file="/init.jsp" %>
 
 <%
-SiteTeamsDisplayContext siteTeamsDisplayContext = new SiteTeamsDisplayContext(renderRequest, renderResponse, request);
+SiteTeamsDisplayContext siteTeamsDisplayContext = new SiteTeamsDisplayContext(request, renderRequest, renderResponse);
 
-SiteTeamsManagementToolbarDisplayContext siteTeamsManagementToolbarDisplayContext = new SiteTeamsManagementToolbarDisplayContext(liferayPortletRequest, liferayPortletResponse, request, siteTeamsDisplayContext);
+SiteTeamsManagementToolbarDisplayContext siteTeamsManagementToolbarDisplayContext = new SiteTeamsManagementToolbarDisplayContext(request, liferayPortletRequest, liferayPortletResponse, siteTeamsDisplayContext);
 %>
 
 <clay:management-toolbar
-	displayContext="<%= siteTeamsManagementToolbarDisplayContext %>"
+	managementToolbarDisplayContext="<%= siteTeamsManagementToolbarDisplayContext %>"
+	propsTransformer="js/SiteTeamsManagementToolbarPropsTransformer"
 />
 
 <portlet:actionURL name="deleteTeams" var="deleteTeamsURL">
 	<portlet:param name="redirect" value="<%= currentURL %>" />
 </portlet:actionURL>
 
-<aui:form action="<%= deleteTeamsURL %>" cssClass="container-fluid-1280" name="fm">
+<aui:form action="<%= deleteTeamsURL %>" cssClass="container-fluid container-fluid-max-xl" name="fm">
 	<liferay-ui:search-container
 		searchContainer="<%= siteTeamsDisplayContext.getSearchContainer() %>"
 	>
 		<liferay-ui:search-container-row
 			className="com.liferay.portal.kernel.model.Team"
-			cssClass="selectable"
 			escapedModel="<%= true %>"
 			keyProperty="teamId"
 			modelVar="team"
@@ -52,11 +52,10 @@ SiteTeamsManagementToolbarDisplayContext siteTeamsManagementToolbarDisplayContex
 				rowURL.setParameter("teamId", String.valueOf(team.getTeamId()));
 			}
 
-			Map<String, Object> rowData = new HashMap<>();
-
-			rowData.put("actions", siteTeamsManagementToolbarDisplayContext.getAvailableActions(team));
-
-			row.setData(rowData);
+			row.setData(
+				HashMapBuilder.<String, Object>put(
+					"actions", siteTeamsManagementToolbarDisplayContext.getAvailableActions(team)
+				).build());
 			%>
 
 			<c:choose>
@@ -110,8 +109,3 @@ SiteTeamsManagementToolbarDisplayContext siteTeamsManagementToolbarDisplayContex
 		/>
 	</liferay-ui:search-container>
 </aui:form>
-
-<liferay-frontend:component
-	componentId="<%= siteTeamsManagementToolbarDisplayContext.getDefaultEventHandler() %>"
-	module="js/SiteTeamsManagementToolbarDefaultEventHandler.es"
-/>

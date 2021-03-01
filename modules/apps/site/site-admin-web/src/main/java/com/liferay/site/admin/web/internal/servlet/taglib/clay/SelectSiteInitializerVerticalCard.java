@@ -49,44 +49,53 @@ public class SelectSiteInitializerVerticalCard implements VerticalCard {
 	}
 
 	@Override
-	public Map<String, String> getData() {
-		long parentGroupId = ParamUtil.getLong(
-			_httpServletRequest, "parentGroupId");
-
-		PortletURL addSiteURL = _renderResponse.createActionURL();
-
-		addSiteURL.setParameter(ActionRequest.ACTION_NAME, "addGroup");
-
-		addSiteURL.setParameter(
-			"mvcPath", "/select_layout_set_prototype_entry.jsp");
-		addSiteURL.setParameter("parentGroupId", String.valueOf(parentGroupId));
-		addSiteURL.setParameter("creationType", _siteInitializerItem.getType());
-		addSiteURL.setParameter(
-			"siteInitializerKey", _siteInitializerItem.getSiteInitializerKey());
-
-		String checkboxFieldName = StringPool.BLANK;
-
-		if (Objects.equals(
-				_siteInitializerItem.getType(),
-				SiteAdminConstants.CREATION_TYPE_SITE_TEMPLATE)) {
-
-			checkboxFieldName = "layoutSetVisibilityPrivate";
-		}
-
-		return HashMapBuilder.put(
-			"add-site-url", addSiteURL.toString()
-		).put(
-			"checkbox-field-name", checkboxFieldName
-		).put(
-			"layout-set-prototype-id",
-			String.valueOf(_siteInitializerItem.getLayoutSetPrototypeId())
-		).build();
+	public String getCssClass() {
+		return "add-site-action-card mb-0";
 	}
 
 	@Override
-	public String getElementClasses() {
-		return "add-site-action-option card-interactive " +
-			"card-interactive-secondary";
+	public Map<String, String> getDynamicAttributes() {
+		return HashMapBuilder.put(
+			"data-add-site-url",
+			() -> {
+				PortletURL addSiteURL = _renderResponse.createActionURL();
+
+				addSiteURL.setParameter(
+					ActionRequest.ACTION_NAME, "/site_admin/add_group");
+
+				addSiteURL.setParameter(
+					"mvcPath", "/select_layout_set_prototype_entry.jsp");
+
+				long parentGroupId = ParamUtil.getLong(
+					_httpServletRequest, "parentGroupId");
+
+				addSiteURL.setParameter(
+					"parentGroupId", String.valueOf(parentGroupId));
+
+				addSiteURL.setParameter(
+					"creationType", _siteInitializerItem.getType());
+				addSiteURL.setParameter(
+					"siteInitializerKey",
+					_siteInitializerItem.getSiteInitializerKey());
+
+				return addSiteURL.toString();
+			}
+		).put(
+			"data-checkbox-field-name",
+			() -> {
+				if (Objects.equals(
+						_siteInitializerItem.getType(),
+						SiteAdminConstants.CREATION_TYPE_SITE_TEMPLATE)) {
+
+					return "layoutSetVisibilityPrivate";
+				}
+
+				return StringPool.BLANK;
+			}
+		).put(
+			"data-layout-set-prototype-id",
+			String.valueOf(_siteInitializerItem.getLayoutSetPrototypeId())
+		).build();
 	}
 
 	@Override

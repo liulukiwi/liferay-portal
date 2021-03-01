@@ -23,6 +23,7 @@ import com.liferay.asset.kernel.service.AssetEntryLocalServiceUtil;
 import com.liferay.document.library.kernel.model.DLFileEntry;
 import com.liferay.document.library.kernel.model.DLFolder;
 import com.liferay.document.library.kernel.service.DLAppLocalService;
+import com.liferay.document.library.test.util.DLTestUtil;
 import com.liferay.layout.page.template.constants.LayoutPageTemplateEntryTypeConstants;
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalService;
@@ -49,7 +50,6 @@ import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
-import com.liferay.portlet.documentlibrary.util.test.DLTestUtil;
 
 import java.security.Principal;
 
@@ -165,11 +165,7 @@ public class AssetDisplayPageFormProcessorTest {
 							_portal.getClassNameId(FileEntry.class.getName()),
 							fileEntry.getFileEntryId());
 
-				Assert.assertNotNull(assetDisplayPageEntry);
-
-				Assert.assertEquals(
-					AssetDisplayPageConstants.TYPE_DEFAULT,
-					assetDisplayPageEntry.getType());
+				Assert.assertNull(assetDisplayPageEntry);
 			});
 	}
 
@@ -191,7 +187,7 @@ public class AssetDisplayPageFormProcessorTest {
 						String.valueOf(AssetDisplayPageConstants.TYPE_NONE),
 						null));
 
-				Assert.assertNull(
+				Assert.assertNotNull(
 					_assetDisplayPageEntryLocalService.
 						fetchAssetDisplayPageEntry(
 							_group.getGroupId(),
@@ -259,24 +255,13 @@ public class AssetDisplayPageFormProcessorTest {
 							_group.getGroupId(), classNameId,
 							fileEntry.getFileEntryId());
 
-				Assert.assertNotNull(assetDisplayPageEntry);
-
-				Assert.assertEquals(
-					AssetDisplayPageConstants.TYPE_DEFAULT,
-					assetDisplayPageEntry.getType());
+				Assert.assertNull(assetDisplayPageEntry);
 			});
 	}
 
 	@Test
 	public void testProcessWithDefaultParameters() throws Exception {
 		long classNameId = _portal.getClassNameId(FileEntry.class.getName());
-
-		LayoutPageTemplateEntry layoutPageTemplateEntry =
-			_layoutPageTemplateEntryLocalService.addLayoutPageTemplateEntry(
-				TestPropsValues.getUserId(), _group.getGroupId(), 0,
-				classNameId, 0, RandomTestUtil.randomString(),
-				LayoutPageTemplateEntryTypeConstants.TYPE_DISPLAY_PAGE, true, 0,
-				0, 0, WorkflowConstants.STATUS_APPROVED, new ServiceContext());
 
 		_withAndWithoutAssetEntry(
 			fileEntry -> {
@@ -290,13 +275,7 @@ public class AssetDisplayPageFormProcessorTest {
 							_group.getGroupId(), classNameId,
 							fileEntry.getFileEntryId());
 
-				Assert.assertEquals(
-					layoutPageTemplateEntry.getLayoutPageTemplateEntryId(),
-					assetDisplayPageEntry.getLayoutPageTemplateEntryId());
-
-				Assert.assertEquals(
-					AssetDisplayPageConstants.TYPE_DEFAULT,
-					assetDisplayPageEntry.getType());
+				Assert.assertNull(assetDisplayPageEntry);
 			});
 	}
 
@@ -310,7 +289,7 @@ public class AssetDisplayPageFormProcessorTest {
 						String.valueOf(AssetDisplayPageConstants.TYPE_NONE),
 						null));
 
-				Assert.assertNull(
+				Assert.assertNotNull(
 					_assetDisplayPageEntryLocalService.
 						fetchAssetDisplayPageEntry(
 							_group.getGroupId(),

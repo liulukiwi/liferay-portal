@@ -143,9 +143,7 @@ public class CXFEndpointPublisher {
 		protected void start() {
 			Dictionary<String, Object> properties = new Hashtable<>();
 
-			Object contextPathObject = _properties.get("contextPath");
-
-			String contextPath = contextPathObject.toString();
+			String contextPath = String.valueOf(_properties.get("contextPath"));
 
 			String contextName = contextPath.substring(1);
 
@@ -192,6 +190,13 @@ public class CXFEndpointPublisher {
 				CXFNonSpringServlet.class.getName());
 			properties.put(
 				HttpWhiteboardConstants.HTTP_WHITEBOARD_SERVLET_PATTERN, "/*");
+
+			Object property = properties.get(
+				"servlet.init.hide-service-list-page");
+
+			if (property == null) {
+				properties.put("servlet.init.hide-service-list-page", "true");
+			}
 
 			cxfNonSpringServlet.setBus(bus);
 
@@ -275,11 +280,12 @@ public class CXFEndpointPublisher {
 			try {
 				_busServiceRegistration.unregister();
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 				if (_log.isWarnEnabled()) {
 					_log.warn(
 						"Unable to unregister CXF bus service registration " +
-							_busServiceRegistration);
+							_busServiceRegistration,
+						exception);
 				}
 			}
 
@@ -287,12 +293,13 @@ public class CXFEndpointPublisher {
 				try {
 					_remoteAccessFilterServiceRegistration.unregister();
 				}
-				catch (Exception e) {
+				catch (Exception exception) {
 					if (_log.isWarnEnabled()) {
 						_log.warn(
 							"Unable to unregister RemoteAccessFilter " +
 								"registration " +
-									_remoteAccessFilterServiceRegistration);
+									_remoteAccessFilterServiceRegistration,
+							exception);
 					}
 				}
 			}
@@ -301,12 +308,13 @@ public class CXFEndpointPublisher {
 				try {
 					_authVerifierFilterServiceRegistration.unregister();
 				}
-				catch (Exception e) {
+				catch (Exception exception) {
 					if (_log.isWarnEnabled()) {
 						_log.warn(
 							"Unable to unregister AuthVerifierFilter " +
 								"registration " +
-									_authVerifierFilterServiceRegistration);
+									_authVerifierFilterServiceRegistration,
+							exception);
 					}
 				}
 			}
@@ -314,23 +322,25 @@ public class CXFEndpointPublisher {
 			try {
 				_servletServiceRegistration.unregister();
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 				if (_log.isWarnEnabled()) {
 					_log.warn(
 						"Unable to unregister servlet service registration " +
-							_servletServiceRegistration);
+							_servletServiceRegistration,
+						exception);
 				}
 			}
 
 			try {
 				_servletContextHelperServiceRegistration.unregister();
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 				if (_log.isWarnEnabled()) {
 					_log.warn(
 						"Unable to unregister servlet context helper service " +
 							"registration " +
-								_servletContextHelperServiceRegistration);
+								_servletContextHelperServiceRegistration,
+						exception);
 				}
 			}
 		}
@@ -370,8 +380,8 @@ public class CXFEndpointPublisher {
 
 					chain.doFilter(servletRequest, servletResponse);
 				}
-				catch (Exception e) {
-					throw new ServletException(e);
+				catch (Exception exception) {
+					throw new ServletException(exception);
 				}
 				finally {
 					AccessControlThreadLocal.setRemoteAccess(remoteAccess);

@@ -52,10 +52,7 @@ public class JavaSourceProcessorTest extends BaseSourceProcessorTestCase {
 
 	@Test
 	public void testConstructorParameterOrder() throws Exception {
-		test(
-			"ConstructorParameterOrder.testjava",
-			"'_value = value;' should come before '_attribute = attribute;' " +
-				"to match order of constructor parameters");
+		test("ConstructorParameterOrder.testjava");
 	}
 
 	@Test
@@ -104,15 +101,20 @@ public class JavaSourceProcessorTest extends BaseSourceProcessorTestCase {
 
 	@Test
 	public void testExceptionVariableName() throws Exception {
-		test("ExceptionVariableName.testjava");
-	}
-
-	@Test
-	public void testExceptionVariableNameForExceptionMapper() throws Exception {
 		test(
-			"ExceptionVariableNameForExceptionMapper.testjava",
-			"Rename variable 'exception' to 'noSuchStructureException'",
-			40);
+			"ExceptionVariableName.testjava",
+			new String[] {
+				"Rename exception variable 'e' to 'configurationException'",
+				"Rename exception variable 'e' to 'configurationException'",
+				"Rename exception variable 're' to 'exception'",
+				"Rename exception variable 'ioe' to 'ioException1'",
+				"Rename exception variable 'oie' to 'ioException2'",
+				"Rename exception variable 'ioe1' to 'ioException1'",
+				"Rename exception variable 'ioe2' to 'ioException2'",
+				"Rename exception variable 'ioe1' to 'ioException'",
+				"Rename exception variable 'ioe2' to 'ioException'"
+			},
+			new Integer[] {37, 50, 61, 66, 70, 81, 85, 96, 102});
 	}
 
 	@Test
@@ -162,11 +164,6 @@ public class JavaSourceProcessorTest extends BaseSourceProcessorTestCase {
 	}
 
 	@Test
-	public void testIncorrectIfStatement() throws Exception {
-		//test("IncorrectIfStatement.testjava", "Incorrect if statement", 23);
-	}
-
-	@Test
 	public void testIncorrectImports() throws Exception {
 		test("IncorrectImports1.testjava");
 		test(
@@ -204,7 +201,8 @@ public class JavaSourceProcessorTest extends BaseSourceProcessorTestCase {
 			},
 			new Integer[] {
 				53, 57, 61, 97, 101, 105, 141, 145, 149, 185, 189, 193, 229,
-				233, 237, 273, 277, 281});
+				233, 237, 273, 277, 281
+			});
 		}
 
 	@Test
@@ -311,6 +309,18 @@ public class JavaSourceProcessorTest extends BaseSourceProcessorTestCase {
 	}
 
 	@Test
+	public void testMissingEmptyLinesAfterMethodCalls() throws Exception {
+		test(
+			"MissingEmptyLinesAfterMethodCalls.testjava",
+			new String[] {
+				"There should be an empty line after 'registry.register'",
+				"There should be an empty line after 'registry.register'",
+				"There should be an empty line after 'registry.register'"
+			},
+			new Integer[] {23, 24, 34});
+	}
+
+	@Test
 	public void testMissingDiamondOperator() throws Exception {
 		test("MissingDiamondOperator.testjava",
 			new String[] {
@@ -388,6 +398,18 @@ public class JavaSourceProcessorTest extends BaseSourceProcessorTestCase {
 	}
 
 	@Test
+	public void testSingleStatementClause() throws Exception {
+		test(
+			"SingleStatementClause.testjava",
+			new String[] {
+				"Use braces around if-statement clause",
+				"Use braces around while-statement clause",
+				"Use braces around for-statement clause"
+			},
+			new Integer[] {23, 28, 31});
+	}
+
+	@Test
 	public void testSortAnnotationParameters() throws Exception {
 		test("SortAnnotationParameters.testjava");
 	}
@@ -403,6 +425,7 @@ public class JavaSourceProcessorTest extends BaseSourceProcessorTestCase {
 		test("SortJavaTerms2.testjava");
 		test("SortJavaTerms3.testjava");
 		test("SortJavaTerms4.testjava");
+		test("SortJavaTerms5.testjava");
 	}
 
 	@Test
@@ -440,9 +463,10 @@ public class JavaSourceProcessorTest extends BaseSourceProcessorTestCase {
 		test(
 			"UnusedVariable.testjava",
 			new String[] {
-				"Variable 'matcher' is unused", "Variable '_s' is unused"
+				"Variable 'matcher' is unused", "Variable 'hello' is unused",
+				"Variable '_s' is unused"
 			},
-			new Integer[] {26, 31});
+			new Integer[] {26, 29, 41});
 	}
 
 }

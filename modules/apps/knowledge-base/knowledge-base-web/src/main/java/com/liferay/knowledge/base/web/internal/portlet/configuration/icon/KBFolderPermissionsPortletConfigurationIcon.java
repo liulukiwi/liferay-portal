@@ -80,7 +80,10 @@ public class KBFolderPermissionsPortletConfigurationIcon
 				resourcePrimKey, LiferayWindowState.POP_UP.toString(), null,
 				themeDisplay.getRequest());
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
 		}
 
 		return url;
@@ -106,9 +109,9 @@ public class KBFolderPermissionsPortletConfigurationIcon
 			return _kbFolderModelResourcePermission.contains(
 				permissionChecker, kbFolder, KBActionKeys.PERMISSIONS);
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			if (_log.isWarnEnabled()) {
-				_log.warn(pe, pe);
+				_log.warn(portalException, portalException);
 			}
 		}
 

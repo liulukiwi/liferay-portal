@@ -15,6 +15,8 @@
 package com.liferay.wiki.web.internal.portlet.action;
 
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.module.configuration.ConfigurationProviderUtil;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
@@ -33,13 +35,13 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.workflow.WorkflowThreadLocal;
 import com.liferay.wiki.configuration.WikiGroupServiceConfiguration;
+import com.liferay.wiki.constants.WikiPageConstants;
 import com.liferay.wiki.constants.WikiWebKeys;
 import com.liferay.wiki.engine.WikiEngineRenderer;
 import com.liferay.wiki.exception.NoSuchNodeException;
 import com.liferay.wiki.exception.NoSuchPageException;
 import com.liferay.wiki.model.WikiNode;
 import com.liferay.wiki.model.WikiPage;
-import com.liferay.wiki.model.WikiPageConstants;
 import com.liferay.wiki.service.WikiNodeLocalServiceUtil;
 import com.liferay.wiki.service.WikiNodeServiceUtil;
 import com.liferay.wiki.service.WikiPageLocalServiceUtil;
@@ -181,9 +183,6 @@ public class ActionUtil {
 			long nodeId, PortletRequest portletRequest)
 		throws PortalException {
 
-		ThemeDisplay themeDisplay = (ThemeDisplay)portletRequest.getAttribute(
-			WebKeys.THEME_DISPLAY);
-
 		WikiWebComponentProvider wikiWebComponentProvider =
 			WikiWebComponentProvider.getWikiWebComponentProvider();
 
@@ -194,6 +193,10 @@ public class ActionUtil {
 			nodeId, wikiGroupServiceConfiguration.frontPageName(), 0);
 
 		if (page == null) {
+			ThemeDisplay themeDisplay =
+				(ThemeDisplay)portletRequest.getAttribute(
+					WebKeys.THEME_DISPLAY);
+
 			ServiceContext serviceContext = ServiceContextFactory.getInstance(
 				WikiPage.class.getName(), portletRequest);
 
@@ -287,7 +290,11 @@ public class ActionUtil {
 				throw new NoSuchNodeException();
 			}
 		}
-		catch (NoSuchNodeException nsne) {
+		catch (NoSuchNodeException noSuchNodeException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(noSuchNodeException, noSuchNodeException);
+			}
+
 			node = getFirstVisibleNode(portletRequest);
 		}
 
@@ -332,7 +339,10 @@ public class ActionUtil {
 				node = WikiNodeServiceUtil.getNode(nodeId);
 			}
 		}
-		catch (NoSuchNodeException nsne) {
+		catch (NoSuchNodeException noSuchNodeException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(noSuchNodeException, noSuchNodeException);
+			}
 		}
 
 		if (node == null) {
@@ -357,14 +367,14 @@ public class ActionUtil {
 		try {
 			return WikiPageServiceUtil.getPage(nodeId, title, version);
 		}
-		catch (NoSuchPageException nspe) {
+		catch (NoSuchPageException noSuchPageException) {
 			if (title.equals(wikiGroupServiceConfiguration.frontPageName()) &&
 				(version == 0)) {
 
 				return getFirstVisiblePage(nodeId, portletRequest);
 			}
 
-			throw nspe;
+			throw noSuchPageException;
 		}
 	}
 
@@ -402,16 +412,16 @@ public class ActionUtil {
 
 			getFirstVisiblePage(node.getNodeId(), renderRequest);
 		}
-		catch (Exception e) {
-			if (e instanceof NoSuchNodeException ||
-				e instanceof PrincipalException) {
+		catch (Exception exception) {
+			if (exception instanceof NoSuchNodeException ||
+				exception instanceof PrincipalException) {
 
-				SessionErrors.add(renderRequest, e.getClass());
+				SessionErrors.add(renderRequest, exception.getClass());
 
 				return "/wiki/error.jsp";
 			}
 
-			throw new PortletException(e);
+			throw new PortletException(exception);
 		}
 
 		long categoryId = ParamUtil.getLong(renderRequest, "categoryId");
@@ -423,5 +433,7 @@ public class ActionUtil {
 
 		return defaultForward;
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(ActionUtil.class);
 
 }

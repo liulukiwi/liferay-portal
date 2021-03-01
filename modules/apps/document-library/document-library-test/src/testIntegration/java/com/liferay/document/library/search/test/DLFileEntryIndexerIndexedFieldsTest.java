@@ -18,21 +18,31 @@ import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.document.library.kernel.model.DLFileEntry;
 import com.liferay.document.library.kernel.model.DLFileEntryMetadata;
 import com.liferay.document.library.kernel.model.DLFileVersion;
+import com.liferay.document.library.kernel.service.DLFileEntryLocalService;
 import com.liferay.document.library.test.util.search.FileEntryBlueprint;
 import com.liferay.document.library.test.util.search.FileEntrySearchFixture;
+import com.liferay.dynamic.data.mapping.model.DDMForm;
+import com.liferay.dynamic.data.mapping.model.DDMStructure;
+import com.liferay.dynamic.data.mapping.service.DDMStructureLocalServiceUtil;
+import com.liferay.dynamic.data.mapping.util.DDMIndexer;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.repository.model.FileEntry;
-import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.Sync;
 import com.liferay.portal.kernel.test.rule.SynchronousDestinationTestRule;
 import com.liferay.portal.kernel.util.FileUtil;
+import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.search.document.Document;
 import com.liferay.portal.search.test.util.FieldValuesAssert;
+import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
 
@@ -43,6 +53,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import org.junit.After;
 import org.junit.Before;
@@ -118,21 +129,23 @@ public class DLFileEntryIndexerIndexedFieldsTest extends BaseDLIndexerTestCase {
 
 		FileEntry fileEntry = addFileEntry(fileName_jp);
 
-		Document document = dlSearchFixture.searchOnlyOne(
+		Document document = dlSearchFixture.searchOnlyOneSearchHit(
 			searchTerm, LocaleUtil.JAPAN);
 
-		indexedFieldsFixture.postProcessDocument(document);
+		document = indexedFieldsFixture.postProcessDocument(document);
 
 		Map<String, String> map = new HashMap<>();
 
 		populateExpectedFieldValues(fileEntry, map);
 
-		FieldValuesAssert.assertFieldValues(map, document, searchTerm);
+		FieldValuesAssert.assertFieldValues(searchTerm, document, map);
 	}
 
 	protected String getContents(FileEntry fileEntry) throws Exception {
 		String contents = FileUtil.extractText(
-			fileEntry.getContentStream(), fileEntry.getTitle());
+			_dlFileEntryLocalService.getFileAsStream(
+				fileEntry.getFileEntryId(), fileEntry.getVersion(), false),
+			fileEntry.getTitle());
 
 		return contents.trim();
 	}
@@ -155,6 +168,31 @@ public class DLFileEntryIndexerIndexedFieldsTest extends BaseDLIndexerTestCase {
 		}
 
 		return ddmStructureId;
+	}
+
+	protected void legacyPopulateHttpHeader(
+		String fieldName, String value, String ddmStructureId,
+		Map<String, String> map) {
+
+		String contentEncodingFieldName = StringBundler.concat(
+			"ddm__text__", ddmStructureId, "__HttpHeaders_", fieldName);
+
+		map.put(contentEncodingFieldName, value);
+		map.put(
+			contentEncodingFieldName + "_String_sortable",
+			StringUtil.toLowerCase(value));
+	}
+
+	protected void legacyPopulateHttpHeaders(
+			FileEntry fileEntry, Map<String, String> map)
+		throws Exception {
+
+		String ddmStructureId = String.valueOf(getDDMStructureId(fileEntry));
+
+		legacyPopulateHttpHeader(
+			"CONTENT_ENCODING", "UTF-8", ddmStructureId, map);
+		legacyPopulateHttpHeader(
+			"CONTENT_TYPE", "text/plain; charset=UTF-8", ddmStructureId, map);
 	}
 
 	protected void populateDates(FileEntry fileEntry, Map<String, String> map) {
@@ -216,11 +254,18 @@ public class DLFileEntryIndexerIndexedFieldsTest extends BaseDLIndexerTestCase {
 		map.put("visible", "true");
 
 		populateDates(fileEntry, map);
-		populateHttpHeaders(fileEntry, map);
+
+		if (_ddmIndexer.isLegacyDDMIndexFieldsEnabled()) {
+			legacyPopulateHttpHeaders(fileEntry, map);
+		}
+		else {
+			populateHttpHeaders(fileEntry, map);
+		}
+
 		populateLocalizedTitles(fileEntry, map);
 		populateViewCount(fileEntry, map);
 
-		indexedFieldsFixture.populatePriority("0.0", map);
+		indexedFieldsFixture.populatePriority("0.0", map, true);
 		indexedFieldsFixture.populateRoleIdFields(
 			fileEntry.getCompanyId(), DLFileEntry.class.getName(),
 			fileEntry.getPrimaryKey(), fileEntry.getGroupId(), null, map);
@@ -228,28 +273,86 @@ public class DLFileEntryIndexerIndexedFieldsTest extends BaseDLIndexerTestCase {
 			DLFileEntry.class.getName(), fileEntry.getFileEntryId(), map);
 	}
 
-	protected void populateHttpHeader(
-		String fieldName, String value, String ddmStructureId,
-		Map<String, String> map) {
+	protected String populateHttpHeader(
+			long ddmStructureId, String fieldName, String value)
+		throws PortalException {
 
-		String contentEncodingFieldName = StringBundler.concat(
-			"ddm__text__", ddmStructureId, "__HttpHeaders_", fieldName);
+		DDMStructure ddmStructure = DDMStructureLocalServiceUtil.getStructure(
+			ddmStructureId);
 
-		map.put(contentEncodingFieldName, value);
-		map.put(
-			contentEncodingFieldName + "_String_sortable",
-			StringUtil.toLowerCase(value));
+		String httpHeaderFieldName = "HttpHeaders_" + fieldName;
+
+		if (!GetterUtil.getBoolean(
+				ddmStructure.getFieldProperty(
+					httpHeaderFieldName, "localizable"))) {
+
+			Map<String, String> ddmField = HashMapBuilder.put(
+				"ddmFieldName",
+				StringBundler.concat(
+					"ddm__text__", ddmStructureId, "__HttpHeaders_", fieldName)
+			).put(
+				"ddmFieldValueText", value
+			).put(
+				"ddmFieldValueText_String_sortable",
+				StringUtil.toLowerCase(value)
+			).put(
+				"ddmValueFieldName", "ddmFieldValueText"
+			).build();
+
+			return ddmField.toString();
+		}
+
+		DDMForm ddmForm = ddmStructure.getDDMForm();
+
+		Set<Locale> availableLocales = ddmForm.getAvailableLocales();
+
+		StringBundler sb = new StringBundler(availableLocales.size());
+
+		for (Locale locale : availableLocales) {
+			String ddmFieldValueText =
+				"ddmFieldValueText_" + LocaleUtil.toLanguageId(locale);
+
+			Map<String, String> ddmField = HashMapBuilder.put(
+				ddmFieldValueText, value
+			).put(
+				ddmFieldValueText + "_String_sortable",
+				StringUtil.toLowerCase(value)
+			).put(
+				"ddmFieldName",
+				StringBundler.concat(
+					"ddm__text__", ddmStructure.getStructureId(),
+					StringBundler.concat(
+						StringPool.UNDERLINE, StringPool.UNDERLINE,
+						httpHeaderFieldName, StringPool.UNDERLINE,
+						LocaleUtil.toLanguageId(locale)))
+			).put(
+				"ddmValueFieldName", ddmFieldValueText
+			).build();
+
+			sb.append(ddmField.toString());
+		}
+
+		return sb.toString();
 	}
 
 	protected void populateHttpHeaders(
 			FileEntry fileEntry, Map<String, String> map)
 		throws Exception {
 
-		String ddmStructureId = String.valueOf(getDDMStructureId(fileEntry));
+		String[] ddmFieldArray = new String[2];
 
-		populateHttpHeader("CONTENT_ENCODING", "UTF-8", ddmStructureId, map);
-		populateHttpHeader(
-			"CONTENT_TYPE", "text/plain; charset=UTF-8", ddmStructureId, map);
+		ddmFieldArray[0] = populateHttpHeader(
+			getDDMStructureId(fileEntry), "CONTENT_TYPE",
+			"text/plain; charset=UTF-8");
+		ddmFieldArray[1] = populateHttpHeader(
+			getDDMStructureId(fileEntry), "CONTENT_ENCODING", "UTF-8");
+
+		map.put(
+			"ddmFieldArray",
+			StringBundler.concat(
+				StringPool.OPEN_BRACKET, ddmFieldArray[0],
+				StringPool.COMMA_AND_SPACE, ddmFieldArray[1],
+				StringPool.CLOSE_BRACKET));
 	}
 
 	protected void populateLocalizedTitles(
@@ -277,5 +380,11 @@ public class DLFileEntryIndexerIndexedFieldsTest extends BaseDLIndexerTestCase {
 	}
 
 	protected FileEntrySearchFixture fileEntrySearchFixture;
+
+	@Inject
+	private static DDMIndexer _ddmIndexer;
+
+	@Inject
+	private DLFileEntryLocalService _dlFileEntryLocalService;
 
 }

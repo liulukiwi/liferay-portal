@@ -9,23 +9,33 @@
  * distribution rights of the Software.
  */
 
-import {useMemo} from 'react';
+const useFilterNameWithLabel = ({
+	labelPropertyName = 'name',
+	multiple,
+	selectedItems = [],
+	title,
+	withSelectionTitle,
+}) => {
+	if (!multiple && withSelectionTitle && selectedItems.length) {
+		const [{resultName, [labelPropertyName]: label}] = selectedItems;
 
-const useFilterName = (multiple, selectedItems, title, withSelectionTitle) => {
-	const filterName = useMemo(() => {
-		if (
-			!multiple &&
-			!withSelectionTitle &&
-			selectedItems &&
-			selectedItems.length
-		) {
-			return selectedItems[0].name;
-		}
+		return resultName || label;
+	}
 
-		return title;
-	}, [multiple, selectedItems, title, withSelectionTitle]);
-
-	return filterName;
+	return title;
 };
 
-export {useFilterName};
+const useFilterName = (
+	multiple,
+	selectedItems = [],
+	title,
+	withSelectionTitle
+) =>
+	useFilterNameWithLabel({
+		multiple,
+		selectedItems,
+		title,
+		withSelectionTitle,
+	});
+
+export {useFilterName, useFilterNameWithLabel};

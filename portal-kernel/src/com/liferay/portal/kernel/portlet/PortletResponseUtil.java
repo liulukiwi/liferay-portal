@@ -18,12 +18,10 @@ import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.servlet.BrowserSnifferUtil;
 import com.liferay.portal.kernel.servlet.HttpHeaders;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.kernel.util.StreamUtil;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -221,9 +219,9 @@ public class PortletResponseUtil {
 				try {
 					inputStream.close();
 				}
-				catch (IOException ioe) {
+				catch (IOException ioException) {
 					if (_log.isWarnEnabled()) {
-						_log.warn(ioe, ioe);
+						_log.warn(ioException, ioException);
 					}
 				}
 			}
@@ -293,21 +291,13 @@ public class PortletResponseUtil {
 			if (!ascii) {
 				String encodedFileName = URLCodec.encodeURL(fileName, true);
 
-				if (BrowserSnifferUtil.isIe(
-						PortalUtil.getHttpServletRequest(portletRequest))) {
-
-					contentDispositionFileName =
-						"filename=\"" + encodedFileName + "\"";
-				}
-				else {
-					contentDispositionFileName =
-						"filename*=UTF-8''" + encodedFileName;
-				}
+				contentDispositionFileName =
+					"filename*=UTF-8''" + encodedFileName;
 			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isWarnEnabled()) {
-				_log.warn(e, e);
+				_log.warn(exception, exception);
 			}
 		}
 
@@ -323,7 +313,11 @@ public class PortletResponseUtil {
 				mimeTypesContentDispositionInline = PropsUtil.getArray(
 					"mime.types.content.disposition.inline");
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(exception, exception);
+				}
+
 				mimeTypesContentDispositionInline = new String[0];
 			}
 

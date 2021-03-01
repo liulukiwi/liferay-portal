@@ -17,6 +17,8 @@ package com.liferay.journal.configuration;
 import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.configuration.ConfigurationFactoryUtil;
 import com.liferay.portal.kernel.configuration.Filter;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 
 import java.io.IOException;
@@ -46,10 +48,17 @@ public class JournalServiceConfigurationUtil {
 				JournalServiceConfigurationUtil.class.getClassLoader(),
 				location);
 		}
-		catch (IOException ioe) {
+		catch (IOException ioException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(ioException, ioException);
+			}
+
 			return null;
 		}
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		JournalServiceConfigurationUtil.class);
 
 	private static final Configuration _configuration =
 		ConfigurationFactoryUtil.getConfiguration(

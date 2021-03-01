@@ -47,7 +47,11 @@ public abstract class BaseClusterReceiver implements ClusterReceiver {
 
 			hasDoViewAccepted = true;
 		}
-		catch (ReflectiveOperationException roe) {
+		catch (ReflectiveOperationException reflectiveOperationException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(
+					reflectiveOperationException, reflectiveOperationException);
+			}
 		}
 
 		_hasDoViewAccepted = hasDoViewAccepted;
@@ -60,7 +64,11 @@ public abstract class BaseClusterReceiver implements ClusterReceiver {
 
 			hasDoCoordinatorAddressUpdated = true;
 		}
-		catch (ReflectiveOperationException roe) {
+		catch (ReflectiveOperationException reflectiveOperationException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(
+					reflectiveOperationException, reflectiveOperationException);
+			}
 		}
 
 		_hasDoCoordinatorAddressUpdated = hasDoCoordinatorAddressUpdated;
@@ -88,17 +96,18 @@ public abstract class BaseClusterReceiver implements ClusterReceiver {
 					new AddressesUpdatedRunnable(oldAddresses, addresses));
 			}
 		}
-		catch (InterruptedException ie) {
+		catch (InterruptedException interruptedException) {
 			_log.error(
 				"Latch opened prematurely by interruption. Dependence may " +
-					"not be ready.");
+					"not be ready.",
+				interruptedException);
 		}
-		catch (RejectedExecutionException ree) {
+		catch (RejectedExecutionException rejectedExecutionException) {
 			_log.error(
 				StringBundler.concat(
 					"Unable to handle view update from ", oldAddresses, " to ",
 					addresses),
-				ree);
+				rejectedExecutionException);
 		}
 	}
 
@@ -125,17 +134,18 @@ public abstract class BaseClusterReceiver implements ClusterReceiver {
 						oldCoordinatorAddress, coordinatorAddress));
 			}
 		}
-		catch (InterruptedException ie) {
+		catch (InterruptedException interruptedException) {
 			_log.error(
 				"Latch opened prematurely by interruption. Dependence may " +
-					"not be ready.");
+					"not be ready.",
+				interruptedException);
 		}
-		catch (RejectedExecutionException ree) {
+		catch (RejectedExecutionException rejectedExecutionException) {
 			_log.error(
 				StringBundler.concat(
 					"Unable to handle coordinator address update from ",
 					oldCoordinatorAddress, " to ", coordinatorAddress),
-				ree);
+				rejectedExecutionException);
 		}
 	}
 
@@ -162,14 +172,16 @@ public abstract class BaseClusterReceiver implements ClusterReceiver {
 			_executorService.execute(
 				new ReceiveRunnable(messagePayload, srcAddress));
 		}
-		catch (InterruptedException ie) {
+		catch (InterruptedException interruptedException) {
 			_log.error(
 				"Latch opened prematurely by interruption. Dependence may " +
-					"not be ready.");
+					"not be ready.",
+				interruptedException);
 		}
-		catch (RejectedExecutionException ree) {
+		catch (RejectedExecutionException rejectedExecutionException) {
 			_log.error(
-				"Unable to handle received message " + messagePayload, ree);
+				"Unable to handle received message " + messagePayload,
+				rejectedExecutionException);
 		}
 	}
 

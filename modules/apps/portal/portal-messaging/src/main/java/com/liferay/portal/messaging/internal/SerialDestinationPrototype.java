@@ -14,7 +14,7 @@
 
 package com.liferay.portal.messaging.internal;
 
-import com.liferay.portal.kernel.executor.PortalExecutorManager;
+import com.liferay.petra.executor.PortalExecutorManager;
 import com.liferay.portal.kernel.messaging.Destination;
 import com.liferay.portal.kernel.messaging.DestinationConfiguration;
 import com.liferay.portal.kernel.security.permission.PermissionCheckerFactory;
@@ -53,8 +53,7 @@ public class SerialDestinationPrototype implements DestinationPrototype {
 		serialDestination.setRejectedExecutionHandler(
 			destinationConfiguration.getRejectedExecutionHandler());
 		serialDestination.setUserLocalService(_userLocalService);
-		serialDestination.setWorkersCoreSize(_WORKERS_CORE_SIZE);
-		serialDestination.setWorkersMaxSize(_WORKERS_MAX_SIZE);
+		serialDestination.setWorkersSize(_WORKERS_CORE_SIZE, _WORKERS_MAX_SIZE);
 
 		serialDestination.afterPropertiesSet();
 

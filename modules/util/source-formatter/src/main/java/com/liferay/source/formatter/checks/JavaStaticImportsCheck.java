@@ -40,8 +40,7 @@ public class JavaStaticImportsCheck extends BaseFileCheck {
 			sb.append("' instead");
 
 			addMessage(
-				fileName, sb.toString(), "imports.markdown",
-				getLineNumber(content, matcher.end()));
+				fileName, sb.toString(), getLineNumber(content, matcher.end()));
 		}
 
 		matcher = _importConstantPattern.matcher(content);
@@ -56,8 +55,7 @@ public class JavaStaticImportsCheck extends BaseFileCheck {
 			sb.append("' instead or use Fully Qualified Name");
 
 			addMessage(
-				fileName, sb.toString(), "imports.markdown",
-				getLineNumber(content, matcher.end()));
+				fileName, sb.toString(), getLineNumber(content, matcher.end()));
 		}
 
 		return content;
@@ -66,6 +64,6 @@ public class JavaStaticImportsCheck extends BaseFileCheck {
 	private static final Pattern _importConstantPattern = Pattern.compile(
 		"\nimport static ((.*)\\.[A-Z_]*);");
 	private static final Pattern _importMethodPattern = Pattern.compile(
-		"\nimport static ((.*\\.(Assert|(Power)?Mockito))\\.[a-z]\\w*);");
+		"\nimport static ((.*\\..*)\\.[a-z]\\w*);");
 
 }

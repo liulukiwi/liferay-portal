@@ -1,6 +1,10 @@
 package ${configYAML.apiPackagePath}.internal.graphql.servlet.${escapedVersion};
 
-<#list openAPIYAML.components.schemas?keys as schemaName>
+<#list allExternalSchemas?keys as schemaName>
+	import ${configYAML.apiPackagePath}.resource.${escapedVersion}.${schemaName}Resource;
+</#list>
+
+<#list freeMarkerTool.getSchemas(openAPIYAML)?keys as schemaName>
 	import ${configYAML.apiPackagePath}.resource.${escapedVersion}.${schemaName}Resource;
 </#list>
 
@@ -42,16 +46,19 @@ public class ServletDataImpl implements ServletData {
 		</#list>
 	}
 
+	<#if configYAML.graphQLNamespace??>
+		@Override
+		public String getGraphQLNamespace() {
+			return "${configYAML.graphQLNamespace}";
+		}
+	</#if>
+
 	@Override
 	public Mutation getMutation() {
 		return new Mutation();
 	}
 
-	/**
-	 * @deprecated
-	 */
 	@Override
-	@Deprecated
 	public String getPath() {
 		return "${configYAML.application.baseURI}-graphql/${escapedVersion}";
 	}

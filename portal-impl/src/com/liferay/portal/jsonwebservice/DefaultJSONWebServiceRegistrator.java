@@ -101,7 +101,11 @@ public class DefaultJSONWebServiceRegistrator
 		try {
 			bean = beanLocator.locate(beanName);
 		}
-		catch (BeanLocatorException ble) {
+		catch (BeanLocatorException beanLocatorException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(beanLocatorException, beanLocatorException);
+			}
+
 			return;
 		}
 
@@ -117,8 +121,8 @@ public class DefaultJSONWebServiceRegistrator
 				onJSONWebServiceBean(
 					contextName, contextPath, bean, jsonWebService);
 			}
-			catch (Exception e) {
-				_log.error(e, e);
+			catch (Exception exception) {
+				_log.error(exception, exception);
 			}
 		}
 	}
@@ -142,8 +146,8 @@ public class DefaultJSONWebServiceRegistrator
 			onJSONWebServiceBean(
 				contextName, contextPath, bean, jsonWebService);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 	}
 
@@ -183,7 +187,7 @@ public class DefaultJSONWebServiceRegistrator
 						"Unable to handle proxy of type " + invocationHandler);
 				}
 
-				break;
+				return null;
 			}
 		}
 
@@ -270,7 +274,12 @@ public class DefaultJSONWebServiceRegistrator
 					method = utilClass.getMethod(
 						method.getName(), method.getParameterTypes());
 				}
-				catch (NoSuchMethodException nsme) {
+				catch (NoSuchMethodException noSuchMethodException) {
+					if (_log.isDebugEnabled()) {
+						_log.debug(
+							noSuchMethodException, noSuchMethodException);
+					}
+
 					continue;
 				}
 			}

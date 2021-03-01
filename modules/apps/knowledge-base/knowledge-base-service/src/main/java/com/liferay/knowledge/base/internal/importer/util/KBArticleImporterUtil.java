@@ -60,11 +60,12 @@ public class KBArticleImporterUtil {
 				kbGroupServiceConfiguration.
 					markdownImporterImageFileExtensions());
 		}
-		catch (KBArticleImportException kbaie) {
+		catch (KBArticleImportException kbArticleImportException) {
 			if (_log.isWarnEnabled()) {
 				_log.warn(
 					"Unsupported image file suffix used in ZIP file " +
-						imageFileName);
+						imageFileName,
+					kbArticleImportException);
 			}
 		}
 
@@ -78,13 +79,13 @@ public class KBArticleImporterUtil {
 				zipReader.getEntryAsInputStream(zipReaderFileName),
 				fileEntriesMap);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			StringBuilder sb = new StringBuilder(4);
 
 			sb.append("Unable to import image file ");
 			sb.append(imageFileName);
 			sb.append(": ");
-			sb.append(e.getLocalizedMessage());
+			sb.append(exception.getLocalizedMessage());
 
 			throw new KBArticleImportException(sb.toString());
 		}
@@ -170,12 +171,12 @@ public class KBArticleImporterUtil {
 				kbArticle.getGroupId(), kbArticle.getAttachmentsFolderId(),
 				imageFileName);
 		}
-		catch (NoSuchFileEntryException nsfee) {
+		catch (NoSuchFileEntryException noSuchFileEntryException) {
 
 			// LPS-52675
 
 			if (_log.isDebugEnabled()) {
-				_log.debug(nsfee, nsfee);
+				_log.debug(noSuchFileEntryException, noSuchFileEntryException);
 			}
 		}
 

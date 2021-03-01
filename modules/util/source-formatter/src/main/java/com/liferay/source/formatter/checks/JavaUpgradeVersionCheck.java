@@ -19,6 +19,8 @@ import aQute.bnd.version.Version;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.NaturalOrderStringComparator;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.source.formatter.checks.util.JavaSourceUtil;
@@ -207,7 +209,10 @@ public class JavaUpgradeVersionCheck extends BaseJavaTermCheck {
 					javaTerm.getLineNumber(x));
 			}
 		}
-		catch (IllegalArgumentException iae) {
+		catch (IllegalArgumentException illegalArgumentException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(illegalArgumentException, illegalArgumentException);
+			}
 		}
 	}
 
@@ -220,29 +225,25 @@ public class JavaUpgradeVersionCheck extends BaseJavaTermCheck {
 			return null;
 		}
 
-		x = sql.indexOf(StringBundler.concat("\t", columnName, " "), x + 1);
+		int y = sql.indexOf(");", x);
 
-		if (x == -1) {
+		if (y == -1) {
 			return null;
 		}
 
-		x = sql.indexOf(StringPool.SPACE, x + 1);
+		String tableSQL = sql.substring(x, y + 1);
 
-		int y = x;
+		Pattern pattern = Pattern.compile(
+			StringBundler.concat(
+				"\n\\s*", columnName, "\\s+([\\w\\(\\)]+)[\\s,]"));
 
-		while (true) {
-			y = sql.indexOf(StringPool.SPACE, y + 1);
+		Matcher matcher = pattern.matcher(tableSQL);
 
-			if (y == -1) {
-				return null;
-			}
-
-			String columnType = StringUtil.trim(sql.substring(x, y));
-
-			if (getLevel(columnType) == 0) {
-				return columnType;
-			}
+		if (matcher.find()) {
+			return matcher.group(1);
 		}
+
+		return null;
 	}
 
 	private String _getExpectedIncrementType(
@@ -484,7 +485,8 @@ public class JavaUpgradeVersionCheck extends BaseJavaTermCheck {
 			tablesSQLContent, tableName, columnName);
 
 		if ((oldType == null) || oldType.equals(newType) ||
-			(oldType.startsWith("VARCHAR") && newType.equals("TEXT"))) {
+			((oldType.startsWith("STRING") || oldType.startsWith("VARCHAR")) &&
+			 newType.equals("TEXT"))) {
 
 			return false;
 		}
@@ -509,6 +511,9 @@ public class JavaUpgradeVersionCheck extends BaseJavaTermCheck {
 
 	private static final String _JAVA_UPGRADE_PROCESS_EXCLUDES =
 		"java.upgrade.process.excludes";
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		JavaUpgradeVersionCheck.class);
 
 	private static final Pattern _addColumnPattern = Pattern.compile(
 		"alter table \\w+ add ");

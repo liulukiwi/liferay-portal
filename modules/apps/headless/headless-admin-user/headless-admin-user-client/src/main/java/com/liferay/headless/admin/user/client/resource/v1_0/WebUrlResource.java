@@ -17,6 +17,7 @@ package com.liferay.headless.admin.user.client.resource.v1_0;
 import com.liferay.headless.admin.user.client.dto.v1_0.WebUrl;
 import com.liferay.headless.admin.user.client.http.HttpInvoker;
 import com.liferay.headless.admin.user.client.pagination.Page;
+import com.liferay.headless.admin.user.client.problem.Problem;
 import com.liferay.headless.admin.user.client.serdes.v1_0.WebUrlSerDes;
 
 import java.util.LinkedHashMap;
@@ -38,11 +39,11 @@ public interface WebUrlResource {
 		return new Builder();
 	}
 
-	public Page<WebUrl> getOrganizationWebUrlsPage(Long organizationId)
+	public Page<WebUrl> getOrganizationWebUrlsPage(String organizationId)
 		throws Exception;
 
 	public HttpInvoker.HttpResponse getOrganizationWebUrlsPageHttpResponse(
-			Long organizationId)
+			String organizationId)
 		throws Exception;
 
 	public Page<WebUrl> getUserAccountWebUrlsPage(Long userAccountId)
@@ -102,8 +103,8 @@ public interface WebUrlResource {
 		private Map<String, String> _headers = new LinkedHashMap<>();
 		private String _host = "localhost";
 		private Locale _locale;
-		private String _login = "test@liferay.com";
-		private String _password = "test";
+		private String _login = "";
+		private String _password = "";
 		private Map<String, String> _parameters = new LinkedHashMap<>();
 		private int _port = 8080;
 		private String _scheme = "http";
@@ -112,7 +113,7 @@ public interface WebUrlResource {
 
 	public static class WebUrlResourceImpl implements WebUrlResource {
 
-		public Page<WebUrl> getOrganizationWebUrlsPage(Long organizationId)
+		public Page<WebUrl> getOrganizationWebUrlsPage(String organizationId)
 			throws Exception {
 
 			HttpInvoker.HttpResponse httpResponse =
@@ -126,11 +127,20 @@ public interface WebUrlResource {
 			_logger.fine(
 				"HTTP response status code: " + httpResponse.getStatusCode());
 
-			return Page.of(content, WebUrlSerDes::toDTO);
+			try {
+				return Page.of(content, WebUrlSerDes::toDTO);
+			}
+			catch (Exception e) {
+				_logger.log(
+					Level.WARNING,
+					"Unable to process HTTP response: " + content, e);
+
+				throw new Problem.ProblemException(Problem.toDTO(content));
+			}
 		}
 
 		public HttpInvoker.HttpResponse getOrganizationWebUrlsPageHttpResponse(
-				Long organizationId)
+				String organizationId)
 			throws Exception {
 
 			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
@@ -157,8 +167,9 @@ public interface WebUrlResource {
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port +
-						"/o/headless-admin-user/v1.0/organizations/{organizationId}/web-urls",
-				organizationId);
+						"/o/headless-admin-user/v1.0/organizations/{organizationId}/web-urls");
+
+			httpInvoker.path("organizationId", organizationId);
 
 			httpInvoker.userNameAndPassword(
 				_builder._login + ":" + _builder._password);
@@ -180,7 +191,16 @@ public interface WebUrlResource {
 			_logger.fine(
 				"HTTP response status code: " + httpResponse.getStatusCode());
 
-			return Page.of(content, WebUrlSerDes::toDTO);
+			try {
+				return Page.of(content, WebUrlSerDes::toDTO);
+			}
+			catch (Exception e) {
+				_logger.log(
+					Level.WARNING,
+					"Unable to process HTTP response: " + content, e);
+
+				throw new Problem.ProblemException(Problem.toDTO(content));
+			}
 		}
 
 		public HttpInvoker.HttpResponse getUserAccountWebUrlsPageHttpResponse(
@@ -211,8 +231,9 @@ public interface WebUrlResource {
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port +
-						"/o/headless-admin-user/v1.0/user-accounts/{userAccountId}/web-urls",
-				userAccountId);
+						"/o/headless-admin-user/v1.0/user-accounts/{userAccountId}/web-urls");
+
+			httpInvoker.path("userAccountId", userAccountId);
 
 			httpInvoker.userNameAndPassword(
 				_builder._login + ":" + _builder._password);
@@ -240,7 +261,7 @@ public interface WebUrlResource {
 					Level.WARNING,
 					"Unable to process HTTP response: " + content, e);
 
-				throw e;
+				throw new Problem.ProblemException(Problem.toDTO(content));
 			}
 		}
 
@@ -271,8 +292,9 @@ public interface WebUrlResource {
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port +
-						"/o/headless-admin-user/v1.0/web-urls/{webUrlId}",
-				webUrlId);
+						"/o/headless-admin-user/v1.0/web-urls/{webUrlId}");
+
+			httpInvoker.path("webUrlId", webUrlId);
 
 			httpInvoker.userNameAndPassword(
 				_builder._login + ":" + _builder._password);

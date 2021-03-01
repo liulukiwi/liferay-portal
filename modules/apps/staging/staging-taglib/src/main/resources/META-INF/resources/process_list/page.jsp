@@ -16,7 +16,7 @@
 
 <%@ include file="/process_list/init.jsp" %>
 
-<portlet:actionURL name="deleteBackgroundTasks" var="deleteBackgroundTasksURL">
+<portlet:actionURL name="/staging_processes/delete_background_tasks" var="deleteBackgroundTasksURL">
 	<portlet:param name="redirect" value="<%= currentURL.toString() %>" />
 </portlet:actionURL>
 
@@ -32,7 +32,7 @@
 	/>
 
 	<liferay-ui:search-container
-		emptyResultsMessage="no-publication-processes-were-found"
+		emptyResultsMessage="no-publish-processes-were-found"
 		id="<%= searchContainerId %>"
 		iteratorURL="<%= renderURL %>"
 		orderByCol="<%= orderByCol %>"
@@ -164,7 +164,7 @@
 					deleteMenu="<%= deleteMenu %>"
 					localPublishing="<%= localPublishing %>"
 					relaunchMenu="<%= relaunchMenu %>"
-					summaryMenu="<%= summaryMenu %>"
+					summaryMenu="<%= summaryMenu && !(backgroundTask.getStatus() == BackgroundTaskConstants.STATUS_FAILED) %>"
 				/>
 			</liferay-ui:search-container-column-text>
 		</liferay-ui:search-container-row>
@@ -196,8 +196,8 @@
 					deleteBackgroundTaskIds: Liferay.Util.listCheckedExcept(
 						form,
 						'<portlet:namespace />allRowIds'
-					)
-				}
+					),
+				},
 			});
 		}
 	}

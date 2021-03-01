@@ -19,6 +19,8 @@ import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
 import com.liferay.portal.kernel.dao.orm.Property;
 import com.liferay.portal.kernel.dao.orm.PropertyFactoryUtil;
 import com.liferay.portal.kernel.exception.NoSuchModelException;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.BaseModel;
 import com.liferay.portal.kernel.model.ClassedModel;
 import com.liferay.portal.kernel.model.ContainerModel;
@@ -39,6 +41,7 @@ import com.liferay.portal.kernel.trash.TrashHandlerRegistryUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.kernel.workflow.WorkflowThreadLocal;
+import com.liferay.portal.search.test.util.SearchTestRule;
 import com.liferay.trash.exception.RestoreEntryException;
 import com.liferay.trash.exception.TrashEntryException;
 import com.liferay.trash.model.TrashEntry;
@@ -53,6 +56,7 @@ import java.util.Objects;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 
 /**
@@ -97,8 +101,7 @@ public abstract class BaseTrashHandlerTestCase {
 		whenHasParent.moveParentBaseModelToTrash(
 			(Long)parentBaseModel.getPrimaryKeyObj());
 
-		TrashHandler trashHandler = TrashHandlerRegistryUtil.getTrashHandler(
-			getBaseModelClassName());
+		TrashHandler trashHandler = getTrashHandler(getBaseModelClassName());
 
 		trashHandler.deleteTrashEntry(getTrashEntryClassPK(baseModel));
 
@@ -134,13 +137,11 @@ public abstract class BaseTrashHandlerTestCase {
 		TrashEntry trashEntry = TrashEntryLocalServiceUtil.getEntry(
 			getBaseModelClassName(), getTrashEntryClassPK(baseModel));
 
-		TrashHandler trashHandler = TrashHandlerRegistryUtil.getTrashHandler(
-			getBaseModelClassName());
-
 		Assert.assertEquals(
 			1,
 			getDeletionSystemEventCount(
-				trashHandler, trashEntry.getSystemEventSetKey()));
+				getTrashHandler(getBaseModelClassName()),
+				trashEntry.getSystemEventSetKey()));
 	}
 
 	@Test
@@ -327,11 +328,9 @@ public abstract class BaseTrashHandlerTestCase {
 
 		baseModel = addBaseModel(parentBaseModel, serviceContext);
 
-		WorkflowedModel workflowedModel = getWorkflowedModel(baseModel);
-
 		moveBaseModelToTrash((Long)baseModel.getPrimaryKeyObj());
 
-		workflowedModel = getWorkflowedModel(
+		WorkflowedModel workflowedModel = getWorkflowedModel(
 			getBaseModel((Long)baseModel.getPrimaryKeyObj()));
 
 		Assert.assertEquals(
@@ -378,8 +377,7 @@ public abstract class BaseTrashHandlerTestCase {
 
 		moveBaseModelToTrash((Long)baseModel.getPrimaryKeyObj());
 
-		TrashHandler trashHandler = TrashHandlerRegistryUtil.getTrashHandler(
-			getBaseModelClassName());
+		TrashHandler trashHandler = getTrashHandler(getBaseModelClassName());
 
 		trashHandler.deleteTrashEntry(getTrashEntryClassPK(baseModel));
 
@@ -420,8 +418,7 @@ public abstract class BaseTrashHandlerTestCase {
 
 		moveBaseModelToTrash((Long)baseModel.getPrimaryKeyObj());
 
-		TrashHandler trashHandler = TrashHandlerRegistryUtil.getTrashHandler(
-			getBaseModelClassName());
+		TrashHandler trashHandler = getTrashHandler(getBaseModelClassName());
 
 		trashHandler.deleteTrashEntry(getTrashEntryClassPK(baseModel));
 
@@ -465,8 +462,7 @@ public abstract class BaseTrashHandlerTestCase {
 
 		moveBaseModelToTrash((Long)baseModel.getPrimaryKeyObj());
 
-		TrashHandler trashHandler = TrashHandlerRegistryUtil.getTrashHandler(
-			getBaseModelClassName());
+		TrashHandler trashHandler = getTrashHandler(getBaseModelClassName());
 
 		trashHandler.deleteTrashEntry(getTrashEntryClassPK(baseModel));
 
@@ -501,8 +497,7 @@ public abstract class BaseTrashHandlerTestCase {
 
 		moveBaseModelToTrash((Long)baseModel.getPrimaryKeyObj());
 
-		TrashHandler trashHandler = TrashHandlerRegistryUtil.getTrashHandler(
-			getBaseModelClassName());
+		TrashHandler trashHandler = getTrashHandler(getBaseModelClassName());
 
 		trashHandler.deleteTrashEntry(getTrashEntryClassPK(baseModel));
 
@@ -528,8 +523,7 @@ public abstract class BaseTrashHandlerTestCase {
 
 		moveBaseModelToTrash((Long)baseModel.getPrimaryKeyObj());
 
-		TrashHandler trashHandler = TrashHandlerRegistryUtil.getTrashHandler(
-			getBaseModelClassName());
+		TrashHandler trashHandler = getTrashHandler(getBaseModelClassName());
 
 		trashHandler.deleteTrashEntry(getTrashEntryClassPK(baseModel));
 
@@ -567,8 +561,7 @@ public abstract class BaseTrashHandlerTestCase {
 
 		moveBaseModelToTrash((Long)baseModel.getPrimaryKeyObj());
 
-		TrashHandler trashHandler = TrashHandlerRegistryUtil.getTrashHandler(
-			getBaseModelClassName());
+		TrashHandler trashHandler = getTrashHandler(getBaseModelClassName());
 
 		trashHandler.deleteTrashEntry(getTrashEntryClassPK(baseModel));
 
@@ -602,8 +595,7 @@ public abstract class BaseTrashHandlerTestCase {
 
 		moveBaseModelToTrash((Long)baseModel.getPrimaryKeyObj());
 
-		TrashHandler trashHandler = TrashHandlerRegistryUtil.getTrashHandler(
-			getBaseModelClassName());
+		TrashHandler trashHandler = getTrashHandler(getBaseModelClassName());
 
 		trashHandler.deleteTrashEntry(getTrashEntryClassPK(baseModel));
 
@@ -627,8 +619,7 @@ public abstract class BaseTrashHandlerTestCase {
 
 		moveBaseModelToTrash((Long)baseModel.getPrimaryKeyObj());
 
-		TrashHandler trashHandler = TrashHandlerRegistryUtil.getTrashHandler(
-			getBaseModelClassName());
+		TrashHandler trashHandler = getTrashHandler(getBaseModelClassName());
 
 		trashHandler.restoreTrashEntry(
 			TestPropsValues.getUserId(), getTrashEntryClassPK(baseModel));
@@ -672,8 +663,7 @@ public abstract class BaseTrashHandlerTestCase {
 
 		moveBaseModelToTrash((Long)baseModel.getPrimaryKeyObj());
 
-		TrashHandler trashHandler = TrashHandlerRegistryUtil.getTrashHandler(
-			getBaseModelClassName());
+		TrashHandler trashHandler = getTrashHandler(getBaseModelClassName());
 
 		trashHandler.restoreTrashEntry(
 			TestPropsValues.getUserId(), getTrashEntryClassPK(baseModel));
@@ -718,8 +708,7 @@ public abstract class BaseTrashHandlerTestCase {
 
 		moveBaseModelToTrash((Long)baseModel.getPrimaryKeyObj());
 
-		TrashHandler trashHandler = TrashHandlerRegistryUtil.getTrashHandler(
-			getBaseModelClassName());
+		TrashHandler trashHandler = getTrashHandler(getBaseModelClassName());
 
 		trashHandler.restoreTrashEntry(
 			TestPropsValues.getUserId(), getTrashEntryClassPK(baseModel));
@@ -755,8 +744,7 @@ public abstract class BaseTrashHandlerTestCase {
 
 		moveBaseModelToTrash((Long)baseModel.getPrimaryKeyObj());
 
-		TrashHandler trashHandler = TrashHandlerRegistryUtil.getTrashHandler(
-			getBaseModelClassName());
+		TrashHandler trashHandler = getTrashHandler(getBaseModelClassName());
 
 		trashHandler.restoreTrashEntry(
 			TestPropsValues.getUserId(), getTrashEntryClassPK(baseModel));
@@ -788,8 +776,7 @@ public abstract class BaseTrashHandlerTestCase {
 
 		moveBaseModelToTrash((Long)baseModel.getPrimaryKeyObj());
 
-		TrashHandler trashHandler = TrashHandlerRegistryUtil.getTrashHandler(
-			getBaseModelClassName());
+		TrashHandler trashHandler = getTrashHandler(getBaseModelClassName());
 
 		trashHandler.restoreTrashEntry(
 			TestPropsValues.getUserId(), getTrashEntryClassPK(baseModel));
@@ -819,8 +806,7 @@ public abstract class BaseTrashHandlerTestCase {
 
 		moveBaseModelToTrash((Long)baseModel.getPrimaryKeyObj());
 
-		TrashHandler trashHandler = TrashHandlerRegistryUtil.getTrashHandler(
-			getBaseModelClassName());
+		TrashHandler trashHandler = getTrashHandler(getBaseModelClassName());
 
 		trashHandler.restoreTrashEntry(
 			TestPropsValues.getUserId(), getTrashEntryClassPK(baseModel));
@@ -849,8 +835,7 @@ public abstract class BaseTrashHandlerTestCase {
 
 		moveBaseModelToTrash((Long)baseModel.getPrimaryKeyObj());
 
-		TrashHandler trashHandler = TrashHandlerRegistryUtil.getTrashHandler(
-			getBaseModelClassName());
+		TrashHandler trashHandler = getTrashHandler(getBaseModelClassName());
 
 		trashHandler.restoreTrashEntry(
 			TestPropsValues.getUserId(), getTrashEntryClassPK(baseModel));
@@ -888,8 +873,7 @@ public abstract class BaseTrashHandlerTestCase {
 
 		moveBaseModelToTrash((Long)baseModel.getPrimaryKeyObj());
 
-		TrashHandler trashHandler = TrashHandlerRegistryUtil.getTrashHandler(
-			getBaseModelClassName());
+		TrashHandler trashHandler = getTrashHandler(getBaseModelClassName());
 
 		trashHandler.restoreTrashEntry(
 			TestPropsValues.getUserId(), getTrashEntryClassPK(baseModel));
@@ -924,8 +908,7 @@ public abstract class BaseTrashHandlerTestCase {
 
 		moveBaseModelToTrash((Long)baseModel.getPrimaryKeyObj());
 
-		TrashHandler trashHandler = TrashHandlerRegistryUtil.getTrashHandler(
-			getBaseModelClassName());
+		TrashHandler trashHandler = getTrashHandler(getBaseModelClassName());
 
 		trashHandler.restoreTrashEntry(
 			TestPropsValues.getUserId(), getTrashEntryClassPK(baseModel));
@@ -959,8 +942,7 @@ public abstract class BaseTrashHandlerTestCase {
 
 		moveBaseModelToTrash((Long)baseModel.getPrimaryKeyObj());
 
-		TrashHandler trashHandler = TrashHandlerRegistryUtil.getTrashHandler(
-			getBaseModelClassName());
+		TrashHandler trashHandler = getTrashHandler(getBaseModelClassName());
 
 		trashHandler.restoreTrashEntry(
 			TestPropsValues.getUserId(), getTrashEntryClassPK(baseModel));
@@ -992,8 +974,7 @@ public abstract class BaseTrashHandlerTestCase {
 
 		moveBaseModelToTrash((Long)baseModel.getPrimaryKeyObj());
 
-		TrashHandler trashHandler = TrashHandlerRegistryUtil.getTrashHandler(
-			getBaseModelClassName());
+		TrashHandler trashHandler = getTrashHandler(getBaseModelClassName());
 
 		trashHandler.restoreTrashEntry(
 			TestPropsValues.getUserId(), getTrashEntryClassPK(baseModel));
@@ -1017,8 +998,7 @@ public abstract class BaseTrashHandlerTestCase {
 		BaseModel<?> parentBaseModel = getParentBaseModel(
 			group, serviceContext);
 
-		TrashHandler trashHandler = TrashHandlerRegistryUtil.getTrashHandler(
-			getBaseModelClassName());
+		TrashHandler trashHandler = getTrashHandler(getBaseModelClassName());
 
 		try {
 			baseModel = addBaseModel(parentBaseModel, serviceContext);
@@ -1067,7 +1047,10 @@ public abstract class BaseTrashHandlerTestCase {
 
 			Assert.fail();
 		}
-		catch (NoSuchModelException nsme) {
+		catch (NoSuchModelException noSuchModelException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(noSuchModelException, noSuchModelException);
+			}
 		}
 	}
 
@@ -1096,9 +1079,8 @@ public abstract class BaseTrashHandlerTestCase {
 		whenHasParent.moveParentBaseModelToTrash(
 			(Long)parentBaseModel.getPrimaryKeyObj());
 
-		TrashHandler parentTrashHandler =
-			TrashHandlerRegistryUtil.getTrashHandler(
-				whenHasParent.getParentBaseModelClassName());
+		TrashHandler parentTrashHandler = getTrashHandler(
+			whenHasParent.getParentBaseModelClassName());
 
 		parentTrashHandler.deleteTrashEntry(
 			(Long)parentBaseModel.getPrimaryKeyObj());
@@ -1110,8 +1092,7 @@ public abstract class BaseTrashHandlerTestCase {
 			initialTrashEntriesCount + 1,
 			getTrashEntriesCount(group.getGroupId()));
 
-		TrashHandler trashHandler = TrashHandlerRegistryUtil.getTrashHandler(
-			getBaseModelClassName());
+		TrashHandler trashHandler = getTrashHandler(getBaseModelClassName());
 
 		trashHandler.deleteTrashEntry(getTrashEntryClassPK(baseModel));
 
@@ -1146,9 +1127,8 @@ public abstract class BaseTrashHandlerTestCase {
 		whenHasParent.moveParentBaseModelToTrash(
 			(Long)parentBaseModel.getPrimaryKeyObj());
 
-		TrashHandler parentTrashHandler =
-			TrashHandlerRegistryUtil.getTrashHandler(
-				whenHasParent.getParentBaseModelClassName());
+		TrashHandler parentTrashHandler = getTrashHandler(
+			whenHasParent.getParentBaseModelClassName());
 
 		parentTrashHandler.deleteTrashEntry(
 			(Long)parentBaseModel.getPrimaryKeyObj());
@@ -1162,7 +1142,10 @@ public abstract class BaseTrashHandlerTestCase {
 
 			Assert.fail();
 		}
-		catch (NoSuchModelException nsme) {
+		catch (NoSuchModelException noSuchModelException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(noSuchModelException, noSuchModelException);
+			}
 		}
 
 		Assert.assertEquals(
@@ -1194,9 +1177,8 @@ public abstract class BaseTrashHandlerTestCase {
 			initialTrashEntriesCount + 2,
 			getTrashEntriesCount(group.getGroupId()));
 
-		TrashHandler parentTrashHandler =
-			TrashHandlerRegistryUtil.getTrashHandler(
-				whenHasParent.getParentBaseModelClassName());
+		TrashHandler parentTrashHandler = getTrashHandler(
+			whenHasParent.getParentBaseModelClassName());
 
 		if (Objects.equals(
 				getBaseModelClassName(),
@@ -1368,8 +1350,7 @@ public abstract class BaseTrashHandlerTestCase {
 		BaseModel<?> parentBaseModel = getParentBaseModel(
 			group, serviceContext);
 
-		TrashHandler trashHandler = TrashHandlerRegistryUtil.getTrashHandler(
-			getBaseModelClassName());
+		TrashHandler trashHandler = getTrashHandler(getBaseModelClassName());
 
 		try {
 			baseModel = addBaseModel(parentBaseModel, serviceContext);
@@ -1379,9 +1360,8 @@ public abstract class BaseTrashHandlerTestCase {
 			whenHasParent.moveParentBaseModelToTrash(
 				(Long)parentBaseModel.getPrimaryKeyObj());
 
-			TrashHandler parentTrashHandler =
-				TrashHandlerRegistryUtil.getTrashHandler(
-					whenHasParent.getParentBaseModelClassName());
+			TrashHandler parentTrashHandler = getTrashHandler(
+				whenHasParent.getParentBaseModelClassName());
 
 			parentTrashHandler.deleteTrashEntry(
 				(Long)parentBaseModel.getPrimaryKeyObj());
@@ -1418,8 +1398,7 @@ public abstract class BaseTrashHandlerTestCase {
 		whenHasParent.moveParentBaseModelToTrash(
 			(Long)parentBaseModel.getPrimaryKeyObj());
 
-		TrashHandler trashHandler = TrashHandlerRegistryUtil.getTrashHandler(
-			getBaseModelClassName());
+		TrashHandler trashHandler = getTrashHandler(getBaseModelClassName());
 
 		boolean restorable = trashHandler.isRestorable(
 			getAssetClassPK(baseModel));
@@ -1456,8 +1435,7 @@ public abstract class BaseTrashHandlerTestCase {
 
 		moveBaseModelToTrash((Long)baseModel.getPrimaryKeyObj());
 
-		TrashHandler trashHandler = TrashHandlerRegistryUtil.getTrashHandler(
-			getBaseModelClassName());
+		TrashHandler trashHandler = getTrashHandler(getBaseModelClassName());
 
 		boolean restorable = trashHandler.isRestorable(
 			getAssetClassPK(baseModel));
@@ -1589,9 +1567,8 @@ public abstract class BaseTrashHandlerTestCase {
 		whenHasParent.moveParentBaseModelToTrash(
 			(Long)grandparentBaseModel.getPrimaryKeyObj());
 
-		TrashHandler parentTrashHandler =
-			TrashHandlerRegistryUtil.getTrashHandler(
-				whenHasParent.getParentBaseModelClassName());
+		TrashHandler parentTrashHandler = getTrashHandler(
+			whenHasParent.getParentBaseModelClassName());
 
 		parentTrashHandler.restoreTrashEntry(
 			TestPropsValues.getUserId(),
@@ -1624,9 +1601,8 @@ public abstract class BaseTrashHandlerTestCase {
 		whenHasParent.moveParentBaseModelToTrash(
 			(Long)grandparentBaseModel.getPrimaryKeyObj());
 
-		TrashHandler parentTrashHandler =
-			TrashHandlerRegistryUtil.getTrashHandler(
-				whenHasParent.getParentBaseModelClassName());
+		TrashHandler parentTrashHandler = getTrashHandler(
+			whenHasParent.getParentBaseModelClassName());
 
 		parentTrashHandler.restoreTrashEntry(
 			TestPropsValues.getUserId(),
@@ -1660,9 +1636,8 @@ public abstract class BaseTrashHandlerTestCase {
 		whenHasParent.moveParentBaseModelToTrash(
 			(Long)grandparentBaseModel.getPrimaryKeyObj());
 
-		TrashHandler parentTrashHandler =
-			TrashHandlerRegistryUtil.getTrashHandler(
-				whenHasParent.getParentBaseModelClassName());
+		TrashHandler parentTrashHandler = getTrashHandler(
+			whenHasParent.getParentBaseModelClassName());
 
 		parentTrashHandler.restoreTrashEntry(
 			TestPropsValues.getUserId(),
@@ -1700,9 +1675,8 @@ public abstract class BaseTrashHandlerTestCase {
 		whenHasParent.moveParentBaseModelToTrash(
 			(Long)grandparentBaseModel.getPrimaryKeyObj());
 
-		TrashHandler parentTrashHandler =
-			TrashHandlerRegistryUtil.getTrashHandler(
-				whenHasParent.getParentBaseModelClassName());
+		TrashHandler parentTrashHandler = getTrashHandler(
+			whenHasParent.getParentBaseModelClassName());
 
 		parentTrashHandler.restoreTrashEntry(
 			TestPropsValues.getUserId(),
@@ -1782,15 +1756,12 @@ public abstract class BaseTrashHandlerTestCase {
 	public void testTrashIsRestorableBaseModel() throws Exception {
 		Assume.assumeTrue(this instanceof WhenIsRestorableBaseModel);
 
-		ServiceContext serviceContext =
-			ServiceContextTestUtil.getServiceContext(group.getGroupId());
-
-		baseModel = addBaseModelWithWorkflow(serviceContext);
+		baseModel = addBaseModelWithWorkflow(
+			ServiceContextTestUtil.getServiceContext(group.getGroupId()));
 
 		moveBaseModelToTrash((Long)baseModel.getPrimaryKeyObj());
 
-		TrashHandler trashHandler = TrashHandlerRegistryUtil.getTrashHandler(
-			getBaseModelClassName());
+		TrashHandler trashHandler = getTrashHandler(getBaseModelClassName());
 
 		boolean restorable = trashHandler.isRestorable(
 			getAssetClassPK(baseModel));
@@ -1861,9 +1832,8 @@ public abstract class BaseTrashHandlerTestCase {
 			initialTrashEntriesCount + 1,
 			getTrashEntriesCount(group.getGroupId()));
 
-		TrashHandler parentTrashHandler =
-			TrashHandlerRegistryUtil.getTrashHandler(
-				whenHasParent.getParentBaseModelClassName());
+		TrashHandler parentTrashHandler = getTrashHandler(
+			whenHasParent.getParentBaseModelClassName());
 
 		if (Objects.equals(
 				getBaseModelClassName(),
@@ -1936,7 +1906,10 @@ public abstract class BaseTrashHandlerTestCase {
 
 			Assert.fail();
 		}
-		catch (NoSuchModelException nsme) {
+		catch (NoSuchModelException noSuchModelException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(noSuchModelException, noSuchModelException);
+			}
 		}
 	}
 
@@ -1962,9 +1935,8 @@ public abstract class BaseTrashHandlerTestCase {
 		whenHasParent.moveParentBaseModelToTrash(
 			(Long)parentBaseModel.getPrimaryKeyObj());
 
-		TrashHandler parentTrashHandler =
-			TrashHandlerRegistryUtil.getTrashHandler(
-				whenHasParent.getParentBaseModelClassName());
+		TrashHandler parentTrashHandler = getTrashHandler(
+			whenHasParent.getParentBaseModelClassName());
 
 		parentTrashHandler.deleteTrashEntry(
 			(Long)parentBaseModel.getPrimaryKeyObj());
@@ -1978,7 +1950,10 @@ public abstract class BaseTrashHandlerTestCase {
 
 			Assert.fail();
 		}
-		catch (NoSuchModelException nsme) {
+		catch (NoSuchModelException noSuchModelException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(noSuchModelException, noSuchModelException);
+			}
 		}
 
 		Assert.assertEquals(
@@ -2092,8 +2067,7 @@ public abstract class BaseTrashHandlerTestCase {
 			restoreParentBaseModelFromTrash(
 				(Long)parentBaseModel.getPrimaryKeyObj());
 
-		TrashHandler trashHandler = TrashHandlerRegistryUtil.getTrashHandler(
-			getBaseModelClassName());
+		TrashHandler trashHandler = getTrashHandler(getBaseModelClassName());
 
 		trashHandler.restoreTrashEntry(
 			TestPropsValues.getUserId(), getTrashEntryClassPK(baseModel));
@@ -2331,8 +2305,7 @@ public abstract class BaseTrashHandlerTestCase {
 
 		moveBaseModelToTrash((Long)baseModel.getPrimaryKeyObj());
 
-		TrashHandler trashHandler = TrashHandlerRegistryUtil.getTrashHandler(
-			getBaseModelClassName());
+		TrashHandler trashHandler = getTrashHandler(getBaseModelClassName());
 
 		trashHandler.deleteTrashEntry(getTrashEntryClassPK(baseModel));
 
@@ -2376,8 +2349,7 @@ public abstract class BaseTrashHandlerTestCase {
 
 		moveBaseModelToTrash((Long)baseModel.getPrimaryKeyObj());
 
-		TrashHandler trashHandler = TrashHandlerRegistryUtil.getTrashHandler(
-			getBaseModelClassName());
+		TrashHandler trashHandler = getTrashHandler(getBaseModelClassName());
 
 		trashHandler.deleteTrashEntry(getTrashEntryClassPK(baseModel));
 
@@ -2426,8 +2398,7 @@ public abstract class BaseTrashHandlerTestCase {
 
 		moveBaseModelToTrash((Long)baseModel.getPrimaryKeyObj());
 
-		TrashHandler trashHandler = TrashHandlerRegistryUtil.getTrashHandler(
-			getBaseModelClassName());
+		TrashHandler trashHandler = getTrashHandler(getBaseModelClassName());
 
 		trashHandler.deleteTrashEntry(getTrashEntryClassPK(baseModel));
 
@@ -2464,8 +2435,7 @@ public abstract class BaseTrashHandlerTestCase {
 
 		moveBaseModelToTrash((Long)baseModel.getPrimaryKeyObj());
 
-		TrashHandler trashHandler = TrashHandlerRegistryUtil.getTrashHandler(
-			getBaseModelClassName());
+		TrashHandler trashHandler = getTrashHandler(getBaseModelClassName());
 
 		trashHandler.deleteTrashEntry(getTrashEntryClassPK(baseModel));
 
@@ -2500,8 +2470,7 @@ public abstract class BaseTrashHandlerTestCase {
 
 		moveBaseModelToTrash((Long)baseModel.getPrimaryKeyObj());
 
-		TrashHandler trashHandler = TrashHandlerRegistryUtil.getTrashHandler(
-			getBaseModelClassName());
+		TrashHandler trashHandler = getTrashHandler(getBaseModelClassName());
 
 		trashHandler.restoreTrashEntry(
 			TestPropsValues.getUserId(), getTrashEntryClassPK(baseModel));
@@ -2548,8 +2517,7 @@ public abstract class BaseTrashHandlerTestCase {
 
 		moveBaseModelToTrash((Long)baseModel.getPrimaryKeyObj());
 
-		TrashHandler trashHandler = TrashHandlerRegistryUtil.getTrashHandler(
-			getBaseModelClassName());
+		TrashHandler trashHandler = getTrashHandler(getBaseModelClassName());
 
 		trashHandler.restoreTrashEntry(
 			TestPropsValues.getUserId(), getTrashEntryClassPK(baseModel));
@@ -2599,8 +2567,7 @@ public abstract class BaseTrashHandlerTestCase {
 
 		moveBaseModelToTrash((Long)baseModel.getPrimaryKeyObj());
 
-		TrashHandler trashHandler = TrashHandlerRegistryUtil.getTrashHandler(
-			getBaseModelClassName());
+		TrashHandler trashHandler = getTrashHandler(getBaseModelClassName());
 
 		trashHandler.restoreTrashEntry(
 			TestPropsValues.getUserId(), getTrashEntryClassPK(baseModel));
@@ -2641,8 +2608,7 @@ public abstract class BaseTrashHandlerTestCase {
 
 		moveBaseModelToTrash((Long)baseModel.getPrimaryKeyObj());
 
-		TrashHandler trashHandler = TrashHandlerRegistryUtil.getTrashHandler(
-			getBaseModelClassName());
+		TrashHandler trashHandler = getTrashHandler(getBaseModelClassName());
 
 		trashHandler.restoreTrashEntry(
 			TestPropsValues.getUserId(), getTrashEntryClassPK(baseModel));
@@ -3346,6 +3312,9 @@ public abstract class BaseTrashHandlerTestCase {
 				baseModel, getAssetClassPK(baseModel)));
 	}
 
+	@Rule
+	public SearchTestRule searchTestRule = new SearchTestRule();
+
 	protected BaseModel<?> addBaseModel(
 			BaseModel<?> parentBaseModel, ServiceContext serviceContext)
 		throws Exception {
@@ -3479,6 +3448,10 @@ public abstract class BaseTrashHandlerTestCase {
 		return (Long)classedModel.getPrimaryKeyObj();
 	}
 
+	protected TrashHandler getTrashHandler(String className) {
+		return TrashHandlerRegistryUtil.getTrashHandler(className);
+	}
+
 	protected abstract String getUniqueTitle(BaseModel<?> baseModel);
 
 	protected WorkflowedModel getWorkflowedModel(ClassedModel baseModel)
@@ -3533,5 +3506,8 @@ public abstract class BaseTrashHandlerTestCase {
 	protected Group group;
 
 	private static final String _TRASH_PREFIX = StringPool.SLASH;
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		BaseTrashHandlerTestCase.class);
 
 }

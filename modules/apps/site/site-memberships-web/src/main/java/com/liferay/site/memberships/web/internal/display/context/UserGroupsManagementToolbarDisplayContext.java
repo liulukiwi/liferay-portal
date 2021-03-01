@@ -16,13 +16,19 @@ package com.liferay.site.memberships.web.internal.display.context;
 
 import com.liferay.frontend.taglib.clay.servlet.taglib.display.context.SearchContainerManagementToolbarDisplayContext;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenu;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenuBuilder;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemList;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemListBuilder;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.LabelItem;
-import com.liferay.frontend.taglib.clay.servlet.taglib.util.LabelItemList;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.LabelItemListBuilder;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.language.LanguageUtil;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Role;
+import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.portlet.LiferayWindowState;
@@ -31,6 +37,7 @@ import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.service.permission.GroupPermissionUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.site.memberships.web.internal.util.GroupUtil;
 
 import java.util.List;
 import java.util.Objects;
@@ -47,13 +54,13 @@ public class UserGroupsManagementToolbarDisplayContext
 	extends SearchContainerManagementToolbarDisplayContext {
 
 	public UserGroupsManagementToolbarDisplayContext(
+		HttpServletRequest httpServletRequest,
 		LiferayPortletRequest liferayPortletRequest,
 		LiferayPortletResponse liferayPortletResponse,
-		HttpServletRequest httpServletRequest,
 		UserGroupsDisplayContext userGroupsDisplayContext) {
 
 		super(
-			liferayPortletRequest, liferayPortletResponse, httpServletRequest,
+			httpServletRequest, liferayPortletRequest, liferayPortletResponse,
 			userGroupsDisplayContext.getUserGroupSearchContainer());
 
 		_userGroupsDisplayContext = userGroupsDisplayContext;
@@ -61,8 +68,9 @@ public class UserGroupsManagementToolbarDisplayContext
 
 	@Override
 	public List<DropdownItem> getActionDropdownItems() {
-		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
-			WebKeys.THEME_DISPLAY);
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
 
 		return new DropdownItemList() {
 			{
@@ -78,12 +86,16 @@ public class UserGroupsManagementToolbarDisplayContext
 									"action", "deleteSelectedUserGroups");
 								dropdownItem.setIcon("times-circle");
 								dropdownItem.setLabel(
-									LanguageUtil.get(request, "delete"));
+									LanguageUtil.get(
+										httpServletRequest, "delete"));
 								dropdownItem.setQuickAction(true);
 							});
 					}
 				}
-				catch (Exception e) {
+				catch (Exception exception) {
+					if (_log.isDebugEnabled()) {
+						_log.debug(exception, exception);
+					}
 				}
 
 				try {
@@ -94,29 +106,28 @@ public class UserGroupsManagementToolbarDisplayContext
 
 						add(
 							dropdownItem -> {
-								dropdownItem.putData(
-									"action", "selectSiteRole");
+								dropdownItem.putData("action", "selectRole");
 
-								PortletURL editUserGroupsSiteRolesURL =
+								PortletURL editUserGroupsRolesURL =
 									liferayPortletResponse.createActionURL();
 
-								editUserGroupsSiteRolesURL.setParameter(
+								editUserGroupsRolesURL.setParameter(
 									ActionRequest.ACTION_NAME,
-									"editUserGroupsSiteRoles");
-								editUserGroupsSiteRolesURL.setParameter(
+									"editUserGroupsRoles");
+								editUserGroupsRolesURL.setParameter(
 									"tabs1", "user-groups");
 
 								dropdownItem.putData(
-									"editUserGroupsSiteRolesURL",
-									editUserGroupsSiteRolesURL.toString());
+									"editUserGroupsRolesURL",
+									editUserGroupsRolesURL.toString());
 
 								dropdownItem.putData(
-									"selectSiteRoleURL",
+									"selectRoleURL",
 									_getSelectorURL("/site_roles.jsp"));
 								dropdownItem.setIcon("add-role");
 								dropdownItem.setLabel(
 									LanguageUtil.get(
-										request, "assign-site-roles"));
+										httpServletRequest, "assign-roles"));
 								dropdownItem.setQuickAction(true);
 							});
 
@@ -124,34 +135,34 @@ public class UserGroupsManagementToolbarDisplayContext
 
 						if (role != null) {
 							String label = LanguageUtil.format(
-								request, "remove-site-role-x",
+								httpServletRequest, "remove-role-x",
 								role.getTitle(themeDisplay.getLocale()), false);
 
 							add(
 								dropdownItem -> {
 									dropdownItem.putData(
-										"action", "removeUserGroupSiteRole");
+										"action", "removeUserGroupRole");
 									dropdownItem.putData(
 										"message",
 										LanguageUtil.format(
-											request,
+											httpServletRequest,
 											"are-you-sure-you-want-to-remove-" +
 												"x-role-to-selected-user-" +
 													"groups",
 											role.getTitle(
 												themeDisplay.getLocale())));
 
-									PortletURL removeUserGroupSiteRoleURL =
+									PortletURL removeUserGroupRoleURL =
 										liferayPortletResponse.
 											createActionURL();
 
-									removeUserGroupSiteRoleURL.setParameter(
+									removeUserGroupRoleURL.setParameter(
 										ActionRequest.ACTION_NAME,
-										"removeUserGroupSiteRole");
+										"removeUserGroupRole");
 
 									dropdownItem.putData(
-										"removeUserGroupSiteRoleURL",
-										removeUserGroupSiteRoleURL.toString());
+										"removeUserGroupRoleURL",
+										removeUserGroupRoleURL.toString());
 
 									dropdownItem.setIcon("remove-role");
 									dropdownItem.setLabel(label);
@@ -160,7 +171,10 @@ public class UserGroupsManagementToolbarDisplayContext
 						}
 					}
 				}
-				catch (Exception e) {
+				catch (Exception exception) {
+					if (_log.isDebugEnabled()) {
+						_log.debug(exception, exception);
+					}
 				}
 			}
 		};
@@ -192,58 +206,59 @@ public class UserGroupsManagementToolbarDisplayContext
 				"mvcPath", "/select_user_groups.jsp");
 			selectUserGroupsURL.setWindowState(LiferayWindowState.POP_UP);
 
-			return new CreationMenu() {
-				{
-					addDropdownItem(
-						dropdownItem -> {
-							dropdownItem.putData("action", "selectUserGroups");
-							dropdownItem.putData(
-								"selectUserGroupsURL",
-								selectUserGroupsURL.toString());
-							dropdownItem.setLabel(
-								LanguageUtil.get(request, "add"));
-						});
+			return CreationMenuBuilder.addDropdownItem(
+				dropdownItem -> {
+					dropdownItem.putData("action", "selectUserGroups");
+
+					ThemeDisplay themeDisplay =
+						(ThemeDisplay)httpServletRequest.getAttribute(
+							WebKeys.THEME_DISPLAY);
+
+					dropdownItem.putData(
+						"groupTypeLabel",
+						GroupUtil.getGroupTypeLabel(
+							_userGroupsDisplayContext.getGroupId(),
+							themeDisplay.getLocale()));
+
+					dropdownItem.putData(
+						"selectUserGroupsURL", selectUserGroupsURL.toString());
+					dropdownItem.setLabel(
+						LanguageUtil.get(httpServletRequest, "add"));
 				}
-			};
+			).build();
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
+
 			return null;
 		}
 	}
 
 	@Override
-	public String getDefaultEventHandler() {
-		return "userGroupsManagementToolbarDefaultEventHandler";
-	}
-
-	@Override
 	public List<LabelItem> getFilterLabelItems() {
-		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
-			WebKeys.THEME_DISPLAY);
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
 
 		Role role = _userGroupsDisplayContext.getRole();
 
-		return new LabelItemList() {
-			{
-				if (role != null) {
-					add(
-						labelItem -> {
-							PortletURL removeLabelURL = PortletURLUtil.clone(
-								currentURLObj, liferayPortletResponse);
+		return LabelItemListBuilder.add(
+			() -> role != null,
+			labelItem -> {
+				PortletURL removeLabelURL = PortletURLUtil.clone(
+					currentURLObj, liferayPortletResponse);
 
-							removeLabelURL.setParameter("roleId", "0");
+				removeLabelURL.setParameter("roleId", "0");
 
-							labelItem.putData(
-								"removeLabelURL", removeLabelURL.toString());
+				labelItem.putData("removeLabelURL", removeLabelURL.toString());
 
-							labelItem.setCloseable(true);
+				labelItem.setCloseable(true);
 
-							labelItem.setLabel(
-								role.getTitle(themeDisplay.getLocale()));
-						});
-				}
+				labelItem.setLabel(role.getTitle(themeDisplay.getLocale()));
 			}
-		};
+		).build();
 	}
 
 	@Override
@@ -260,8 +275,9 @@ public class UserGroupsManagementToolbarDisplayContext
 
 	@Override
 	public Boolean isShowCreationMenu() {
-		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
-			WebKeys.THEME_DISPLAY);
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
 
 		try {
 			if (GroupPermissionUtil.contains(
@@ -272,7 +288,10 @@ public class UserGroupsManagementToolbarDisplayContext
 				return true;
 			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
 		}
 
 		return false;
@@ -285,51 +304,46 @@ public class UserGroupsManagementToolbarDisplayContext
 
 	@Override
 	protected List<DropdownItem> getFilterNavigationDropdownItems() {
-		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
-			WebKeys.THEME_DISPLAY);
-
-		return new DropdownItemList() {
-			{
-				add(
-					dropdownItem -> {
-						dropdownItem.setActive(
-							Objects.equals(getNavigation(), "all"));
-						dropdownItem.setHref(
-							getPortletURL(), "navigation", "all", "roleId",
-							"0");
-						dropdownItem.setLabel(LanguageUtil.get(request, "all"));
-					});
-
-				add(
-					dropdownItem -> {
-						dropdownItem.setActive(
-							Objects.equals(getNavigation(), "roles"));
-						dropdownItem.putData("action", "selectRoles");
-						dropdownItem.putData(
-							"selectRolesURL",
-							_getSelectorURL("/select_site_role.jsp"));
-
-						PortletURL viewRoleURL =
-							liferayPortletResponse.createRenderURL();
-
-						viewRoleURL.setParameter("mvcPath", "/view.jsp");
-						viewRoleURL.setParameter("tabs1", "user-groups");
-						viewRoleURL.setParameter("navigation", "roles");
-						viewRoleURL.setParameter(
-							"redirect", themeDisplay.getURLCurrent());
-						viewRoleURL.setParameter(
-							"groupId",
-							String.valueOf(
-								_userGroupsDisplayContext.getGroupId()));
-
-						dropdownItem.putData(
-							"viewRoleURL", viewRoleURL.toString());
-
-						dropdownItem.setLabel(
-							LanguageUtil.get(request, "roles"));
-					});
+		return DropdownItemListBuilder.add(
+			dropdownItem -> {
+				dropdownItem.setActive(Objects.equals(getNavigation(), "all"));
+				dropdownItem.setHref(
+					getPortletURL(), "navigation", "all", "roleId", "0");
+				dropdownItem.setLabel(
+					LanguageUtil.get(httpServletRequest, "all"));
 			}
-		};
+		).add(
+			dropdownItem -> {
+				dropdownItem.putData("action", "selectRoles");
+				dropdownItem.putData(
+					"selectRolesURL", _getSelectorURL("/select_site_role.jsp"));
+				dropdownItem.setActive(
+					Objects.equals(getNavigation(), "roles"));
+
+				PortletURL viewRoleURL =
+					liferayPortletResponse.createRenderURL();
+
+				viewRoleURL.setParameter("mvcPath", "/view.jsp");
+				viewRoleURL.setParameter("tabs1", "user-groups");
+				viewRoleURL.setParameter("navigation", "roles");
+
+				ThemeDisplay themeDisplay =
+					(ThemeDisplay)httpServletRequest.getAttribute(
+						WebKeys.THEME_DISPLAY);
+
+				viewRoleURL.setParameter(
+					"redirect", themeDisplay.getURLCurrent());
+
+				viewRoleURL.setParameter(
+					"groupId",
+					String.valueOf(_userGroupsDisplayContext.getGroupId()));
+
+				dropdownItem.putData("viewRoleURL", viewRoleURL.toString());
+
+				dropdownItem.setLabel(
+					LanguageUtil.get(httpServletRequest, "roles"));
+			}
+		).build();
 	}
 
 	@Override
@@ -343,10 +357,25 @@ public class UserGroupsManagementToolbarDisplayContext
 		selectURL.setParameter("mvcPath", mvcPath);
 		selectURL.setParameter(
 			"groupId", String.valueOf(_userGroupsDisplayContext.getGroupId()));
+
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
+
+		Group scopeGroup = themeDisplay.getScopeGroup();
+
+		if (scopeGroup.isDepot()) {
+			selectURL.setParameter(
+				"roleType", String.valueOf(RoleConstants.TYPE_DEPOT));
+		}
+
 		selectURL.setWindowState(LiferayWindowState.POP_UP);
 
 		return selectURL.toString();
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		UserGroupsManagementToolbarDisplayContext.class);
 
 	private final UserGroupsDisplayContext _userGroupsDisplayContext;
 

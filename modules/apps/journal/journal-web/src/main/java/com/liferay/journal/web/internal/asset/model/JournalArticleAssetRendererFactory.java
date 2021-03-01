@@ -24,6 +24,7 @@ import com.liferay.dynamic.data.mapping.service.DDMStructureLocalService;
 import com.liferay.dynamic.data.mapping.util.FieldsToDDMFormValuesConverter;
 import com.liferay.journal.constants.JournalConstants;
 import com.liferay.journal.constants.JournalPortletKeys;
+import com.liferay.journal.exception.NoSuchArticleException;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.model.JournalArticleResource;
 import com.liferay.journal.service.JournalArticleLocalService;
@@ -32,6 +33,8 @@ import com.liferay.journal.util.JournalContent;
 import com.liferay.journal.util.JournalConverter;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.portlet.LiferayPortletURL;
@@ -117,8 +120,14 @@ public class JournalArticleAssetRendererFactory
 			}
 
 			if ((article == null) && (type == TYPE_LATEST)) {
-				article = _journalArticleLocalService.fetchLatestArticle(
+				article = _journalArticleLocalService.getLatestArticle(
 					classPK, WorkflowConstants.STATUS_ANY);
+			}
+
+			if (article == null) {
+				throw new NoSuchArticleException(
+					"No JournalArticle exists with the key {resourcePrimKey=" +
+						classPK + "}");
 			}
 		}
 
@@ -174,7 +183,11 @@ public class JournalArticleAssetRendererFactory
 
 			return ddmStructure.getName(locale);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
+
 			return super.getTypeName(locale, subtypeId);
 		}
 	}
@@ -215,7 +228,10 @@ public class JournalArticleAssetRendererFactory
 		try {
 			liferayPortletURL.setWindowState(windowState);
 		}
-		catch (WindowStateException wse) {
+		catch (WindowStateException windowStateException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(windowStateException, windowStateException);
+			}
 		}
 
 		return liferayPortletURL;
@@ -272,6 +288,9 @@ public class JournalArticleAssetRendererFactory
 
 		return journalArticleAssetRenderer;
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		JournalArticleAssetRendererFactory.class);
 
 	@Reference
 	private AssetDisplayPageFriendlyURLProvider

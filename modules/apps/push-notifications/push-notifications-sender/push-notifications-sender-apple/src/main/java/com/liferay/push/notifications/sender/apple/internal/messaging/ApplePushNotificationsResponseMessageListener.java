@@ -61,7 +61,10 @@ public class ApplePushNotificationsResponseMessageListener
 					_log.warn("Token " + token + " is invalid and was deleted");
 				}
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(exception, exception);
+				}
 			}
 		}
 	}

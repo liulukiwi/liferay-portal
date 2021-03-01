@@ -70,7 +70,7 @@ public class MBAdminPortletDataHandler extends BasePortletDataHandler {
 
 	public static final String NAMESPACE = "message_boards";
 
-	public static final String SCHEMA_VERSION = "1.0.0";
+	public static final String SCHEMA_VERSION = "4.0.0";
 
 	@Override
 	public String[] getClassNames() {
@@ -80,6 +80,11 @@ public class MBAdminPortletDataHandler extends BasePortletDataHandler {
 	@Override
 	public String getNamespace() {
 		return NAMESPACE;
+	}
+
+	@Override
+	public String getResourceName() {
+		return MBConstants.RESOURCE_NAME;
 	}
 
 	@Override

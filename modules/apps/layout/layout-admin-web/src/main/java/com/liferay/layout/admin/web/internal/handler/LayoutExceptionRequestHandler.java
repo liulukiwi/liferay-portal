@@ -16,17 +16,22 @@ package com.liferay.layout.admin.web.internal.handler;
 
 import com.liferay.asset.kernel.exception.AssetCategoryException;
 import com.liferay.asset.kernel.model.AssetVocabulary;
+import com.liferay.friendly.url.exception.DuplicateFriendlyURLEntryException;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.LayoutNameException;
 import com.liferay.portal.kernel.exception.LayoutTypeException;
+import com.liferay.portal.kernel.exception.ModelListenerException;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.language.LanguageUtil;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutTypeController;
 import com.liferay.portal.kernel.model.ModelHintsUtil;
 import com.liferay.portal.kernel.portlet.JSONPortletResponseUtil;
+import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.ResourceBundleUtil;
@@ -47,79 +52,24 @@ import org.osgi.service.component.annotations.Component;
 @Component(immediate = true, service = LayoutExceptionRequestHandler.class)
 public class LayoutExceptionRequestHandler {
 
-	public void handlePortalException(
+	public void handleException(
 			ActionRequest actionRequest, ActionResponse actionResponse,
-			PortalException pe)
+			Exception exception)
 		throws Exception {
 
-		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
-			WebKeys.THEME_DISPLAY);
+		if ((exception instanceof ModelListenerException) &&
+			(exception.getCause() instanceof PortalException)) {
 
-		String errorMessage = null;
-
-		if (pe instanceof AssetCategoryException) {
-			AssetCategoryException ace = (AssetCategoryException)pe;
-
-			AssetVocabulary assetVocabulary = ace.getVocabulary();
-
-			String assetVocabularyTitle = StringPool.BLANK;
-
-			if (assetVocabulary != null) {
-				assetVocabularyTitle = assetVocabulary.getTitle(
-					themeDisplay.getLocale());
-			}
-
-			if (ace.getType() == AssetCategoryException.AT_LEAST_ONE_CATEGORY) {
-				errorMessage = LanguageUtil.format(
-					themeDisplay.getRequest(),
-					"please-select-at-least-one-category-for-x",
-					assetVocabularyTitle);
-			}
-			else if (ace.getType() ==
-						AssetCategoryException.TOO_MANY_CATEGORIES) {
-
-				errorMessage = LanguageUtil.format(
-					themeDisplay.getRequest(),
-					"you-cannot-select-more-than-one-category-for-x",
-					assetVocabularyTitle);
-			}
+			_handlePortalException(
+				actionRequest, actionResponse,
+				(PortalException)exception.getCause());
 		}
-		else if (pe instanceof LayoutNameException) {
-			LayoutNameException lne = (LayoutNameException)pe;
-
-			if (lne.getType() == LayoutNameException.TOO_LONG) {
-				errorMessage = LanguageUtil.format(
-					themeDisplay.getRequest(),
-					"page-name-cannot-exceed-x-characters",
-					ModelHintsUtil.getMaxLength(
-						Layout.class.getName(), "friendlyURL"));
-			}
-			else {
-				errorMessage = LanguageUtil.get(
-					themeDisplay.getRequest(),
-					"please-enter-a-valid-name-for-the-page");
-			}
-		}
-		else if (pe instanceof LayoutTypeException) {
-			LayoutTypeException lte = (LayoutTypeException)pe;
-
-			if ((lte.getType() == LayoutTypeException.FIRST_LAYOUT) ||
-				(lte.getType() == LayoutTypeException.NOT_INSTANCEABLE)) {
-
-				errorMessage = _handleLayoutTypeException(
-					actionRequest, lte.getType());
-			}
+		else if (exception instanceof PortalException) {
+			_handlePortalException(
+				actionRequest, actionResponse, (PortalException)exception);
 		}
 
-		if (Validator.isNull(errorMessage)) {
-			errorMessage = LanguageUtil.get(
-				themeDisplay.getRequest(), "an-unexpected-error-occurred");
-		}
-
-		JSONObject jsonObject = JSONUtil.put("errorMessage", errorMessage);
-
-		JSONPortletResponseUtil.writeJSON(
-			actionRequest, actionResponse, jsonObject);
+		throw exception;
 	}
 
 	private String _handleLayoutTypeException(
@@ -149,5 +99,110 @@ public class LayoutExceptionRequestHandler {
 		return LanguageUtil.format(
 			themeDisplay.getRequest(), errorMessage, layoutTypeName);
 	}
+
+	private void _handlePortalException(
+			ActionRequest actionRequest, ActionResponse actionResponse,
+			PortalException portalException)
+		throws Exception {
+
+		if (_log.isDebugEnabled()) {
+			_log.debug(portalException, portalException);
+		}
+
+		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
+			WebKeys.THEME_DISPLAY);
+
+		String errorMessage = null;
+
+		if (portalException instanceof AssetCategoryException) {
+			AssetCategoryException assetCategoryException =
+				(AssetCategoryException)portalException;
+
+			AssetVocabulary assetVocabulary =
+				assetCategoryException.getVocabulary();
+
+			String assetVocabularyTitle = StringPool.BLANK;
+
+			if (assetVocabulary != null) {
+				assetVocabularyTitle = assetVocabulary.getTitle(
+					themeDisplay.getLocale());
+			}
+
+			if (assetCategoryException.getType() ==
+					AssetCategoryException.AT_LEAST_ONE_CATEGORY) {
+
+				errorMessage = LanguageUtil.format(
+					themeDisplay.getRequest(),
+					"please-select-at-least-one-category-for-x",
+					assetVocabularyTitle);
+			}
+			else if (assetCategoryException.getType() ==
+						AssetCategoryException.TOO_MANY_CATEGORIES) {
+
+				errorMessage = LanguageUtil.format(
+					themeDisplay.getRequest(),
+					"you-cannot-select-more-than-one-category-for-x",
+					assetVocabularyTitle);
+			}
+		}
+		else if (portalException instanceof
+					DuplicateFriendlyURLEntryException) {
+
+			errorMessage = LanguageUtil.get(
+				themeDisplay.getRequest(),
+				"the-friendly-url-is-already-in-use.-please-enter-a-unique-" +
+					"friendly-url");
+		}
+		else if (portalException instanceof LayoutNameException) {
+			LayoutNameException layoutNameException =
+				(LayoutNameException)portalException;
+
+			if (layoutNameException.getType() == LayoutNameException.TOO_LONG) {
+				errorMessage = LanguageUtil.format(
+					themeDisplay.getRequest(),
+					"page-name-cannot-exceed-x-characters",
+					ModelHintsUtil.getMaxLength(
+						Layout.class.getName(), "friendlyURL"));
+			}
+			else {
+				errorMessage = LanguageUtil.get(
+					themeDisplay.getRequest(),
+					"please-enter-a-valid-name-for-the-page");
+			}
+		}
+		else if (portalException instanceof LayoutTypeException) {
+			LayoutTypeException layoutTypeException =
+				(LayoutTypeException)portalException;
+
+			if ((layoutTypeException.getType() ==
+					LayoutTypeException.FIRST_LAYOUT) ||
+				(layoutTypeException.getType() ==
+					LayoutTypeException.NOT_INSTANCEABLE)) {
+
+				errorMessage = _handleLayoutTypeException(
+					actionRequest, layoutTypeException.getType());
+			}
+		}
+		else if (portalException instanceof PrincipalException) {
+			errorMessage = LanguageUtil.get(
+				themeDisplay.getRequest(),
+				"you-do-not-have-the-required-permissions");
+		}
+
+		if (Validator.isNull(errorMessage)) {
+			errorMessage = LanguageUtil.get(
+				themeDisplay.getRequest(), "an-unexpected-error-occurred");
+
+			_log.error(portalException.getMessage());
+		}
+
+		JSONObject jsonObject = JSONUtil.put("errorMessage", errorMessage);
+
+		JSONPortletResponseUtil.writeJSON(
+			actionRequest, actionResponse, jsonObject);
+	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		LayoutExceptionRequestHandler.class);
 
 }

@@ -15,6 +15,7 @@
 package com.liferay.portal.tools.service.builder.test.service.persistence.impl;
 
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.dao.orm.ArgumentsResolver;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
@@ -23,11 +24,14 @@ import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.BaseModel;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
+import com.liferay.portal.kernel.util.HashMapDictionary;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.spring.extender.service.ServiceReference;
 import com.liferay.portal.tools.service.builder.test.exception.NoSuchLocalizedEntryException;
 import com.liferay.portal.tools.service.builder.test.model.LocalizedEntry;
+import com.liferay.portal.tools.service.builder.test.model.LocalizedEntryTable;
 import com.liferay.portal.tools.service.builder.test.model.impl.LocalizedEntryImpl;
 import com.liferay.portal.tools.service.builder.test.model.impl.LocalizedEntryModelImpl;
 import com.liferay.portal.tools.service.builder.test.service.persistence.LocalizedEntryPersistence;
@@ -37,6 +41,12 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.FrameworkUtil;
+import org.osgi.framework.ServiceRegistration;
 
 /**
  * The persistence implementation for the localized entry service.
@@ -52,7 +62,7 @@ public class LocalizedEntryPersistenceImpl
 	extends BasePersistenceImpl<LocalizedEntry>
 	implements LocalizedEntryPersistence {
 
-	/**
+	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this class directly. Always use <code>LocalizedEntryUtil</code> to access the localized entry persistence. Modify <code>service.xml</code> and rerun ServiceBuilder to regenerate this class.
@@ -75,7 +85,8 @@ public class LocalizedEntryPersistenceImpl
 
 		setModelImplClass(LocalizedEntryImpl.class);
 		setModelPKClass(long.class);
-		setEntityCacheEnabled(LocalizedEntryModelImpl.ENTITY_CACHE_ENABLED);
+
+		setTable(LocalizedEntryTable.INSTANCE);
 	}
 
 	/**
@@ -86,11 +97,8 @@ public class LocalizedEntryPersistenceImpl
 	@Override
 	public void cacheResult(LocalizedEntry localizedEntry) {
 		entityCache.putResult(
-			LocalizedEntryModelImpl.ENTITY_CACHE_ENABLED,
 			LocalizedEntryImpl.class, localizedEntry.getPrimaryKey(),
 			localizedEntry);
-
-		localizedEntry.resetOriginalValues();
 	}
 
 	/**
@@ -102,14 +110,10 @@ public class LocalizedEntryPersistenceImpl
 	public void cacheResult(List<LocalizedEntry> localizedEntries) {
 		for (LocalizedEntry localizedEntry : localizedEntries) {
 			if (entityCache.getResult(
-					LocalizedEntryModelImpl.ENTITY_CACHE_ENABLED,
 					LocalizedEntryImpl.class, localizedEntry.getPrimaryKey()) ==
 						null) {
 
 				cacheResult(localizedEntry);
-			}
-			else {
-				localizedEntry.resetOriginalValues();
 			}
 		}
 	}
@@ -125,9 +129,7 @@ public class LocalizedEntryPersistenceImpl
 	public void clearCache() {
 		entityCache.clearCache(LocalizedEntryImpl.class);
 
-		finderCache.clearCache(FINDER_CLASS_NAME_ENTITY);
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+		finderCache.clearCache(LocalizedEntryImpl.class);
 	}
 
 	/**
@@ -139,36 +141,22 @@ public class LocalizedEntryPersistenceImpl
 	 */
 	@Override
 	public void clearCache(LocalizedEntry localizedEntry) {
-		entityCache.removeResult(
-			LocalizedEntryModelImpl.ENTITY_CACHE_ENABLED,
-			LocalizedEntryImpl.class, localizedEntry.getPrimaryKey());
-
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+		entityCache.removeResult(LocalizedEntryImpl.class, localizedEntry);
 	}
 
 	@Override
 	public void clearCache(List<LocalizedEntry> localizedEntries) {
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
-
 		for (LocalizedEntry localizedEntry : localizedEntries) {
-			entityCache.removeResult(
-				LocalizedEntryModelImpl.ENTITY_CACHE_ENABLED,
-				LocalizedEntryImpl.class, localizedEntry.getPrimaryKey());
+			entityCache.removeResult(LocalizedEntryImpl.class, localizedEntry);
 		}
 	}
 
 	@Override
 	public void clearCache(Set<Serializable> primaryKeys) {
-		finderCache.clearCache(FINDER_CLASS_NAME_ENTITY);
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+		finderCache.clearCache(LocalizedEntryImpl.class);
 
 		for (Serializable primaryKey : primaryKeys) {
-			entityCache.removeResult(
-				LocalizedEntryModelImpl.ENTITY_CACHE_ENABLED,
-				LocalizedEntryImpl.class, primaryKey);
+			entityCache.removeResult(LocalizedEntryImpl.class, primaryKey);
 		}
 	}
 
@@ -232,11 +220,11 @@ public class LocalizedEntryPersistenceImpl
 
 			return remove(localizedEntry);
 		}
-		catch (NoSuchLocalizedEntryException nsee) {
-			throw nsee;
+		catch (NoSuchLocalizedEntryException noSuchEntityException) {
+			throw noSuchEntityException;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -260,8 +248,8 @@ public class LocalizedEntryPersistenceImpl
 				session.delete(localizedEntry);
 			}
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -283,34 +271,26 @@ public class LocalizedEntryPersistenceImpl
 		try {
 			session = openSession();
 
-			if (localizedEntry.isNew()) {
+			if (isNew) {
 				session.save(localizedEntry);
-
-				localizedEntry.setNew(false);
 			}
 			else {
 				localizedEntry = (LocalizedEntry)session.merge(localizedEntry);
 			}
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
 		}
 
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
+		entityCache.putResult(
+			LocalizedEntryImpl.class, localizedEntry, false, true);
 
 		if (isNew) {
-			finderCache.removeResult(_finderPathCountAll, FINDER_ARGS_EMPTY);
-			finderCache.removeResult(
-				_finderPathWithoutPaginationFindAll, FINDER_ARGS_EMPTY);
+			localizedEntry.setNew(false);
 		}
-
-		entityCache.putResult(
-			LocalizedEntryModelImpl.ENTITY_CACHE_ENABLED,
-			LocalizedEntryImpl.class, localizedEntry.getPrimaryKey(),
-			localizedEntry, false);
 
 		localizedEntry.resetOriginalValues();
 
@@ -451,23 +431,23 @@ public class LocalizedEntryPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<LocalizedEntry>)finderCache.getResult(
-				finderPath, finderArgs, this);
+				finderPath, finderArgs);
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 			String sql = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					2 + (orderByComparator.getOrderByFields().length * 2));
 
-				query.append(_SQL_SELECT_LOCALIZEDENTRY);
+				sb.append(_SQL_SELECT_LOCALIZEDENTRY);
 
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 
-				sql = query.toString();
+				sql = sb.toString();
 			}
 			else {
 				sql = _SQL_SELECT_LOCALIZEDENTRY;
@@ -480,10 +460,10 @@ public class LocalizedEntryPersistenceImpl
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
 				list = (List<LocalizedEntry>)QueryUtil.list(
-					q, getDialect(), start, end);
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
@@ -491,12 +471,8 @@ public class LocalizedEntryPersistenceImpl
 					finderCache.putResult(finderPath, finderArgs, list);
 				}
 			}
-			catch (Exception e) {
-				if (useFinderCache) {
-					finderCache.removeResult(finderPath, finderArgs);
-				}
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -525,7 +501,7 @@ public class LocalizedEntryPersistenceImpl
 	@Override
 	public int countAll() {
 		Long count = (Long)finderCache.getResult(
-			_finderPathCountAll, FINDER_ARGS_EMPTY, this);
+			_finderPathCountAll, FINDER_ARGS_EMPTY);
 
 		if (count == null) {
 			Session session = null;
@@ -533,18 +509,15 @@ public class LocalizedEntryPersistenceImpl
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(_SQL_COUNT_LOCALIZEDENTRY);
+				Query query = session.createQuery(_SQL_COUNT_LOCALIZEDENTRY);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
 				finderCache.putResult(
 					_finderPathCountAll, FINDER_ARGS_EMPTY, count);
 			}
-			catch (Exception e) {
-				finderCache.removeResult(
-					_finderPathCountAll, FINDER_ARGS_EMPTY);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -578,31 +551,35 @@ public class LocalizedEntryPersistenceImpl
 	 * Initializes the localized entry persistence.
 	 */
 	public void afterPropertiesSet() {
+		Bundle bundle = FrameworkUtil.getBundle(
+			LocalizedEntryPersistenceImpl.class);
+
+		_bundleContext = bundle.getBundleContext();
+
+		_argumentsResolverServiceRegistration = _bundleContext.registerService(
+			ArgumentsResolver.class, new LocalizedEntryModelArgumentsResolver(),
+			new HashMapDictionary<>());
+
 		_finderPathWithPaginationFindAll = new FinderPath(
-			LocalizedEntryModelImpl.ENTITY_CACHE_ENABLED,
-			LocalizedEntryModelImpl.FINDER_CACHE_ENABLED,
-			LocalizedEntryImpl.class, FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
-			"findAll", new String[0]);
+			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findAll", new String[0],
+			new String[0], true);
 
 		_finderPathWithoutPaginationFindAll = new FinderPath(
-			LocalizedEntryModelImpl.ENTITY_CACHE_ENABLED,
-			LocalizedEntryModelImpl.FINDER_CACHE_ENABLED,
-			LocalizedEntryImpl.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-			"findAll", new String[0]);
+			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findAll", new String[0],
+			new String[0], true);
 
 		_finderPathCountAll = new FinderPath(
-			LocalizedEntryModelImpl.ENTITY_CACHE_ENABLED,
-			LocalizedEntryModelImpl.FINDER_CACHE_ENABLED, Long.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countAll",
-			new String[0]);
+			new String[0], new String[0], false);
 	}
 
 	public void destroy() {
 		entityCache.removeCache(LocalizedEntryImpl.class.getName());
-		finderCache.removeCache(FINDER_CLASS_NAME_ENTITY);
-		finderCache.removeCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
-		finderCache.removeCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+
+		_argumentsResolverServiceRegistration.unregister();
 	}
+
+	private BundleContext _bundleContext;
 
 	@ServiceReference(type = EntityCache.class)
 	protected EntityCache entityCache;
@@ -623,5 +600,102 @@ public class LocalizedEntryPersistenceImpl
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		LocalizedEntryPersistenceImpl.class);
+
+	@Override
+	protected FinderCache getFinderCache() {
+		return finderCache;
+	}
+
+	private ServiceRegistration<ArgumentsResolver>
+		_argumentsResolverServiceRegistration;
+
+	private static class LocalizedEntryModelArgumentsResolver
+		implements ArgumentsResolver {
+
+		@Override
+		public Object[] getArguments(
+			FinderPath finderPath, BaseModel<?> baseModel, boolean checkColumn,
+			boolean original) {
+
+			String[] columnNames = finderPath.getColumnNames();
+
+			if ((columnNames == null) || (columnNames.length == 0)) {
+				if (baseModel.isNew()) {
+					return FINDER_ARGS_EMPTY;
+				}
+
+				return null;
+			}
+
+			LocalizedEntryModelImpl localizedEntryModelImpl =
+				(LocalizedEntryModelImpl)baseModel;
+
+			long columnBitmask = localizedEntryModelImpl.getColumnBitmask();
+
+			if (!checkColumn || (columnBitmask == 0)) {
+				return _getValue(
+					localizedEntryModelImpl, columnNames, original);
+			}
+
+			Long finderPathColumnBitmask = _finderPathColumnBitmasksCache.get(
+				finderPath);
+
+			if (finderPathColumnBitmask == null) {
+				finderPathColumnBitmask = 0L;
+
+				for (String columnName : columnNames) {
+					finderPathColumnBitmask |=
+						localizedEntryModelImpl.getColumnBitmask(columnName);
+				}
+
+				_finderPathColumnBitmasksCache.put(
+					finderPath, finderPathColumnBitmask);
+			}
+
+			if ((columnBitmask & finderPathColumnBitmask) != 0) {
+				return _getValue(
+					localizedEntryModelImpl, columnNames, original);
+			}
+
+			return null;
+		}
+
+		@Override
+		public String getClassName() {
+			return LocalizedEntryImpl.class.getName();
+		}
+
+		@Override
+		public String getTableName() {
+			return LocalizedEntryTable.INSTANCE.getTableName();
+		}
+
+		private Object[] _getValue(
+			LocalizedEntryModelImpl localizedEntryModelImpl,
+			String[] columnNames, boolean original) {
+
+			Object[] arguments = new Object[columnNames.length];
+
+			for (int i = 0; i < arguments.length; i++) {
+				String columnName = columnNames[i];
+
+				if (original) {
+					arguments[i] =
+						localizedEntryModelImpl.getColumnOriginalValue(
+							columnName);
+				}
+				else {
+					arguments[i] = localizedEntryModelImpl.getColumnValue(
+						columnName);
+				}
+			}
+
+			return arguments;
+		}
+
+		private static Map<FinderPath, Long> _finderPathColumnBitmasksCache =
+			new ConcurrentHashMap<>();
+
+	}
 
 }

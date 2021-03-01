@@ -16,6 +16,10 @@
 
 <%@ include file="/init.jsp" %>
 
+<%@ page import="com.liferay.portal.kernel.dao.search.EmptyOnClickRowChecker" %><%@
+page import="com.liferay.portal.kernel.model.ModelHintsUtil" %><%@
+page import="com.liferay.portal.kernel.util.HashMapBuilder" %>
+
 <%
-PollsDisplayContext pollsDisplayContext = new PollsDisplayContext(renderRequest, renderResponse);
+PollsDisplayContext pollsDisplayContext = (PollsDisplayContext)request.getAttribute(WebKeys.PORTLET_DISPLAY_CONTEXT);
 %>

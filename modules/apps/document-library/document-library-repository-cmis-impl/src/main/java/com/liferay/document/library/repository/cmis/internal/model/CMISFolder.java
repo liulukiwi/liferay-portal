@@ -75,7 +75,10 @@ public class CMISFolder extends CMISModel implements Folder {
 		try {
 			cmisFolder.setParentFolder(getParentFolder());
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
 		}
 
 		cmisFolder.setPrimaryKey(getPrimaryKey());
@@ -109,8 +112,8 @@ public class CMISFolder extends CMISModel implements Folder {
 
 				return folder.containsPermission(permissionChecker, actionId);
 			}
-			catch (PortalException pe) {
-				throw new SystemException(pe);
+			catch (PortalException portalException) {
+				throw new SystemException(portalException);
 			}
 		}
 		else {
@@ -231,8 +234,8 @@ public class CMISFolder extends CMISModel implements Folder {
 
 				return folder.getName();
 			}
-			catch (Exception e) {
-				_log.error(e, e);
+			catch (Exception exception) {
+				_log.error(exception, exception);
 			}
 		}
 
@@ -250,7 +253,10 @@ public class CMISFolder extends CMISModel implements Folder {
 				return parentFolder;
 			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
 		}
 
 		if (_cmisFolder.isRootFolder()) {
@@ -291,8 +297,8 @@ public class CMISFolder extends CMISModel implements Folder {
 				return parentFolder.getFolderId();
 			}
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 
 		return DLFolderConstants.DEFAULT_PARENT_FOLDER_ID;
@@ -356,7 +362,10 @@ public class CMISFolder extends CMISModel implements Folder {
 		try {
 			return user.getUserUuid();
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
 		}
 
 		return StringPool.BLANK;
@@ -517,9 +526,10 @@ public class CMISFolder extends CMISModel implements Folder {
 		try {
 			return RepositoryProviderUtil.getRepository(getRepositoryId());
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			throw new SystemException(
-				"Unable to get repository for folder " + getFolderId(), pe);
+				"Unable to get repository for folder " + getFolderId(),
+				portalException);
 		}
 	}
 

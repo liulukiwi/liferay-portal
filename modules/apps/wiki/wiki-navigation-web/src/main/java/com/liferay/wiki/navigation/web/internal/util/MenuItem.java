@@ -15,10 +15,13 @@
 package com.liferay.wiki.navigation.web.internal.util;
 
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Http;
 import com.liferay.wiki.model.WikiNode;
 import com.liferay.wiki.model.WikiPage;
+import com.liferay.wiki.navigation.web.internal.util.constants.WikiNavigationConstants;
 import com.liferay.wiki.service.WikiPageServiceUtil;
 
 import java.io.Serializable;
@@ -45,7 +48,11 @@ public class MenuItem implements Serializable {
 			wikiPages = WikiPageServiceUtil.getNodePages(
 				nodeId, WikiNavigationConstants.MAX_PAGES);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
+
 			return new LinkedList<>();
 		}
 
@@ -78,8 +85,16 @@ public class MenuItem implements Serializable {
 		return _externalURL;
 	}
 
-	public String getLabel() {
-		return _label;
+	public String getIcon() {
+		return _icon;
+	}
+
+	public String getId() {
+		return _id;
+	}
+
+	public String getName() {
+		return _name;
 	}
 
 	public String getURL() {
@@ -94,8 +109,16 @@ public class MenuItem implements Serializable {
 		_externalURL = externalURL;
 	}
 
-	public void setLabel(String label) {
-		_label = label;
+	public void setIcon(String icon) {
+		_icon = icon;
+	}
+
+	public void setId(String id) {
+		_id = id;
+	}
+
+	public void setName(String name) {
+		_name = name;
 	}
 
 	public void setURL(String url) {
@@ -124,7 +147,9 @@ public class MenuItem implements Serializable {
 
 			MenuItem menuItem = new MenuItem();
 
-			menuItem.setLabel(title);
+			menuItem.setIcon("wiki-page");
+			menuItem.setId(String.valueOf(wikiPage.getPageId()));
+			menuItem.setName(title);
 			menuItem.setURL(portletURL.toString());
 
 			if ((depth >= curDepth) ||
@@ -155,56 +180,62 @@ public class MenuItem implements Serializable {
 
 			MenuItem menuItem = new MenuItem();
 
-			menuItem.setLabel(title);
+			menuItem.setName(title);
 
 			menuItems.add(menuItem);
 
 			String s = matcher.group(2);
 
-			if (s != null) {
-				MenuItem childMenuItem = new MenuItem();
-
-				int index = s.indexOf(StringPool.PIPE);
-
-				String label = null;
-				String url = null;
-
-				if (index != -1) {
-					label = s.substring(index + 1);
-					url = s.substring(0, index);
-				}
-				else {
-					label = s;
-					url = s;
-				}
-
-				if (!url.startsWith(Http.HTTP)) {
-					portletURL.setParameter("title", url);
-					portletURL.setParameter(
-						"nodeId", String.valueOf(wikiPage.getNodeId()));
-
-					url = portletURL.toString();
-				}
-				else {
-					childMenuItem.setExternalURL(true);
-				}
-
-				childMenuItem.setLabel(label);
-				childMenuItem.setURL(url);
-
-				menuItem.addChild(childMenuItem);
+			if (s == null) {
+				continue;
 			}
+
+			MenuItem childMenuItem = new MenuItem();
+
+			int index = s.indexOf(StringPool.PIPE);
+
+			String name = null;
+			String url = null;
+
+			if (index != -1) {
+				name = s.substring(index + 1);
+				url = s.substring(0, index);
+			}
+			else {
+				name = s;
+				url = s;
+			}
+
+			if (!url.startsWith(Http.HTTP)) {
+				portletURL.setParameter("title", url);
+				portletURL.setParameter(
+					"nodeId", String.valueOf(wikiPage.getNodeId()));
+
+				url = portletURL.toString();
+			}
+			else {
+				childMenuItem.setExternalURL(true);
+			}
+
+			childMenuItem.setName(name);
+			childMenuItem.setURL(url);
+
+			menuItem.addChild(childMenuItem);
 		}
 
 		return menuItems;
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(MenuItem.class);
 
 	private static final Pattern _pattern = Pattern.compile(
 		"(?:(?:==\\s(.*?)\\s==)*(?:\\Q[[\\E(.*?)\\Q]]\\E)*)*");
 
 	private List<MenuItem> _children;
 	private boolean _externalURL;
-	private String _label;
+	private String _icon;
+	private String _id;
+	private String _name;
 	private String _url;
 
 }

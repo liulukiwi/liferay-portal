@@ -21,6 +21,8 @@ import com.liferay.exportimport.kernel.lar.StagedModelType;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.lock.Lock;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.repository.capabilities.Capability;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.repository.model.FileShortcut;
@@ -46,11 +48,12 @@ public class TestFileEntry implements FileEntry {
 	public TestFileEntry(
 		String fileName, long folderId, long groupId, InputStream inputStream) {
 
-		_date = new Date();
 		_fileName = fileName;
 		_folderId = folderId;
 		_groupId = groupId;
 		_inputStream = inputStream;
+
+		_date = new Date();
 	}
 
 	@Override
@@ -149,7 +152,11 @@ public class TestFileEntry implements FileEntry {
 		try {
 			return DLAppLocalServiceUtil.getFolder(_folderId);
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(portalException, portalException);
+			}
+
 			return null;
 		}
 	}
@@ -296,21 +303,6 @@ public class TestFileEntry implements FileEntry {
 	}
 
 	@Override
-	public long getVersionUserId() {
-		return 0;
-	}
-
-	@Override
-	public String getVersionUserName() {
-		return RandomTestUtil.randomString();
-	}
-
-	@Override
-	public String getVersionUserUuid() {
-		return RandomTestUtil.randomString();
-	}
-
-	@Override
 	public boolean hasLock() {
 		return false;
 	}
@@ -430,6 +422,8 @@ public class TestFileEntry implements FileEntry {
 	public FileEntry toUnescapedModel() {
 		return this;
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(TestFileEntry.class);
 
 	private final Date _date;
 	private final String _fileName;

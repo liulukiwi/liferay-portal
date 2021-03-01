@@ -14,14 +14,14 @@
 
 import ClayButton, {ClayButtonWithIcon} from '@clayui/button';
 import ClayIcon from '@clayui/icon';
+import {SheetSection} from '@clayui/layout';
+import ClayPanel from '@clayui/panel';
 import {ClayTooltipProvider} from '@clayui/tooltip';
-import React, {useEffect, useState} from 'react';
+import {DataDefinitionUtils} from 'data-engine-taglib';
+import React, {useContext, useEffect, useState} from 'react';
 
-import {
-	getDataDefinitionField,
-	getFieldLabel,
-	getOptionLabel
-} from '../../utils/dataDefinition.es';
+import {AppContext} from '../../AppContext.es';
+import {getLocalizedUserPreferenceValue} from '../../utils/lang.es';
 
 const createFileEntryPreviewURL = (groupId, fileEntryId) => {
 	const portletURL = Liferay.PortletURL.createURL(
@@ -44,7 +44,7 @@ const createFileEntryPreviewURL = (groupId, fileEntryId) => {
 	return portletURL.toString();
 };
 
-const getDocumentIcon = fileName => {
+const getDocumentIcon = (fileName) => {
 	const extension = fileName.split('.').pop();
 
 	if (extension === 'pdf') {
@@ -56,6 +56,34 @@ const getDocumentIcon = fileName => {
 	}
 
 	return 'document-default';
+};
+
+const DetailsViewOptionsRenderer = ({getOptionValue, repeatable, values}) => {
+	if (values.length === 0) {
+		values.push([]);
+	}
+
+	if (repeatable) {
+		return (
+			<ul>
+				{values.map((value, index) => (
+					<li key={index}>{value.map(getOptionValue).join(', ')}</li>
+				))}
+			</ul>
+		);
+	}
+
+	let index = 0;
+
+	return (
+		<ul>
+			{values.map((value) => {
+				return value.map((option) => (
+					<li key={index++}>{getOptionValue(option)}</li>
+				));
+			})}
+		</ul>
+	);
 };
 
 const DocumentRenderer = ({displayType, value = {}}) => {
@@ -78,16 +106,17 @@ const DocumentRenderer = ({displayType, value = {}}) => {
 		Liferay.Util.openWindow({
 			dialog: {
 				destroyOnHide: true,
-				modal: true
+				modal: true,
 			},
 			title: Liferay.Language.get('file-preview'),
-			uri: previewURL
+			uri: previewURL,
 		});
 	};
 
 	const onClickDownload = () => {
-		location.href = `${themeDisplay.getPathContext()}/documents/${groupId}/${folderId ||
-			'0'}/${encodeURIComponent(title)}?download=true`;
+		location.href = `${themeDisplay.getPathContext()}/documents/${groupId}/${
+			folderId || '0'
+		}/${encodeURIComponent(title)}?download=true`;
 	};
 
 	return (
@@ -96,7 +125,7 @@ const DocumentRenderer = ({displayType, value = {}}) => {
 				<StringRenderer value={title} />
 			) : fileEntryId ? (
 				<ClayTooltipProvider>
-					<ClayButton.Group className="data-record-document-field">
+					<ClayButton.Group className="data-record-document-field mb-2">
 						<ClayButton
 							data-tooltip-align="bottom"
 							data-tooltip-delay="200"
@@ -121,108 +150,200 @@ const DocumentRenderer = ({displayType, value = {}}) => {
 					</ClayButton.Group>
 				</ClayTooltipProvider>
 			) : (
-				<StringRenderer value={' - '} />
+				<StringRenderer />
 			)}
 		</>
 	);
 };
 
-const OptionsRenderer = ({displayType, options, values = []}) => {
-	const labels = values.map(value => getOptionLabel(options, value));
+const StringRenderer = ({value}) => (
+	<span className="d-block">
+		{(Array.isArray(value) && value.length > 0
+			? value.join(', ')
+			: value) || ' - '}
+	</span>
+);
 
-	if (displayType === 'list') {
-		return <StringRenderer value={labels.join(', ')} />;
-	}
+export const SectionRenderer = ({
+	children,
+	collapsible,
+	dataDefinition,
+	fieldName,
+}) => {
+	const {userLanguageId} = useContext(AppContext);
+	const {label} = DataDefinitionUtils.getDataDefinitionField(
+		dataDefinition,
+		fieldName
+	);
+	const localizedLabel = getLocalizedUserPreferenceValue(
+		label,
+		userLanguageId,
+		dataDefinition.defaultLanguageId
+	);
 
 	return (
-		<ul>
-			{labels.map((label, index) => (
-				<li key={index}>{label}</li>
-			))}
-		</ul>
+		<ClayPanel
+			className="data-record-section"
+			collapsable={collapsible}
+			defaultExpanded
+			displayTitle={
+				<SheetSection>
+					<div className="autofit-row sheet-subtitle">
+						<span className="autofit-col autofit-col-expand">
+							<label className="text-uppercase">
+								{localizedLabel}
+							</label>
+						</span>
+					</div>
+				</SheetSection>
+			}
+			showCollapseIcon
+		>
+			<ClayPanel.Body>{children}</ClayPanel.Body>
+		</ClayPanel>
 	);
 };
 
-const StringRenderer = ({value}) => <div>{value || ' - '}</div>;
+const getFieldValueRenderer = (
+	dataDefinitionField,
+	displayType,
+	userLanguageId,
+	values = []
+) => {
+	const {
+		customProperties,
+		defaultLanguageId,
+		fieldType,
+		repeatable,
+	} = dataDefinitionField;
+	const {multiple, options} = customProperties;
 
-const getFieldValueRenderer = (dataDefinitionField, displayType) => {
-	const {customProperties, fieldType} = dataDefinitionField;
+	const getOptionValue = (value) =>
+		DataDefinitionUtils.getOptionLabel(
+			options,
+			value,
+			defaultLanguageId,
+			userLanguageId
+		);
 
 	if (fieldType === 'checkbox_multiple') {
-		const {options} = customProperties;
+		if (displayType === 'list') {
+			return (
+				<StringRenderer
+					value={values.map((value) => {
+						if (value) {
+							return value.map(getOptionValue).join(', ');
+						}
 
-		return ({value}) => (
-			<OptionsRenderer
-				displayType={displayType}
-				options={options}
-				values={value}
+						return null;
+					})}
+				/>
+			);
+		}
+
+		return (
+			<DetailsViewOptionsRenderer
+				getOptionValue={getOptionValue}
+				repeatable={repeatable}
+				values={values}
 			/>
 		);
 	}
 
 	if (fieldType === 'document_library') {
-		return ({value}) => (
-			<DocumentRenderer displayType={displayType} value={value} />
-		);
-	}
-
-	if (fieldType === 'grid') {
-		return ({value}) => <StringRenderer value={Object.keys(value)} />;
+		return values.map((value, key) => (
+			<DocumentRenderer
+				displayType={displayType}
+				key={key}
+				value={value}
+			/>
+		));
 	}
 
 	if (fieldType === 'radio') {
-		const {options} = customProperties;
-
-		return ({value}) => (
-			<StringRenderer value={getOptionLabel(options, value)} />
-		);
+		return <StringRenderer value={values.map(getOptionValue)} />;
 	}
 
 	if (fieldType === 'select') {
-		const {multiple, options} = customProperties;
+		if (displayType === 'list' || !multiple) {
+			return (
+				<StringRenderer
+					value={values.map((value) => {
+						if (value) {
+							return value.map(getOptionValue).join(', ');
+						}
 
-		if (multiple) {
-			return ({value}) => (
-				<OptionsRenderer
-					displayType={displayType}
-					options={options}
-					values={value}
+						return null;
+					})}
 				/>
 			);
 		}
 
-		return ({value = []}) => (
-			<StringRenderer value={getOptionLabel(options, value[0])} />
+		return (
+			<DetailsViewOptionsRenderer
+				getOptionValue={getOptionValue}
+				repeatable={repeatable}
+				values={values}
+			/>
 		);
 	}
 
-	return ({value}) => <StringRenderer value={value} />;
+	return <StringRenderer value={values} />;
 };
 
 export const FieldValuePreview = ({
 	dataDefinition,
 	dataRecordValues,
 	displayType = 'form',
-	fieldName
+	fieldName,
 }) => {
-	const dataDefinitionField = getDataDefinitionField(
+	const {userLanguageId} = useContext(AppContext);
+	const {defaultLanguageId} = dataDefinition;
+	const dataDefinitionField = DataDefinitionUtils.getDataDefinitionField(
 		dataDefinition,
 		fieldName
 	);
 
-	const Renderer = getFieldValueRenderer(dataDefinitionField, displayType);
+	const dataRecordValuesKeys = Object.keys(dataRecordValues);
 
-	const value = dataRecordValues[fieldName];
+	const values = dataRecordValuesKeys
+		.filter((key) => key.includes(fieldName))
+		.map((key) => {
+			if (typeof dataRecordValues[key] == 'object') {
+				return dataRecordValues[key][defaultLanguageId];
+			}
 
-	return <Renderer value={value} />;
+			return dataRecordValues[key];
+		});
+
+	return getFieldValueRenderer(
+		dataDefinitionField,
+		displayType,
+		userLanguageId,
+		values
+	);
 };
 
-export default ({dataDefinition, dataRecordValues, fieldName}) => {
-	const label = getFieldLabel(dataDefinition, fieldName);
+export default ({
+	dataDefinition,
+	dataRecordValues,
+	defaultLanguageId,
+	fieldName,
+}) => {
+	const {userLanguageId} = useContext(AppContext);
+	const {label} = DataDefinitionUtils.getDataDefinitionField(
+		dataDefinition,
+		fieldName
+	);
+	const localizedLabel = getLocalizedUserPreferenceValue(
+		label,
+		userLanguageId,
+		defaultLanguageId
+	);
 
 	return (
 		<div className="data-record-field-preview">
-			<label>{label}</label>
+			<label>{localizedLabel}</label>
 
 			<FieldValuePreview
 				dataDefinition={dataDefinition}

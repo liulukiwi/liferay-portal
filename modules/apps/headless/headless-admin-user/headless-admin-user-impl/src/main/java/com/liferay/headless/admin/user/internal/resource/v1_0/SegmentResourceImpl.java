@@ -15,6 +15,7 @@
 package com.liferay.headless.admin.user.internal.resource.v1_0;
 
 import com.liferay.headless.admin.user.dto.v1_0.Segment;
+import com.liferay.headless.admin.user.internal.dto.v1_0.converter.SegmentDTOConverter;
 import com.liferay.headless.admin.user.resource.v1_0.SegmentResource;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.UserService;
@@ -101,7 +102,7 @@ public class SegmentResourceImpl extends BaseSegmentResourceImpl {
 			if (key.startsWith("x-")) {
 				context.put(
 					CamelCaseUtil.toCamelCase(
-						StringUtil.replace(key, "x-", "")),
+						StringUtil.removeSubstring(key, "x-")),
 					value);
 			}
 			else if (key.equals("accept-language")) {
@@ -128,23 +129,14 @@ public class SegmentResourceImpl extends BaseSegmentResourceImpl {
 	}
 
 	private Segment _toSegment(SegmentsEntry segmentsEntry) {
-		return new Segment() {
-			{
-				active = segmentsEntry.isActive();
-				criteria = segmentsEntry.getCriteria();
-				dateCreated = segmentsEntry.getCreateDate();
-				dateModified = segmentsEntry.getModifiedDate();
-				id = segmentsEntry.getSegmentsEntryId();
-				name = segmentsEntry.getName(
-					segmentsEntry.getDefaultLanguageId());
-				siteId = segmentsEntry.getGroupId();
-				source = segmentsEntry.getSource();
-			}
-		};
+		return _segmentDTOConverter.toDTO(segmentsEntry);
 	}
 
 	@javax.ws.rs.core.Context
 	private HttpHeaders _httpHeaders;
+
+	@Reference
+	private SegmentDTOConverter _segmentDTOConverter;
 
 	@Reference
 	private SegmentsEntryProviderRegistry _segmentsEntryProviderRegistry;

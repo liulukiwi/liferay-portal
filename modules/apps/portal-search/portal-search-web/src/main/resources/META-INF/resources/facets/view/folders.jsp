@@ -17,7 +17,7 @@
 <%@ include file="/facets/init.jsp" %>
 
 <%
-FolderSearchFacetDisplayBuilder folderSearchFacetDisplayBuilder = new FolderSearchFacetDisplayBuilder();
+FolderSearchFacetDisplayBuilder folderSearchFacetDisplayBuilder = new FolderSearchFacetDisplayBuilder(renderRequest);
 
 folderSearchFacetDisplayBuilder.setFacet(facet);
 folderSearchFacetDisplayBuilder.setFolderTitleLookup(new FolderTitleLookupImpl(new FolderSearcher(), request));
@@ -37,7 +37,7 @@ FolderSearchFacetDisplayContext folderSearchFacetDisplayContext = folderSearchFa
 		</c:if>
 	</c:when>
 	<c:otherwise>
-		<div class="panel panel-default">
+		<div class="panel panel-secondary">
 			<div class="panel-heading">
 				<div class="panel-title">
 					<liferay-ui:message key="folders" />

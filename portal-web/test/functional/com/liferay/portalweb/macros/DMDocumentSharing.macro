@@ -17,21 +17,24 @@ definition {
 			dmDocumentTitle = "${dmDocumentTitle}",
 			viewableBy = "Owner");
 
-		DMNavigator.gotoDocumentPermissionsCP(dmDocumentTitle = "${dmDocumentTitle}");
+		PermissionsInline.gotoDocumentsAndMediaDocumentPG(dmDocumentTitle = "${dmDocumentTitle}");
 
 		Role.removePermissionPG(
 			permissionDefinitionKey = "INLINE_PERMISSIONS_ADD_DISCUSSION_CHECKBOX",
 			roleTitle = "Guest");
 
-		IFrame.closeFrame();
-
-		Pause(locator1 = "5000");
+		Pause(locator1 = "3000");
 	}
 
 	macro changePermission {
-		DMDocument.viewPG(
-			dmDocumentDescription = "${dmDocumentDescription}",
-			dmDocumentTitle = "${dmDocumentTitle}");
+		if (isSet(depotName)) {
+			DMDocument.viewCP(dmDocumentTitle = "${dmDocumentTitle}");
+		}
+		else {
+			DMDocument.viewPG(
+				dmDocumentDescription = "${dmDocumentDescription}",
+				dmDocumentTitle = "${dmDocumentTitle}");
+		}
 
 		DMDocumentSharing._manageCollaborators();
 
@@ -110,6 +113,16 @@ definition {
 		AssertTextEquals(
 			locator1 = "DocumentsAndMediaDocument#DOCUMENT_INFO_TITLE",
 			value1 = "${dmDocumentTitle}");
+	}
+
+	macro viewSharedFlag {
+		if (isSet(detailsView)) {
+			AssertVisible(locator1 = "DocumentsAndMedia#ICON_DOCUMENT_SHARED");
+		}
+
+		else {
+			AssertElementNotPresent(locator1 = "DocumentsAndMedia#ICON_DOCUMENT_SHARED");
+		}
 	}
 
 }

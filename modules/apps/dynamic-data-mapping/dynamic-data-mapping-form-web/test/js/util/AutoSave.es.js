@@ -12,7 +12,7 @@
  * details.
  */
 
-import {dom} from 'metal-dom';
+import {buildFragment} from 'frontend-js-web';
 
 import AutoSave from '../../../src/main/resources/META-INF/resources/admin/js/util/AutoSave.es';
 
@@ -21,13 +21,17 @@ const AUTOSAVE_INTERVAL = 2;
 const URL = '/sample/autosave';
 
 const createForm = () => {
-	dom.enterDocument('<form id="mockForm"></form>');
+	const frag = buildFragment('<form id="mockForm"></form>');
+
+	document.body.appendChild(frag);
 
 	return document.querySelector('#mockForm');
 };
 
-const createInput = id => {
-	dom.enterDocument(`<input id="${id}" value="0" />`);
+const createInput = (id) => {
+	const frag = buildFragment(`<input id="${id}" value="0" />`);
+
+	document.body.appendChild(frag);
 
 	return document.querySelector(`#${id}`);
 };
@@ -36,15 +40,6 @@ describe('AutoSave', () => {
 	let component;
 	let form;
 	let stateSyncronizer;
-
-	afterEach(() => {
-		if (component) {
-			component.dispose();
-		}
-		if (form) {
-			dom.exitDocument(form);
-		}
-	});
 
 	beforeEach(() => {
 		jest.useFakeTimers();
@@ -55,12 +50,12 @@ describe('AutoSave', () => {
 		stateSyncronizer = {
 			getState: () => {
 				return {
-					pages: stateSyncronizer.pages
+					pages: stateSyncronizer.pages,
 				};
 			},
 			isEmpty: () => true,
 			pages: [],
-			syncInputs: () => {}
+			syncInputs: () => {},
 		};
 
 		component = new AutoSave({
@@ -68,8 +63,22 @@ describe('AutoSave', () => {
 			interval: AUTOSAVE_INTERVAL,
 			namespace: '',
 			stateSyncronizer,
-			url: URL
+			url: URL,
 		});
+
+		Object.defineProperty(window, 'location', {
+			value: {reload: jest.fn()},
+			writable: true,
+		});
+	});
+
+	afterEach(() => {
+		if (component) {
+			component.dispose();
+		}
+		if (form) {
+			form.remove();
+		}
 	});
 
 	it('calls the saveIfNeeded function every given interval', () => {
@@ -89,13 +98,13 @@ describe('AutoSave', () => {
 
 		stateSyncronizer.getState = () => {
 			return {
-				newState: true
+				newState: true,
 			};
 		};
 		stateSyncronizer.isEmpty = () => false;
 
 		fetch.mockResponse(JSON.stringify({}), {
-			status: 200
+			status: 200,
 		});
 
 		jest.advanceTimersByTime(component.props.interval * 3);
@@ -114,7 +123,7 @@ describe('AutoSave', () => {
 		fetch.mockResponse(
 			JSON.stringify({
 				modifiedDate,
-				saveAsDraft
+				saveAsDraft,
 			})
 		);
 
@@ -124,28 +133,22 @@ describe('AutoSave', () => {
 	});
 
 	it('reloads the page when session has expired', () => {
-		const reloadMock = jest.spyOn(window.location, 'reload');
-
-		reloadMock.mockImplementation(() => null);
+		window.location.reload.mockImplementation(() => null);
 
 		fetch.mockReject({status: 401});
 
 		return component.save().catch(() => {
-			expect(reloadMock).toHaveBeenCalledTimes(1);
-			reloadMock.mockRestore();
+			expect(window.location.reload).toHaveBeenCalledTimes(1);
 		});
 	});
 
 	it('does not reload the page when request failed for other reasons', () => {
-		const reloadMock = jest.spyOn(window.location, 'reload');
-
-		reloadMock.mockImplementation(() => null);
+		window.location.reload.mockImplementation(() => null);
 
 		fetch.mockReject({status: 500});
 
 		return component.save().catch(() => {
-			expect(reloadMock).not.toHaveBeenCalled();
-			reloadMock.mockRestore();
+			expect(window.location.reload).not.toHaveBeenCalled();
 		});
 	});
 
@@ -158,14 +161,14 @@ describe('AutoSave', () => {
 		fetch.mockResponse(
 			JSON.stringify({
 				modifiedDate,
-				saveAsDraft
+				saveAsDraft,
 			})
 		);
 
 		return component.save().then(() => {
 			expect(spy).toHaveBeenCalledWith('autosaved', {
 				modifiedDate,
-				savedAsDraft: saveAsDraft
+				savedAsDraft: saveAsDraft,
 			});
 		});
 	});
@@ -177,7 +180,7 @@ describe('AutoSave', () => {
 		fetch.mockResponse(
 			JSON.stringify({
 				ddmStructureId: 456,
-				formInstanceId: '123'
+				formInstanceId: '123',
 			})
 		);
 
@@ -185,8 +188,8 @@ describe('AutoSave', () => {
 			expect(ddmStructureIdInput.value).toBe('456');
 			expect(formInstanceIdInput.value).toBe('123');
 
-			dom.exitDocument(formInstanceIdInput);
-			dom.exitDocument(ddmStructureIdInput);
+			formInstanceIdInput.remove();
+			ddmStructureIdInput.remove();
 		});
 	});
 });

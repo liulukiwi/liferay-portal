@@ -33,7 +33,7 @@ import org.osgi.service.component.annotations.Component;
 	immediate = true,
 	property = {
 		"javax.portlet.name=" + ExportImportPortletKeys.EXPORT_IMPORT,
-		"mvc.command.name=exportImport"
+		"mvc.command.name=/export_import/export_import"
 	},
 	service = MVCRenderCommand.class
 )
@@ -49,13 +49,13 @@ public class ExportImportMVCRenderCommand implements MVCRenderCommand {
 		try {
 			portlet = ActionUtil.getPortlet(renderRequest);
 		}
-		catch (PrincipalException pe) {
-			SessionErrors.add(renderRequest, pe.getClass());
+		catch (PrincipalException principalException) {
+			SessionErrors.add(renderRequest, principalException.getClass());
 
 			return "/error.jsp";
 		}
-		catch (Exception e) {
-			throw new PortletException(e);
+		catch (Exception exception) {
+			throw new PortletException(exception);
 		}
 
 		try {
@@ -67,8 +67,8 @@ public class ExportImportMVCRenderCommand implements MVCRenderCommand {
 
 			return "/export_import.jsp";
 		}
-		catch (Exception e) {
-			SessionErrors.add(renderRequest, e.getClass());
+		catch (Exception exception) {
+			SessionErrors.add(renderRequest, exception.getClass());
 
 			return "/error.jsp";
 		}

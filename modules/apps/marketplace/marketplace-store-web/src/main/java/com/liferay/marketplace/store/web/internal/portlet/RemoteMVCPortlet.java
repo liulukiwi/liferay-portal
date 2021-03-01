@@ -16,6 +16,8 @@ package com.liferay.marketplace.store.web.internal.portlet;
 
 import com.liferay.marketplace.store.web.internal.oauth.util.OAuthManager;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.portlet.PortletResponseUtil;
@@ -133,17 +135,20 @@ public class RemoteMVCPortlet extends MVCPortlet {
 
 			return;
 		}
-		catch (NoSuchMethodException nsme) {
+		catch (NoSuchMethodException noSuchMethodException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(noSuchMethodException, noSuchMethodException);
+			}
 		}
 
 		try {
 			remoteProcessAction(actionRequest, actionResponse);
 		}
-		catch (IOException ioe) {
-			throw ioe;
+		catch (IOException ioException) {
+			throw ioException;
 		}
-		catch (Exception e) {
-			throw new PortletException(e);
+		catch (Exception exception) {
+			throw new PortletException(exception);
 		}
 	}
 
@@ -176,11 +181,11 @@ public class RemoteMVCPortlet extends MVCPortlet {
 				return;
 			}
 		}
-		catch (IOException ioe) {
-			throw ioe;
+		catch (IOException ioException) {
+			throw ioException;
 		}
-		catch (Exception e) {
-			throw new PortletException(e);
+		catch (Exception exception) {
+			throw new PortletException(exception);
 		}
 
 		super.render(renderRequest, renderResponse);
@@ -196,11 +201,11 @@ public class RemoteMVCPortlet extends MVCPortlet {
 		try {
 			remoteServeResource(resourceRequest, resourceResponse);
 		}
-		catch (IOException ioe) {
-			throw ioe;
+		catch (IOException ioException) {
+			throw ioException;
 		}
-		catch (Exception e) {
-			throw new PortletException(e);
+		catch (Exception exception) {
+			throw new PortletException(exception);
 		}
 	}
 
@@ -449,5 +454,8 @@ public class RemoteMVCPortlet extends MVCPortlet {
 	}
 
 	protected OAuthManager oAuthManager;
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		RemoteMVCPortlet.class);
 
 }

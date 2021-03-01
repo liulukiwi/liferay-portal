@@ -22,12 +22,14 @@ import com.liferay.blogs.web.internal.util.BlogsEntryUtil;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandler;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerRegistryUtil;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
-import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemList;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemListBuilder;
 import com.liferay.petra.function.UnsafeConsumer;
 import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.StagedModel;
 import com.liferay.portal.kernel.model.WorkflowedModel;
@@ -74,54 +76,42 @@ public class BlogsEntryActionDropdownItemsProvider {
 	}
 
 	public List<DropdownItem> getActionDropdownItems() throws PortalException {
-		return new DropdownItemList() {
-			{
-				if (_hasUpdatePermission()) {
-					add(_getEditEntryActionUnsafeConsumer());
-				}
+		boolean sharingEnabled = BlogsEntrySharingUtil.isSharingEnabled(
+			_blogsEntry.getGroupId());
+		boolean hasDeletePermission = _hasDeletePermission();
+		boolean trashEnabled = _isTrashEnabled();
 
-				if (BlogsEntrySharingUtil.isSharingEnabled(
-						_blogsEntry.getGroupId())) {
-
-					if (BlogsEntrySharingUtil.containsSharePermission(
-							_permissionChecker, _blogsEntry)) {
-
-						add(
-							BlogsEntrySharingUtil.createShareDropdownItem(
-								_blogsEntry, _httpServletRequest));
-					}
-
-					if (BlogsEntrySharingUtil.
-							containsManageCollaboratorsPermission(
-								_permissionChecker, _blogsEntry)) {
-
-						add(
-							BlogsEntrySharingUtil.
-								createManageCollaboratorsDropdownItem(
-									_blogsEntry, _httpServletRequest));
-					}
-				}
-
-				if (_hasPermissionsPermission()) {
-					add(_getPermissionsActionUnsafeConsumer());
-				}
-
-				if (_hasDeletePermission()) {
-					if (_isTrashEnabled()) {
-						add(_getMoveEntryToTrashActionUnsafeConsumer());
-					}
-					else {
-						add(_getDeleteEntryActionUnsafeConsumer());
-					}
-				}
-
-				if (_isShowPublishMenuItem() &&
-					_hasExportImportPortletInfoPermission()) {
-
-					add(_getPublishToLiveEntryActionUnsafeConsumer());
-				}
-			}
-		};
+		return DropdownItemListBuilder.add(
+			() -> _hasUpdatePermission(), _getEditEntryActionUnsafeConsumer()
+		).add(
+			() ->
+				sharingEnabled &&
+				BlogsEntrySharingUtil.containsSharePermission(
+					_permissionChecker, _blogsEntry),
+			BlogsEntrySharingUtil.createShareDropdownItem(
+				_blogsEntry, _httpServletRequest)
+		).add(
+			() ->
+				sharingEnabled &&
+				BlogsEntrySharingUtil.containsManageCollaboratorsPermission(
+					_permissionChecker, _blogsEntry),
+			BlogsEntrySharingUtil.createManageCollaboratorsDropdownItem(
+				_blogsEntry, _httpServletRequest)
+		).add(
+			() -> _hasPermissionsPermission(),
+			_getPermissionsActionUnsafeConsumer()
+		).add(
+			() -> hasDeletePermission && trashEnabled,
+			_getMoveEntryToTrashActionUnsafeConsumer()
+		).add(
+			() -> hasDeletePermission && !trashEnabled,
+			_getDeleteEntryActionUnsafeConsumer()
+		).add(
+			() ->
+				_isShowPublishMenuItem() &&
+				_hasExportImportPortletInfoPermission(),
+			_getPublishToLiveEntryActionUnsafeConsumer()
+		).build();
 	}
 
 	/**
@@ -144,7 +134,11 @@ public class BlogsEntryActionDropdownItemsProvider {
 
 			return false;
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
+
 			return false;
 		}
 	}
@@ -157,7 +151,7 @@ public class BlogsEntryActionDropdownItemsProvider {
 		Group group, String portletId, String className, String uuid) {
 
 		try {
-			StagedModelDataHandler stagedModelDataHandler =
+			StagedModelDataHandler<?> stagedModelDataHandler =
 				StagedModelDataHandlerRegistryUtil.getStagedModelDataHandler(
 					className);
 
@@ -182,7 +176,11 @@ public class BlogsEntryActionDropdownItemsProvider {
 
 			return _isShowPublishMenuItem(group, portletId);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
+
 			return false;
 		}
 	}
@@ -261,8 +259,8 @@ public class BlogsEntryActionDropdownItemsProvider {
 				LiferayWindowState.POP_UP.toString(), null,
 				_httpServletRequest);
 		}
-		catch (Exception e) {
-			return ReflectionUtil.throwException(e);
+		catch (Exception exception) {
+			return ReflectionUtil.throwException(exception);
 		}
 	}
 
@@ -298,8 +296,8 @@ public class BlogsEntryActionDropdownItemsProvider {
 			return BlogsEntryPermission.contains(
 				_permissionChecker, _blogsEntry, ActionKeys.DELETE);
 		}
-		catch (PortalException pe) {
-			return ReflectionUtil.throwException(pe);
+		catch (PortalException portalException) {
+			return ReflectionUtil.throwException(portalException);
 		}
 	}
 
@@ -309,8 +307,8 @@ public class BlogsEntryActionDropdownItemsProvider {
 				_permissionChecker, _blogsEntry.getGroupId(),
 				ActionKeys.EXPORT_IMPORT_PORTLET_INFO);
 		}
-		catch (PortalException pe) {
-			return ReflectionUtil.throwException(pe);
+		catch (PortalException portalException) {
+			return ReflectionUtil.throwException(portalException);
 		}
 	}
 
@@ -319,8 +317,8 @@ public class BlogsEntryActionDropdownItemsProvider {
 			return BlogsEntryPermission.contains(
 				_permissionChecker, _blogsEntry, ActionKeys.PERMISSIONS);
 		}
-		catch (PortalException pe) {
-			return ReflectionUtil.throwException(pe);
+		catch (PortalException portalException) {
+			return ReflectionUtil.throwException(portalException);
 		}
 	}
 
@@ -329,8 +327,8 @@ public class BlogsEntryActionDropdownItemsProvider {
 			return BlogsEntryPermission.contains(
 				_permissionChecker, _blogsEntry, ActionKeys.UPDATE);
 		}
-		catch (PortalException pe) {
-			return ReflectionUtil.throwException(pe);
+		catch (PortalException portalException) {
+			return ReflectionUtil.throwException(portalException);
 		}
 	}
 
@@ -349,10 +347,13 @@ public class BlogsEntryActionDropdownItemsProvider {
 			return _trashHelper.isTrashEnabled(
 				PortalUtil.getScopeGroupId(_httpServletRequest));
 		}
-		catch (PortalException pe) {
-			return ReflectionUtil.throwException(pe);
+		catch (PortalException portalException) {
+			return ReflectionUtil.throwException(portalException);
 		}
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		BlogsEntryActionDropdownItemsProvider.class);
 
 	private final BlogsEntry _blogsEntry;
 	private final HttpServletRequest _httpServletRequest;

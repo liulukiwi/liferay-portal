@@ -64,7 +64,7 @@ public class NavTag extends BaseNavTag implements BodyTag {
 
 			StringBundler sb = navBarTag.getResponsiveButtonsSB();
 
-			sb.append("<a class=\"btn navbar-btn navbar-toggle");
+			sb.append("<a class=\"navbar-toggler navbar-toggler-link");
 
 			String cssClass = getCssClass();
 
@@ -92,7 +92,7 @@ public class NavTag extends BaseNavTag implements BodyTag {
 			String icon = getIcon();
 
 			if (Validator.isNull(icon)) {
-				sb.append("<i class=\"icon-reorder\"></i>");
+				sb.append("<span class=\"navbar-toggler-icon\"></span>");
 			}
 			else if (icon.equals("user") && themeDisplay.isSignedIn()) {
 				try {
@@ -112,8 +112,8 @@ public class NavTag extends BaseNavTag implements BodyTag {
 
 					sb.append("\">");
 				}
-				catch (Exception e) {
-					throw new JspException(e);
+				catch (Exception exception) {
+					throw new JspException(exception);
 				}
 			}
 			else {

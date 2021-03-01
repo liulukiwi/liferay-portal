@@ -93,7 +93,7 @@ else {
 <aui:input name="description" placeholder="description" />
 
 <c:if test="<%= !group.isCompany() && !group.isGuest() %>">
-	<aui:input name="active" type="toggle-switch" value="<%= group.isActive() %>" />
+	<aui:input inlineLabel="right" labelCssClass="simple-toggle-switch" name="active" type="toggle-switch" value="<%= group.isActive() %>" />
 </c:if>
 
 <c:if test="<%= (parentGroupId != GroupConstants.DEFAULT_PARENT_GROUP_ID) && PropsValues.SITES_SHOW_INHERIT_CONTENT_SCOPE_FROM_PARENT_SITE %>">
@@ -108,7 +108,7 @@ else {
 	}
 	%>
 
-	<aui:input disabled="<%= disabled %>" helpMessage='<%= disabled ? "this-site-cannot-inherit-the-content-from-its-parent-site-since-the-parent-site-is-already-inheriting-the-content-from-its-parent" : StringPool.BLANK %>' name="inheritContent" type="toggle-switch" value="<%= value %>" />
+	<aui:input disabled="<%= disabled %>" helpMessage='<%= disabled ? "this-site-cannot-inherit-the-content-from-its-parent-site-since-the-parent-site-is-already-inheriting-the-content-from-its-parent" : StringPool.BLANK %>' inlineLabel="right" labelCssClass="simple-toggle-switch" name="inheritContent" type="toggle-switch" value="<%= value %>" />
 </c:if>
 
 <h4 class="text-default"><liferay-ui:message key="membership-options" /></h4>
@@ -128,7 +128,7 @@ else {
 	}
 	%>
 
-	<aui:input label="allow-manual-membership-management" name="manualMembership" type="toggle-switch" value="<%= manualMembership %>" />
+	<aui:input inlineLabel="right" label="allow-manual-membership-management" labelCssClass="simple-toggle-switch" name="manualMembership" type="toggle-switch" value="<%= manualMembership %>" />
 
 	<%
 	List<Group> parentGroups = new ArrayList<Group>();
@@ -203,34 +203,13 @@ else {
 		}
 		%>
 
-		<aui:input label="limit-membership-to-members-of-the-parent-site" name="membershipRestriction" type="toggle-switch" value="<%= membershipRestriction %>" />
+		<aui:input inlineLabel="right" label="limit-membership-to-members-of-the-parent-site" labelCssClass="simple-toggle-switch" name="membershipRestriction" type="toggle-switch" value="<%= membershipRestriction %>" />
 	</div>
 
 	<aui:script use="liferay-search-container">
-		A.one('#<portlet:namespace />selectParentSiteLink').on('click', function(
-			event
-		) {
-			Liferay.Util.selectEntity(
-				{
-					dialog: {
-						constrain: true,
-						modal: true
-					},
-					id: '<portlet:namespace />selectGroup',
-					title: '<liferay-ui:message arguments="site" key="select-x" />',
-
-					<%
-					PortletURL groupSelectorURL = PortletProviderUtil.getPortletURL(request, Group.class.getName(), PortletProvider.Action.BROWSE);
-
-					groupSelectorURL.setParameter("includeCurrentGroup", Boolean.FALSE.toString());
-					groupSelectorURL.setParameter("groupId", String.valueOf(group.getGroupId()));
-					groupSelectorURL.setParameter("eventName", liferayPortletResponse.getNamespace() + "selectGroup");
-					groupSelectorURL.setWindowState(LiferayWindowState.POP_UP);
-					%>
-
-					uri: '<%= groupSelectorURL.toString() %>'
-				},
-				function(event) {
+		A.one('#<portlet:namespace />selectParentSiteLink').on('click', (event) => {
+			Liferay.Util.openSelectionModal({
+				onSelect: function (event) {
 					var searchContainer = Liferay.SearchContainer.get(
 						'<portlet:namespace />parentGroupSearchContainer'
 					);
@@ -256,8 +235,21 @@ else {
 					A.one(
 						'#<portlet:namespace />membershipRestrictionContainer'
 					).show();
-				}
-			);
+				},
+				selectEventName: '<portlet:namespace />selectGroup',
+				title: '<liferay-ui:message arguments="site" key="select-x" />',
+
+				<%
+				PortletURL groupSelectorURL = PortletProviderUtil.getPortletURL(request, Group.class.getName(), PortletProvider.Action.BROWSE);
+
+				groupSelectorURL.setParameter("includeCurrentGroup", Boolean.FALSE.toString());
+				groupSelectorURL.setParameter("groupId", String.valueOf(group.getGroupId()));
+				groupSelectorURL.setParameter("eventName", liferayPortletResponse.getNamespace() + "selectGroup");
+				groupSelectorURL.setWindowState(LiferayWindowState.POP_UP);
+				%>
+
+				url: '<%= groupSelectorURL.toString() %>',
+			});
 		});
 
 		var searchContainer = Liferay.SearchContainer.get(
@@ -266,7 +258,7 @@ else {
 
 		searchContainer.get('contentBox').delegate(
 			'click',
-			function(event) {
+			(event) => {
 				var link = event.currentTarget;
 
 				var tr = link.ancestor('tr');

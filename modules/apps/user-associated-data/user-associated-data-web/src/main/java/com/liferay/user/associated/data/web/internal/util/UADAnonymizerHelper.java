@@ -18,6 +18,8 @@ import com.liferay.counter.kernel.service.CounterLocalService;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
@@ -65,7 +67,11 @@ public class UADAnonymizerHelper {
 
 			return false;
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
+
 			return false;
 		}
 	}
@@ -73,11 +79,11 @@ public class UADAnonymizerHelper {
 	private User _createAnonymousUser(long companyId) throws Exception {
 		long creatorUserId = 0;
 
-		String password = StringUtil.randomString();
+		String randomString = StringUtil.randomString();
 
 		boolean autoPassword = false;
-		String password1 = password;
-		String password2 = password;
+		String password1 = randomString;
+		String password2 = randomString;
 		boolean autoScreenName = false;
 
 		long counter = _counterLocalService.increment(
@@ -91,8 +97,6 @@ public class UADAnonymizerHelper {
 		String emailAddress = StringBundler.concat(
 			screenName, StringPool.AT, company.getMx());
 
-		long facebookId = 0;
-		String openId = StringPool.BLANK;
 		Locale locale = LocaleThreadLocal.getDefaultLocale();
 		String firstName = "Anonymous";
 		String middleName = StringPool.BLANK;
@@ -111,12 +115,12 @@ public class UADAnonymizerHelper {
 		boolean sendEmail = false;
 		ServiceContext serviceContext = null;
 
-		User anonymousUser = _userLocalService.addUserWithWorkflow(
+		User anonymousUser = _userLocalService.addUser(
 			creatorUserId, companyId, autoPassword, password1, password2,
-			autoScreenName, screenName, emailAddress, facebookId, openId,
-			locale, firstName, middleName, lastName, prefixId, suffixId, male,
-			birthdayMonth, birthdayDay, birthdayYear, jobTitle, groupIds,
-			organizationIds, roleIds, userGroupIds, sendEmail, serviceContext);
+			autoScreenName, screenName, emailAddress, locale, firstName,
+			middleName, lastName, prefixId, suffixId, male, birthdayMonth,
+			birthdayDay, birthdayYear, jobTitle, groupIds, organizationIds,
+			roleIds, userGroupIds, sendEmail, serviceContext);
 
 		anonymousUser.setComments(
 			StringBundler.concat(
@@ -178,6 +182,9 @@ public class UADAnonymizerHelper {
 
 		return anonymousUser;
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		UADAnonymizerHelper.class);
 
 	@Reference
 	private AnonymousUserConfigurationRetriever

@@ -18,6 +18,7 @@ import com.liferay.portal.kernel.search.facet.Facet;
 import com.liferay.portal.kernel.search.filter.Filter;
 import com.liferay.portal.search.aggregation.Aggregation;
 import com.liferay.portal.search.aggregation.pipeline.PipelineAggregation;
+import com.liferay.portal.search.engine.adapter.ccr.CrossClusterRequest;
 import com.liferay.portal.search.filter.ComplexQueryPart;
 import com.liferay.portal.search.query.Query;
 import com.liferay.portal.search.rescore.Rescore;
@@ -36,7 +37,7 @@ import org.osgi.annotation.versioning.ProviderType;
  * @author Michael C. Han
  */
 @ProviderType
-public abstract class BaseSearchRequest {
+public abstract class BaseSearchRequest extends CrossClusterRequest {
 
 	public void addAggregation(Aggregation aggregation) {
 		_aggregationsMap.put(aggregation.getName(), aggregation);
@@ -57,6 +58,12 @@ public abstract class BaseSearchRequest {
 
 		_pipelineAggregationsMap.put(
 			pipelineAggregation.getName(), pipelineAggregation);
+	}
+
+	public void addPostFilterComplexQueryParts(
+		Collection<ComplexQueryPart> complexQueryParts) {
+
+		_postFilterComplexQueryParts.addAll(complexQueryParts);
 	}
 
 	public Map<String, Aggregation> getAggregationsMap() {
@@ -93,6 +100,10 @@ public abstract class BaseSearchRequest {
 
 	public Filter getPostFilter() {
 		return _postFilter;
+	}
+
+	public List<ComplexQueryPart> getPostFilterComplexQueryParts() {
+		return Collections.unmodifiableList(_postFilterComplexQueryParts);
 	}
 
 	public Query getPostFilterQuery() {
@@ -262,6 +273,8 @@ public abstract class BaseSearchRequest {
 	private final Map<String, PipelineAggregation> _pipelineAggregationsMap =
 		new LinkedHashMap<>();
 	private Filter _postFilter;
+	private final List<ComplexQueryPart> _postFilterComplexQueryParts =
+		new ArrayList<>();
 	private Query _postFilterQuery;
 	private Query _query;
 	private Boolean _requestCache;

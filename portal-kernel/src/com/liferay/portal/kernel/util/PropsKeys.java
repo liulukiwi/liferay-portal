@@ -139,6 +139,12 @@ public interface PropsKeys {
 	public static final String APPLICATION_STARTUP_EVENTS =
 		"application.startup.events";
 
+	public static final String APPLICATIONS_MENU_DEFAULT_LIFERAY_LOGO =
+		"application.menu.default.liferay.logo";
+
+	public static final String APPLICATIONS_MENU_DEFAULT_LIFERAY_NAME =
+		"application.menu.default.liferay.name";
+
 	public static final String ASSET_BROWSER_SEARCH_WITH_DATABASE =
 		"asset.browser.search.with.database";
 
@@ -307,6 +313,10 @@ public interface PropsKeys {
 	public static final String AUTO_LOGIN_IGNORE_PATHS =
 		"auto.login.ignore.paths";
 
+	public static final String AXIS_SERVLET_ENABLED = "axis.servlet.enabled";
+
+	public static final String AXIS_SERVLET_MAPPING = "axis.servlet.mapping";
+
 	public static final String BASIC_AUTH_PASSWORD_REQUIRED =
 		"basic.auth.password.required";
 
@@ -391,6 +401,11 @@ public interface PropsKeys {
 
 	public static final String BROWSER_LAUNCHER_URL = "browser.launcher.url";
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             #VIEW_COUNT_ENABLED}
+	 */
+	@Deprecated
 	public static final String BUFFERED_INCREMENT_ENABLED =
 		"buffered.increment.enabled";
 
@@ -621,6 +636,9 @@ public interface PropsKeys {
 	public static final String CONTROL_PANEL_NAVIGATION_MAX_SITES =
 		"control.panel.navigation.max.sites";
 
+	public static final String CORS_DISABLE_AUTHORIZATION_CONTEXT_CHECK =
+		"cors.disable.authorization.context.check";
+
 	public static final String COUNTER_DATA_CENTER_COUNT =
 		"counter.data.center.count";
 
@@ -639,6 +657,88 @@ public interface PropsKeys {
 
 	public static final String CUSTOM_SQL_FUNCTION_ISNULL =
 		"custom.sql.function.isnull";
+
+	public static final String DATA_LIMIT_DL_STORAGE_MAX_SIZE =
+		"data.limit.dl.storage.max.size";
+
+	public static final String DATA_LIMIT_MAIL_MESSAGE_MAX_COUNT =
+		"data.limit.mail.message.max.count";
+
+	public static final String DATA_LIMIT_MAIL_MESSAGE_MAX_PERIOD =
+		"data.limit.mail.message.max.period";
+
+	/**
+	 * @deprecated As of Cavanaugh (7.4.x), with no direct replacement
+	 */
+	@Deprecated
+	public static final String DATA_LIMIT_MAX_DL_STORAGE_SIZE =
+		"data.limit.max.dl.storage.size";
+
+	/**
+	 * @deprecated As of Cavanaugh (7.4.x), with no direct replacement
+	 */
+	@Deprecated
+	public static final String DATA_LIMIT_MAX_JOURNAL_ARTICLE_COUNT =
+		"data.limit.max.journal.article.count";
+
+	/**
+	 * @deprecated As of Cavanaugh (7.4.x), with no direct replacement
+	 */
+	@Deprecated
+	public static final String DATA_LIMIT_MAX_JOURNAL_FOLDER_COUNT =
+		"data.limit.max.journal.folder.count";
+
+	/**
+	 * @deprecated As of Cavanaugh (7.4.x), with no direct replacement
+	 */
+	@Deprecated
+	public static final String DATA_LIMIT_MAX_MAIL_MESSAGE_COUNT =
+		"data.limit.max.mail.message.count";
+
+	/**
+	 * @deprecated As of Cavanaugh (7.4.x), with no direct replacement
+	 */
+	@Deprecated
+	public static final String DATA_LIMIT_MAX_MAIL_MESSAGE_PERIOD =
+		"data.limit.max.mail.message.period";
+
+	/**
+	 * @deprecated As of Cavanaugh (7.4.x), with no direct replacement
+	 */
+	@Deprecated
+	public static final String DATA_LIMIT_MAX_ORGANIZATION_COUNT =
+		"data.limit.max.organization.count";
+
+	/**
+	 * @deprecated As of Cavanaugh (7.4.x), with no direct replacement
+	 */
+	@Deprecated
+	public static final String DATA_LIMIT_MAX_ROLE_COUNT =
+		"data.limit.max.role.count";
+
+	/**
+	 * @deprecated As of Cavanaugh (7.4.x), with no direct replacement
+	 */
+	@Deprecated
+	public static final String DATA_LIMIT_MAX_SITE_COUNT =
+		"data.limit.max.site.count";
+
+	/**
+	 * @deprecated As of Cavanaugh (7.4.x), with no direct replacement
+	 */
+	@Deprecated
+	public static final String DATA_LIMIT_MAX_TEAM_COUNT =
+		"data.limit.max.team.count";
+
+	/**
+	 * @deprecated As of Cavanaugh (7.4.x), with no direct replacement
+	 */
+	@Deprecated
+	public static final String DATA_LIMIT_MAX_USER_COUNT =
+		"data.limit.max.user.count";
+
+	public static final String DATA_LIMIT_SITE_MAX_COUNT =
+		"data.limit.site.max.count";
 
 	public static final String DATABASE_IN_MAX_PARAMETERS =
 		"database.in.max.parameters";
@@ -903,6 +1003,9 @@ public interface PropsKeys {
 	public static final String DL_FILE_ENTRY_PREVIEW_FORK_PROCESS_ENABLED =
 		"dl.file.entry.preview.fork.process.enabled";
 
+	public static final String DL_FILE_ENTRY_PREVIEW_FORK_PROCESS_JVM_OPTIONS =
+		"dl.file.entry.preview.fork.process.jvm.options";
+
 	public static final String
 		DL_FILE_ENTRY_PREVIEW_GENERATION_DECRYPT_PASSWORDS_PDFBOX =
 			"dl.file.entry.preview.generation.decrypt.passwords.pdfbox";
@@ -1036,9 +1139,6 @@ public interface PropsKeys {
 	public static final String DL_STORE_ANTIVIRUS_ENABLED =
 		"dl.store.antivirus.enabled";
 
-	public static final String DL_STORE_ANTIVIRUS_IMPL =
-		"dl.store.antivirus.impl";
-
 	public static final String DL_STORE_FILE_IMPL_SAFE_FILE_NAME_2_AMPERSAND =
 		"dl.store.file.impl.safe.file.name.2.ampersand";
 
@@ -1078,18 +1178,12 @@ public interface PropsKeys {
 	public static final String EDITOR_WYSIWYG_DEFAULT =
 		"editor.wysiwyg.default";
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
+	 */
+	@Deprecated
 	public static final String EHCACHE_BLOCKING_CACHE_ALLOWED =
 		"ehcache.blocking.cache.allowed";
-
-	public static final String EHCACHE_BOOTSTRAP_CACHE_LOADER_ENABLED =
-		"ehcache.bootstrap.cache.loader.enabled";
-
-	public static final String EHCACHE_BOOTSTRAP_CACHE_LOADER_PROPERTIES =
-		"ehcache.bootstrap.cache.loader.properties";
-
-	public static final String
-		EHCACHE_BOOTSTRAP_CACHE_LOADER_PROPERTIES_DEFAULT =
-			"ehcache.bootstrap.cache.loader.properties.default";
 
 	public static final String EHCACHE_MULTI_VM_CONFIG_LOCATION =
 		"ehcache.multi.vm.config.location";
@@ -1277,6 +1371,10 @@ public interface PropsKeys {
 	public static final String INDEX_ON_STARTUP_DELAY =
 		"index.on.startup.delay";
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
+	 */
+	@Deprecated
 	public static final String INDEX_ON_UPGRADE = "index.on.upgrade";
 
 	public static final String
@@ -1453,6 +1551,9 @@ public interface PropsKeys {
 	public static final String JSON_SERVICE_INVALID_METHOD_NAMES =
 		"json.service.invalid.method.names";
 
+	public static final String JSON_SERVICE_SERIALIZE_THROWABLE =
+		"json.service.serialize.throwable";
+
 	public static final String JSON_WEB_SERVICE_ENABLED =
 		"json.web.service.enabled";
 
@@ -1537,25 +1638,49 @@ public interface PropsKeys {
 	public static final String LAYOUT_MANAGE_PAGES_INITIAL_CHILDREN =
 		"layout.manage.pages.initial.children";
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
+	 */
+	@Deprecated
 	public static final String LAYOUT_PARALLEL_RENDER_ENABLE =
 		"layout.parallel.render.enable";
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
+	 */
+	@Deprecated
 	public static final String
 		LAYOUT_PARALLEL_RENDER_THREAD_POOL_CORE_THREAD_COUNT =
 			"layout.parallel.render.thread.pool.core.thread.count";
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
+	 */
+	@Deprecated
 	public static final String
 		LAYOUT_PARALLEL_RENDER_THREAD_POOL_KEEP_ALIVE_TIME =
 			"layout.parallel.render.thread.pool.keep.alive.time";
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
+	 */
+	@Deprecated
 	public static final String
 		LAYOUT_PARALLEL_RENDER_THREAD_POOL_MAX_QUEUE_SIZE =
 			"layout.parallel.render.thread.pool.max.queue.size";
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
+	 */
+	@Deprecated
 	public static final String
 		LAYOUT_PARALLEL_RENDER_THREAD_POOL_MAX_THREAD_COUNT =
 			"layout.parallel.render.thread.pool.max.thread.count";
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
+	 */
+	@Deprecated
 	public static final String LAYOUT_PARALLEL_RENDER_TIMEOUT =
 		"layout.parallel.render.timeout";
 
@@ -1794,6 +1919,9 @@ public interface PropsKeys {
 	public static final String MAIL_SESSION_MAIL_SMTP_PORT =
 		"mail.session.mail.smtp.port";
 
+	public static final String MAIL_SESSION_MAIL_SMTP_STARTTLS_ENABLE =
+		"mail.session.mail.smtp.starttls.enable";
+
 	public static final String MAIL_SESSION_MAIL_SMTP_USER =
 		"mail.session.mail.smtp.user";
 
@@ -1968,6 +2096,9 @@ public interface PropsKeys {
 
 	public static final String MODULE_FRAMEWORK_EXPORT_PASSWORD_ATTRIBUTES =
 		"module.framework.export.password.attributes";
+
+	public static final String MODULE_FRAMEWORK_FILE_INSTALL_CFG_ENABLED =
+		"module.framework.file.install.cfg.enabled";
 
 	public static final String MODULE_FRAMEWORK_MARKETPLACE_DIR =
 		"module.framework.marketplace.dir";
@@ -2309,6 +2440,10 @@ public interface PropsKeys {
 		PERMISSIONS_CUSTOM_ATTRIBUTE_WRITE_CHECK_BY_DEFAULT =
 			"permissions.custom.attribute.write.check.by.default";
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
+	 */
+	@Deprecated
 	public static final String PERMISSIONS_OBJECT_BLOCKING_CACHE =
 		"permissions.object.blocking.cache";
 
@@ -2471,12 +2606,24 @@ public interface PropsKeys {
 
 	public static final String PORTAL_PROXY_PATH = "portal.proxy.path";
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
+	 */
+	@Deprecated
 	public static final String PORTAL_RESILIENCY_ENABLED =
 		"portal.resiliency.enabled";
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
+	 */
+	@Deprecated
 	public static final String PORTAL_RESILIENCY_PORTLET_SHOW_FOOTER =
 		"portal.resiliency.portlet.show.footer";
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
+	 */
+	@Deprecated
 	public static final String
 		PORTAL_RESILIENCY_SPI_AGENT_CLIENT_POOL_MAX_SIZE =
 			"portal.resiliency.spi.agent.client.pool.max.size";
@@ -2588,6 +2735,9 @@ public interface PropsKeys {
 	public static final String RECENT_CONTENT_MAX_DISPLAY_ITEMS =
 		"recent.content.max.display.items";
 
+	public static final String RECENT_GROUPS_MAX_ELEMENTS =
+		"recent.groups.max.elements";
+
 	public static final String REDIRECT_URL_DOMAINS_ALLOWED =
 		"redirect.url.domains.allowed";
 
@@ -2620,6 +2770,9 @@ public interface PropsKeys {
 
 	public static final String RESOURCE_ACTIONS_READ_PORTLET_RESOURCES =
 		"resource.actions.read.portlet.resources";
+
+	public static final String RESOURCE_ACTIONS_STRICT_MODE_ENABLED =
+		"resource.actions.strict.mode.enabled";
 
 	public static final String RESOURCE_REPOSITORIES_ROOT =
 		"resource.repositories.root";
@@ -3165,11 +3318,11 @@ public interface PropsKeys {
 	public static final String UNICODE_TEXT_NORMALIZER_FORM =
 		"unicode.text.normalizer.form";
 
+	public static final String UPGRADE_DATABASE_AUTO_RUN =
+		"upgrade.database.auto.run";
+
 	public static final String UPGRADE_DATABASE_TRANSACTIONS_DISABLED =
 		"upgrade.database.transactions.disabled";
-
-	public static final String USER_GROUPS_COPY_LAYOUTS_TO_USER_PERSONAL_SITE =
-		"user.groups.copy.layouts.to.user.personal.site";
 
 	public static final String USER_GROUPS_NAME_ALLOW_NUMERIC =
 		"user.groups.name.allow.numeric";
@@ -3246,6 +3399,9 @@ public interface PropsKeys {
 	public static final String USERS_REMINDER_QUERIES_CUSTOM_QUESTION_ENABLED =
 		"users.reminder.queries.custom.question.enabled";
 
+	public static final String USERS_REMINDER_QUERIES_DISPLAY_IN_PLAIN_TEXT =
+		"users.reminder.queries.display.answer.in.plain.text";
+
 	public static final String USERS_REMINDER_QUERIES_ENABLED =
 		"users.reminder.queries.enabled";
 
@@ -3279,6 +3435,10 @@ public interface PropsKeys {
 	public static final String USERS_UPDATE_USER_NAME =
 		"users.update.user.name.";
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
+	 */
+	@Deprecated
 	public static final String VALUE_OBJECT_ENTITY_BLOCKING_CACHE =
 		"value.object.entity.blocking.cache";
 
@@ -3288,6 +3448,10 @@ public interface PropsKeys {
 	public static final String VALUE_OBJECT_ENTITY_THREAD_LOCAL_CACHE_MAX_SIZE =
 		"value.object.entity.thread.local.cache.max.size";
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
+	 */
+	@Deprecated
 	public static final String VALUE_OBJECT_FINDER_BLOCKING_CACHE =
 		"value.object.finder.blocking.cache";
 
@@ -3308,15 +3472,35 @@ public interface PropsKeys {
 	public static final String VERIFY_DATABASE_TRANSACTIONS_DISABLED =
 		"verify.database.transactions.disabled";
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
+	 */
+	@Deprecated
 	public static final String VERIFY_FREQUENCY = "verify.frequency";
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
+	 */
+	@Deprecated
 	public static final String VERIFY_PATCH_LEVELS_DISABLED =
 		"verify.patch.levels.disabled";
 
 	public static final String VERIFY_PROCESS_CONCURRENCY_THRESHOLD =
 		"verify.process.concurrency.threshold";
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
+	 */
+	@Deprecated
 	public static final String VERIFY_PROCESSES = "verify.processes";
+
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             com.liferay.view.count.configuration.ViewCountsConfiguration
+	 *             #enabled()}
+	 */
+	@Deprecated
+	public static final String VIEW_COUNT_ENABLED = "view.count.enabled";
 
 	public static final String VIRTUAL_HOSTS_DEFAULT_SITE_NAME =
 		"virtual.hosts.default.site.name";

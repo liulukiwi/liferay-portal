@@ -16,6 +16,8 @@ package com.liferay.portal.jsonwebservice;
 
 import com.liferay.portal.kernel.bean.ClassLoaderBeanHandler;
 import com.liferay.portal.kernel.jsonwebservice.JSONWebServiceScannerStrategy;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.service.ServiceWrapper;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.spring.aop.AopInvocationHandler;
@@ -88,6 +90,9 @@ public class SpringJSONWebServiceScannerStrategy
 					service = bean;
 				}
 			}
+			else {
+				break;
+			}
 		}
 
 		return service.getClass();
@@ -119,7 +124,14 @@ public class SpringJSONWebServiceScannerStrategy
 
 					return true;
 				}
-				catch (ReflectiveOperationException roe) {
+				catch (ReflectiveOperationException
+							reflectiveOperationException) {
+
+					if (_log.isDebugEnabled()) {
+						_log.debug(
+							reflectiveOperationException,
+							reflectiveOperationException);
+					}
 				}
 			}
 			else {
@@ -135,5 +147,8 @@ public class SpringJSONWebServiceScannerStrategy
 
 		return false;
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		SpringJSONWebServiceScannerStrategy.class);
 
 }

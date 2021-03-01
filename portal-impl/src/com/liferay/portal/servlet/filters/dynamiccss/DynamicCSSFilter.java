@@ -121,9 +121,8 @@ public class DynamicCSSFilter extends IgnoreModuleRequestFilter {
 			(cacheDataFile.lastModified() == lastModified)) {
 
 			if (cacheContentTypeFile.exists()) {
-				String contentType = FileUtil.read(cacheContentTypeFile);
-
-				httpServletResponse.setContentType(contentType);
+				httpServletResponse.setContentType(
+					FileUtil.read(cacheContentTypeFile));
 			}
 
 			return cacheDataFile;
@@ -146,9 +145,10 @@ public class DynamicCSSFilter extends IgnoreModuleRequestFilter {
 				dynamicContent = DynamicCSSUtil.replaceToken(
 					servletContext, httpServletRequest, content);
 
-				httpServletResponse.setContentType(ContentTypes.TEXT_CSS);
+				httpServletResponse.setContentType(ContentTypes.TEXT_CSS_UTF8);
 
-				FileUtil.write(cacheContentTypeFile, ContentTypes.TEXT_CSS);
+				FileUtil.write(
+					cacheContentTypeFile, ContentTypes.TEXT_CSS_UTF8);
 			}
 			else if (originalRequestPath.endsWith(_JSP_EXTENSION)) {
 				if (_log.isInfoEnabled()) {
@@ -177,9 +177,10 @@ public class DynamicCSSFilter extends IgnoreModuleRequestFilter {
 				return null;
 			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			_log.error(
-				"Unable to replace tokens in CSS " + originalRequestPath, e);
+				"Unable to replace tokens in CSS " + originalRequestPath,
+				exception);
 
 			if (_log.isDebugEnabled()) {
 				_log.debug(content);

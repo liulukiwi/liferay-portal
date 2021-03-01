@@ -21,6 +21,7 @@ import com.liferay.portal.kernel.model.LocalizedModel;
 import com.liferay.portal.kernel.model.MVCCModel;
 import com.liferay.portal.kernel.model.ShardedModel;
 import com.liferay.portal.kernel.model.StagedGroupedModel;
+import com.liferay.portal.kernel.model.change.tracking.CTModel;
 
 import java.util.Date;
 import java.util.Locale;
@@ -41,10 +42,10 @@ import org.osgi.annotation.versioning.ProviderType;
  */
 @ProviderType
 public interface DDLRecordSetModel
-	extends BaseModel<DDLRecordSet>, LocalizedModel, MVCCModel, ShardedModel,
-			StagedGroupedModel {
+	extends BaseModel<DDLRecordSet>, CTModel<DDLRecordSet>, LocalizedModel,
+			MVCCModel, ShardedModel, StagedGroupedModel {
 
-	/**
+	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this interface directly. All methods that expect a ddl record set model instance should use the {@link DDLRecordSet} interface instead.
@@ -55,6 +56,7 @@ public interface DDLRecordSetModel
 	 *
 	 * @return the primary key of this ddl record set
 	 */
+	@Override
 	public long getPrimaryKey();
 
 	/**
@@ -62,6 +64,7 @@ public interface DDLRecordSetModel
 	 *
 	 * @param primaryKey the primary key of this ddl record set
 	 */
+	@Override
 	public void setPrimaryKey(long primaryKey);
 
 	/**
@@ -79,6 +82,22 @@ public interface DDLRecordSetModel
 	 */
 	@Override
 	public void setMvccVersion(long mvccVersion);
+
+	/**
+	 * Returns the ct collection ID of this ddl record set.
+	 *
+	 * @return the ct collection ID of this ddl record set
+	 */
+	@Override
+	public long getCtCollectionId();
+
+	/**
+	 * Sets the ct collection ID of this ddl record set.
+	 *
+	 * @param ctCollectionId the ct collection ID of this ddl record set
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId);
 
 	/**
 	 * Returns the uuid of this ddl record set.

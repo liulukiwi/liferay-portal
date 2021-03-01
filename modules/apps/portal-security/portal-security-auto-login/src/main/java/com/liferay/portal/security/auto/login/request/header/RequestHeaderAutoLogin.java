@@ -93,7 +93,10 @@ public class RequestHeaderAutoLogin extends BaseAutoLogin {
 				user = _userImporter.importUser(
 					companyId, StringPool.BLANK, screenName);
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(exception, exception);
+				}
 			}
 		}
 
@@ -184,9 +187,10 @@ public class RequestHeaderAutoLogin extends BaseAutoLogin {
 				new CompanyServiceSettingsLocator(
 					companyId, RequestHeaderAutoLoginConstants.SERVICE_NAME));
 		}
-		catch (ConfigurationException ce) {
+		catch (ConfigurationException configurationException) {
 			_log.error(
-				"Unable to get request header auto login configuration", ce);
+				"Unable to get request header auto login configuration",
+				configurationException);
 		}
 
 		return null;

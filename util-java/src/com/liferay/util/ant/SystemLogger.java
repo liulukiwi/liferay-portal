@@ -17,6 +17,8 @@ package com.liferay.util.ant;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.io.unsync.UnsyncBufferedReader;
 import com.liferay.portal.kernel.io.unsync.UnsyncStringReader;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 
 import java.io.IOException;
 
@@ -61,7 +63,10 @@ public class SystemLogger extends DefaultLogger {
 				line = unsyncBufferedReader.readLine();
 			}
 		}
-		catch (IOException ioe) {
+		catch (IOException ioException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(ioException, ioException);
+			}
 		}
 
 		String msg = sb.toString();
@@ -75,5 +80,7 @@ public class SystemLogger extends DefaultLogger {
 
 		log(msg);
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(SystemLogger.class);
 
 }

@@ -92,7 +92,11 @@ public class MaintenanceUtil {
 				try {
 					session.invalidate();
 				}
-				catch (IllegalStateException ise) {
+				catch (IllegalStateException illegalStateException) {
+					if (_log.isDebugEnabled()) {
+						_log.debug(
+							illegalStateException, illegalStateException);
+					}
 				}
 			}
 		}

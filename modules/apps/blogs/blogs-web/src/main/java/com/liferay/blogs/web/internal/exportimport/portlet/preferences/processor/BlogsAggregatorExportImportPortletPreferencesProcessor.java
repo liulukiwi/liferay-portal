@@ -20,6 +20,8 @@ import com.liferay.exportimport.kernel.lar.PortletDataException;
 import com.liferay.exportimport.portlet.preferences.processor.Capability;
 import com.liferay.exportimport.portlet.preferences.processor.ExportImportPortletPreferencesProcessor;
 import com.liferay.exportimport.portlet.preferences.processor.ExportImportPortletPreferencesProcessorHelper;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Organization;
@@ -73,7 +75,11 @@ public class BlogsAggregatorExportImportPortletPreferencesProcessor
 				portletDataContext, portletDataContext.getRootPortletId(),
 				portletPreferences);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
+
 			return portletPreferences;
 		}
 	}
@@ -88,7 +94,11 @@ public class BlogsAggregatorExportImportPortletPreferencesProcessor
 			return updateImportPortletPreferences(
 				portletDataContext, portletPreferences);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
+
 			return portletPreferences;
 		}
 	}
@@ -181,6 +191,9 @@ public class BlogsAggregatorExportImportPortletPreferencesProcessor
 
 		return portletPreferences;
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		BlogsAggregatorExportImportPortletPreferencesProcessor.class);
 
 	@Reference
 	private CompanyLocalService _companyLocalService;

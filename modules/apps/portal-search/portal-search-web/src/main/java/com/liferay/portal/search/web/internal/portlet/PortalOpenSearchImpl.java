@@ -155,9 +155,8 @@ public class PortalOpenSearchImpl extends BaseOpenSearchImpl {
 				addSearchResult(
 					root, resultGroupId, resultScopeGroupId, entryClassName,
 					entryClassPK,
-					StringBundler.concat(
-						portletTitle, " ", StringPool.RAQUO, " ", title),
-					url, modifiedDate, content, score, format);
+					StringBundler.concat(portletTitle, " &raquo; ", title), url,
+					modifiedDate, content, score, format);
 			}
 
 			if (_log.isDebugEnabled()) {
@@ -166,8 +165,8 @@ public class PortalOpenSearchImpl extends BaseOpenSearchImpl {
 
 			return doc.asXML();
 		}
-		catch (Exception e) {
-			throw new SearchException(e);
+		catch (Exception exception) {
+			throw new SearchException(exception);
 		}
 	}
 

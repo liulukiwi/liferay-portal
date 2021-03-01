@@ -30,7 +30,7 @@ import org.osgi.annotation.versioning.ProviderType;
 @ProviderType
 public interface Group extends GroupModel, PersistedModel, TreeModel {
 
-	/**
+	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify this interface directly. Add methods to <code>com.liferay.portal.model.impl.GroupImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
@@ -63,7 +63,8 @@ public interface Group extends GroupModel, PersistedModel, TreeModel {
 
 	public java.util.List<Group> getChildrenWithLayouts(
 		boolean site, int start, int end,
-		com.liferay.portal.kernel.util.OrderByComparator<Group> obc);
+		com.liferay.portal.kernel.util.OrderByComparator<Group>
+			orderByComparator);
 
 	public int getChildrenWithLayoutsCount(boolean site);
 
@@ -131,6 +132,9 @@ public interface Group extends GroupModel, PersistedModel, TreeModel {
 	public String getScopeLabel(
 		com.liferay.portal.kernel.theme.ThemeDisplay themeDisplay);
 
+	public String getScopeSimpleName(
+		com.liferay.portal.kernel.theme.ThemeDisplay themeDisplay);
+
 	public Group getStagingGroup();
 
 	public String getTypeLabel();
@@ -159,6 +163,8 @@ public interface Group extends GroupModel, PersistedModel, TreeModel {
 	public boolean isCompanyStagingGroup();
 
 	public boolean isControlPanel();
+
+	public boolean isDepot();
 
 	public boolean isGuest();
 
@@ -200,6 +206,6 @@ public interface Group extends GroupModel, PersistedModel, TreeModel {
 
 	public void setTypeSettingsProperties(
 		com.liferay.portal.kernel.util.UnicodeProperties
-			typeSettingsProperties);
+			typeSettingsUnicodeProperties);
 
 }

@@ -51,7 +51,6 @@ import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PortletKeys;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
-import com.liferay.portal.service.test.ServiceTestUtil;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 
 import java.util.Locale;
@@ -87,24 +86,24 @@ public class JournalIndexerTest {
 
 		serviceContext.setCompanyId(TestPropsValues.getCompanyId());
 
-		ServiceTestUtil.setUser(TestPropsValues.getUser());
+		UserTestUtil.setUser(TestPropsValues.getUser());
 
-		PortalPreferences portalPreferenceces =
+		PortalPreferences portalPreferences =
 			PortletPreferencesFactoryUtil.getPortalPreferences(
 				TestPropsValues.getUserId(), true);
 
 		_originalPortalPreferencesXML = PortletPreferencesFactoryUtil.toXML(
-			portalPreferenceces);
+			portalPreferences);
 
-		portalPreferenceces.setValue(
+		portalPreferences.setValue(
 			"", "indexAllArticleVersionsEnabled", "true");
-		portalPreferenceces.setValue(
+		portalPreferences.setValue(
 			"", "expireAllArticleVersionsEnabled", "true");
 
 		PortalPreferencesLocalServiceUtil.updatePreferences(
 			TestPropsValues.getCompanyId(),
 			PortletKeys.PREFS_OWNER_TYPE_COMPANY,
-			PortletPreferencesFactoryUtil.toXML(portalPreferenceces));
+			PortletPreferencesFactoryUtil.toXML(portalPreferences));
 	}
 
 	@After
@@ -353,16 +352,16 @@ public class JournalIndexerTest {
 			LocaleUtil.US, "Title"
 		).build();
 
-		Map<Locale, String> contentMap = HashMapBuilder.put(
-			LocaleUtil.GERMANY, "Liferay Architektur Ansatz"
-		).put(
-			LocaleUtil.SPAIN, "Liferay Arquitectura Aproximacion"
-		).put(
-			LocaleUtil.US, "Liferay Architectural Approach"
-		).build();
-
 		JournalArticle article = JournalTestUtil.addArticleWithWorkflow(
-			_group.getGroupId(), titleMap, titleMap, contentMap, true);
+			_group.getGroupId(), titleMap, titleMap,
+			HashMapBuilder.put(
+				LocaleUtil.GERMANY, "Liferay Architektur Ansatz"
+			).put(
+				LocaleUtil.SPAIN, "Liferay Arquitectura Aproximacion"
+			).put(
+				LocaleUtil.US, "Liferay Architectural Approach"
+			).build(),
+			true);
 
 		assertSearchCount(1, _group.getGroupId(), searchContext1);
 

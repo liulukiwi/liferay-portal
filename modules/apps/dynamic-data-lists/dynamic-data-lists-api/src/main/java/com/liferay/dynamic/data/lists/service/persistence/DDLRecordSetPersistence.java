@@ -17,6 +17,7 @@ package com.liferay.dynamic.data.lists.service.persistence;
 import com.liferay.dynamic.data.lists.exception.NoSuchRecordSetException;
 import com.liferay.dynamic.data.lists.model.DDLRecordSet;
 import com.liferay.portal.kernel.service.persistence.BasePersistence;
+import com.liferay.portal.kernel.service.persistence.change.tracking.CTPersistence;
 
 import org.osgi.annotation.versioning.ProviderType;
 
@@ -32,9 +33,10 @@ import org.osgi.annotation.versioning.ProviderType;
  * @generated
  */
 @ProviderType
-public interface DDLRecordSetPersistence extends BasePersistence<DDLRecordSet> {
+public interface DDLRecordSetPersistence
+	extends BasePersistence<DDLRecordSet>, CTPersistence<DDLRecordSet> {
 
-	/**
+	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this interface directly. Always use {@link DDLRecordSetUtil} to access the ddl record set persistence. Modify <code>service.xml</code> and rerun ServiceBuilder to regenerate this interface.

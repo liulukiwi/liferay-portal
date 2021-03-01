@@ -32,6 +32,8 @@ import com.liferay.portal.kernel.util.Validator;
 
 import java.io.Serializable;
 
+import java.text.NumberFormat;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -71,6 +73,13 @@ public class FieldsToDDMFormValuesConverterImpl
 			for (int i = 0; i < repetitions; i++) {
 				DDMFormFieldValue ddmFormFieldValue = createDDMFormFieldValue(
 					fieldName);
+
+				DDMFormField ddmFormField = ddmFormFieldsMap.get(fieldName);
+
+				if (ddmFormField != null) {
+					ddmFormFieldValue.setFieldReference(
+						ddmFormField.getFieldReference());
+				}
 
 				setDDMFormFieldValueProperties(
 					ddmFormFieldValue, ddmFormFieldsMap, fields,
@@ -194,8 +203,8 @@ public class FieldsToDDMFormValuesConverterImpl
 
 			return fieldsDisplayValues.toArray(new String[0]);
 		}
-		catch (Exception e) {
-			throw new PortalException(e);
+		catch (Exception exception) {
+			throw new PortalException(exception);
 		}
 	}
 
@@ -208,6 +217,20 @@ public class FieldsToDDMFormValuesConverterImpl
 			Date valueDate = (Date)fieldValue;
 
 			fieldValue = valueDate.getTime();
+		}
+		else if ((fieldValue instanceof Number) &&
+				 !(fieldValue instanceof Integer)) {
+
+			NumberFormat numberFormat = NumberFormat.getInstance(locale);
+
+			Number number = (Number)fieldValue;
+
+			if (number instanceof Double || number instanceof Float) {
+				numberFormat.setMaximumFractionDigits(Integer.MAX_VALUE);
+				numberFormat.setMinimumFractionDigits(1);
+			}
+
+			return numberFormat.format(number.doubleValue());
 		}
 
 		return String.valueOf(fieldValue);
@@ -328,6 +351,14 @@ public class FieldsToDDMFormValuesConverterImpl
 			for (int i = 0; i < repetitions; i++) {
 				DDMFormFieldValue nestedDDMFormFieldValue =
 					createDDMFormFieldValue(nestedFieldName);
+
+				DDMFormField nestedDDMFormField = ddmFormFieldsMap.get(
+					nestedFieldName);
+
+				if (nestedDDMFormField != null) {
+					nestedDDMFormFieldValue.setFieldReference(
+						nestedDDMFormField.getFieldReference());
+				}
 
 				setDDMFormFieldValueProperties(
 					nestedDDMFormFieldValue, ddmFormFieldsMap, ddmFields,

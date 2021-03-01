@@ -27,6 +27,8 @@ import com.liferay.portal.kernel.jsonwebservice.JSONWebServiceAction;
 import com.liferay.portal.kernel.jsonwebservice.JSONWebServiceActionMapping;
 import com.liferay.portal.kernel.jsonwebservice.JSONWebServiceActionsManagerUtil;
 import com.liferay.portal.kernel.jsonwebservice.JSONWebServiceNaming;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LinkedHashMapBuilder;
 import com.liferay.portal.kernel.util.MethodParameter;
@@ -86,7 +88,7 @@ public class JSONWebServiceDiscoverAction implements JSONWebServiceAction {
 
 	@Override
 	public Object invoke() throws Exception {
-		Map<String, Object> resultsMap =
+		return new DiscoveryContent(
 			LinkedHashMapBuilder.<String, Object>put(
 				"contextName", _contextName
 			).put(
@@ -99,9 +101,7 @@ public class JSONWebServiceDiscoverAction implements JSONWebServiceAction {
 				"types", _buildTypes()
 			).put(
 				"version", ReleaseInfo.getVersion()
-			).build();
-
-		return new DiscoveryContent(resultsMap);
+			).build());
 	}
 
 	public static class DiscoveryContent implements JSONSerializable {
@@ -238,7 +238,11 @@ public class JSONWebServiceDiscoverAction implements JSONWebServiceAction {
 
 			return beanAnalyzerTransformer.collect();
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
+
 			return null;
 		}
 	}
@@ -366,7 +370,7 @@ public class JSONWebServiceDiscoverAction implements JSONWebServiceAction {
 			return typeName;
 		}
 
-		StringBundler sb = new StringBundler(genericTypes.length * 2 + 1);
+		StringBundler sb = new StringBundler((genericTypes.length * 2) + 1);
 
 		sb.append(StringPool.LESS_THAN);
 
@@ -434,7 +438,10 @@ public class JSONWebServiceDiscoverAction implements JSONWebServiceAction {
 
 				modelType = classLoader.loadClass(modelImplClassName);
 			}
-			catch (ClassNotFoundException cnfe) {
+			catch (ClassNotFoundException classNotFoundException) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(classNotFoundException, classNotFoundException);
+				}
 			}
 		}
 
@@ -451,12 +458,12 @@ public class JSONWebServiceDiscoverAction implements JSONWebServiceAction {
 
 		Method method = jsonWebServiceActionMapping.getRealActionMethod();
 
-		return className.concat(
-			StringPool.POUND
-		).concat(
-			method.getName()
-		);
+		return StringBundler.concat(
+			className, StringPool.POUND, method.getName());
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		JSONWebServiceDiscoverAction.class);
 
 	private final String _basePath;
 	private final String _baseURL;

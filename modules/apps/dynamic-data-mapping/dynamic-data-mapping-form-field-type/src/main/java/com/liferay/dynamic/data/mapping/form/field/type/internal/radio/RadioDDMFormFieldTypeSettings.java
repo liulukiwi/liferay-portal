@@ -64,11 +64,11 @@ import com.liferay.dynamic.data.mapping.model.LocalizedValue;
 						@DDMFormLayoutColumn(
 							size = 12,
 							value = {
-								"name", "predefinedValue",
+								"name", "fieldReference", "predefinedValue",
 								"visibilityExpression", "validation",
 								"fieldNamespace", "indexType", "localizable",
-								"readOnly", "dataType", "type", "showLabel",
-								"repeatable", "inline"
+								"nativeField", "readOnly", "dataType", "type",
+								"showLabel", "repeatable", "inline"
 							}
 						)
 					}
@@ -82,7 +82,7 @@ public interface RadioDDMFormFieldTypeSettings
 
 	@DDMFormField(
 		label = "%inline", predefinedValue = "true",
-		properties = "showAsSwitcher=true"
+		properties = {"showAsSwitcher=true", "visualProperty=true"}
 	)
 	public boolean inline();
 
@@ -95,7 +95,8 @@ public interface RadioDDMFormFieldTypeSettings
 		label = "%predefined-value",
 		properties = {
 			"placeholder=%enter-a-default-value",
-			"tooltip=%enter-a-default-value-that-is-submitted-if-no-other-value-is-entered"
+			"tooltip=%enter-a-default-value-that-is-submitted-if-no-other-value-is-entered",
+			"visualProperty=true"
 		},
 		type = "select"
 	)

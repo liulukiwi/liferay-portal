@@ -35,15 +35,14 @@ definition {
 	test AddAndRemoveImageAutoTagViaGogoShell {
 		property test.name.skip.portal.instance = "DMAutoTagging#AddAndRemoveImageAutoTagViaGogoShell";
 
-		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
-
 		for (var documentNumber : list "_1,_2,_3") {
+			DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
 			DMDocument.addCP(
 				dmDocumentDescription = "DM Document Description",
 				dmDocumentFile = "Document_4.jpg",
+				dmDocumentFileName = "Document${documentNumber}.jpg",
 				dmDocumentTitle = "DM Document JPG${documentNumber}");
-
-			DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
 
 			DMNavigator.gotoDocumentCP(dmDocumentTitle = "DM Document JPG${documentNumber}");
 
@@ -114,13 +113,10 @@ definition {
 			pageName = "Documents and Media Page",
 			siteName = "Site Name");
 
-		Portlet.addPG(portletName = "Documents and Media");
-
 		DMDocument.enableActionsMenuOnPortlet();
 
 		ProductMenu.gotoPortlet(
 			category = "Publishing",
-			panel = "Site Administration",
 			portlet = "Staging");
 
 		Staging.activateStagingCP(siteName = "Site Name");
@@ -148,7 +144,7 @@ definition {
 
 		Staging.publishToLive();
 
-		ProductMenu.gotoLiveSite();
+		ProductMenu.gotoLiveSite(site = "Site Name");
 
 		Navigator.gotoSitePage(
 			pageName = "Documents and Media Page",
@@ -159,6 +155,122 @@ definition {
 			dmDocumentTitle = "Document Title");
 
 		AutoTagging.assertAutoTagPresent(tagName = "carton");
+	}
+
+	@description = "This test asserts that tags are added to the images when they are uploaded on both nodes with tensorflow enabled on a clustered configuration."
+	@priority = "4"
+	test AutoTagImagesOnSeparateNodes {
+		property app.server.bundles.size = "1";
+		property cluster.enabled = "true";
+		property test.name.skip.portal.instance = "DMAutoTagging#AutoTaggingImagesOnSeparateNodes";
+
+		Clustering.viewClusterStatusInConsole();
+
+		Page.assertNodePortPG(nodePort = "8080");
+
+		User.logoutPG(
+			password = "test",
+			userEmailAddress = "test@liferay.com");
+
+		User.loginPG(
+			nodePort = "9080",
+			password = "test",
+			userEmailAddress = "test@liferay.com");
+
+		Page.assertNodePortPG(nodePort = "9080");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Control Panel",
+			portlet = "System Settings");
+
+		SystemSettings.gotoConfiguration(
+			configurationCategory = "Assets",
+			configurationName = "TensorFlow Image Auto Tagging",
+			configurationScope = "Virtual Instance Scope");
+
+		FormFields.viewCheckboxChecked(fieldName = "enabled");
+
+		AssertElementNotPresent(
+			key_infoMessage = "The TensorFlow model will be downloaded in the background. No tags will be created until the model is fully downloaded",
+			locator1 = "Message#INFO_SPECIFIC");
+
+		AssertElementNotPresent(
+			key_infoMessage = "The TensorFlow model is being downloaded in the background. No tags will be created until the model is fully downloaded",
+			locator1 = "Message#INFO_SPECIFIC");
+
+		DMNavigator.openDocumentsAndMediaAdmin(
+			baseURL = "http://localhost:9080",
+			siteURLKey = "guest");
+
+		DMDocument.addCP(
+			dmDocumentDescription = "Document Description",
+			dmDocumentFile = "Document_4.jpg",
+			dmDocumentTitle = "DM Document JPG Node2");
+
+		DMNavigator.gotoDocumentCP(dmDocumentTitle = "DM Document JPG Node2");
+
+		DMDocument.viewCP(dmDocumentTitle = "DM Document JPG Node2");
+
+		AutoTagging.assertAutoTagPresent(tagName = "carton");
+
+		User.logoutPG(
+			nodePort = "9080",
+			password = "test",
+			userEmailAddress = "test@liferay.com");
+
+		User.loginPG(
+			password = "test",
+			userEmailAddress = "test@liferay.com");
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		DMNavigator.gotoDocumentCP(dmDocumentTitle = "DM Document JPG Node2");
+
+		DMDocument.viewCP(dmDocumentTitle = "DM Document JPG Node2");
+
+		AutoTagging.assertAutoTagPresent(tagName = "carton");
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		DMDocument.addCP(
+			dmDocumentDescription = "Document Description",
+			dmDocumentFile = "Commerce_Black.jpg",
+			dmDocumentTitle = "DM Document JPG Node1");
+
+		DMNavigator.gotoDocumentCP(dmDocumentTitle = "DM Document JPG Node1");
+
+		DMDocument.viewCP(dmDocumentTitle = "DM Document JPG Node1");
+
+		AutoTagging.assertAutoTagPresent(tagName = "jersey");
+
+		User.logoutPG(
+			password = "test",
+			userEmailAddress = "test@liferay.com");
+
+		User.loginPG(
+			nodePort = "9080",
+			password = "test",
+			userEmailAddress = "test@liferay.com");
+
+		DMNavigator.openDocumentsAndMediaAdmin(
+			baseURL = "http://localhost:9080",
+			siteURLKey = "guest");
+
+		DMNavigator.gotoDocumentCP(dmDocumentTitle = "DM Document JPG Node1");
+
+		DMDocument.viewCP(dmDocumentTitle = "DM Document JPG Node1");
+
+		AutoTagging.assertAutoTagPresent(tagName = "jersey");
+
+		User.logoutPG(
+			nodePort = "9080",
+			password = "test",
+			userEmailAddress = "test@liferay.com");
+
+		User.loginPG(
+			password = "test",
+			userEmailAddress = "test@liferay.com");
 	}
 
 	@description = "This test asserts that no auto-tag is generated when an image is uploaded to a site that has auto-tagging disabled despite the auto-tagging functionality enabled at portal level."
@@ -180,14 +292,16 @@ definition {
 
 		Navigator.openSiteURL(siteName = "Site AutoTag Disabled");
 
-		AutoTagging.disableAutoTagging(disableAutoTaggingFor = "Settings");
+		AutoTagging.disableAutoTagging(
+			disableAutoTaggingFor = "Site Settings",
+			site = "Site AutoTag Disabled");
 
-		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "site-autotag-enabled");
-
-		DMDocument.addCP(
+		JSONDocument.addFileWithUploadedFile(
 			dmDocumentDescription = "DM Document Description",
-			dmDocumentFile = "Document_4.jpg",
-			dmDocumentTitle = "DM Document JPG");
+			dmDocumentTitle = "DM Document JPG",
+			groupName = "Site AutoTag Enabled",
+			mimeType = "image/jpeg",
+			sourceFileName = "Document_4.jpg");
 
 		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "site-autotag-enabled");
 
@@ -197,12 +311,12 @@ definition {
 
 		AutoTagging.assertAutoTagPresent(tagName = "carton");
 
-		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "site-autotag-disabled");
-
-		DMDocument.addCP(
+		JSONDocument.addFileWithUploadedFile(
 			dmDocumentDescription = "DM Document Description",
-			dmDocumentFile = "Document_4.jpg",
-			dmDocumentTitle = "DM Document JPG");
+			dmDocumentTitle = "DM Document JPG",
+			groupName = "Site AutoTag Disabled",
+			mimeType = "image/jpeg",
+			sourceFileName = "Document_4.jpg");
 
 		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "site-autotag-disabled");
 
@@ -262,17 +376,6 @@ definition {
 			groupName = "Guest",
 			layoutName = "Documents and Media Page");
 
-		ProductMenu.gotoPortlet(
-			category = "Site Builder",
-			panel = "Site Administration",
-			portlet = "Pages");
-
-		SitePages.configurePage(
-			columnName = "1 Column",
-			pageName = "Documents and Media Page",
-			privacy = "Public Pages",
-			sitePageType = "Widget Page");
-
 		JSONLayout.addWidgetToPublicLayout(
 			column = "1",
 			groupName = "Guest",
@@ -306,6 +409,8 @@ definition {
 	@description = "This test covers LPS-94208. It asserts that a document is auto tagged when OpenNLP Auto-Tagging is enabled."
 	@priority = "5"
 	test OpenNLPSmoke {
+		property environment.acceptance = "true";
+		property portal.acceptance = "true";
 		property test.name.skip.portal.instance = "DMAutoTagging#OpenNLPSmoke";
 
 		AutoTagging.enableOpenNLP(
@@ -349,14 +454,16 @@ definition {
 
 		DMDocument.enableActionsMenuOnPortlet();
 
+		JSONDocument.addFileWithUploadedFile(
+			dmDocumentDescription = "Auto Tagged Image Description",
+			dmDocumentTitle = "Auto Tagged Image",
+			groupName = "Guest",
+			mimeType = "image/jpeg",
+			sourceFileName = "Document_4.jpg");
+
 		Navigator.gotoPage(pageName = "Documents and Media Page");
 
 		LexiconEntry.changeDisplayStyle(displayStyle = "list");
-
-		DMDocument.addPG(
-			dmDocumentDescription = "Auto Tagged Image Description",
-			dmDocumentFile = "Document_4.jpg",
-			dmDocumentTitle = "Auto Tagged Image");
 
 		DMDocument.viewPG(
 			dmDocumentDescription = "Auto Tagged Image Description",
@@ -443,12 +550,12 @@ definition {
 		property portal.acceptance = "true";
 		property test.name.skip.portal.instance = "DMAutoTagging#Smoke";
 
-		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
-
-		DMDocument.addCP(
+		JSONDocument.addFileWithUploadedFile(
 			dmDocumentDescription = "DM Document Description",
-			dmDocumentFile = "Document_4.jpg",
-			dmDocumentTitle = "DM Document JPG");
+			dmDocumentTitle = "DM Document JPG",
+			groupName = "Guest",
+			mimeType = "image/jpeg",
+			sourceFileName = "Document_4.jpg");
 
 		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
 

@@ -15,6 +15,7 @@
 package com.liferay.journal.util.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.dynamic.data.mapping.constants.DDMStructureConstants;
 import com.liferay.dynamic.data.mapping.io.DDMFormDeserializer;
 import com.liferay.dynamic.data.mapping.io.DDMFormDeserializerDeserializeRequest;
 import com.liferay.dynamic.data.mapping.io.DDMFormDeserializerDeserializeResponse;
@@ -22,31 +23,22 @@ import com.liferay.dynamic.data.mapping.model.DDMForm;
 import com.liferay.dynamic.data.mapping.model.DDMFormField;
 import com.liferay.dynamic.data.mapping.model.DDMFormFieldOptions;
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
-import com.liferay.dynamic.data.mapping.model.DDMStructureConstants;
+import com.liferay.dynamic.data.mapping.model.DDMStructureLayout;
+import com.liferay.dynamic.data.mapping.model.DDMStructureVersion;
 import com.liferay.dynamic.data.mapping.model.LocalizedValue;
+import com.liferay.dynamic.data.mapping.service.DDMStructureLayoutLocalServiceUtil;
 import com.liferay.dynamic.data.mapping.storage.Field;
 import com.liferay.dynamic.data.mapping.storage.Fields;
 import com.liferay.dynamic.data.mapping.storage.StorageType;
 import com.liferay.dynamic.data.mapping.test.util.DDMStructureTestHelper;
 import com.liferay.dynamic.data.mapping.util.DDM;
-import com.liferay.dynamic.data.mapping.util.DDMXML;
 import com.liferay.journal.model.JournalArticle;
-import com.liferay.journal.test.util.JournalTestUtil;
 import com.liferay.journal.util.JournalConverter;
-import com.liferay.layout.test.util.LayoutTestUtil;
 import com.liferay.petra.string.StringBundler;
-import com.liferay.portal.kernel.json.JSONFactoryUtil;
-import com.liferay.portal.kernel.json.JSONObject;
-import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.model.Group;
-import com.liferay.portal.kernel.model.Layout;
-import com.liferay.portal.kernel.model.User;
-import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
-import com.liferay.portal.kernel.test.util.TestPropsValues;
-import com.liferay.portal.kernel.util.LinkedHashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -55,8 +47,6 @@ import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portal.kernel.xml.UnsecureSAXReaderUtil;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
-import com.liferay.registry.Registry;
-import com.liferay.registry.RegistryUtil;
 
 import java.io.InputStream;
 import java.io.Serializable;
@@ -89,8 +79,6 @@ public class JournalConverterUtilTest {
 
 	@Before
 	public void setUp() throws Exception {
-		setUpDDMXML();
-
 		_enLocale = LocaleUtil.fromLanguageId("en_US");
 		_ptLocale = LocaleUtil.fromLanguageId("pt_BR");
 
@@ -99,88 +87,21 @@ public class JournalConverterUtilTest {
 		_ddmStructureTestHelper = new DDMStructureTestHelper(
 			PortalUtil.getClassNameId(JournalArticle.class), _group);
 
-		_classNameId = PortalUtil.getClassNameId(JournalArticle.class);
-
 		String definition = read("test-ddm-structure-all-fields.xml");
 
 		DDMForm ddmForm = deserialize(definition);
 
 		_ddmStructure = _ddmStructureTestHelper.addStructure(
-			_classNameId, null, "Test Structure", ddmForm,
-			StorageType.JSON.getValue(), DDMStructureConstants.TYPE_DEFAULT);
-
-		Registry registry = RegistryUtil.getRegistry();
-
-		_ddmXML = registry.getService(DDMXML.class);
-		_journalConverter = registry.getService(JournalConverter.class);
-	}
-
-	@Test
-	public void testGetContentFromBooleanField() throws Exception {
-		Fields fields = new Fields();
-
-		Field booleanField = getBooleanField(_ddmStructure.getStructureId());
-
-		fields.put(booleanField);
-
-		Field fieldsDisplayField = getFieldsDisplayField(
-			_ddmStructure.getStructureId(),
-			"boolean_INSTANCE_Okhyj6Ni,boolean_INSTANCE_1SYNQuhg");
-
-		fields.put(fieldsDisplayField);
-
-		String expectedContent = read(
-			"test-journal-content-boolean-repeatable-field.xml");
-
-		String actualContent = _journalConverter.getContent(
-			_ddmStructure, fields);
-
-		assertEquals(expectedContent, actualContent);
-	}
-
-	@Test
-	public void testGetContentFromLinkToLayoutField() throws Exception {
-		Fields fields = new Fields();
-
-		Map<String, Layout> layouts = getLayoutsMap();
-
-		Field linkToLayoutField = getLinkToLayoutField(
-			_ddmStructure.getStructureId(), layouts);
-
-		fields.put(linkToLayoutField);
-
-		StringBundler sb = new StringBundler(8);
-
-		sb.append("link_to_layout_INSTANCE_MiO7vIJu,");
-		sb.append("link_to_layout_INSTANCE_9FLzJNUX,");
-		sb.append("link_to_layout_INSTANCE_WqABvmxw,");
-		sb.append("link_to_layout_INSTANCE_31abnWkB,");
-		sb.append("link_to_layout_INSTANCE_pWIUF15B,");
-		sb.append("link_to_layout_INSTANCE_OGQypdcj,");
-		sb.append("link_to_layout_INSTANCE_TB2XZ3wn,");
-		sb.append("link_to_layout_INSTANCE_3IRNS4jM");
-
-		Field fieldsDisplayField = getFieldsDisplayField(
-			_ddmStructure.getStructureId(), sb.toString());
-
-		fields.put(fieldsDisplayField);
-
-		String expectedContent = replaceLinksToLayoutsParameters(
-			read("test-journal-content-link-to-page-field.xml"), layouts);
-
-		String actualContent = _journalConverter.getContent(
-			_ddmStructure, fields);
-
-		assertEquals(expectedContent, actualContent);
+			PortalUtil.getClassNameId(JournalArticle.class), null,
+			"Test Structure", ddmForm, StorageType.DEFAULT.getValue(),
+			DDMStructureConstants.TYPE_DEFAULT);
 	}
 
 	@Test
 	public void testGetContentFromListField() throws Exception {
 		Fields fields = new Fields();
 
-		Field listField = getListField(_ddmStructure.getStructureId());
-
-		fields.put(listField);
+		fields.put(getListField(_ddmStructure.getStructureId()));
 
 		Field fieldsDisplayField = getFieldsDisplayField(
 			_ddmStructure.getStructureId(), "list_INSTANCE_pcm9WPVX");
@@ -190,7 +111,7 @@ public class JournalConverterUtilTest {
 		String expectedContent = read("test-journal-content-list-field.xml");
 
 		String actualContent = _journalConverter.getContent(
-			_ddmStructure, fields);
+			_ddmStructure, fields, _ddmStructure.getGroupId());
 
 		assertEquals(expectedContent, actualContent);
 	}
@@ -213,7 +134,7 @@ public class JournalConverterUtilTest {
 			"test-journal-content-multi-list-field.xml");
 
 		String actualContent = _journalConverter.getContent(
-			_ddmStructure, fields);
+			_ddmStructure, fields, _ddmStructure.getGroupId());
 
 		assertEquals(expectedContent, actualContent);
 	}
@@ -225,7 +146,7 @@ public class JournalConverterUtilTest {
 		String expectedContent = read("test-journal-content-nested-fields.xml");
 
 		String actualContent = _journalConverter.getContent(
-			_ddmStructure, fields);
+			_ddmStructure, fields, _ddmStructure.getGroupId());
 
 		assertEquals(expectedContent, actualContent);
 	}
@@ -234,9 +155,7 @@ public class JournalConverterUtilTest {
 	public void testGetContentFromTextAreaField() throws Exception {
 		Fields fields = new Fields();
 
-		Field textAreaField = getTextAreaField(_ddmStructure.getStructureId());
-
-		fields.put(textAreaField);
+		fields.put(getTextAreaField(_ddmStructure.getStructureId()));
 
 		Field fieldsDisplayField = getFieldsDisplayField(
 			_ddmStructure.getStructureId(), "text_area_INSTANCE_RFnJ1nCn");
@@ -247,7 +166,7 @@ public class JournalConverterUtilTest {
 			"test-journal-content-text-area-field.xml");
 
 		String actualContent = _journalConverter.getContent(
-			_ddmStructure, fields);
+			_ddmStructure, fields, _ddmStructure.getGroupId());
 
 		assertEquals(expectedContent, actualContent);
 	}
@@ -256,9 +175,7 @@ public class JournalConverterUtilTest {
 	public void testGetContentFromTextBoxField() throws Exception {
 		Fields fields = new Fields();
 
-		Field textBoxField = getTextBoxField(_ddmStructure.getStructureId());
-
-		fields.put(textBoxField);
+		fields.put(getTextBoxField(_ddmStructure.getStructureId()));
 
 		Field fieldsDisplayField = getFieldsDisplayField(
 			_ddmStructure.getStructureId(),
@@ -271,7 +188,7 @@ public class JournalConverterUtilTest {
 			"test-journal-content-text-box-repeatable-field.xml");
 
 		String actualContent = _journalConverter.getContent(
-			_ddmStructure, fields);
+			_ddmStructure, fields, _ddmStructure.getGroupId());
 
 		assertEquals(expectedContent, actualContent);
 	}
@@ -280,9 +197,7 @@ public class JournalConverterUtilTest {
 	public void testGetContentFromTextField() throws Exception {
 		Fields fields = new Fields();
 
-		Field textField = getTextField(_ddmStructure.getStructureId());
-
-		fields.put(textField);
+		fields.put(getTextField(_ddmStructure.getStructureId()));
 
 		Field fieldsDisplayField = getFieldsDisplayField(
 			_ddmStructure.getStructureId(), "text_INSTANCE_bf4sdx6Q");
@@ -292,95 +207,16 @@ public class JournalConverterUtilTest {
 		String expectedContent = read("test-journal-content-text-field.xml");
 
 		String actualContent = _journalConverter.getContent(
-			_ddmStructure, fields);
+			_ddmStructure, fields, _ddmStructure.getGroupId());
 
 		assertEquals(expectedContent, actualContent);
-	}
-
-	@Test
-	public void testGetDDMXSD() throws Exception {
-		String expectedXSD = read("test-ddm-structure-all-fields.xml");
-
-		DDMForm expectedDDMForm = deserialize(expectedXSD);
-
-		String actualXSD = _journalConverter.getDDMXSD(
-			read("test-journal-structure-all-fields.xml"));
-
-		validateDDMXSD(actualXSD);
-
-		DDMForm actualDDMForm = deserialize(actualXSD);
-
-		assertEquals(expectedDDMForm, actualDDMForm);
-	}
-
-	@Test
-	public void testGetFieldsFromContentWithBooleanElement() throws Exception {
-		Fields expectedFields = new Fields();
-
-		Field booleanField = getBooleanField(_ddmStructure.getStructureId());
-
-		expectedFields.put(booleanField);
-
-		Field fieldsDisplayField = getFieldsDisplayField(
-			_ddmStructure.getStructureId(),
-			"boolean_INSTANCE_Okhyj6Ni,boolean_INSTANCE_1SYNQuhg");
-
-		expectedFields.put(fieldsDisplayField);
-
-		String content = read(
-			"test-journal-content-boolean-repeatable-field.xml");
-
-		Fields actualFields = _journalConverter.getDDMFields(
-			_ddmStructure, content);
-
-		Assert.assertEquals(expectedFields, actualFields);
-	}
-
-	@Test
-	public void testGetFieldsFromContentWithLinkToLayoutElement()
-		throws Exception {
-
-		Fields expectedFields = new Fields();
-
-		Map<String, Layout> layoutsMap = getLayoutsMap();
-
-		Field linkToLayoutField = getLinkToLayoutField(
-			_ddmStructure.getStructureId(), layoutsMap);
-
-		expectedFields.put(linkToLayoutField);
-
-		StringBundler sb = new StringBundler(8);
-
-		sb.append("link_to_layout_INSTANCE_MiO7vIJu,");
-		sb.append("link_to_layout_INSTANCE_9FLzJNUX,");
-		sb.append("link_to_layout_INSTANCE_WqABvmxw,");
-		sb.append("link_to_layout_INSTANCE_31abnWkB,");
-		sb.append("link_to_layout_INSTANCE_pWIUF15B,");
-		sb.append("link_to_layout_INSTANCE_OGQypdcj,");
-		sb.append("link_to_layout_INSTANCE_TB2XZ3wn,");
-		sb.append("link_to_layout_INSTANCE_3IRNS4jM");
-
-		Field fieldsDisplayField = getFieldsDisplayField(
-			_ddmStructure.getStructureId(), sb.toString());
-
-		expectedFields.put(fieldsDisplayField);
-
-		String content = replaceLinksToLayoutsParameters(
-			read("test-journal-content-link-to-page-field.xml"), layoutsMap);
-
-		Fields actualFields = _journalConverter.getDDMFields(
-			_ddmStructure, content);
-
-		Assert.assertEquals(expectedFields, actualFields);
 	}
 
 	@Test
 	public void testGetFieldsFromContentWithListElement() throws Exception {
 		Fields expectedFields = new Fields();
 
-		Field listField = getListField(_ddmStructure.getStructureId());
-
-		expectedFields.put(listField);
+		expectedFields.put(getListField(_ddmStructure.getStructureId()));
 
 		Field fieldsDisplayField = getFieldsDisplayField(
 			_ddmStructure.getStructureId(), "list_INSTANCE_pcm9WPVX");
@@ -432,6 +268,78 @@ public class JournalConverterUtilTest {
 	}
 
 	@Test
+	public void testGetFieldsFromContentWithParentStructuresElementsBackwardsCompatibility()
+		throws Exception {
+
+		String parentStructureDefinition = read(
+			"test-ddm-structure-parent-structure.json");
+
+		DDMStructure parentDDMStructure = _ddmStructureTestHelper.addStructure(
+			PortalUtil.getClassNameId(JournalArticle.class), null,
+			"Test Structure", jsonDeserialize(parentStructureDefinition),
+			StorageType.DEFAULT.getValue(), DDMStructureConstants.TYPE_DEFAULT);
+
+		DDMStructureVersion parentDDMStructureVersion =
+			parentDDMStructure.getStructureVersion();
+
+		DDMStructureLayout parentDDMStructureLayout =
+			DDMStructureLayoutLocalServiceUtil.
+				getStructureLayoutByStructureVersionId(
+					parentDDMStructureVersion.getStructureVersionId());
+
+		String childStructureDefinition = StringUtil.replace(
+			read("test-ddm-structure-child-structure.json"),
+			new String[] {"$DDM_STRUCTURE_ID", "$DDM_STRUCTURE_LAYOUT_ID"},
+			new String[] {
+				String.valueOf(parentDDMStructure.getStructureId()),
+				String.valueOf(parentDDMStructureLayout.getStructureLayoutId())
+			});
+
+		DDMStructure childDDMStructure = _ddmStructureTestHelper.addStructure(
+			PortalUtil.getClassNameId(JournalArticle.class), null,
+			"Test Structure", jsonDeserialize(childStructureDefinition),
+			StorageType.DEFAULT.getValue(), DDMStructureConstants.TYPE_DEFAULT);
+
+		Fields expectedFields = new Fields();
+
+		Field textField1 = new Field();
+
+		textField1.setDDMStructureId(childDDMStructure.getStructureId());
+		textField1.setDefaultLocale(_enLocale);
+		textField1.setName("Text23i4");
+
+		textField1.addValue(_enLocale, "Text 1");
+
+		expectedFields.put(textField1);
+
+		Field textField2 = new Field();
+
+		textField2.setDDMStructureId(childDDMStructure.getStructureId());
+		textField2.setDefaultLocale(_enLocale);
+		textField2.setName("Textlmzq");
+
+		textField2.addValue(_enLocale, "Text 2");
+
+		expectedFields.put(textField2);
+
+		Field fieldsDisplayField = getFieldsDisplayField(
+			childDDMStructure.getStructureId(),
+			"parentStructureFieldSet37599_INSTANCE_" +
+				childDDMStructure.getStructureId() +
+					",Text23i4_INSTANCE_ngkuwrmn,Textlmzq_INSTANCE_yxxxshhf");
+
+		expectedFields.put(fieldsDisplayField);
+
+		String content = read(
+			"test-journal-content-parent-structure-fields.xml");
+
+		Fields actualFields = _journalConverter.getDDMFields(
+			childDDMStructure, content);
+
+		Assert.assertEquals(expectedFields, actualFields);
+	}
+
+	@Test
 	public void testGetFieldsFromContentWithUnlocalizedElement()
 		throws Exception {
 
@@ -455,22 +363,6 @@ public class JournalConverterUtilTest {
 			_ddmStructure, content);
 
 		Assert.assertEquals(expectedFields, actualFields);
-	}
-
-	@Test
-	public void testGetJournalXSD() throws Exception {
-		String expectedXSD = read("test-journal-structure-all-fields.xml");
-
-		Map<String, Map<String, String>> expectedMap =
-			JournalTestUtil.getXsdMap(expectedXSD);
-
-		String actualXSD = _journalConverter.getJournalXSD(
-			read("test-ddm-structure-all-fields.xml"));
-
-		Map<String, Map<String, String>> actualMap = JournalTestUtil.getXsdMap(
-			actualXSD);
-
-		Assert.assertEquals(expectedMap, actualMap);
 	}
 
 	protected void assertEquals(
@@ -582,45 +474,6 @@ public class JournalConverterUtilTest {
 		return ddmFormDeserializerDeserializeResponse.getDDMForm();
 	}
 
-	protected Field getBooleanField(long ddmStructureId) {
-		Field field = new Field();
-
-		field.setDDMStructureId(ddmStructureId);
-		field.setName("boolean");
-
-		List<Serializable> enValues = new ArrayList<>();
-
-		enValues.add(true);
-		enValues.add(false);
-
-		field.addValues(_enLocale, enValues);
-
-		return field;
-	}
-
-	protected Field getDocumentLibraryField(
-		FileEntry fileEntry, long ddmStructureId) {
-
-		Field docLibraryField = new Field();
-
-		docLibraryField.setDDMStructureId(ddmStructureId);
-		docLibraryField.setName("document_library");
-
-		JSONObject jsonObject = JSONUtil.put(
-			"groupId", fileEntry.getGroupId()
-		).put(
-			"title", fileEntry.getTitle()
-		).put(
-			"uuid", fileEntry.getUuid()
-		).put(
-			"version", fileEntry.getVersion()
-		);
-
-		docLibraryField.addValue(_enLocale, jsonObject.toString());
-
-		return docLibraryField;
-	}
-
 	protected Field getFieldsDisplayField(long ddmStructureId, String value) {
 		Field fieldsDisplayField = new Field();
 
@@ -649,65 +502,6 @@ public class JournalConverterUtilTest {
 		}
 
 		return fieldsMap;
-	}
-
-	protected Map<String, Layout> getLayoutsMap() throws Exception {
-		User user = TestPropsValues.getUser();
-
-		return LinkedHashMapBuilder.<String, Layout>put(
-			_PRIVATE_LAYOUT, LayoutTestUtil.addLayout(_group, true)
-		).put(
-			_PRIVATE_USER_LAYOUT,
-			LayoutTestUtil.addLayout(user.getGroupId(), true)
-		).put(
-			_PUBLIC_LAYOUT, LayoutTestUtil.addLayout(_group, false)
-		).put(
-			_PUBLIC_USER_LAYOUT,
-			LayoutTestUtil.addLayout(user.getGroupId(), false)
-		).build();
-	}
-
-	protected Field getLinkToLayoutField(
-		long ddmStructureId, Map<String, Layout> layoutsMap) {
-
-		Field field = new Field();
-
-		field.setDDMStructureId(ddmStructureId);
-		field.setDefaultLocale(_enLocale);
-		field.setName("link_to_layout");
-
-		List<Serializable> enValues = new ArrayList<>();
-
-		for (Layout layout : layoutsMap.values()) {
-			enValues.add(getLinkToLayoutFieldValue(layout, _enLocale, false));
-			enValues.add(getLinkToLayoutFieldValue(layout, _enLocale, true));
-		}
-
-		field.addValues(_enLocale, enValues);
-
-		return field;
-	}
-
-	protected String getLinkToLayoutFieldValue(
-		Layout layout, Locale locale, boolean includeGroupId) {
-
-		JSONObject jsonObject = JSONFactoryUtil.createJSONObject();
-
-		if (includeGroupId) {
-			jsonObject.put(
-				"groupId", layout.getGroupId()
-			).put(
-				"label", layout.getName(locale)
-			);
-		}
-
-		jsonObject.put(
-			"layoutId", layout.getLayoutId()
-		).put(
-			"privateLayout", layout.isPrivateLayout()
-		);
-
-		return jsonObject.toString();
 	}
 
 	protected Field getListField(long ddmStructureId) {
@@ -797,10 +591,10 @@ public class JournalConverterUtilTest {
 
 		StringBundler sb = new StringBundler(5);
 
-		sb.append("contact_INSTANCE_RF3do1m5,phone_INSTANCE_QK6B0wK9,");
+		sb.append("contact_INSTANCE_RF3do1m5,contact_INSTANCE_CUeFxcrA,");
+		sb.append("phone_INSTANCE_QK6B0wK9,phone_INSTANCE_lVTcTviF,");
 		sb.append("ext_INSTANCE_L67MPqQf,ext_INSTANCE_8uxzZl41,");
-		sb.append("ext_INSTANCE_S58K861T,contact_INSTANCE_CUeFxcrA,");
-		sb.append("phone_INSTANCE_lVTcTviF,ext_INSTANCE_cZalDSll,");
+		sb.append("ext_INSTANCE_S58K861T,ext_INSTANCE_cZalDSll,");
 		sb.append("ext_INSTANCE_HDrK2Um5");
 
 		Field fieldsDisplayField = new Field(
@@ -862,15 +656,18 @@ public class JournalConverterUtilTest {
 	protected List<String> getValues(
 		Map<Locale, List<String>> valuesMap, Locale locale) {
 
-		List<String> values = valuesMap.get(locale);
+		return valuesMap.computeIfAbsent(locale, key -> new ArrayList<>());
+	}
 
-		if (values == null) {
-			values = new ArrayList<>();
+	protected DDMForm jsonDeserialize(String content) {
+		DDMFormDeserializerDeserializeRequest.Builder builder =
+			DDMFormDeserializerDeserializeRequest.Builder.newBuilder(content);
 
-			valuesMap.put(locale, values);
-		}
+		DDMFormDeserializerDeserializeResponse
+			ddmFormDeserializerDeserializeResponse =
+				_jsonDDMFormDeserializer.deserialize(builder.build());
 
-		return values;
+		return ddmFormDeserializerDeserializeResponse.getDDMForm();
 	}
 
 	protected String read(String fileName) throws Exception {
@@ -882,38 +679,6 @@ public class JournalConverterUtilTest {
 			"com/liferay/journal/dependencies/" + fileName);
 
 		return StringUtil.read(inputStream);
-	}
-
-	protected String replaceLinksToLayoutsParameters(
-			String content, Map<String, Layout> layoutsMap)
-		throws Exception {
-
-		Layout privateLayout = layoutsMap.get(_PRIVATE_LAYOUT);
-		Layout privateUserLayout = layoutsMap.get(_PRIVATE_USER_LAYOUT);
-		Layout publicLayout = layoutsMap.get(_PUBLIC_LAYOUT);
-		Layout publicUserLayout = layoutsMap.get(_PUBLIC_USER_LAYOUT);
-
-		return StringUtil.replace(
-			content,
-			new String[] {
-				"[$GROUP_ID$]", "[$GROUP_ID_USER$]", "[$LAYOUT_ID_PRIVATE$]",
-				"[$LAYOUT_ID_PRIVATE_USER$]", "[$LAYOUT_ID_PUBLIC$]",
-				"[$LAYOUT_ID_PUBLIC_USER$]"
-			},
-			new String[] {
-				String.valueOf(privateLayout.getGroupId()),
-				String.valueOf(privateUserLayout.getGroupId()),
-				String.valueOf(privateLayout.getLayoutId()),
-				String.valueOf(privateUserLayout.getLayoutId()),
-				String.valueOf(publicLayout.getLayoutId()),
-				String.valueOf(publicUserLayout.getLayoutId())
-			});
-	}
-
-	protected void setUpDDMXML() throws Exception {
-		Registry registry = RegistryUtil.getRegistry();
-
-		_ddmXML = registry.getService(DDMXML.class);
 	}
 
 	protected void udpateFieldsMap(
@@ -931,13 +696,8 @@ public class JournalConverterUtilTest {
 
 		String name = dynamicElementElement.attributeValue("name");
 
-		Map<Locale, List<String>> valuesMap = fieldsMap.get(name);
-
-		if (valuesMap == null) {
-			valuesMap = new HashMap<>();
-
-			fieldsMap.put(name, valuesMap);
-		}
+		Map<Locale, List<String>> valuesMap = fieldsMap.computeIfAbsent(
+			name, key -> new HashMap<>());
 
 		List<Element> dynamicContentElements = dynamicElementElement.elements(
 			"dynamic-content");
@@ -962,31 +722,22 @@ public class JournalConverterUtilTest {
 		}
 	}
 
-	protected void validateDDMXSD(String xsd) throws Exception {
-		_ddmXML.validateXML(xsd);
-	}
-
-	private static final String _PRIVATE_LAYOUT = "privateLayout";
-
-	private static final String _PRIVATE_USER_LAYOUT = "privateUserLayout";
-
-	private static final String _PUBLIC_LAYOUT = "publicLayout";
-
-	private static final String _PUBLIC_USER_LAYOUT = "publicUserLayout";
+	@Inject(filter = "ddm.form.deserializer.type=json")
+	private static DDMFormDeserializer _jsonDDMFormDeserializer;
 
 	@Inject(filter = "ddm.form.deserializer.type=xsd")
 	private static DDMFormDeserializer _xsdDDMFormDeserializer;
 
-	private long _classNameId;
 	private DDMStructure _ddmStructure;
 	private DDMStructureTestHelper _ddmStructureTestHelper;
-	private DDMXML _ddmXML;
 	private Locale _enLocale;
 
 	@DeleteAfterTestRun
 	private Group _group;
 
+	@Inject
 	private JournalConverter _journalConverter;
+
 	private Locale _ptLocale;
 
 }

@@ -175,8 +175,8 @@ public abstract class TopLevelBuildRunner
 
 			publishToUserContentDir(jenkinsReportFile);
 		}
-		catch (IOException ioe) {
-			throw new RuntimeException(ioe);
+		catch (IOException ioException) {
+			throw new RuntimeException(ioException);
 		}
 	}
 
@@ -187,10 +187,11 @@ public abstract class TopLevelBuildRunner
 			return;
 		}
 
-		long currentTimeMillis = System.currentTimeMillis();
+		long currentTimeMillis =
+			JenkinsResultsParserUtil.getCurrentTimeMillis();
 
 		if (_lastGeneratedReportTime == -1) {
-			_lastGeneratedReportTime = System.currentTimeMillis();
+			_lastGeneratedReportTime = currentTimeMillis;
 
 			publishJenkinsReport();
 
@@ -203,7 +204,7 @@ public abstract class TopLevelBuildRunner
 			return;
 		}
 
-		_lastGeneratedReportTime = System.currentTimeMillis();
+		_lastGeneratedReportTime = currentTimeMillis;
 
 		publishJenkinsReport();
 	}
@@ -245,28 +246,6 @@ public abstract class TopLevelBuildRunner
 		return false;
 	}
 
-	private String _getCachedJenkinsGitHubURL() {
-		if (JenkinsResultsParserUtil.isCINode()) {
-			Workspace workspace = getWorkspace();
-
-			WorkspaceGitRepository jenkinsWorkspaceGitRepository =
-				workspace.getJenkinsWorkspaceGitRepository();
-
-			String gitHubDevBranchName =
-				jenkinsWorkspaceGitRepository.getGitHubDevBranchName();
-
-			if (gitHubDevBranchName != null) {
-				return JenkinsResultsParserUtil.combine(
-					"https://github-dev.liferay.com/liferay/",
-					"liferay-jenkins-ee/tree/", gitHubDevBranchName);
-			}
-		}
-
-		TopLevelBuildData topLevelBuildData = getBuildData();
-
-		return topLevelBuildData.getJenkinsGitHubURL();
-	}
-
 	private BuildData _getDownstreamBuildData(Build downstreamBuild) {
 		if (_downstreamBuildDataList.isEmpty()) {
 			return null;
@@ -298,8 +277,8 @@ public abstract class TopLevelBuildRunner
 		try {
 			buildProperties = JenkinsResultsParserUtil.getBuildProperties();
 		}
-		catch (IOException ioe) {
-			throw new RuntimeException(ioe);
+		catch (IOException ioException) {
+			throw new RuntimeException(ioException);
 		}
 
 		String invocationURL =
@@ -343,12 +322,13 @@ public abstract class TopLevelBuildRunner
 			StringUtils.join(topLevelBuildData.getDistNodes(), ","));
 		invocationParameters.put("DIST_PATH", topLevelBuildData.getDistPath());
 		invocationParameters.put(
-			"JENKINS_GITHUB_URL", _getCachedJenkinsGitHubURL());
+			"JENKINS_GITHUB_URL", topLevelBuildData.getJenkinsGitHubURL());
 		invocationParameters.put("RUN_ID", buildData.getRunID());
 		invocationParameters.put(
 			"TOP_LEVEL_RUN_ID", topLevelBuildData.getRunID());
 
-		buildData.setInvocationTime(System.currentTimeMillis());
+		buildData.setInvocationTime(
+			JenkinsResultsParserUtil.getCurrentTimeMillis());
 
 		_invokeBuild(
 			topLevelBuildData.getCohortName(), buildData.getJobName(),
@@ -359,7 +339,8 @@ public abstract class TopLevelBuildRunner
 		TopLevelBuildData topLevelBuildData = getBuildData();
 
 		topLevelBuildData.setBuildDuration(
-			System.currentTimeMillis() - topLevelBuildData.getStartTime());
+			JenkinsResultsParserUtil.getCurrentTimeMillis() -
+				topLevelBuildData.getStartTime());
 		topLevelBuildData.setBuildResult(_topLevelBuild.getResult());
 		topLevelBuildData.setBuildStatus(_topLevelBuild.getStatus());
 

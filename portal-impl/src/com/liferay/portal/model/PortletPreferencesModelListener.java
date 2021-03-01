@@ -14,12 +14,14 @@
 
 package com.liferay.portal.model;
 
+import com.liferay.asset.kernel.util.NotifiedAssetEntryThreadLocal;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.BaseModelListener;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutRevision;
+import com.liferay.portal.kernel.model.LayoutSet;
 import com.liferay.portal.kernel.model.LayoutSetPrototype;
 import com.liferay.portal.kernel.model.PortletPreferences;
 import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
@@ -81,7 +83,11 @@ public class PortletPreferencesModelListener
 				CacheUtil.clearCache(companyId);
 			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
+
 			CacheUtil.clearCache();
 		}
 	}
@@ -129,6 +135,10 @@ public class PortletPreferencesModelListener
 					return;
 				}
 
+				if (_isNotifiedAssetEntryIdsModified(layout)) {
+					return;
+				}
+
 				layout.setModifiedDate(new Date());
 
 				LayoutLocalServiceUtil.updateLayout(
@@ -136,9 +146,26 @@ public class PortletPreferencesModelListener
 					layout.getLayoutId(), layout.getTypeSettings());
 			}
 		}
-		catch (Exception e) {
-			_log.error("Unable to update the layout's modified date", e);
+		catch (Exception exception) {
+			_log.error(
+				"Unable to update the layout's modified date", exception);
 		}
+	}
+
+	private boolean _isNotifiedAssetEntryIdsModified(Layout layout) {
+		if (!NotifiedAssetEntryThreadLocal.isNotifiedAssetEntryIdsModified()) {
+			return false;
+		}
+
+		LayoutSet layoutSet = layout.getLayoutSet();
+
+		if (!layout.isLayoutPrototypeLinkActive() &&
+			!layoutSet.isLayoutSetPrototypeLinkActive()) {
+
+			return false;
+		}
+
+		return true;
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(

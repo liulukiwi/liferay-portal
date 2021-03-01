@@ -113,13 +113,11 @@ public class PortalRequestProcessor {
 
 		_publicPaths.add(_PATH_C);
 		_publicPaths.add(_PATH_PORTAL_API_JSONWS);
-		_publicPaths.add(_PATH_PORTAL_FLASH);
 		_publicPaths.add(_PATH_PORTAL_J_LOGIN);
 		_publicPaths.add(_PATH_PORTAL_LAYOUT);
 		_publicPaths.add(_PATH_PORTAL_LICENSE);
 		_publicPaths.add(_PATH_PORTAL_LOGIN);
 		_publicPaths.add(_PATH_PORTAL_RENDER_PORTLET);
-		_publicPaths.add(_PATH_PORTAL_RESILIENCY);
 		_publicPaths.add(_PATH_PORTAL_TCK);
 		_publicPaths.add(_PATH_PORTAL_UPDATE_LANGUAGE);
 		_publicPaths.add(_PATH_PORTAL_UPDATE_PASSWORD);
@@ -223,22 +221,18 @@ public class PortalRequestProcessor {
 		}
 
 		if ((portlet == null) || !portlet.isActive()) {
-			return layoutFriendlyURL.concat(
-				StringPool.QUESTION
-			).concat(
-				httpServletRequest.getQueryString()
-			);
+			return StringBundler.concat(
+				layoutFriendlyURL, StringPool.QUESTION,
+				httpServletRequest.getQueryString());
 		}
 
 		FriendlyURLMapper friendlyURLMapper =
 			portlet.getFriendlyURLMapperInstance();
 
 		if (friendlyURLMapper == null) {
-			return layoutFriendlyURL.concat(
-				StringPool.QUESTION
-			).concat(
-				httpServletRequest.getQueryString()
-			);
+			return StringBundler.concat(
+				layoutFriendlyURL, StringPool.QUESTION,
+				httpServletRequest.getQueryString());
 		}
 
 		String namespace = PortalUtil.getPortletNamespace(portletId);
@@ -265,11 +259,9 @@ public class PortalRequestProcessor {
 			return layoutFriendlyURL.concat(portletFriendlyURL);
 		}
 
-		return layoutFriendlyURL.concat(
-			StringPool.QUESTION
-		).concat(
-			httpServletRequest.getQueryString()
-		);
+		return StringBundler.concat(
+			layoutFriendlyURL, StringPool.QUESTION,
+			httpServletRequest.getQueryString());
 	}
 
 	private String _getLastPath(HttpServletRequest httpServletRequest) {
@@ -421,11 +413,11 @@ public class PortalRequestProcessor {
 					httpServletResponse);
 			}
 		}
-		catch (IOException | ServletException e) {
-			throw e;
+		catch (IOException | ServletException exception) {
+			throw exception;
 		}
-		catch (Exception e) {
-			throw new ServletException(e);
+		catch (Exception exception) {
+			throw new ServletException(exception);
 		}
 	}
 
@@ -488,8 +480,8 @@ public class PortalRequestProcessor {
 						path, themeDisplay, httpServletRequest);
 				}
 			}
-			catch (Exception e) {
-				_log.error(e, e);
+			catch (Exception exception) {
+				_log.error(exception, exception);
 			}
 
 			String fullPathWithoutQueryString = fullPath;
@@ -500,11 +492,8 @@ public class PortalRequestProcessor {
 				fullPathWithoutQueryString = path;
 
 				if (Validator.isNotNull(queryString)) {
-					fullPath = path.concat(
-						StringPool.QUESTION
-					).concat(
-						queryString
-					);
+					fullPath = StringBundler.concat(
+						path, StringPool.QUESTION, queryString);
 				}
 				else {
 					fullPath = path;
@@ -530,14 +519,15 @@ public class PortalRequestProcessor {
 			}
 		}
 
-		String remoteUser = httpServletRequest.getRemoteUser();
-
 		User user = null;
 
 		try {
 			user = PortalUtil.getUser(httpServletRequest);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
 		}
 
 		// Last path
@@ -589,6 +579,8 @@ public class PortalRequestProcessor {
 			return _PATH_PORTAL_LAYOUT;
 		}
 
+		String remoteUser = httpServletRequest.getRemoteUser();
+
 		if ((remoteUser != null) || (user != null)) {
 
 			// Authenticated users can always log out
@@ -624,9 +616,6 @@ public class PortalRequestProcessor {
 			return _PATH_PORTAL_LOGOUT;
 		}
 
-		long companyId = PortalUtil.getCompanyId(httpServletRequest);
-		String portletId = ParamUtil.getString(httpServletRequest, "p_p_id");
-
 		// Authenticated users must be active
 
 		if (user != null) {
@@ -636,12 +625,15 @@ public class PortalRequestProcessor {
 				return _PATH_PORTAL_ERROR;
 			}
 
+			String portletId = ParamUtil.getString(
+				httpServletRequest, "p_p_id");
+
 			if (!path.equals(_PATH_PORTAL_JSON_SERVICE) &&
 				!path.equals(_PATH_PORTAL_RENDER_PORTLET) &&
 				!themeDisplay.isImpersonated() &&
 				!InterruptedPortletRequestWhitelistUtil.
 					isPortletInvocationWhitelisted(
-						companyId, portletId,
+						PortalUtil.getCompanyId(httpServletRequest), portletId,
 						PortalUtil.getStrutsAction(httpServletRequest))) {
 
 				// Authenticated users should agree to Terms of Use
@@ -673,8 +665,8 @@ public class PortalRequestProcessor {
 							return _PATH_PORTAL_UPDATE_PASSWORD;
 						}
 					}
-					catch (Exception e) {
-						_log.error(e, e);
+					catch (Exception exception) {
+						_log.error(exception, exception);
 
 						return _PATH_PORTAL_UPDATE_PASSWORD;
 					}
@@ -735,7 +727,10 @@ public class PortalRequestProcessor {
 		try {
 			user = PortalUtil.getUser(httpServletRequest);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
 		}
 
 		if ((user != null) && _isPortletPath(path)) {
@@ -798,7 +793,11 @@ public class PortalRequestProcessor {
 					authorized = false;
 				}
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(exception, exception);
+				}
+
 				SessionErrors.add(
 					httpServletRequest, PrincipalException.class.getName());
 
@@ -840,8 +839,6 @@ public class PortalRequestProcessor {
 	private static final String _PATH_PORTAL_EXTEND_SESSION =
 		"/portal/extend_session";
 
-	private static final String _PATH_PORTAL_FLASH = "/portal/flash";
-
 	private static final String _PATH_PORTAL_J_LOGIN = "/portal/j_login";
 
 	private static final String _PATH_PORTAL_JSON_SERVICE =
@@ -859,8 +856,6 @@ public class PortalRequestProcessor {
 
 	private static final String _PATH_PORTAL_RENDER_PORTLET =
 		"/portal/render_portlet";
-
-	private static final String _PATH_PORTAL_RESILIENCY = "/portal/resiliency";
 
 	private static final String _PATH_PORTAL_SETUP_WIZARD =
 		"/portal/setup_wizard";

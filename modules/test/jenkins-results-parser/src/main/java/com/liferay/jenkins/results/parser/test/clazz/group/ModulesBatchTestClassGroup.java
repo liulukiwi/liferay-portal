@@ -15,6 +15,7 @@
 package com.liferay.jenkins.results.parser.test.clazz.group;
 
 import com.liferay.jenkins.results.parser.JenkinsResultsParserUtil;
+import com.liferay.jenkins.results.parser.Job;
 import com.liferay.jenkins.results.parser.PortalTestClassJob;
 
 import java.io.File;
@@ -40,7 +41,7 @@ public abstract class ModulesBatchTestClassGroup extends BatchTestClassGroup {
 
 	public static class ModulesBatchTestClass extends BaseTestClass {
 
-		protected ModulesBatchTestClass(TestClassFile moduleBaseDir) {
+		protected ModulesBatchTestClass(File moduleBaseDir) {
 			super(moduleBaseDir);
 		}
 
@@ -129,6 +130,14 @@ public abstract class ModulesBatchTestClassGroup extends BatchTestClassGroup {
 				}
 			}
 
+			Job.BuildProfile buildProfile =
+				portalTestClassJob.getBuildProfile();
+
+			excludesPathMatchers.addAll(
+				getPathMatchers(
+					getFirstPropertyValue("modules.excludes." + buildProfile),
+					modulesDir));
+
 			if (testRelevantChanges) {
 				moduleDirsList.addAll(
 					getRequiredModuleDirs(
@@ -139,9 +148,11 @@ public abstract class ModulesBatchTestClassGroup extends BatchTestClassGroup {
 			setTestClasses();
 
 			setAxisTestClassGroups();
+
+			setSegmentTestClassGroups();
 		}
-		catch (IOException ioe) {
-			throw new RuntimeException(ioe);
+		catch (IOException ioException) {
+			throw new RuntimeException(ioException);
 		}
 	}
 

@@ -63,22 +63,21 @@ public class StorageEngineManagerImpl implements StorageEngineManager {
 
 			_validate(translatedDDMFormValues, serviceContext);
 
-			DDMStorageAdapterSaveRequest.Builder builder =
-				DDMStorageAdapterSaveRequest.Builder.newBuilder(
-					serviceContext.getUserId(),
-					serviceContext.getScopeGroupId(), translatedDDMFormValues);
-
-			DDMStorageAdapterSaveRequest ddmStorageAdapterSaveRequest =
-				builder.withUuid(
-					serviceContext.getUuid()
-				).withClassName(
-					DDMStorageLink.class.getName()
-				).build();
-
 			DDMStorageAdapter ddmStorageAdapter = _getDDMStorageAdapter();
 
 			DDMStorageAdapterSaveResponse ddmStorageAdapterSaveResponse =
-				ddmStorageAdapter.save(ddmStorageAdapterSaveRequest);
+				ddmStorageAdapter.save(
+					DDMStorageAdapterSaveRequest.Builder.newBuilder(
+						serviceContext.getUserId(),
+						serviceContext.getScopeGroupId(),
+						translatedDDMFormValues
+					).withStructureId(
+						ddmStructureId
+					).withUuid(
+						serviceContext.getUuid()
+					).withClassName(
+						DDMStorageLink.class.getName()
+					).build());
 
 			long primaryKey = ddmStorageAdapterSaveResponse.getPrimaryKey();
 
@@ -92,8 +91,8 @@ public class StorageEngineManagerImpl implements StorageEngineManager {
 
 			return primaryKey;
 		}
-		catch (PortalException pe) {
-			throw _translate(pe);
+		catch (PortalException portalException) {
+			throw _translate(portalException);
 		}
 	}
 
@@ -115,14 +114,11 @@ public class StorageEngineManagerImpl implements StorageEngineManager {
 
 		DDMStorageAdapter ddmStorageAdapter = _getDDMStorageAdapter();
 
-		DDMStorageAdapterGetRequest.Builder builder =
-			DDMStorageAdapterGetRequest.Builder.newBuilder(classPK, ddmForm);
-
-		DDMStorageAdapterGetRequest ddmStorageAdapterGetRequest =
-			builder.build();
-
 		DDMStorageAdapterGetResponse ddmStorageAdapterGetResponse =
-			ddmStorageAdapter.get(ddmStorageAdapterGetRequest);
+			ddmStorageAdapter.get(
+				DDMStorageAdapterGetRequest.Builder.newBuilder(
+					classPK, ddmForm
+				).build());
 
 		return _ddmBeanTranslator.translate(
 			ddmStorageAdapterGetResponse.getDDMFormValues());
@@ -152,40 +148,38 @@ public class StorageEngineManagerImpl implements StorageEngineManager {
 
 			_validate(translatedDDMFormValues, serviceContext);
 
-			DDMStorageAdapterSaveRequest.Builder builder =
-				DDMStorageAdapterSaveRequest.Builder.newBuilder(
-					serviceContext.getUserId(),
-					serviceContext.getScopeGroupId(), translatedDDMFormValues);
-
-			DDMStorageAdapterSaveRequest ddmStorageAdapterSaveRequest =
-				builder.withPrimaryKey(
-					classPK
-				).build();
+			DDMStorageLink ddmStorageLink =
+				_ddmStorageLinkLocalService.getClassStorageLink(classPK);
 
 			DDMStorageAdapter ddmStorageAdapter = _getDDMStorageAdapter();
 
-			ddmStorageAdapter.save(ddmStorageAdapterSaveRequest);
+			ddmStorageAdapter.save(
+				DDMStorageAdapterSaveRequest.Builder.newBuilder(
+					serviceContext.getUserId(),
+					serviceContext.getScopeGroupId(), translatedDDMFormValues
+				).withStructureId(
+					ddmStorageLink.getStructureId()
+				).withPrimaryKey(
+					classPK
+				).build());
 		}
-		catch (PortalException pe) {
-			throw _translate(pe);
+		catch (PortalException portalException) {
+			throw _translate(portalException);
 		}
 	}
 
 	private void _deleteStorage(long storageId) throws StorageException {
 		DDMStorageAdapter ddmStorageAdapter = _getDDMStorageAdapter();
 
-		DDMStorageAdapterDeleteRequest.Builder builder =
-			DDMStorageAdapterDeleteRequest.Builder.newBuilder(storageId);
-
-		DDMStorageAdapterDeleteRequest ddmStorageAdapterDeleteRequest =
-			builder.build();
-
-		ddmStorageAdapter.delete(ddmStorageAdapterDeleteRequest);
+		ddmStorageAdapter.delete(
+			DDMStorageAdapterDeleteRequest.Builder.newBuilder(
+				storageId
+			).build());
 	}
 
 	private DDMStorageAdapter _getDDMStorageAdapter() {
 		return _ddmStorageAdapterTracker.getDDMStorageAdapter(
-			StorageType.JSON.toString());
+			StorageType.DEFAULT.toString());
 	}
 
 	private PortalException _translate(PortalException portalException) {

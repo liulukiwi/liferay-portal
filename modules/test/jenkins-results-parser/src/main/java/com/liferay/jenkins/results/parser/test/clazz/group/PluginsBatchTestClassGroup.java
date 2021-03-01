@@ -14,7 +14,6 @@
 
 package com.liferay.jenkins.results.parser.test.clazz.group;
 
-import com.liferay.jenkins.results.parser.GitWorkingDirectoryFactory;
 import com.liferay.jenkins.results.parser.JenkinsResultsParserUtil;
 import com.liferay.jenkins.results.parser.PluginsGitWorkingDirectory;
 import com.liferay.jenkins.results.parser.PortalTestClassJob;
@@ -29,7 +28,6 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 
 import java.util.Collections;
-import java.util.Properties;
 
 /**
  * @author Michael Hashimoto
@@ -52,13 +50,10 @@ public class PluginsBatchTestClassGroup extends BatchTestClassGroup {
 
 			return new PluginsBatchTestClass(
 				batchName,
-				new TestClassFile(
-					JenkinsResultsParserUtil.getCanonicalPath(pluginDir)));
+				new File(JenkinsResultsParserUtil.getCanonicalPath(pluginDir)));
 		}
 
-		protected PluginsBatchTestClass(
-			String batchName, TestClassFile testClassFile) {
-
+		protected PluginsBatchTestClass(String batchName, File testClassFile) {
 			super(testClassFile);
 
 			addTestClassMethod(batchName);
@@ -71,18 +66,8 @@ public class PluginsBatchTestClassGroup extends BatchTestClassGroup {
 
 		super(batchName, portalTestClassJob);
 
-		Properties portalReleaseProperties =
-			JenkinsResultsParserUtil.getProperties(
-				new File(
-					portalGitWorkingDirectory.getWorkingDirectory(),
-					"release.properties"));
-
 		_pluginsGitWorkingDirectory =
-			(PluginsGitWorkingDirectory)
-				GitWorkingDirectoryFactory.newGitWorkingDirectory(
-					portalGitWorkingDirectory.getUpstreamBranchName(),
-					JenkinsResultsParserUtil.getProperty(
-						portalReleaseProperties, "lp.plugins.dir"));
+			portalGitWorkingDirectory.getPluginsGitWorkingDirectory();
 
 		excludesPathMatchers.addAll(
 			getPathMatchers(
@@ -113,6 +98,8 @@ public class PluginsBatchTestClassGroup extends BatchTestClassGroup {
 		setTestClasses();
 
 		setAxisTestClassGroups();
+
+		setSegmentTestClassGroups();
 	}
 
 	protected void setTestClasses() {
@@ -159,11 +146,11 @@ public class PluginsBatchTestClassGroup extends BatchTestClassGroup {
 
 				});
 		}
-		catch (IOException ioe) {
+		catch (IOException ioException) {
 			throw new RuntimeException(
 				"Unable to search for test file names in " +
 					workingDirectory.getPath(),
-				ioe);
+				ioException);
 		}
 
 		Collections.sort(testClasses);

@@ -14,7 +14,6 @@
 
 package com.liferay.exportimport.resources.importer.internal.util;
 
-import com.liferay.journal.util.JournalConverter;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.model.Group;
@@ -120,14 +119,13 @@ public abstract class BaseImporter implements Importer {
 					companyId, targetValue);
 
 				if (group != null) {
-					int privateLayoutPageCount =
+					int privateLayoutsPageCount =
 						group.getPrivateLayoutsPageCount();
-
-					int publicLayoutPageCount =
+					int publicLayoutsPageCount =
 						group.getPublicLayoutsPageCount();
 
-					if ((privateLayoutPageCount != 0) ||
-						(publicLayoutPageCount != 0)) {
+					if ((privateLayoutsPageCount != 0) ||
+						(publicLayoutsPageCount != 0)) {
 
 						existing = true;
 					}
@@ -226,11 +224,6 @@ public abstract class BaseImporter implements Importer {
 	}
 
 	@Override
-	public void setJournalConverter(JournalConverter journalConverter) {
-		this.journalConverter = journalConverter;
-	}
-
-	@Override
 	public void setResourcesDir(String resourcesDir) {
 		this.resourcesDir = resourcesDir;
 	}
@@ -316,7 +309,6 @@ public abstract class BaseImporter implements Importer {
 	protected boolean existing;
 	protected long groupId;
 	protected boolean indexAfterImport;
-	protected JournalConverter journalConverter;
 	protected String resourcesDir;
 	protected ServletContext servletContext;
 	protected String servletContextName;

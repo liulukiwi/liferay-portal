@@ -24,7 +24,7 @@ import java.util.regex.Pattern;
 /**
  * @author Hugo Huijser
  */
-public class JSPEmptyLinesCheck extends EmptyLinesCheck {
+public class JSPEmptyLinesCheck extends BaseEmptyLinesCheck {
 
 	@Override
 	protected String doProcess(
@@ -125,13 +125,13 @@ public class JSPEmptyLinesCheck extends EmptyLinesCheck {
 	private static final Pattern _missingEmptyLinePattern1 = Pattern.compile(
 		"[\t\n](--)?%>\n\t*(?!-->)\\S");
 	private static final Pattern _missingEmptyLinePattern2 = Pattern.compile(
-		"\\S(?!<\\!--)\n\t*<%(--)?\n");
+		"\\S(?!<\\!--)\n\t*<%(--|\\!)?\n");
 	private static final Pattern _missingEmptyLinePattern3 = Pattern.compile(
-		"[\t\n]<%\n\t*//");
+		"[\t\n]<%\\!?\n\t*//");
 	private static final Pattern _missingEmptyLinePattern4 = Pattern.compile(
 		"[\t\n]//.*\n\t*%>\n");
 	private static final Pattern _redundantEmptyLinePattern1 = Pattern.compile(
-		"[\n\t]<%\n\n(\t*)[^/\n\t]");
+		"[\n\t]<%\\!?\n\n(\t*)[^/\n\t]");
 	private static final Pattern _redundantEmptyLinePattern2 = Pattern.compile(
 		"[\n\t][^/\n\t].*\n\n\t*%>");
 

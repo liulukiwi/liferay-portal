@@ -18,6 +18,8 @@ import com.liferay.asset.kernel.model.BaseJSPAssetRenderer;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.language.LanguageUtil;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutBranch;
 import com.liferay.portal.kernel.model.LayoutRevision;
@@ -55,8 +57,8 @@ public class LayoutRevisionAssetRenderer
 				LayoutSetBranchLocalServiceUtil.getLayoutSetBranch(
 					_layoutRevision.getLayoutSetBranchId());
 		}
-		catch (Exception e) {
-			throw new IllegalStateException(e);
+		catch (Exception exception) {
+			throw new IllegalStateException(exception);
 		}
 	}
 
@@ -153,7 +155,11 @@ public class LayoutRevisionAssetRenderer
 
 			return layoutURL;
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
+
 			return StringPool.BLANK;
 		}
 	}
@@ -189,6 +195,9 @@ public class LayoutRevisionAssetRenderer
 	public boolean isPreviewInContext() {
 		return true;
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		LayoutRevisionAssetRenderer.class);
 
 	private final LayoutBranch _layoutBranch;
 	private final LayoutRevision _layoutRevision;

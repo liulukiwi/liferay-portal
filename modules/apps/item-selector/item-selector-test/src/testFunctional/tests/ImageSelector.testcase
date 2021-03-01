@@ -36,7 +36,7 @@ definition {
 				coverImageName = "Document_${i}",
 				entryContent = "Blogs Entry Content",
 				entryTitle = "Blogs Entry Title ${i}",
-				navTab = "Upload Image",
+				navTab = "Blog Images",
 				uploadFileName = "Document_${i}.jpg");
 
 			Button.clickPublish();
@@ -45,6 +45,10 @@ definition {
 		}
 
 		BlogsNavigator.openBlogsAdmin(siteURLKey = "guest");
+
+		BlogsNavigator.gotoAddEntry();
+
+		BlogsNavigator.gotoSelectFile();
 
 		ItemSelector.gotoPreviewViaSelectFile(navTab = "Blog Images");
 
@@ -74,7 +78,9 @@ definition {
 
 		SelectFrame(value1 = "relative=top");
 
-		IFrame.closeFrame();
+		Click(
+			key_modalTitle = "Select File",
+			locator1 = "Button#CLOSE_MODAL");
 
 		for (var coverImageName : list "Document_1,Document_2,Document_3") {
 			AssertElementNotPresent(
@@ -92,11 +98,17 @@ definition {
 
 		BlogsNavigator.openBlogsAdmin(siteURLKey = "guest");
 
+		BlogsNavigator.gotoAddEntry();
+
+		Pause(locator1 = "3000");
+
+		BlogsNavigator.gotoSelectFile();
+
 		ItemSelector.gotoPreviewViaSelectFile(navTab = "Documents and Media");
 
 		ItemSelector.viewPreview(
 			footer = "1 of 3",
-			imageFileName = "Document_1.jpg");
+			imageFileName = "Document_1");
 
 		AssertVisible(locator1 = "ItemSelector#VIEWER_LEFT");
 
@@ -116,7 +128,7 @@ definition {
 
 		ItemSelector.viewPreview(
 			footer = "3 of 3",
-			imageFileName = "Document_3.jpg");
+			imageFileName = "Document_3");
 
 		KeyPress(
 			locator1 = "ItemSelector#VIEWER_INFO",
@@ -124,7 +136,9 @@ definition {
 
 		SelectFrame(value1 = "relative=top");
 
-		IFrame.closeFrame();
+		Click(
+			key_modalTitle = "Select File",
+			locator1 = "Button#CLOSE_MODAL");
 
 		for (var coverImageName : list "Document_1,Document_2,Document_3") {
 			AssertElementNotPresent(
@@ -136,13 +150,15 @@ definition {
 	@description = "This ensures that navigation arrows do not appear in image preview when there is only one image in the library."
 	@priority = "5"
 	test PreviewSingleImage {
+		property portal.acceptance = "true";
+
 		BlogsNavigator.openBlogsAdmin(siteURLKey = "guest");
 
 		Blogs.addEntryWithUploadedCoverImage(
 			coverImageName = "Document_1",
 			entryContent = "Blogs Entry Content",
 			entryTitle = "Blogs Entry Title 1",
-			navTab = "Upload Image",
+			navTab = "Blog Images",
 			uploadFileName = "Document_1.jpg");
 
 		Button.clickPublish();
@@ -150,6 +166,10 @@ definition {
 		Pause(locator1 = "10000");
 
 		BlogsNavigator.openBlogsAdmin(siteURLKey = "guest");
+
+		BlogsNavigator.gotoAddEntry();
+
+		BlogsNavigator.gotoSelectFile();
 
 		ItemSelector.gotoPreviewViaSelectFile(navTab = "Blog Images");
 

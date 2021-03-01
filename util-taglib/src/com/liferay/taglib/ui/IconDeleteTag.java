@@ -90,6 +90,8 @@ public class IconDeleteTag extends IconTag {
 					icon = "times-circle";
 				}
 			}
+
+			setLinkCssClass("component-action");
 		}
 
 		setIcon(icon);
@@ -120,11 +122,8 @@ public class IconDeleteTag extends IconTag {
 		if (url.startsWith(Http.HTTP_WITH_SLASH) ||
 			url.startsWith(Http.HTTPS_WITH_SLASH)) {
 
-			url = "submitForm(document.hrefFm, '".concat(
-				HtmlUtil.escapeJS(url)
-			).concat(
-				"');"
-			);
+			url = StringBundler.concat(
+				"submitForm(document.hrefFm, '", HtmlUtil.escapeJS(url), "');");
 		}
 
 		if (!_trash) {

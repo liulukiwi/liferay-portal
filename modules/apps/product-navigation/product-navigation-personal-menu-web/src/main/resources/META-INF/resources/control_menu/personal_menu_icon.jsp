@@ -42,7 +42,6 @@
 <li class="control-menu-nav-item">
 	<span class="user-avatar-link">
 		<liferay-product-navigation:personal-menu
-			expanded="<%= true %>"
 			user="<%= user %>"
 		/>
 
@@ -57,9 +56,11 @@
 			%>
 
 			<aui:a href="<%= (notificationsURL != null) ? notificationsURL : null %>">
-				<span class="badge badge-danger panel-notifications-count">
-					<span class="badge-item badge-item-expand"><%= notificationsCount %></span>
-				</span>
+				<clay:badge
+					cssClass="panel-notifications-count"
+					displayType="danger"
+					label="<%= String.valueOf(notificationsCount) %>"
+				/>
 			</aui:a>
 		</c:if>
 	</span>

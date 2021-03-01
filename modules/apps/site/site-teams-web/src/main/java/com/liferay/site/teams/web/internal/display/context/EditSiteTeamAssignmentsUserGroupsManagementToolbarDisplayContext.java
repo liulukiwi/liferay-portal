@@ -16,10 +16,13 @@ package com.liferay.site.teams.web.internal.display.context;
 
 import com.liferay.frontend.taglib.clay.servlet.taglib.display.context.SearchContainerManagementToolbarDisplayContext;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenu;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenuBuilder;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
-import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemList;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemListBuilder;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.language.LanguageUtil;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.portlet.LiferayWindowState;
@@ -39,14 +42,14 @@ public class EditSiteTeamAssignmentsUserGroupsManagementToolbarDisplayContext
 	extends SearchContainerManagementToolbarDisplayContext {
 
 	public EditSiteTeamAssignmentsUserGroupsManagementToolbarDisplayContext(
+		HttpServletRequest httpServletRequest,
 		LiferayPortletRequest liferayPortletRequest,
 		LiferayPortletResponse liferayPortletResponse,
-		HttpServletRequest httpServletRequest,
 		EditSiteTeamAssignmentsUserGroupsDisplayContext
 			editSiteTeamAssignmentsUserGroupsDisplayContext) {
 
 		super(
-			liferayPortletRequest, liferayPortletResponse, httpServletRequest,
+			httpServletRequest, liferayPortletRequest, liferayPortletResponse,
 			editSiteTeamAssignmentsUserGroupsDisplayContext.
 				getUserGroupSearchContainer());
 
@@ -56,18 +59,15 @@ public class EditSiteTeamAssignmentsUserGroupsManagementToolbarDisplayContext
 
 	@Override
 	public List<DropdownItem> getActionDropdownItems() {
-		return new DropdownItemList() {
-			{
-				add(
-					dropdownItem -> {
-						dropdownItem.putData("action", "deleteUserGroups");
-						dropdownItem.setIcon("times-circle");
-						dropdownItem.setLabel(
-							LanguageUtil.get(request, "delete"));
-						dropdownItem.setQuickAction(true);
-					});
+		return DropdownItemListBuilder.add(
+			dropdownItem -> {
+				dropdownItem.putData("action", "deleteUserGroups");
+				dropdownItem.setIcon("times-circle");
+				dropdownItem.setLabel(
+					LanguageUtil.get(httpServletRequest, "delete"));
+				dropdownItem.setQuickAction(true);
 			}
-		};
+		).build();
 	}
 
 	@Override
@@ -87,50 +87,51 @@ public class EditSiteTeamAssignmentsUserGroupsManagementToolbarDisplayContext
 	@Override
 	public CreationMenu getCreationMenu() {
 		try {
-			ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
-				WebKeys.THEME_DISPLAY);
+			return CreationMenuBuilder.addDropdownItem(
+				dropdownItem -> {
+					dropdownItem.putData("action", "selectUserGroup");
 
-			PortletURL selectUserGroupURL =
-				liferayPortletResponse.createRenderURL();
+					ThemeDisplay themeDisplay =
+						(ThemeDisplay)httpServletRequest.getAttribute(
+							WebKeys.THEME_DISPLAY);
 
-			selectUserGroupURL.setParameter(
-				"mvcPath", "/select_user_groups.jsp");
-			selectUserGroupURL.setParameter(
-				"redirect", themeDisplay.getURLCurrent());
-			selectUserGroupURL.setParameter(
-				"teamId",
-				String.valueOf(
-					_editSiteTeamAssignmentsUserGroupsDisplayContext.
-						getTeamId()));
-			selectUserGroupURL.setWindowState(LiferayWindowState.POP_UP);
+					PortletURL selectUserGroupURL =
+						liferayPortletResponse.createRenderURL();
 
-			String title = LanguageUtil.format(
-				request, "add-new-user-group-to-x",
-				_editSiteTeamAssignmentsUserGroupsDisplayContext.getTeamName());
+					selectUserGroupURL.setParameter(
+						"mvcPath", "/select_user_groups.jsp");
+					selectUserGroupURL.setParameter(
+						"redirect", themeDisplay.getURLCurrent());
+					selectUserGroupURL.setParameter(
+						"teamId",
+						String.valueOf(
+							_editSiteTeamAssignmentsUserGroupsDisplayContext.
+								getTeamId()));
+					selectUserGroupURL.setWindowState(
+						LiferayWindowState.POP_UP);
 
-			return new CreationMenu() {
-				{
-					addDropdownItem(
-						dropdownItem -> {
-							dropdownItem.putData("action", "selectUserGroup");
-							dropdownItem.putData(
-								"selectUserGroupURL",
-								selectUserGroupURL.toString());
-							dropdownItem.putData("title", title);
-							dropdownItem.setLabel(
-								LanguageUtil.get(request, "add"));
-						});
+					dropdownItem.putData(
+						"selectUserGroupURL", selectUserGroupURL.toString());
+
+					String title = LanguageUtil.format(
+						httpServletRequest, "add-new-user-group-to-x",
+						_editSiteTeamAssignmentsUserGroupsDisplayContext.
+							getTeamName());
+
+					dropdownItem.putData("title", title);
+
+					dropdownItem.setLabel(
+						LanguageUtil.get(httpServletRequest, "add"));
 				}
-			};
+			).build();
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
+
 			return null;
 		}
-	}
-
-	@Override
-	public String getDefaultEventHandler() {
-		return "editTeamAssignmentsUserGroupsManagementToolbarDefaultEventHandler";
 	}
 
 	@Override
@@ -164,6 +165,9 @@ public class EditSiteTeamAssignmentsUserGroupsManagementToolbarDisplayContext
 	protected String[] getOrderByKeys() {
 		return new String[] {"name", "description"};
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		EditSiteTeamAssignmentsUserGroupsManagementToolbarDisplayContext.class);
 
 	private final EditSiteTeamAssignmentsUserGroupsDisplayContext
 		_editSiteTeamAssignmentsUserGroupsDisplayContext;

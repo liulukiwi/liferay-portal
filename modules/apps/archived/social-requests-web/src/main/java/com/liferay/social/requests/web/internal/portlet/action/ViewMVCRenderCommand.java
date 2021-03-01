@@ -46,7 +46,7 @@ import org.osgi.service.component.annotations.Reference;
 	immediate = true,
 	property = {
 		"javax.portlet.name=" + SocialRequestsPortletKeys.REQUESTS,
-		"mvc.command.name=/", "mvc.command.name=/requests/view"
+		"mvc.command.name=/", "mvc.command.name=/social_requests/view"
 	},
 	service = MVCRenderCommand.class
 )
@@ -60,8 +60,8 @@ public class ViewMVCRenderCommand implements MVCRenderCommand {
 		try {
 			return doRender(renderRequest);
 		}
-		catch (PortalException pe) {
-			throw new PortletException(pe);
+		catch (PortalException portalException) {
+			throw new PortletException(portalException);
 		}
 	}
 

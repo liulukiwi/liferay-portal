@@ -30,13 +30,13 @@ import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.portal.search.asset.SearchableAssetClassNamesProvider;
 import com.liferay.portal.search.facet.Facet;
 import com.liferay.portal.search.facet.FacetFactory;
 import com.liferay.portal.search.facet.type.AssetEntriesFacetFactory;
 import com.liferay.portal.search.web.facet.BaseJSPSearchFacet;
 import com.liferay.portal.search.web.facet.SearchFacet;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.IntStream;
@@ -66,9 +66,10 @@ public class AssetEntriesSearchFacet extends BaseJSPSearchFacet {
 			configurationJSONObject = JSONFactoryUtil.createJSONObject(
 				configuration);
 		}
-		catch (JSONException jsone) {
+		catch (JSONException jsonException) {
 			if (_log.isWarnEnabled()) {
-				_log.warn("Unable to parse configuration", jsone.getCause());
+				_log.warn(
+					"Unable to parse configuration", jsonException.getCause());
 			}
 
 			return null;
@@ -210,23 +211,7 @@ public class AssetEntriesSearchFacet extends BaseJSPSearchFacet {
 	}
 
 	protected String[] getAssetTypes(long companyId) {
-		List<String> assetTypes = new ArrayList<>();
-
-		List<AssetRendererFactory<?>> assetRendererFactories =
-			AssetRendererFactoryRegistryUtil.getAssetRendererFactories(
-				companyId);
-
-		for (AssetRendererFactory<?> assetRendererFactory :
-				assetRendererFactories) {
-
-			if (!assetRendererFactory.isSearchable()) {
-				continue;
-			}
-
-			assetTypes.add(assetRendererFactory.getClassName());
-		}
-
-		return ArrayUtil.toStringArray(assetTypes);
+		return searchableAssetClassNamesProvider.getClassNames(companyId);
 	}
 
 	@Override
@@ -236,6 +221,10 @@ public class AssetEntriesSearchFacet extends BaseJSPSearchFacet {
 
 	@Reference
 	protected AssetEntriesFacetFactory assetEntriesFacetFactory;
+
+	@Reference
+	protected SearchableAssetClassNamesProvider
+		searchableAssetClassNamesProvider;
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		AssetEntriesSearchFacet.class);

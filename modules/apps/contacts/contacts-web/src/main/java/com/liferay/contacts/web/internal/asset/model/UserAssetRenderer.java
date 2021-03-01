@@ -16,6 +16,8 @@ package com.liferay.contacts.web.internal.asset.model;
 
 import com.liferay.asset.kernel.model.BaseJSPAssetRenderer;
 import com.liferay.contacts.constants.ContactsWebKeys;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
@@ -114,9 +116,9 @@ public class UserAssetRenderer extends BaseJSPAssetRenderer<User> {
 			getControlPanelPlid(liferayPortletRequest), portletId,
 			PortletRequest.RENDER_PHASE);
 
+		portletURL.setParameter("p_u_i_d", String.valueOf(_user.getUserId()));
 		portletURL.setParameter(
 			"mvcRenderCommandName", "/users_admin/edit_user");
-		portletURL.setParameter("p_u_i_d", String.valueOf(_user.getUserId()));
 
 		return portletURL;
 	}
@@ -139,7 +141,10 @@ public class UserAssetRenderer extends BaseJSPAssetRenderer<User> {
 		try {
 			return _user.getDisplayURL(themeDisplay);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
 		}
 
 		return noSuchEntryRedirect;
@@ -187,6 +192,9 @@ public class UserAssetRenderer extends BaseJSPAssetRenderer<User> {
 	public boolean isPrintable() {
 		return false;
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		UserAssetRenderer.class);
 
 	private final User _user;
 

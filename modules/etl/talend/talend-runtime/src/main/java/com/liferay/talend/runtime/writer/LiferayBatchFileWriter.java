@@ -28,7 +28,8 @@ import java.io.OutputStreamWriter;
 import java.util.Arrays;
 import java.util.Collections;
 
-import javax.json.JsonObject;
+import javax.json.JsonArray;
+import javax.json.JsonValue;
 
 import org.apache.avro.Schema;
 import org.apache.avro.generic.IndexedRecord;
@@ -93,7 +94,7 @@ public class LiferayBatchFileWriter
 				BatchSchemaConstants.asBatchSchemaIndexedRecord(
 					_liferayBatchFileProperties.getBatchFilePath(),
 					_liferayBatchFileProperties.getEntityClassName(),
-					_liferayBatchFileProperties.getEntityVersion())));
+					"unavailable")));
 	}
 
 	@Override
@@ -130,10 +131,16 @@ public class LiferayBatchFileWriter
 		IndexedRecord indexedRecord = (IndexedRecord)object;
 
 		try {
-			JsonObject jsonObject =
-				_indexedRecordJsonObjectConverter.toJsonObject(indexedRecord);
+			JsonValue jsonValue = _indexedRecordJsonObjectConverter.toJsonValue(
+				indexedRecord);
 
-			_outputStreamWriter.write(jsonObject.toString());
+			if (jsonValue instanceof JsonArray) {
+				_result.rejectCount++;
+
+				return;
+			}
+
+			_outputStreamWriter.write(jsonValue.toString());
 
 			_outputStreamWriter.write(System.lineSeparator());
 
@@ -143,8 +150,9 @@ public class LiferayBatchFileWriter
 				_outputStreamWriter.flush();
 			}
 		}
-		catch (ConverterException ce) {
-			_indexedRecordJsonObjectConverter.reject(indexedRecord, ce);
+		catch (ConverterException converterException) {
+			_indexedRecordJsonObjectConverter.reject(
+				indexedRecord, converterException);
 		}
 
 		_result.totalCount++;

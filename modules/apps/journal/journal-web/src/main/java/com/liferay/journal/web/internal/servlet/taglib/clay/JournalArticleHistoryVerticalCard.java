@@ -18,12 +18,14 @@ import com.liferay.asset.display.page.portlet.AssetDisplayPageFriendlyURLProvide
 import com.liferay.frontend.taglib.clay.servlet.taglib.soy.BaseVerticalCard;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.LabelItem;
-import com.liferay.frontend.taglib.clay.servlet.taglib.util.LabelItemList;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.LabelItemListBuilder;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.web.internal.constants.JournalWebConstants;
 import com.liferay.journal.web.internal.servlet.taglib.util.JournalArticleActionDropdownItemsProvider;
 import com.liferay.portal.kernel.dao.search.RowChecker;
 import com.liferay.portal.kernel.language.LanguageUtil;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.BaseModel;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
@@ -73,7 +75,10 @@ public class JournalArticleHistoryVerticalCard extends BaseVerticalCard {
 			return articleActionDropdownItemsProvider.
 				getArticleHistoryActionDropdownItems();
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
 		}
 
 		return null;
@@ -96,17 +101,14 @@ public class JournalArticleHistoryVerticalCard extends BaseVerticalCard {
 
 	@Override
 	public List<LabelItem> getLabels() {
-		return new LabelItemList() {
-			{
-				add(
-					labelItem -> labelItem.setLabel(
-						LanguageUtil.format(
-							_httpServletRequest, "version-x",
-							String.valueOf(_article.getVersion()), false)));
-
-				add(labelItem -> labelItem.setStatus(_article.getStatus()));
-			}
-		};
+		return LabelItemListBuilder.add(
+			labelItem -> labelItem.setLabel(
+				LanguageUtil.format(
+					_httpServletRequest, "version-x",
+					String.valueOf(_article.getVersion()), false))
+		).add(
+			labelItem -> labelItem.setStatus(_article.getStatus())
+		).build();
 	}
 
 	@Override
@@ -125,6 +127,9 @@ public class JournalArticleHistoryVerticalCard extends BaseVerticalCard {
 	public String getTitle() {
 		return HtmlUtil.escape(_article.getTitle(themeDisplay.getLocale()));
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		JournalArticleHistoryVerticalCard.class);
 
 	private final JournalArticle _article;
 	private final AssetDisplayPageFriendlyURLProvider

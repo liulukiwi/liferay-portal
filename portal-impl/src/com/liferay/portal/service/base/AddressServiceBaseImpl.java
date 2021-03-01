@@ -48,7 +48,7 @@ import javax.sql.DataSource;
 public abstract class AddressServiceBaseImpl
 	extends BaseServiceImpl implements AddressService, IdentifiableOSGiService {
 
-	/**
+	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this class directly. Use <code>AddressService</code> via injection or a <code>org.osgi.util.tracker.ServiceTracker</code> or use <code>com.liferay.portal.kernel.service.AddressServiceUtil</code>.
@@ -199,6 +199,29 @@ public abstract class AddressServiceBaseImpl
 		ClassNamePersistence classNamePersistence) {
 
 		this.classNamePersistence = classNamePersistence;
+	}
+
+	/**
+	 * Returns the country local service.
+	 *
+	 * @return the country local service
+	 */
+	public com.liferay.portal.kernel.service.CountryLocalService
+		getCountryLocalService() {
+
+		return countryLocalService;
+	}
+
+	/**
+	 * Sets the country local service.
+	 *
+	 * @param countryLocalService the country local service
+	 */
+	public void setCountryLocalService(
+		com.liferay.portal.kernel.service.CountryLocalService
+			countryLocalService) {
+
+		this.countryLocalService = countryLocalService;
 	}
 
 	/**
@@ -427,8 +450,8 @@ public abstract class AddressServiceBaseImpl
 
 			sqlUpdate.update();
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 	}
 
@@ -464,6 +487,12 @@ public abstract class AddressServiceBaseImpl
 
 	@BeanReference(type = ClassNamePersistence.class)
 	protected ClassNamePersistence classNamePersistence;
+
+	@BeanReference(
+		type = com.liferay.portal.kernel.service.CountryLocalService.class
+	)
+	protected com.liferay.portal.kernel.service.CountryLocalService
+		countryLocalService;
 
 	@BeanReference(
 		type = com.liferay.portal.kernel.service.CountryService.class

@@ -21,16 +21,20 @@ function normalizeColor(color) {
 
 const ColorPicker = ({color, label, name}) => {
 	const [colorValue, setColorValue] = useState(normalizeColor(color));
+	const [customColors, setCustomColors] = useState([]);
 
 	return (
 		<div className="form-group">
 			<input name={name} type="hidden" value={`#${colorValue}`} />
 
 			<ClayColorPicker
+				colors={customColors}
 				label={label}
 				name={`${name}ColorPicker`}
+				onColorsChange={setCustomColors}
 				onValueChange={setColorValue}
 				showHex={true}
+				showPredefinedColorsWithCustom
 				title={label}
 				value={colorValue}
 			/>
@@ -38,6 +42,4 @@ const ColorPicker = ({color, label, name}) => {
 	);
 };
 
-export default function(props) {
-	return <ColorPicker {...props} />;
-}
+export default ColorPicker;

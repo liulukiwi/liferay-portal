@@ -14,8 +14,6 @@
 
 package com.liferay.source.formatter.checkstyle.checks;
 
-import com.liferay.source.formatter.checkstyle.util.DetailASTUtil;
-
 import com.puppycrawl.tools.checkstyle.api.DetailAST;
 import com.puppycrawl.tools.checkstyle.api.TokenTypes;
 import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
@@ -25,7 +23,7 @@ import java.util.List;
 /**
  * @author Hugo Huijser
  */
-public class ConcatCheck extends StringConcatenationCheck {
+public class ConcatCheck extends BaseStringConcatenationCheck {
 
 	@Override
 	public int[] getDefaultTokens() {
@@ -36,7 +34,7 @@ public class ConcatCheck extends StringConcatenationCheck {
 
 	@Override
 	protected void doVisitToken(DetailAST detailAST) {
-		List<DetailAST> methodCallDetailASTList = DetailASTUtil.getMethodCalls(
+		List<DetailAST> methodCallDetailASTList = getMethodCalls(
 			detailAST, "StringBundler", "concat");
 
 		for (DetailAST methodCallDetailAST : methodCallDetailASTList) {
@@ -48,45 +46,49 @@ public class ConcatCheck extends StringConcatenationCheck {
 		DetailAST elistDetailAST = methodCallDetailAST.findFirstToken(
 			TokenTypes.ELIST);
 
-		DetailAST previousLiteralStringDetailAST = null;
+		List<DetailAST> exprDetailASTList = getAllChildTokens(
+			elistDetailAST, false, TokenTypes.EXPR);
 
-		DetailAST childDetailAST = elistDetailAST.getFirstChild();
+		for (int i = 0; i < exprDetailASTList.size(); i++) {
+			DetailAST exprDetailAST = exprDetailASTList.get(i);
 
-		while (true) {
-			if (childDetailAST == null) {
-				break;
-			}
+			DetailAST childDetailAST = exprDetailAST.getFirstChild();
 
-			if (childDetailAST.getType() == TokenTypes.EXPR) {
-				DetailAST grandChildDetailAST = childDetailAST.getFirstChild();
+			if (childDetailAST.getType() == TokenTypes.PLUS) {
+				DetailAST literalStringDetailAST =
+					childDetailAST.findFirstToken(TokenTypes.STRING_LITERAL);
 
-				if (grandChildDetailAST.getType() !=
-						TokenTypes.STRING_LITERAL) {
-
-					previousLiteralStringDetailAST = null;
+				if (literalStringDetailAST != null) {
+					log(childDetailAST, MSG_INCORRECT_PLUS);
 				}
-				else {
-					if (previousLiteralStringDetailAST != null) {
+			}
+			else if (childDetailAST.getType() == TokenTypes.STRING_LITERAL) {
+				if (i > 0) {
+					DetailAST previousExprDetailAST = exprDetailASTList.get(
+						i - 1);
+
+					DetailAST previousChildDetailAST =
+						previousExprDetailAST.getFirstChild();
+
+					if (previousChildDetailAST.getType() ==
+							TokenTypes.STRING_LITERAL) {
+
 						_checkConcatMethodCallLiteralStrings(
-							previousLiteralStringDetailAST,
-							grandChildDetailAST);
+							previousChildDetailAST, childDetailAST);
 					}
-
-					previousLiteralStringDetailAST = grandChildDetailAST;
+					else {
+						checkCombineOperand(
+							childDetailAST, previousChildDetailAST);
+					}
 				}
 
-				if (grandChildDetailAST.getType() == TokenTypes.PLUS) {
-					DetailAST literalStringDetailAST =
-						grandChildDetailAST.findFirstToken(
-							TokenTypes.STRING_LITERAL);
+				if (i < (exprDetailASTList.size() - 1)) {
+					DetailAST nextExprDetailAST = exprDetailASTList.get(i + 1);
 
-					if (literalStringDetailAST != null) {
-						log(grandChildDetailAST, MSG_INCORRECT_PLUS);
-					}
+					checkCombineOperand(
+						childDetailAST, nextExprDetailAST.getFirstChild());
 				}
 			}
-
-			childDetailAST = childDetailAST.getNextSibling();
 		}
 	}
 

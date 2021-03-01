@@ -15,6 +15,7 @@
 package com.liferay.dynamic.data.mapping.form.field.type.internal.date;
 
 import com.liferay.dynamic.data.mapping.form.field.type.DDMFormFieldTemplateContextContributor;
+import com.liferay.dynamic.data.mapping.form.field.type.constants.DDMFormFieldTypeConstants;
 import com.liferay.dynamic.data.mapping.model.DDMFormField;
 import com.liferay.dynamic.data.mapping.model.LocalizedValue;
 import com.liferay.dynamic.data.mapping.render.DDMFormFieldRenderingContext;
@@ -23,6 +24,9 @@ import com.liferay.portal.kernel.util.CalendarUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleThreadLocal;
+
+import java.time.DayOfWeek;
+import java.time.temporal.WeekFields;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -38,7 +42,8 @@ import org.osgi.service.component.annotations.Component;
  * @author Marcellus Tavares
  */
 @Component(
-	immediate = true, property = "ddm.form.field.type.name=date",
+	immediate = true,
+	property = "ddm.form.field.type.name=" + DDMFormFieldTypeConstants.DATE,
 	service = {
 		DateDDMFormFieldTemplateContextContributor.class,
 		DDMFormFieldTemplateContextContributor.class
@@ -53,6 +58,8 @@ public class DateDDMFormFieldTemplateContextContributor
 		DDMFormFieldRenderingContext ddmFormFieldRenderingContext) {
 
 		return HashMapBuilder.<String, Object>put(
+			"firstDayOfWeek", _getFirstDayOfWeek()
+		).put(
 			"months",
 			Arrays.asList(
 				CalendarUtil.getMonths(
@@ -73,6 +80,15 @@ public class DateDDMFormFieldTemplateContextContributor
 		).put(
 			"years", _getYears()
 		).build();
+	}
+
+	private int _getFirstDayOfWeek() {
+		WeekFields weekFields = WeekFields.of(
+			LocaleThreadLocal.getThemeDisplayLocale());
+
+		DayOfWeek dayOfWeek = weekFields.getFirstDayOfWeek();
+
+		return dayOfWeek.getValue() % 7;
 	}
 
 	private String _getPredefinedValue(

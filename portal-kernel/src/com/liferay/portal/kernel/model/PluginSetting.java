@@ -30,7 +30,7 @@ import org.osgi.annotation.versioning.ProviderType;
 @ProviderType
 public interface PluginSetting extends PersistedModel, PluginSettingModel {
 
-	/**
+	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify this interface directly. Add methods to <code>com.liferay.portal.model.impl.PluginSettingImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
@@ -74,6 +74,15 @@ public interface PluginSetting extends PersistedModel, PluginSettingModel {
 	 * @return <code>true</code> if the user has permission to use this plugin
 	 */
 	public boolean hasPermission(long userId);
+
+	/**
+	 * Returns <code>true</code> if the user has permission to use this plugin
+	 *
+	 * @param userId the primary key of the user
+	 * @param groupId the primary key of the group
+	 * @return <code>true</code> if the user has permission to use this plugin
+	 */
+	public boolean hasPermission(long userId, long groupId);
 
 	/**
 	 * Returns <code>true</code> if the plugin has a role with the specified

@@ -71,17 +71,23 @@ if (organization != null) {
 		<%
 		ViewTreeManagementToolbarDisplayContext viewTreeManagementToolbarDisplayContext = new ViewTreeManagementToolbarDisplayContext(request, renderRequest, renderResponse, organization, displayStyle);
 
-		SearchContainer searchContainer = viewTreeManagementToolbarDisplayContext.getSearchContainer();
+		SearchContainer<Object> searchContainer = viewTreeManagementToolbarDisplayContext.getSearchContainer();
 		%>
 
 		<clay:management-toolbar
 			actionDropdownItems="<%= viewTreeManagementToolbarDisplayContext.getActionDropdownItems() %>"
+			additionalProps='<%=
+				HashMapBuilder.<String, Object>put(
+					"basePortletURL", String.valueOf(renderResponse.createRenderURL())
+				).build()
+			%>'
 			clearResultsURL="<%= viewTreeManagementToolbarDisplayContext.getClearResultsURL() %>"
 			componentId="viewTreeManagementToolbar"
 			creationMenu="<%= viewTreeManagementToolbarDisplayContext.getCreationMenu() %>"
 			filterDropdownItems="<%= viewTreeManagementToolbarDisplayContext.getFilterDropdownItems() %>"
 			filterLabelItems="<%= viewTreeManagementToolbarDisplayContext.getFilterLabelItems() %>"
 			itemsTotal="<%= searchContainer.getTotal() %>"
+			propsTransformer="js/ViewTreeManagementToolbarPropsTransformer"
 			searchActionURL="<%= viewTreeManagementToolbarDisplayContext.getSearchActionURL() %>"
 			searchContainerId="organizationUsers"
 			searchFormName="searchFm"
@@ -93,7 +99,7 @@ if (organization != null) {
 			viewTypeItems="<%= viewTreeManagementToolbarDisplayContext.getViewTypeItems() %>"
 		/>
 
-		<aui:form cssClass="container-fluid-1280" method="post" name="fm" onSubmit='<%= "event.preventDefault(); " + renderResponse.getNamespace() + "search();" %>'>
+		<aui:form cssClass="container-fluid container-fluid-max-xl" method="post" name="fm" onSubmit='<%= "event.preventDefault(); " + liferayPortletResponse.getNamespace() + "search();" %>'>
 			<aui:input name="<%= Constants.CMD %>" type="hidden" />
 			<aui:input name="toolbarItem" type="hidden" value="<%= toolbarItem %>" />
 			<aui:input name="redirect" type="hidden" value="<%= viewTreeManagementToolbarDisplayContext.getPortletURL().toString() %>" />
@@ -170,9 +176,7 @@ if (organization != null) {
 	</c:when>
 	<c:otherwise>
 		<clay:alert
-			message='<%= LanguageUtil.get(request, "you-do-not-belong-to-an-organization-and-are-not-allowed-to-view-other-organizations") %>'
-			style="info"
-			title='<%= LanguageUtil.get(request, "info") + ":" %>'
+			message="you-do-not-belong-to-an-organization-and-are-not-allowed-to-view-other-organizations"
 		/>
 	</c:otherwise>
 </c:choose>
@@ -182,7 +186,7 @@ if (organization != null) {
 		<portlet:namespace />deleteOrganizations(organizationsRedirect);
 	}
 
-	<portlet:namespace />doDeleteOrganizations = function(
+	<portlet:namespace />doDeleteOrganizations = function (
 		organizationIds,
 		organizationsRedirect
 	) {
@@ -190,7 +194,7 @@ if (organization != null) {
 
 		if (organizationsRedirect) {
 			Liferay.Util.setFormValues(form, {
-				redirect: organizationsRedirect
+				redirect: organizationsRedirect,
 			});
 		}
 
@@ -201,10 +205,10 @@ if (organization != null) {
 					form,
 					'<portlet:namespace />allRowIds',
 					'<portlet:namespace />rowIdsUser'
-				)
+				),
 			},
 			url:
-				'<portlet:actionURL name="/users_admin/delete_organizations_and_users" />'
+				'<portlet:actionURL name="/users_admin/delete_organizations_and_users" />',
 		});
 	};
 
@@ -227,29 +231,29 @@ if (organization != null) {
 					form,
 					'<portlet:namespace />allRowIds',
 					'<portlet:namespace />rowIdsUser'
-				)
+				),
 			},
-			url: '<%= removeOrganizationsAndUsersURL.toString() %>'
+			url: '<%= removeOrganizationsAndUsersURL.toString() %>',
 		});
 	}
 
-	var selectUsers = function(organizationId) {
+	var selectUsers = function (organizationId) {
 		<portlet:namespace />openSelectUsersDialog(organizationId);
 	};
 
 	var ACTIONS = {
-		selectUsers: selectUsers
+		selectUsers: selectUsers,
 	};
 
-	Liferay.componentReady('viewTreeManagementToolbar').then(function(
-		managementToolbar
-	) {
-		managementToolbar.on('creationMenuItemClicked', function(event) {
-			var itemData = event.data.item.data;
+	Liferay.componentReady('viewTreeManagementToolbar').then(
+		(managementToolbar) => {
+			managementToolbar.on('creationMenuItemClicked', (event) => {
+				var itemData = event.data.item.data;
 
-			if (itemData && itemData.action && ACTIONS[itemData.action]) {
-				ACTIONS[itemData.action](itemData.organizationId);
-			}
-		});
-	});
+				if (itemData && itemData.action && ACTIONS[itemData.action]) {
+					ACTIONS[itemData.action](itemData.organizationId);
+				}
+			});
+		}
+	);
 </aui:script>

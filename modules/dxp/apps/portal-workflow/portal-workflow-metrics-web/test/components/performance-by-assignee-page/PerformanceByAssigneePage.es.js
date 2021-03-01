@@ -9,87 +9,118 @@
  * distribution rights of the Software.
  */
 
-import {cleanup, render, waitForElement} from '@testing-library/react';
+import {render} from '@testing-library/react';
 import React from 'react';
 
 import PerformanceByAssigneePage from '../../../src/main/resources/META-INF/resources/js/components/performance-by-assignee-page/PerformanceByAssigneePage.es';
+import {stringify} from '../../../src/main/resources/META-INF/resources/js/shared/components/router/queryString.es';
+import {jsonSessionStorage} from '../../../src/main/resources/META-INF/resources/js/shared/util/storage.es';
 import {MockRouter} from '../../mock/MockRouter.es';
 
+import '@testing-library/jest-dom/extend-expect';
+
+const {filters, processId} = {
+	filters: {
+		stepDateEnd: '2019-12-09T00:00:00Z',
+		stepDateStart: '2019-12-03T00:00:00Z',
+		stepTimeRange: ['7'],
+	},
+	processId: 12345,
+};
+
+const items = [
+	{
+		assignee: {image: 'path/to/image', name: 'User Test First'},
+		durationTaskAvg: 10800000,
+		taskCount: 10,
+	},
+	{
+		assignee: {image: 'path/to/image', name: 'User Test Second'},
+		durationTaskAvg: 475200000,
+		taskCount: 31,
+	},
+	{
+		assignee: {name: 'User Test Third'},
+		durationTaskAvg: 0,
+		taskCount: 1,
+	},
+];
+
+const data = {items, totalCount: items.length};
+const query = stringify({filters});
+const timeRangeData = {
+	items: [
+		{
+			dateEnd: '2019-12-09T00:00:00Z',
+			dateStart: '2019-12-03T00:00:00Z',
+			defaultTimeRange: false,
+			id: 7,
+			name: 'Last 7 Days',
+		},
+		{
+			dateEnd: '2019-12-09T00:00:00Z',
+			dateStart: '2019-11-10T00:00:00Z',
+			defaultTimeRange: true,
+			id: 30,
+			name: 'Last 30 Days',
+		},
+	],
+	totalCount: 2,
+};
+
 describe('The PerformanceByAssigneePage component having data should', () => {
-	let getAllByTestId;
+	let getAllByRole, rows;
 
-	const items = [
-		{
-			durationTaskAvg: 10800000,
-			image: 'path/to/image',
-			name: 'User Test First',
-			taskCount: 10
-		},
-		{
-			durationTaskAvg: 475200000,
-			image: 'path/to/image',
-			name: 'User Test Second',
-			taskCount: 31
-		},
-		{
-			durationTaskAvg: 0,
-			name: 'User Test Third',
-			taskCount: 1
-		}
-	];
+	beforeAll(() => {
+		jsonSessionStorage.set('timeRanges', timeRangeData);
 
-	const data = {items, totalCount: items.length};
+		const clientMock = {
+			get: jest.fn().mockResolvedValue({data}),
+			post: jest.fn().mockResolvedValue({data}),
+			request: jest.fn().mockResolvedValue({data}),
+		};
 
-	const clientMock = {
-		get: jest.fn().mockResolvedValue({data})
-	};
+		const wrapper = ({children}) => (
+			<MockRouter client={clientMock} query={query}>
+				{children}
+			</MockRouter>
+		);
 
-	afterEach(() => cleanup);
-
-	const wrapper = ({children}) => (
-		<MockRouter client={clientMock}>{children}</MockRouter>
-	);
-
-	beforeEach(() => {
 		const renderResult = render(
-			<PerformanceByAssigneePage routeParams={{processId: '1234'}} />,
+			<PerformanceByAssigneePage routeParams={{processId}} />,
 			{wrapper}
 		);
 
-		getAllByTestId = renderResult.getAllByTestId;
+		getAllByRole = renderResult.getAllByRole;
 	});
 
 	test('Be rendered with user avatar or lexicon user icon', async () => {
-		const assigneeProfileInfo = await waitForElement(() =>
-			getAllByTestId('assigneeProfileInfo')
-		);
+		rows = getAllByRole('row');
 
-		expect(assigneeProfileInfo[0].children[0].innerHTML).toContain(
+		const assigneeProfileInfo1 = rows[1].children[0].children[0];
+		const assigneeProfileInfo2 = rows[1].children[0].children[0];
+		const assigneeProfileInfo3 = rows[3].children[0].children[0];
+
+		expect(assigneeProfileInfo1.children[0].innerHTML).toContain(
 			'path/to/image'
 		);
-		expect(assigneeProfileInfo[1].children[0].innerHTML).toContain(
+		expect(assigneeProfileInfo2.children[0].innerHTML).toContain(
 			'path/to/image'
 		);
-		expect(assigneeProfileInfo[2].children[0].innerHTML).toContain(
+		expect(assigneeProfileInfo3.children[0].innerHTML).toContain(
 			'lexicon-icon-user'
 		);
 	});
 
 	test('Be rendered with assignee names', async () => {
-		const assigneeName = await waitForElement(() =>
-			getAllByTestId('assigneeName')
-		);
-
-		expect(assigneeName[0].innerHTML).toEqual('User Test First');
-		expect(assigneeName[1].innerHTML).toEqual('User Test Second');
-		expect(assigneeName[2].innerHTML).toEqual('User Test Third');
+		expect(rows[1]).toHaveTextContent('User Test First');
+		expect(rows[2]).toHaveTextContent('User Test Second');
+		expect(rows[3]).toHaveTextContent('User Test Third');
 	});
 
 	test('Be rendered with average completion time', () => {
-		const durations = getAllByTestId('durationTaskAvg');
-
-		expect(durations[0].innerHTML).toEqual('3h');
-		expect(durations[1].innerHTML).toEqual('5d 12h');
-		expect(durations[2].innerHTML).toEqual('0min');
+		expect(rows[1]).toHaveTextContent('3h');
+		expect(rows[2]).toHaveTextContent('5d 12h');
+		expect(rows[3]).toHaveTextContent('0min');
 	});
 });

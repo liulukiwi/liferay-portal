@@ -18,6 +18,7 @@ import com.liferay.data.engine.rest.client.dto.v2_0.DataRecord;
 import com.liferay.data.engine.rest.client.http.HttpInvoker;
 import com.liferay.data.engine.rest.client.pagination.Page;
 import com.liferay.data.engine.rest.client.pagination.Pagination;
+import com.liferay.data.engine.rest.client.problem.Problem;
 import com.liferay.data.engine.rest.client.serdes.v2_0.DataRecordSerDes;
 
 import java.util.LinkedHashMap;
@@ -40,12 +41,14 @@ public interface DataRecordResource {
 	}
 
 	public Page<DataRecord> getDataDefinitionDataRecordsPage(
-			Long dataDefinitionId, Pagination pagination)
+			Long dataDefinitionId, Long dataListViewId, String keywords,
+			Pagination pagination, String sortString)
 		throws Exception;
 
 	public HttpInvoker.HttpResponse
 			getDataDefinitionDataRecordsPageHttpResponse(
-				Long dataDefinitionId, Pagination pagination)
+				Long dataDefinitionId, Long dataListViewId, String keywords,
+				Pagination pagination, String sortString)
 		throws Exception;
 
 	public DataRecord postDataDefinitionDataRecord(
@@ -56,13 +59,24 @@ public interface DataRecordResource {
 			Long dataDefinitionId, DataRecord dataRecord)
 		throws Exception;
 
+	public void postDataDefinitionDataRecordBatch(
+			Long dataDefinitionId, String callbackURL, Object object)
+		throws Exception;
+
+	public HttpInvoker.HttpResponse
+			postDataDefinitionDataRecordBatchHttpResponse(
+				Long dataDefinitionId, String callbackURL, Object object)
+		throws Exception;
+
 	public Page<DataRecord> getDataRecordCollectionDataRecordsPage(
-			Long dataRecordCollectionId, Pagination pagination)
+			Long dataRecordCollectionId, Long dataListViewId, String keywords,
+			Pagination pagination, String sortString)
 		throws Exception;
 
 	public HttpInvoker.HttpResponse
 			getDataRecordCollectionDataRecordsPageHttpResponse(
-				Long dataRecordCollectionId, Pagination pagination)
+				Long dataRecordCollectionId, Long dataListViewId,
+				String keywords, Pagination pagination, String sortString)
 		throws Exception;
 
 	public DataRecord postDataRecordCollectionDataRecord(
@@ -72,6 +86,15 @@ public interface DataRecordResource {
 	public HttpInvoker.HttpResponse
 			postDataRecordCollectionDataRecordHttpResponse(
 				Long dataRecordCollectionId, DataRecord dataRecord)
+		throws Exception;
+
+	public void postDataRecordCollectionDataRecordBatch(
+			Long dataRecordCollectionId, String callbackURL, Object object)
+		throws Exception;
+
+	public HttpInvoker.HttpResponse
+			postDataRecordCollectionDataRecordBatchHttpResponse(
+				Long dataRecordCollectionId, String callbackURL, Object object)
 		throws Exception;
 
 	public String getDataRecordCollectionDataRecordExport(
@@ -89,9 +112,23 @@ public interface DataRecordResource {
 			Long dataRecordId)
 		throws Exception;
 
+	public void deleteDataRecordBatch(String callbackURL, Object object)
+		throws Exception;
+
+	public HttpInvoker.HttpResponse deleteDataRecordBatchHttpResponse(
+			String callbackURL, Object object)
+		throws Exception;
+
 	public DataRecord getDataRecord(Long dataRecordId) throws Exception;
 
 	public HttpInvoker.HttpResponse getDataRecordHttpResponse(Long dataRecordId)
+		throws Exception;
+
+	public DataRecord patchDataRecord(Long dataRecordId, DataRecord dataRecord)
+		throws Exception;
+
+	public HttpInvoker.HttpResponse patchDataRecordHttpResponse(
+			Long dataRecordId, DataRecord dataRecord)
 		throws Exception;
 
 	public DataRecord putDataRecord(Long dataRecordId, DataRecord dataRecord)
@@ -99,6 +136,13 @@ public interface DataRecordResource {
 
 	public HttpInvoker.HttpResponse putDataRecordHttpResponse(
 			Long dataRecordId, DataRecord dataRecord)
+		throws Exception;
+
+	public void putDataRecordBatch(String callbackURL, Object object)
+		throws Exception;
+
+	public HttpInvoker.HttpResponse putDataRecordBatchHttpResponse(
+			String callbackURL, Object object)
 		throws Exception;
 
 	public static class Builder {
@@ -146,8 +190,8 @@ public interface DataRecordResource {
 		private Map<String, String> _headers = new LinkedHashMap<>();
 		private String _host = "localhost";
 		private Locale _locale;
-		private String _login = "test@liferay.com";
-		private String _password = "test";
+		private String _login = "";
+		private String _password = "";
 		private Map<String, String> _parameters = new LinkedHashMap<>();
 		private int _port = 8080;
 		private String _scheme = "http";
@@ -157,12 +201,14 @@ public interface DataRecordResource {
 	public static class DataRecordResourceImpl implements DataRecordResource {
 
 		public Page<DataRecord> getDataDefinitionDataRecordsPage(
-				Long dataDefinitionId, Pagination pagination)
+				Long dataDefinitionId, Long dataListViewId, String keywords,
+				Pagination pagination, String sortString)
 			throws Exception {
 
 			HttpInvoker.HttpResponse httpResponse =
 				getDataDefinitionDataRecordsPageHttpResponse(
-					dataDefinitionId, pagination);
+					dataDefinitionId, dataListViewId, keywords, pagination,
+					sortString);
 
 			String content = httpResponse.getContent();
 
@@ -172,12 +218,22 @@ public interface DataRecordResource {
 			_logger.fine(
 				"HTTP response status code: " + httpResponse.getStatusCode());
 
-			return Page.of(content, DataRecordSerDes::toDTO);
+			try {
+				return Page.of(content, DataRecordSerDes::toDTO);
+			}
+			catch (Exception e) {
+				_logger.log(
+					Level.WARNING,
+					"Unable to process HTTP response: " + content, e);
+
+				throw new Problem.ProblemException(Problem.toDTO(content));
+			}
 		}
 
 		public HttpInvoker.HttpResponse
 				getDataDefinitionDataRecordsPageHttpResponse(
-					Long dataDefinitionId, Pagination pagination)
+					Long dataDefinitionId, Long dataListViewId, String keywords,
+					Pagination pagination, String sortString)
 			throws Exception {
 
 			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
@@ -201,6 +257,15 @@ public interface DataRecordResource {
 
 			httpInvoker.httpMethod(HttpInvoker.HttpMethod.GET);
 
+			if (dataListViewId != null) {
+				httpInvoker.parameter(
+					"dataListViewId", String.valueOf(dataListViewId));
+			}
+
+			if (keywords != null) {
+				httpInvoker.parameter("keywords", String.valueOf(keywords));
+			}
+
 			if (pagination != null) {
 				httpInvoker.parameter(
 					"page", String.valueOf(pagination.getPage()));
@@ -208,11 +273,16 @@ public interface DataRecordResource {
 					"pageSize", String.valueOf(pagination.getPageSize()));
 			}
 
+			if (sortString != null) {
+				httpInvoker.parameter("sort", sortString);
+			}
+
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port +
-						"/o/data-engine/v2.0/data-definitions/{dataDefinitionId}/data-records",
-				dataDefinitionId);
+						"/o/data-engine/v2.0/data-definitions/{dataDefinitionId}/data-records");
+
+			httpInvoker.path("dataDefinitionId", dataDefinitionId);
 
 			httpInvoker.userNameAndPassword(
 				_builder._login + ":" + _builder._password);
@@ -244,7 +314,7 @@ public interface DataRecordResource {
 					Level.WARNING,
 					"Unable to process HTTP response: " + content, e);
 
-				throw e;
+				throw new Problem.ProblemException(Problem.toDTO(content));
 			}
 		}
 
@@ -279,8 +349,72 @@ public interface DataRecordResource {
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port +
-						"/o/data-engine/v2.0/data-definitions/{dataDefinitionId}/data-records",
-				dataDefinitionId);
+						"/o/data-engine/v2.0/data-definitions/{dataDefinitionId}/data-records");
+
+			httpInvoker.path("dataDefinitionId", dataDefinitionId);
+
+			httpInvoker.userNameAndPassword(
+				_builder._login + ":" + _builder._password);
+
+			return httpInvoker.invoke();
+		}
+
+		public void postDataDefinitionDataRecordBatch(
+				Long dataDefinitionId, String callbackURL, Object object)
+			throws Exception {
+
+			HttpInvoker.HttpResponse httpResponse =
+				postDataDefinitionDataRecordBatchHttpResponse(
+					dataDefinitionId, callbackURL, object);
+
+			String content = httpResponse.getContent();
+
+			_logger.fine("HTTP response content: " + content);
+
+			_logger.fine("HTTP response message: " + httpResponse.getMessage());
+			_logger.fine(
+				"HTTP response status code: " + httpResponse.getStatusCode());
+		}
+
+		public HttpInvoker.HttpResponse
+				postDataDefinitionDataRecordBatchHttpResponse(
+					Long dataDefinitionId, String callbackURL, Object object)
+			throws Exception {
+
+			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+			httpInvoker.body(object.toString(), "application/json");
+
+			if (_builder._locale != null) {
+				httpInvoker.header(
+					"Accept-Language", _builder._locale.toLanguageTag());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
+			}
+
+			httpInvoker.httpMethod(HttpInvoker.HttpMethod.POST);
+
+			if (callbackURL != null) {
+				httpInvoker.parameter(
+					"callbackURL", String.valueOf(callbackURL));
+			}
+
+			httpInvoker.path(
+				_builder._scheme + "://" + _builder._host + ":" +
+					_builder._port +
+						"/o/data-engine/v2.0/data-definitions/{dataDefinitionId}/data-records/batch");
+
+			httpInvoker.path("dataDefinitionId", dataDefinitionId);
 
 			httpInvoker.userNameAndPassword(
 				_builder._login + ":" + _builder._password);
@@ -289,12 +423,14 @@ public interface DataRecordResource {
 		}
 
 		public Page<DataRecord> getDataRecordCollectionDataRecordsPage(
-				Long dataRecordCollectionId, Pagination pagination)
+				Long dataRecordCollectionId, Long dataListViewId,
+				String keywords, Pagination pagination, String sortString)
 			throws Exception {
 
 			HttpInvoker.HttpResponse httpResponse =
 				getDataRecordCollectionDataRecordsPageHttpResponse(
-					dataRecordCollectionId, pagination);
+					dataRecordCollectionId, dataListViewId, keywords,
+					pagination, sortString);
 
 			String content = httpResponse.getContent();
 
@@ -304,12 +440,22 @@ public interface DataRecordResource {
 			_logger.fine(
 				"HTTP response status code: " + httpResponse.getStatusCode());
 
-			return Page.of(content, DataRecordSerDes::toDTO);
+			try {
+				return Page.of(content, DataRecordSerDes::toDTO);
+			}
+			catch (Exception e) {
+				_logger.log(
+					Level.WARNING,
+					"Unable to process HTTP response: " + content, e);
+
+				throw new Problem.ProblemException(Problem.toDTO(content));
+			}
 		}
 
 		public HttpInvoker.HttpResponse
 				getDataRecordCollectionDataRecordsPageHttpResponse(
-					Long dataRecordCollectionId, Pagination pagination)
+					Long dataRecordCollectionId, Long dataListViewId,
+					String keywords, Pagination pagination, String sortString)
 			throws Exception {
 
 			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
@@ -333,6 +479,15 @@ public interface DataRecordResource {
 
 			httpInvoker.httpMethod(HttpInvoker.HttpMethod.GET);
 
+			if (dataListViewId != null) {
+				httpInvoker.parameter(
+					"dataListViewId", String.valueOf(dataListViewId));
+			}
+
+			if (keywords != null) {
+				httpInvoker.parameter("keywords", String.valueOf(keywords));
+			}
+
 			if (pagination != null) {
 				httpInvoker.parameter(
 					"page", String.valueOf(pagination.getPage()));
@@ -340,11 +495,16 @@ public interface DataRecordResource {
 					"pageSize", String.valueOf(pagination.getPageSize()));
 			}
 
+			if (sortString != null) {
+				httpInvoker.parameter("sort", sortString);
+			}
+
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port +
-						"/o/data-engine/v2.0/data-record-collections/{dataRecordCollectionId}/data-records",
-				dataRecordCollectionId);
+						"/o/data-engine/v2.0/data-record-collections/{dataRecordCollectionId}/data-records");
+
+			httpInvoker.path("dataRecordCollectionId", dataRecordCollectionId);
 
 			httpInvoker.userNameAndPassword(
 				_builder._login + ":" + _builder._password);
@@ -376,7 +536,7 @@ public interface DataRecordResource {
 					Level.WARNING,
 					"Unable to process HTTP response: " + content, e);
 
-				throw e;
+				throw new Problem.ProblemException(Problem.toDTO(content));
 			}
 		}
 
@@ -411,8 +571,73 @@ public interface DataRecordResource {
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port +
-						"/o/data-engine/v2.0/data-record-collections/{dataRecordCollectionId}/data-records",
-				dataRecordCollectionId);
+						"/o/data-engine/v2.0/data-record-collections/{dataRecordCollectionId}/data-records");
+
+			httpInvoker.path("dataRecordCollectionId", dataRecordCollectionId);
+
+			httpInvoker.userNameAndPassword(
+				_builder._login + ":" + _builder._password);
+
+			return httpInvoker.invoke();
+		}
+
+		public void postDataRecordCollectionDataRecordBatch(
+				Long dataRecordCollectionId, String callbackURL, Object object)
+			throws Exception {
+
+			HttpInvoker.HttpResponse httpResponse =
+				postDataRecordCollectionDataRecordBatchHttpResponse(
+					dataRecordCollectionId, callbackURL, object);
+
+			String content = httpResponse.getContent();
+
+			_logger.fine("HTTP response content: " + content);
+
+			_logger.fine("HTTP response message: " + httpResponse.getMessage());
+			_logger.fine(
+				"HTTP response status code: " + httpResponse.getStatusCode());
+		}
+
+		public HttpInvoker.HttpResponse
+				postDataRecordCollectionDataRecordBatchHttpResponse(
+					Long dataRecordCollectionId, String callbackURL,
+					Object object)
+			throws Exception {
+
+			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+			httpInvoker.body(object.toString(), "application/json");
+
+			if (_builder._locale != null) {
+				httpInvoker.header(
+					"Accept-Language", _builder._locale.toLanguageTag());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
+			}
+
+			httpInvoker.httpMethod(HttpInvoker.HttpMethod.POST);
+
+			if (callbackURL != null) {
+				httpInvoker.parameter(
+					"callbackURL", String.valueOf(callbackURL));
+			}
+
+			httpInvoker.path(
+				_builder._scheme + "://" + _builder._host + ":" +
+					_builder._port +
+						"/o/data-engine/v2.0/data-record-collections/{dataRecordCollectionId}/data-records/batch");
+
+			httpInvoker.path("dataRecordCollectionId", dataRecordCollectionId);
 
 			httpInvoker.userNameAndPassword(
 				_builder._login + ":" + _builder._password);
@@ -436,7 +661,16 @@ public interface DataRecordResource {
 			_logger.fine(
 				"HTTP response status code: " + httpResponse.getStatusCode());
 
-			return content;
+			try {
+				return content;
+			}
+			catch (Exception e) {
+				_logger.log(
+					Level.WARNING,
+					"Unable to process HTTP response: " + content, e);
+
+				throw new Problem.ProblemException(Problem.toDTO(content));
+			}
 		}
 
 		public HttpInvoker.HttpResponse
@@ -475,8 +709,9 @@ public interface DataRecordResource {
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port +
-						"/o/data-engine/v2.0/data-record-collections/{dataRecordCollectionId}/data-records/export",
-				dataRecordCollectionId);
+						"/o/data-engine/v2.0/data-record-collections/{dataRecordCollectionId}/data-records/export");
+
+			httpInvoker.path("dataRecordCollectionId", dataRecordCollectionId);
 
 			httpInvoker.userNameAndPassword(
 				_builder._login + ":" + _builder._password);
@@ -495,6 +730,17 @@ public interface DataRecordResource {
 			_logger.fine("HTTP response message: " + httpResponse.getMessage());
 			_logger.fine(
 				"HTTP response status code: " + httpResponse.getStatusCode());
+
+			try {
+				return;
+			}
+			catch (Exception e) {
+				_logger.log(
+					Level.WARNING,
+					"Unable to process HTTP response: " + content, e);
+
+				throw new Problem.ProblemException(Problem.toDTO(content));
+			}
 		}
 
 		public HttpInvoker.HttpResponse deleteDataRecordHttpResponse(
@@ -525,8 +771,64 @@ public interface DataRecordResource {
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port +
-						"/o/data-engine/v2.0/data-records/{dataRecordId}",
-				dataRecordId);
+						"/o/data-engine/v2.0/data-records/{dataRecordId}");
+
+			httpInvoker.path("dataRecordId", dataRecordId);
+
+			httpInvoker.userNameAndPassword(
+				_builder._login + ":" + _builder._password);
+
+			return httpInvoker.invoke();
+		}
+
+		public void deleteDataRecordBatch(String callbackURL, Object object)
+			throws Exception {
+
+			HttpInvoker.HttpResponse httpResponse =
+				deleteDataRecordBatchHttpResponse(callbackURL, object);
+
+			String content = httpResponse.getContent();
+
+			_logger.fine("HTTP response content: " + content);
+
+			_logger.fine("HTTP response message: " + httpResponse.getMessage());
+			_logger.fine(
+				"HTTP response status code: " + httpResponse.getStatusCode());
+		}
+
+		public HttpInvoker.HttpResponse deleteDataRecordBatchHttpResponse(
+				String callbackURL, Object object)
+			throws Exception {
+
+			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+			if (_builder._locale != null) {
+				httpInvoker.header(
+					"Accept-Language", _builder._locale.toLanguageTag());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
+			}
+
+			httpInvoker.httpMethod(HttpInvoker.HttpMethod.DELETE);
+
+			if (callbackURL != null) {
+				httpInvoker.parameter(
+					"callbackURL", String.valueOf(callbackURL));
+			}
+
+			httpInvoker.path(
+				_builder._scheme + "://" + _builder._host + ":" +
+					_builder._port + "/o/data-engine/v2.0/data-records/batch");
 
 			httpInvoker.userNameAndPassword(
 				_builder._login + ":" + _builder._password);
@@ -554,7 +856,7 @@ public interface DataRecordResource {
 					Level.WARNING,
 					"Unable to process HTTP response: " + content, e);
 
-				throw e;
+				throw new Problem.ProblemException(Problem.toDTO(content));
 			}
 		}
 
@@ -586,8 +888,76 @@ public interface DataRecordResource {
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port +
-						"/o/data-engine/v2.0/data-records/{dataRecordId}",
-				dataRecordId);
+						"/o/data-engine/v2.0/data-records/{dataRecordId}");
+
+			httpInvoker.path("dataRecordId", dataRecordId);
+
+			httpInvoker.userNameAndPassword(
+				_builder._login + ":" + _builder._password);
+
+			return httpInvoker.invoke();
+		}
+
+		public DataRecord patchDataRecord(
+				Long dataRecordId, DataRecord dataRecord)
+			throws Exception {
+
+			HttpInvoker.HttpResponse httpResponse = patchDataRecordHttpResponse(
+				dataRecordId, dataRecord);
+
+			String content = httpResponse.getContent();
+
+			_logger.fine("HTTP response content: " + content);
+
+			_logger.fine("HTTP response message: " + httpResponse.getMessage());
+			_logger.fine(
+				"HTTP response status code: " + httpResponse.getStatusCode());
+
+			try {
+				return DataRecordSerDes.toDTO(content);
+			}
+			catch (Exception e) {
+				_logger.log(
+					Level.WARNING,
+					"Unable to process HTTP response: " + content, e);
+
+				throw new Problem.ProblemException(Problem.toDTO(content));
+			}
+		}
+
+		public HttpInvoker.HttpResponse patchDataRecordHttpResponse(
+				Long dataRecordId, DataRecord dataRecord)
+			throws Exception {
+
+			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+			httpInvoker.body(dataRecord.toString(), "application/json");
+
+			if (_builder._locale != null) {
+				httpInvoker.header(
+					"Accept-Language", _builder._locale.toLanguageTag());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
+			}
+
+			httpInvoker.httpMethod(HttpInvoker.HttpMethod.PATCH);
+
+			httpInvoker.path(
+				_builder._scheme + "://" + _builder._host + ":" +
+					_builder._port +
+						"/o/data-engine/v2.0/data-records/{dataRecordId}");
+
+			httpInvoker.path("dataRecordId", dataRecordId);
 
 			httpInvoker.userNameAndPassword(
 				_builder._login + ":" + _builder._password);
@@ -618,7 +988,7 @@ public interface DataRecordResource {
 					Level.WARNING,
 					"Unable to process HTTP response: " + content, e);
 
-				throw e;
+				throw new Problem.ProblemException(Problem.toDTO(content));
 			}
 		}
 
@@ -652,8 +1022,66 @@ public interface DataRecordResource {
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port +
-						"/o/data-engine/v2.0/data-records/{dataRecordId}",
-				dataRecordId);
+						"/o/data-engine/v2.0/data-records/{dataRecordId}");
+
+			httpInvoker.path("dataRecordId", dataRecordId);
+
+			httpInvoker.userNameAndPassword(
+				_builder._login + ":" + _builder._password);
+
+			return httpInvoker.invoke();
+		}
+
+		public void putDataRecordBatch(String callbackURL, Object object)
+			throws Exception {
+
+			HttpInvoker.HttpResponse httpResponse =
+				putDataRecordBatchHttpResponse(callbackURL, object);
+
+			String content = httpResponse.getContent();
+
+			_logger.fine("HTTP response content: " + content);
+
+			_logger.fine("HTTP response message: " + httpResponse.getMessage());
+			_logger.fine(
+				"HTTP response status code: " + httpResponse.getStatusCode());
+		}
+
+		public HttpInvoker.HttpResponse putDataRecordBatchHttpResponse(
+				String callbackURL, Object object)
+			throws Exception {
+
+			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+			httpInvoker.body(object.toString(), "application/json");
+
+			if (_builder._locale != null) {
+				httpInvoker.header(
+					"Accept-Language", _builder._locale.toLanguageTag());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
+			}
+
+			httpInvoker.httpMethod(HttpInvoker.HttpMethod.PUT);
+
+			if (callbackURL != null) {
+				httpInvoker.parameter(
+					"callbackURL", String.valueOf(callbackURL));
+			}
+
+			httpInvoker.path(
+				_builder._scheme + "://" + _builder._host + ":" +
+					_builder._port + "/o/data-engine/v2.0/data-records/batch");
 
 			httpInvoker.userNameAndPassword(
 				_builder._login + ":" + _builder._password);

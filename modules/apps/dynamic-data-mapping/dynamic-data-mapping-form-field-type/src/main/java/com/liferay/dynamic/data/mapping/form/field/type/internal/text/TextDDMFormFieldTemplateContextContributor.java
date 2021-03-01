@@ -16,6 +16,7 @@ package com.liferay.dynamic.data.mapping.form.field.type.internal.text;
 
 import com.liferay.dynamic.data.mapping.form.field.type.DDMFormFieldOptionsFactory;
 import com.liferay.dynamic.data.mapping.form.field.type.DDMFormFieldTemplateContextContributor;
+import com.liferay.dynamic.data.mapping.form.field.type.constants.DDMFormFieldTypeConstants;
 import com.liferay.dynamic.data.mapping.model.DDMFormField;
 import com.liferay.dynamic.data.mapping.model.DDMFormFieldOptions;
 import com.liferay.dynamic.data.mapping.model.LocalizedValue;
@@ -41,7 +42,8 @@ import org.osgi.service.component.annotations.Reference;
  * @author Marcellus Tavares
  */
 @Component(
-	immediate = true, property = "ddm.form.field.type.name=text",
+	immediate = true,
+	property = "ddm.form.field.type.name=" + DDMFormFieldTypeConstants.TEXT,
 	service = {
 		DDMFormFieldTemplateContextContributor.class,
 		TextDDMFormFieldTemplateContextContributor.class
@@ -103,28 +105,27 @@ public class TextDDMFormFieldTemplateContextContributor
 			ddmFormFieldOptionsFactory.create(
 				ddmFormField, ddmFormFieldRenderingContext);
 
+		if (ddmFormFieldOptions == null) {
+			return options;
+		}
+
 		for (String optionValue : ddmFormFieldOptions.getOptionsValues()) {
-			Map<String, String> optionMap = HashMapBuilder.put(
-				"label",
-				() -> {
-					LocalizedValue optionLabel =
-						ddmFormFieldOptions.getOptionLabels(optionValue);
+			options.add(
+				HashMapBuilder.put(
+					"label",
+					() -> {
+						LocalizedValue optionLabel =
+							ddmFormFieldOptions.getOptionLabels(optionValue);
 
-					String optionLabelString = optionLabel.getString(
-						ddmFormFieldRenderingContext.getLocale());
-
-					if (ddmFormFieldRenderingContext.isViewMode()) {
-						optionLabelString = HtmlUtil.extractText(
-							optionLabelString);
+						return optionLabel.getString(
+							ddmFormFieldRenderingContext.getLocale());
 					}
-
-					return optionLabelString;
-				}
-			).put(
-				"value", optionValue
-			).build();
-
-			options.add(optionMap);
+				).put(
+					"reference",
+					ddmFormFieldOptions.getOptionReference(optionValue)
+				).put(
+					"value", optionValue
+				).build());
 		}
 
 		return options;
@@ -152,14 +153,8 @@ public class TextDDMFormFieldTemplateContextContributor
 			return null;
 		}
 
-		String predefinedValueString = predefinedValue.getString(
+		return predefinedValue.getString(
 			ddmFormFieldRenderingContext.getLocale());
-
-		if (ddmFormFieldRenderingContext.isViewMode()) {
-			predefinedValueString = HtmlUtil.extractText(predefinedValueString);
-		}
-
-		return predefinedValueString;
 	}
 
 	protected String getTooltip(
@@ -181,7 +176,7 @@ public class TextDDMFormFieldTemplateContextContributor
 			ddmFormFieldRenderingContext.getProperty("value"));
 
 		if (ddmFormFieldRenderingContext.isViewMode()) {
-			value = HtmlUtil.extractText(value);
+			value = HtmlUtil.escape(value);
 		}
 
 		return value;
@@ -195,13 +190,7 @@ public class TextDDMFormFieldTemplateContextContributor
 			return StringPool.BLANK;
 		}
 
-		String valueString = value.getString(locale);
-
-		if (ddmFormFieldRenderingContext.isViewMode()) {
-			valueString = HtmlUtil.extractText(valueString);
-		}
-
-		return valueString;
+		return value.getString(locale);
 	}
 
 	protected boolean isAutocompleteEnabled(DDMFormField ddmFormField) {

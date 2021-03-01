@@ -12,11 +12,11 @@
  * details.
  */
 
+import ClayButton from '@clayui/button';
 import ClayForm, {ClayCheckbox, ClayInput} from '@clayui/form';
 import ClayIcon from '@clayui/icon';
 import React, {useEffect, useRef, useState} from 'react';
 
-import Button from '../../components/button/Button.es';
 import Popover from '../../components/popover/Popover.es';
 
 const CustomObjectPopover = ({
@@ -25,28 +25,33 @@ const CustomObjectPopover = ({
 	forwardRef,
 	onCancel,
 	onSubmit,
-	visible
+	visible,
 }) => {
 	const nameInputRef = useRef();
 	const [isAddFormView, setAddFormView] = useState(true);
 	const [hasError, setHasError] = useState(false);
+	const [isLoading, setLoading] = useState(false);
 
-	const handleSubmit = () => {
-		const name = nameInputRef.current.value;
-
-		if (validate(name)) {
-			onSubmit({isAddFormView, name});
-		} else {
-			nameInputRef.current.focus();
-		}
-	};
-
-	const validate = value => {
+	const validate = (value) => {
 		const invalid = value.trim() === '';
 
 		setHasError(invalid);
 
 		return !invalid;
+	};
+
+	const handleSubmit = () => {
+		const name = nameInputRef.current.value;
+
+		if (validate(name)) {
+			setLoading(true);
+			onSubmit({isAddFormView, name}).catch(() => {
+				setLoading(false);
+			});
+		}
+		else {
+			nameInputRef.current.focus();
+		}
 	};
 
 	const resetForm = () => {
@@ -58,7 +63,8 @@ const CustomObjectPopover = ({
 	useEffect(() => {
 		if (visible) {
 			nameInputRef.current.focus();
-		} else {
+		}
+		else {
 			resetForm();
 		}
 	}, [alignElement, nameInputRef, visible]);
@@ -69,10 +75,12 @@ const CustomObjectPopover = ({
 			className={`${className} mw-100`}
 			content={() => (
 				<ClayForm
-					onSubmit={event => {
+					onSubmit={(event) => {
 						event.preventDefault();
 
-						handleSubmit();
+						if (!isLoading) {
+							handleSubmit();
+						}
 					}}
 				>
 					<div
@@ -91,7 +99,7 @@ const CustomObjectPopover = ({
 						<ClayInput
 							className="form-control"
 							id="customObjectNameInput"
-							onInput={({currentTarget}) =>
+							onChange={({currentTarget}) =>
 								validate(currentTarget.value)
 							}
 							ref={nameInputRef}
@@ -131,7 +139,7 @@ const CustomObjectPopover = ({
 			footer={() => (
 				<div className="border-top p-3" style={{width: 450}}>
 					<div className="d-flex justify-content-end">
-						<Button
+						<ClayButton
 							className="mr-3"
 							displayType="secondary"
 							onClick={() => {
@@ -142,11 +150,15 @@ const CustomObjectPopover = ({
 							small
 						>
 							{Liferay.Language.get('cancel')}
-						</Button>
+						</ClayButton>
 
-						<Button onClick={() => handleSubmit()} small>
+						<ClayButton
+							disabled={isLoading}
+							onClick={() => handleSubmit()}
+							small
+						>
 							{Liferay.Language.get('continue')}
-						</Button>
+						</ClayButton>
 					</div>
 				</div>
 			)}

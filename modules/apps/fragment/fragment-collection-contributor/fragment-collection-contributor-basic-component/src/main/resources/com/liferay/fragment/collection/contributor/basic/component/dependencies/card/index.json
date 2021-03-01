@@ -4,70 +4,38 @@
 			"fields": [
 				{
 					"dataType": "string",
-					"defaultValue": "sm",
-					"label": "border-radius",
-					"name": "borderRadius",
+					"defaultValue": "h2",
+					"label": "card-title-heading-level",
+					"name": "headingLevel",
 					"type": "select",
 					"typeOptions": {
 						"validValues": [
 							{
-								"label": "none",
-								"value": "none"
+								"value": "h1"
 							},
 							{
-								"label": "small",
-								"value": "sm"
+								"value": "h2"
 							},
 							{
-								"label": "large",
-								"value": "lg"
+								"value": "h3"
+							},
+							{
+								"value": "h4"
+							},
+							{
+								"value": "h5"
+							},
+							{
+								"value": "h6"
 							}
 						]
 					}
-				},
-				{
-					"dataType": "string",
-					"defaultValue": "sm",
-					"label": "box-shadow",
-					"name": "boxShadow",
-					"type": "select",
-					"typeOptions": {
-						"validValues": [
-							{
-								"label": "none",
-								"value": "none"
-							},
-							{
-								"label": "small",
-								"value": "sm"
-							},
-							{
-								"label": "large",
-								"value": "lg"
-							}
-						]
-					}
-				},
-				{
-					"dataType": "string",
-					"defaultValue": "left",
-					"label": "content-align",
-					"name": "contentAlign",
-					"type": "select",
-					"typeOptions": {
-						"validValues": [
-							{
-								"value": "left"
-							},
-							{
-								"value": "center"
-							},
-							{
-								"value": "right"
-							}
-						]
-					}
-				},
+				}
+			]
+		},
+		{
+			"configurationRole": "style",
+			"fields": [
 				{
 					"dataType": "string",
 					"defaultValue": "w-100",
@@ -83,35 +51,6 @@
 							{
 								"label": "original-size",
 								"value": "w-0"
-							}
-						]
-					}
-				},
-				{
-					"dataType": "string",
-					"defaultValue": "3",
-					"label": "bottom-spacing",
-					"name": "bottomSpacing",
-					"type": "select",
-					"typeOptions": {
-						"validValues": [
-							{
-								"value": "0"
-							},
-							{
-								"value": "1"
-							},
-							{
-								"value": "2"
-							},
-							{
-								"value": "3"
-							},
-							{
-								"value": "4"
-							},
-							{
-								"value": "5"
 							}
 						]
 					}

@@ -20,12 +20,13 @@ import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.dao.search.RowChecker;
 import com.liferay.portal.kernel.language.LanguageUtil;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Organization;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.webserver.WebServerServletTokenUtil;
-import com.liferay.site.memberships.web.internal.constants.SiteMembershipWebKeys;
 import com.liferay.site.memberships.web.internal.servlet.taglib.util.OrganizationActionDropdownItemsProvider;
 
 import java.util.List;
@@ -71,16 +72,13 @@ public class OrganizationsVerticalCard
 			return organizationActionDropdownItemsProvider.
 				getActionDropdownItems();
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
 		}
 
 		return null;
-	}
-
-	@Override
-	public String getDefaultEventHandler() {
-		return SiteMembershipWebKeys.
-			ORGANIZATION_DROPDOWN_DEFAULT_EVENT_HANDLER;
 	}
 
 	@Override
@@ -110,6 +108,9 @@ public class OrganizationsVerticalCard
 	public String getTitle() {
 		return _organization.getName();
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		OrganizationsVerticalCard.class);
 
 	private final HttpServletRequest _httpServletRequest;
 	private final Organization _organization;

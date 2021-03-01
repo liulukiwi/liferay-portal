@@ -15,14 +15,12 @@
 package com.liferay.oauth2.provider.web.internal.display.context;
 
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenu;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenuBuilder;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
-import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemList;
-import com.liferay.frontend.taglib.clay.servlet.taglib.util.NavigationItem;
-import com.liferay.frontend.taglib.clay.servlet.taglib.util.NavigationItemList;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemListBuilder;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.ViewTypeItemList;
 import com.liferay.oauth2.provider.model.OAuth2Application;
 import com.liferay.oauth2.provider.web.internal.constants.OAuth2ProviderPortletKeys;
-import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
@@ -39,6 +37,7 @@ import com.liferay.portal.kernel.util.WebKeys;
 import java.util.List;
 import java.util.Map;
 
+import javax.portlet.ActionRequest;
 import javax.portlet.PortletURL;
 
 /**
@@ -61,38 +60,46 @@ public class OAuth2ApplicationsManagementToolbarDisplayContext
 	}
 
 	public List<DropdownItem> getActionDropdownItems() {
-		DropdownItemList dropdownItems = new DropdownItemList();
-
-		dropdownItems.add(
+		return DropdownItemListBuilder.add(
 			dropdownItem -> {
-				dropdownItem.setHref(
-					StringBundler.concat(
-						"javascript:", liferayPortletResponse.getNamespace(),
-						"deleteOAuth2Applications();"));
+				dropdownItem.putData("action", "deleteOAuth2Applications");
 				dropdownItem.setIcon("trash");
 				dropdownItem.setLabel(
 					LanguageUtil.get(httpServletRequest, "delete"));
 				dropdownItem.setQuickAction(true);
-			});
+			}
+		).build();
+	}
 
-		return dropdownItems;
+	public Map<String, Object> getAdditionalProps() {
+		return HashMapBuilder.<String, Object>put(
+			"deleteOAuth2ApplicationsURL",
+			() -> {
+				PortletURL deleteOAuth2ApplicationsURL =
+					liferayPortletResponse.createActionURL();
+
+				deleteOAuth2ApplicationsURL.setParameter(
+					ActionRequest.ACTION_NAME,
+					"/oauth2_provider/delete_oauth2_applications");
+
+				return deleteOAuth2ApplicationsURL.toString();
+			}
+		).build();
 	}
 
 	public CreationMenu getCreationMenu() {
-		CreationMenu creationMenu = new CreationMenu();
-
-		creationMenu.addPrimaryDropdownItem(
+		return CreationMenuBuilder.addPrimaryDropdownItem(
 			dropdownItem -> {
 				dropdownItem.setHref(
 					liferayPortletResponse.createRenderURL(),
-					"mvcRenderCommandName", "/admin/update_oauth2_application",
-					"redirect", currentURLObj.toString());
+					"mvcRenderCommandName",
+					"/oauth2_provider/update_oauth2_application", "redirect",
+					currentURLObj.toString());
 				dropdownItem.setLabel(
 					LanguageUtil.get(
 						httpServletRequest, "add-o-auth2-application"));
-			});
-
-		return creationMenu;
+			}
+		).build();
 	}
 
 	public String getDisplayStyle() {
@@ -117,41 +124,22 @@ public class OAuth2ApplicationsManagementToolbarDisplayContext
 	}
 
 	public List<DropdownItem> getFilterDropdownItems() {
-		return new DropdownItemList() {
-			{
-				Map<String, String> orderColumnsMap = HashMapBuilder.put(
-					"clientId", "client-id"
-				).put(
-					"createDate", "createDate"
-				).put(
-					"name", "name"
-				).build();
+		return DropdownItemListBuilder.addGroup(
+			dropdownGroupItem -> {
+				dropdownGroupItem.setDropdownItems(
+					getOrderByDropdownItems(
+						HashMapBuilder.put(
+							"clientId", "client-id"
+						).put(
+							"createDate", "createDate"
+						).put(
+							"name", "name"
+						).build()));
 
-				addGroup(
-					dropdownGroupItem -> {
-						dropdownGroupItem.setDropdownItems(
-							getOrderByDropdownItems(orderColumnsMap));
-						dropdownGroupItem.setLabel(
-							LanguageUtil.get(httpServletRequest, "order-by"));
-					});
+				dropdownGroupItem.setLabel(
+					LanguageUtil.get(httpServletRequest, "order-by"));
 			}
-		};
-	}
-
-	public List<NavigationItem> getNavigationItems() {
-		return new NavigationItemList() {
-			{
-				add(
-					navigationItem -> {
-						navigationItem.setActive(true);
-						navigationItem.setHref(
-							liferayPortletResponse.createRenderURL());
-						navigationItem.setLabel(
-							LanguageUtil.get(
-								httpServletRequest, "oauth2-applications"));
-					});
-			}
-		};
+		).build();
 	}
 
 	public OrderByComparator<OAuth2Application> getOrderByComparator() {

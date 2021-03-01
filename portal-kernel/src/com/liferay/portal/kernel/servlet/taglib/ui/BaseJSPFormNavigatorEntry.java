@@ -33,7 +33,10 @@ import javax.servlet.http.HttpServletResponse;
 
 /**
  * @author Julio Camarero
+ * @deprecated As of Cavanaugh (7.4.x), replaced by {@link
+ *             com.liferay.frontend.taglib.form.navigator.BaseJSPFormNavigatorEntry}
  */
+@Deprecated
 public abstract class BaseJSPFormNavigatorEntry<T>
 	extends BaseFormNavigatorEntry<T> implements FormNavigatorEntry<T> {
 
@@ -51,10 +54,12 @@ public abstract class BaseJSPFormNavigatorEntry<T>
 		try {
 			requestDispatcher.include(httpServletRequest, httpServletResponse);
 		}
-		catch (ServletException se) {
-			_log.error("Unable to include JSP " + getJspPath(), se);
+		catch (ServletException servletException) {
+			_log.error(
+				"Unable to include JSP " + getJspPath(), servletException);
 
-			throw new IOException("Unable to include " + getJspPath(), se);
+			throw new IOException(
+				"Unable to include " + getJspPath(), servletException);
 		}
 	}
 

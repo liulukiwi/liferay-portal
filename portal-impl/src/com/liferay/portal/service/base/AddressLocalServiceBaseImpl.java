@@ -19,6 +19,7 @@ import com.liferay.exportimport.kernel.lar.ManifestSummary;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
 import com.liferay.exportimport.kernel.lar.StagedModelType;
+import com.liferay.petra.sql.dsl.query.DSLQuery;
 import com.liferay.portal.kernel.bean.BeanReference;
 import com.liferay.portal.kernel.dao.db.DB;
 import com.liferay.portal.kernel.dao.db.DBManagerUtil;
@@ -44,6 +45,7 @@ import com.liferay.portal.kernel.service.AddressLocalService;
 import com.liferay.portal.kernel.service.BaseLocalServiceImpl;
 import com.liferay.portal.kernel.service.PersistedModelLocalServiceRegistry;
 import com.liferay.portal.kernel.service.persistence.AddressPersistence;
+import com.liferay.portal.kernel.service.persistence.BasePersistence;
 import com.liferay.portal.kernel.service.persistence.ClassNamePersistence;
 import com.liferay.portal.kernel.service.persistence.CountryPersistence;
 import com.liferay.portal.kernel.service.persistence.ListTypePersistence;
@@ -74,7 +76,7 @@ public abstract class AddressLocalServiceBaseImpl
 	extends BaseLocalServiceImpl
 	implements AddressLocalService, IdentifiableOSGiService {
 
-	/**
+	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this class directly. Use <code>AddressLocalService</code> via injection or a <code>org.osgi.util.tracker.ServiceTracker</code> or use <code>com.liferay.portal.kernel.service.AddressLocalServiceUtil</code>.
@@ -82,6 +84,10 @@ public abstract class AddressLocalServiceBaseImpl
 
 	/**
 	 * Adds the address to the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect AddressLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param address the address
 	 * @return the address that was added
@@ -109,6 +115,10 @@ public abstract class AddressLocalServiceBaseImpl
 	/**
 	 * Deletes the address with the primary key from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect AddressLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param addressId the primary key of the address
 	 * @return the address that was removed
 	 * @throws PortalException if a address with the primary key could not be found
@@ -122,6 +132,10 @@ public abstract class AddressLocalServiceBaseImpl
 	/**
 	 * Deletes the address from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect AddressLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param address the address
 	 * @return the address that was removed
 	 */
@@ -129,6 +143,11 @@ public abstract class AddressLocalServiceBaseImpl
 	@Override
 	public Address deleteAddress(Address address) {
 		return addressPersistence.remove(address);
+	}
+
+	@Override
+	public <T> T dslQuery(DSLQuery dslQuery) {
+		return addressPersistence.dslQuery(dslQuery);
 	}
 
 	@Override
@@ -233,6 +252,21 @@ public abstract class AddressLocalServiceBaseImpl
 	@Override
 	public Address fetchAddressByUuidAndCompanyId(String uuid, long companyId) {
 		return addressPersistence.fetchByUuid_C_First(uuid, companyId, null);
+	}
+
+	/**
+	 * Returns the address with the matching external reference code and company.
+	 *
+	 * @param companyId the primary key of the company
+	 * @param externalReferenceCode the address's external reference code
+	 * @return the matching address, or <code>null</code> if a matching address could not be found
+	 */
+	@Override
+	public Address fetchAddressByReferenceCode(
+		long companyId, String externalReferenceCode) {
+
+		return addressPersistence.fetchByC_ERC(
+			companyId, externalReferenceCode);
 	}
 
 	/**
@@ -383,12 +417,30 @@ public abstract class AddressLocalServiceBaseImpl
 	 * @throws PortalException
 	 */
 	@Override
+	public PersistedModel createPersistedModel(Serializable primaryKeyObj)
+		throws PortalException {
+
+		return addressPersistence.create(((Long)primaryKeyObj).longValue());
+	}
+
+	/**
+	 * @throws PortalException
+	 */
+	@Override
 	public PersistedModel deletePersistedModel(PersistedModel persistedModel)
 		throws PortalException {
 
 		return addressLocalService.deleteAddress((Address)persistedModel);
 	}
 
+	@Override
+	public BasePersistence<Address> getBasePersistence() {
+		return addressPersistence;
+	}
+
+	/**
+	 * @throws PortalException
+	 */
 	@Override
 	public PersistedModel getPersistedModel(Serializable primaryKeyObj)
 		throws PortalException {
@@ -439,6 +491,10 @@ public abstract class AddressLocalServiceBaseImpl
 
 	/**
 	 * Updates the address in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect AddressLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param address the address
 	 * @return the address that was updated
@@ -551,6 +607,29 @@ public abstract class AddressLocalServiceBaseImpl
 		ClassNamePersistence classNamePersistence) {
 
 		this.classNamePersistence = classNamePersistence;
+	}
+
+	/**
+	 * Returns the country local service.
+	 *
+	 * @return the country local service
+	 */
+	public com.liferay.portal.kernel.service.CountryLocalService
+		getCountryLocalService() {
+
+		return countryLocalService;
+	}
+
+	/**
+	 * Sets the country local service.
+	 *
+	 * @param countryLocalService the country local service
+	 */
+	public void setCountryLocalService(
+		com.liferay.portal.kernel.service.CountryLocalService
+			countryLocalService) {
+
+		this.countryLocalService = countryLocalService;
 	}
 
 	/**
@@ -719,8 +798,8 @@ public abstract class AddressLocalServiceBaseImpl
 
 			sqlUpdate.update();
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 	}
 
@@ -744,6 +823,12 @@ public abstract class AddressLocalServiceBaseImpl
 
 	@BeanReference(type = ClassNamePersistence.class)
 	protected ClassNamePersistence classNamePersistence;
+
+	@BeanReference(
+		type = com.liferay.portal.kernel.service.CountryLocalService.class
+	)
+	protected com.liferay.portal.kernel.service.CountryLocalService
+		countryLocalService;
 
 	@BeanReference(type = CountryPersistence.class)
 	protected CountryPersistence countryPersistence;

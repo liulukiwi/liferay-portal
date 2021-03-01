@@ -53,11 +53,11 @@ import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
 import com.liferay.portal.kernel.service.LayoutLocalServiceUtil;
 import com.liferay.portal.kernel.service.LayoutTemplateLocalServiceUtil;
 import com.liferay.portal.kernel.service.PortletLocalServiceUtil;
-import com.liferay.portal.kernel.service.ResourceActionLocalServiceUtil;
 import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 import com.liferay.portal.kernel.servlet.InactiveRequestHandler;
 import com.liferay.portal.kernel.servlet.PortalSessionThreadLocal;
 import com.liferay.portal.kernel.template.TemplateManager;
+import com.liferay.portal.kernel.upgrade.ReleaseManager;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.HttpUtil;
@@ -77,6 +77,7 @@ import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portal.kernel.xml.SAXReaderUtil;
 import com.liferay.portal.kernel.xml.UnsecureSAXReaderUtil;
 import com.liferay.portal.plugin.PluginPackageUtil;
+import com.liferay.portal.security.jaas.JAASHelper;
 import com.liferay.portal.service.impl.LayoutTemplateLocalServiceImpl;
 import com.liferay.portal.servlet.EncryptedServletRequest;
 import com.liferay.portal.servlet.I18nServlet;
@@ -121,7 +122,6 @@ import java.util.TimeZone;
 
 import javax.portlet.PortletConfig;
 import javax.portlet.PortletContext;
-import javax.portlet.PortletException;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletConfig;
@@ -156,6 +156,8 @@ public class MainServlet extends HttpServlet {
 		_servletContextServiceRegistration.unregister();
 		_systemCheckModuleServiceLifecycleServiceRegistration.unregister();
 
+		_licenseInstallModuleServiceLifecycleServiceRegistration.unregister();
+
 		PortalLifecycleUtil.flushDestroys();
 
 		List<Portlet> portlets = PortletLocalServiceUtil.getPortlets();
@@ -167,8 +169,8 @@ public class MainServlet extends HttpServlet {
 		try {
 			_destroyPortlets(portlets);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 
 		if (_log.isDebugEnabled()) {
@@ -178,8 +180,8 @@ public class MainServlet extends HttpServlet {
 		try {
 			_destroyCompanies();
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 
 		if (_log.isDebugEnabled()) {
@@ -191,8 +193,8 @@ public class MainServlet extends HttpServlet {
 				PropsKeys.GLOBAL_SHUTDOWN_EVENTS,
 				PropsValues.GLOBAL_SHUTDOWN_EVENTS);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 	}
 
@@ -236,7 +238,7 @@ public class MainServlet extends HttpServlet {
 		try {
 			PatcherUtil.verifyPatchLevels();
 		}
-		catch (PatchInconsistencyException pie) {
+		catch (PatchInconsistencyException patchInconsistencyException) {
 			if (!PropsValues.VERIFY_PATCH_LEVELS_DISABLED) {
 				_log.error(
 					"Stopping the server due to the inconsistent patch levels");
@@ -246,7 +248,7 @@ public class MainServlet extends HttpServlet {
 						"Set the property \"verify.patch.levels.disabled\" " +
 							"to override stopping the server due to the " +
 								"inconsistent patch levels",
-						pie);
+						patchInconsistencyException);
 				}
 
 				System.exit(0);
@@ -296,8 +298,8 @@ public class MainServlet extends HttpServlet {
 
 			startupAction.run(null);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
 			System.out.println(
 				"Stopping the server due to unexpected startup errors");
@@ -315,8 +317,8 @@ public class MainServlet extends HttpServlet {
 			pluginPackage = PluginPackageUtil.readPluginPackageServletContext(
 				servletContext);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 
 		if (_log.isDebugEnabled()) {
@@ -328,15 +330,26 @@ public class MainServlet extends HttpServlet {
 		try {
 			portlets.addAll(_initPortlets(pluginPackage));
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
+		}
+
+		for (Portlet portlet : portlets) {
+			try {
+				ResourceActionsUtil.populatePortletResource(
+					portlet, MainServlet.class.getClassLoader(),
+					PropsValues.RESOURCE_ACTIONS_CONFIGS);
+			}
+			catch (Exception exception) {
+				_log.error(exception, exception);
+			}
 		}
 
 		try {
 			_initLayoutTemplates(pluginPackage);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 
 		if (_log.isDebugEnabled()) {
@@ -344,20 +357,19 @@ public class MainServlet extends HttpServlet {
 		}
 
 		try {
-			String[] xmls = {
-				StreamUtil.toString(
-					servletContext.getResourceAsStream(
-						"/WEB-INF/liferay-social.xml")),
-				StreamUtil.toString(
-					servletContext.getResourceAsStream(
-						"/WEB-INF/liferay-social-ext.xml"))
-			};
-
 			SocialConfigurationUtil.read(
-				PortalClassLoaderUtil.getClassLoader(), xmls);
+				PortalClassLoaderUtil.getClassLoader(),
+				new String[] {
+					StreamUtil.toString(
+						servletContext.getResourceAsStream(
+							"/WEB-INF/liferay-social.xml")),
+					StreamUtil.toString(
+						servletContext.getResourceAsStream(
+							"/WEB-INF/liferay-social-ext.xml"))
+				});
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 
 		if (_log.isDebugEnabled()) {
@@ -374,8 +386,8 @@ public class MainServlet extends HttpServlet {
 
 			_checkWebSettings(xml);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 
 		if (_log.isDebugEnabled()) {
@@ -385,8 +397,8 @@ public class MainServlet extends HttpServlet {
 		try {
 			ExtRegistry.registerPortal(servletContext);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 
 		if (_log.isDebugEnabled()) {
@@ -398,8 +410,8 @@ public class MainServlet extends HttpServlet {
 				PropsKeys.GLOBAL_STARTUP_EVENTS,
 				PropsValues.GLOBAL_STARTUP_EVENTS);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 
 		if (_log.isDebugEnabled()) {
@@ -407,29 +419,10 @@ public class MainServlet extends HttpServlet {
 		}
 
 		try {
-			_initResourceActions(portlets);
-		}
-		catch (Exception e) {
-			_log.error(e, e);
-		}
-
-		try {
 			_initCompanies();
 		}
-		catch (Exception e) {
-			_log.error(e, e);
-		}
-
-		if (StartupHelperUtil.isDBNew() &&
-			PropsValues.SETUP_WIZARD_ADD_SAMPLE_DATA) {
-
-			try {
-				SetupWizardSampleDataUtil.addSampleData(
-					PortalInstances.getDefaultCompanyId());
-			}
-			catch (Exception e) {
-				_log.error(e, e);
-			}
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 
 		if (_log.isDebugEnabled()) {
@@ -441,8 +434,8 @@ public class MainServlet extends HttpServlet {
 
 			PortalLifecycleUtil.flushInits();
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 
 		servletContext.setAttribute(WebKeys.STARTUP_FINISHED, Boolean.TRUE);
@@ -450,6 +443,33 @@ public class MainServlet extends HttpServlet {
 		StartupHelperUtil.setStartupFinished(true);
 
 		_registerPortalInitialized();
+
+		if ((_releaseManager != null) && _log.isWarnEnabled()) {
+			String message = _releaseManager.getStatusMessage(true);
+
+			if (Validator.isNotNull(message)) {
+				_log.warn(message);
+			}
+			else if (_log.isInfoEnabled()) {
+				message = _releaseManager.getStatusMessage(false);
+
+				if (Validator.isNotNull(message)) {
+					_log.info(message);
+				}
+			}
+		}
+
+		if (StartupHelperUtil.isDBNew() &&
+			PropsValues.SETUP_WIZARD_ADD_SAMPLE_DATA) {
+
+			try {
+				SetupWizardSampleDataUtil.addSampleData(
+					PortalInstances.getDefaultCompanyId());
+			}
+			catch (Exception exception) {
+				_log.error(exception, exception);
+			}
+		}
 
 		ThreadLocalCacheManager.clearAll(Lifecycle.REQUEST);
 	}
@@ -509,14 +529,14 @@ public class MainServlet extends HttpServlet {
 				return;
 			}
 		}
-		catch (Exception e) {
-			if (e instanceof NoSuchLayoutException) {
+		catch (Exception exception) {
+			if (exception instanceof NoSuchLayoutException) {
 				if (_log.isDebugEnabled()) {
-					_log.debug(e, e);
+					_log.debug(exception, exception);
 				}
 			}
 			else {
-				_log.error(e, e);
+				_log.error(exception, exception);
 			}
 		}
 
@@ -555,14 +575,15 @@ public class MainServlet extends HttpServlet {
 			}
 
 			userId = _loginUser(
-				httpServletRequest, httpServletResponse, userId, remoteUser);
+				httpServletRequest, httpServletResponse, companyId, userId,
+				remoteUser);
 
 			if (_log.isDebugEnabled()) {
 				_log.debug("Authenticated user id " + userId);
 			}
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 
 		if (_log.isDebugEnabled()) {
@@ -632,8 +653,8 @@ public class MainServlet extends HttpServlet {
 					PropsValues.SERVLET_SERVICE_EVENTS_POST, httpServletRequest,
 					httpServletResponse);
 			}
-			catch (Exception e) {
-				_log.error(e, e);
+			catch (Exception exception) {
+				_log.error(exception, exception);
 			}
 		}
 	}
@@ -682,8 +703,8 @@ public class MainServlet extends HttpServlet {
 				PropsValues.APPLICATION_SHUTDOWN_EVENTS,
 				new String[] {String.valueOf(companyId)});
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 	}
 
@@ -716,7 +737,10 @@ public class MainServlet extends HttpServlet {
 			httpServletRequest = new EncryptedServletRequest(
 				httpServletRequest, company.getKeyObj());
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
 		}
 
 		return httpServletRequest;
@@ -752,14 +776,20 @@ public class MainServlet extends HttpServlet {
 
 			return _initModuleConfig();
 		}
-		catch (Exception e) {
-			throw new ServletException(e);
+		catch (Exception exception) {
+			throw new ServletException(exception);
 		}
 	}
 
 	private void _initCompanies() throws Exception {
 		if (_log.isDebugEnabled()) {
 			_log.debug("Initialize companies");
+		}
+
+		if (StartupHelperUtil.isDBNew()) {
+			CompanyLocalServiceUtil.addCompany(
+				null, PropsValues.COMPANY_DEFAULT_WEB_ID, "localhost",
+				PropsValues.COMPANY_DEFAULT_WEB_ID, false, 0, true);
 		}
 
 		ServletContext servletContext = getServletContext();
@@ -793,25 +823,26 @@ public class MainServlet extends HttpServlet {
 
 						ServletContext servletContext = getServletContext();
 
-						String[] xmls = {
-							StreamUtil.toString(
-								servletContext.getResourceAsStream(
-									"/WEB-INF/liferay-layout-templates.xml")),
-							StreamUtil.toString(
-								servletContext.getResourceAsStream(
-									"/WEB-INF" +
-										"/liferay-layout-templates-ext.xml"))
-						};
-
 						List<LayoutTemplate> layoutTemplates =
 							LayoutTemplateLocalServiceUtil.init(
-								servletContext, xmls, pluginPackage);
+								servletContext,
+								new String[] {
+									StreamUtil.toString(
+										servletContext.getResourceAsStream(
+											"/WEB-INF/liferay-layout-" +
+												"templates.xml")),
+									StreamUtil.toString(
+										servletContext.getResourceAsStream(
+											"/WEB-INF/liferay-layout-" +
+												"templates-ext.xml"))
+								},
+								pluginPackage);
 
 						servletContext.setAttribute(
 							WebKeys.PLUGIN_LAYOUT_TEMPLATES, layoutTemplates);
 					}
-					catch (Exception e) {
-						_log.error(e, e);
+					catch (Exception exception) {
+						_log.error(exception, exception);
 					}
 				}
 
@@ -836,9 +867,7 @@ public class MainServlet extends HttpServlet {
 			sb.append(TemplateManager.class.getName());
 			sb.append("))");
 
-			Filter filter = registry.getFilter(sb.toString());
-
-			filters.add(filter);
+			filters.add(registry.getFilter(sb.toString()));
 		}
 
 		serviceDependencyManager.registerDependencies(
@@ -910,7 +939,7 @@ public class MainServlet extends HttpServlet {
 	}
 
 	private void _initPortletApp(Portlet portlet, ServletContext servletContext)
-		throws PortletException {
+		throws Exception {
 
 		PortletApp portletApp = portlet.getPortletApp();
 
@@ -972,28 +1001,6 @@ public class MainServlet extends HttpServlet {
 		return portlets;
 	}
 
-	private void _initResourceActions(List<Portlet> portlets) throws Exception {
-		for (Portlet portlet : portlets) {
-			List<String> portletActions =
-				ResourceActionsUtil.getPortletResourceActions(portlet);
-
-			ResourceActionLocalServiceUtil.checkResourceActions(
-				portlet.getPortletId(), portletActions);
-
-			List<String> modelNames =
-				ResourceActionsUtil.getPortletModelResources(
-					portlet.getPortletId());
-
-			for (String modelName : modelNames) {
-				List<String> modelActions =
-					ResourceActionsUtil.getModelResourceActions(modelName);
-
-				ResourceActionLocalServiceUtil.checkResourceActions(
-					modelName, modelActions);
-			}
-		}
-	}
-
 	private void _initServlet() {
 		ServletConfig servletConfig = getServletConfig();
 
@@ -1015,15 +1022,31 @@ public class MainServlet extends HttpServlet {
 
 	private long _loginUser(
 			HttpServletRequest httpServletRequest,
-			HttpServletResponse httpServletResponse, long userId,
-			String remoteUser)
+			HttpServletResponse httpServletResponse, long companyId,
+			long userId, String remoteUser)
 		throws PortalException {
 
 		if ((userId > 0) || (remoteUser == null)) {
 			return userId;
 		}
 
-		userId = GetterUtil.getLong(remoteUser);
+		if (PropsValues.PORTAL_JAAS_ENABLE) {
+			try {
+				userId = JAASHelper.getJaasUserId(companyId, remoteUser);
+			}
+			catch (Exception exception) {
+				if (_log.isWarnEnabled()) {
+					_log.warn(
+						StringBundler.concat(
+							"Unable to sign in ", remoteUser, " in company ",
+							companyId, " using JAAS: ", exception.getMessage()),
+						exception);
+				}
+			}
+		}
+		else {
+			userId = GetterUtil.getLong(remoteUser);
+		}
 
 		User user = UserLocalServiceUtil.getUserById(userId);
 
@@ -1132,32 +1155,34 @@ public class MainServlet extends HttpServlet {
 				PropsValues.SERVLET_SERVICE_EVENTS_PRE, httpServletRequest,
 				httpServletResponse);
 		}
-		catch (Exception e) {
-			Throwable cause = e.getCause();
+		catch (Exception exception) {
+			Throwable throwable = exception.getCause();
 
-			if (cause instanceof NoSuchLayoutException) {
+			if (throwable instanceof NoSuchLayoutException) {
 				PortalUtil.sendError(
-					HttpServletResponse.SC_NOT_FOUND, (Exception)cause,
+					HttpServletResponse.SC_NOT_FOUND, (Exception)throwable,
 					httpServletRequest, httpServletResponse);
 
 				return true;
 			}
-			else if (cause instanceof PrincipalException) {
+			else if (throwable instanceof PrincipalException) {
 				_processServicePrePrincipalException(
-					cause, userId, httpServletRequest, httpServletResponse);
+					throwable, userId, httpServletRequest, httpServletResponse);
 
 				return true;
 			}
 
-			_log.error(e, e);
+			_log.error(exception, exception);
 
-			httpServletRequest.setAttribute(PageContext.EXCEPTION, e);
+			httpServletRequest.setAttribute(PageContext.EXCEPTION, exception);
 
 			StrutsUtil.forward(
 				PropsValues.SERVLET_SERVICE_EVENTS_PRE_ERROR_PAGE,
 				getServletContext(), httpServletRequest, httpServletResponse);
 
-			if (e == httpServletRequest.getAttribute(PageContext.EXCEPTION)) {
+			if (exception == httpServletRequest.getAttribute(
+					PageContext.EXCEPTION)) {
+
 				httpServletRequest.removeAttribute(PageContext.EXCEPTION);
 				httpServletRequest.removeAttribute(
 					RequestDispatcher.ERROR_EXCEPTION);
@@ -1191,7 +1216,8 @@ public class MainServlet extends HttpServlet {
 	}
 
 	private void _processServicePrePrincipalException(
-			Throwable t, long userId, HttpServletRequest httpServletRequest,
+			Throwable throwable, long userId,
+			HttpServletRequest httpServletRequest,
 			HttpServletResponse httpServletResponse)
 		throws IOException, ServletException {
 
@@ -1199,7 +1225,7 @@ public class MainServlet extends HttpServlet {
 			(ParamUtil.getInteger(httpServletRequest, "p_p_lifecycle") == 2)) {
 
 			PortalUtil.sendError(
-				HttpServletResponse.SC_UNAUTHORIZED, (Exception)t,
+				HttpServletResponse.SC_UNAUTHORIZED, (Exception)throwable,
 				httpServletRequest, httpServletResponse);
 
 			return;
@@ -1235,7 +1261,10 @@ public class MainServlet extends HttpServlet {
 
 				redirect = HttpUtil.addParameter(redirect, "p_l_id", plid);
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(exception, exception);
+				}
 			}
 		}
 
@@ -1321,6 +1350,21 @@ public class MainServlet extends HttpServlet {
 				new ModuleServiceLifecycle() {
 				},
 				properties);
+
+		properties = HashMapBuilder.<String, Object>put(
+			"module.service.lifecycle", "license.install"
+		).put(
+			"service.vendor", ReleaseInfo.getVendor()
+		).put(
+			"service.version", ReleaseInfo.getVersion()
+		).build();
+
+		_licenseInstallModuleServiceLifecycleServiceRegistration =
+			registry.registerService(
+				ModuleServiceLifecycle.class,
+				new ModuleServiceLifecycle() {
+				},
+				properties);
 	}
 
 	private static final boolean _HTTP_HEADER_VERSION_VERBOSITY_DEFAULT =
@@ -1340,7 +1384,12 @@ public class MainServlet extends HttpServlet {
 		ServiceProxyFactory.newServiceTrackedInstance(
 			InactiveRequestHandler.class, MainServlet.class,
 			"_inactiveRequestHandler", false);
+	private static volatile ReleaseManager _releaseManager =
+		ServiceProxyFactory.newServiceTrackedInstance(
+			ReleaseManager.class, MainServlet.class, "_releaseManager", false);
 
+	private ServiceRegistration<ModuleServiceLifecycle>
+		_licenseInstallModuleServiceLifecycleServiceRegistration;
 	private ServiceRegistration<ModuleServiceLifecycle>
 		_portalInitializedModuleServiceLifecycleServiceRegistration;
 	private ServiceRegistration<ModuleServiceLifecycle>

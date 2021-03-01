@@ -12,169 +12,260 @@
  * details.
  */
 
+import ClayButton from '@clayui/button';
 import classNames from 'classnames';
-import React, {useState, useContext} from 'react';
+import Loading from 'data-engine-js-components-web/js/components/loading/Loading.es';
+import {
+	errorToast,
+	successToast,
+} from 'data-engine-js-components-web/js/utils/toast.es';
+import {TranslationManager} from 'data-engine-taglib';
+import React, {useCallback, useContext, useEffect, useState} from 'react';
 import {withRouter} from 'react-router-dom';
 
+import {AppContext} from '../../AppContext.es';
 import ControlMenu from '../../components/control-menu/ControlMenu.es';
 import DragLayer from '../../components/drag-and-drop/DragLayer.es';
-import {Loading} from '../../components/loading/Loading.es';
 import UpperToolbar from '../../components/upper-toolbar/UpperToolbar.es';
-import {addItem, updateItem} from '../../utils/client.es';
+import {normalizeNames} from '../../utils/normalizers.es';
 import DropZone from './DropZone.es';
 import EditTableViewContext, {
 	ADD_DATA_LIST_VIEW_FIELD,
 	REMOVE_DATA_LIST_VIEW_FIELD,
 	UPDATE_DATA_LIST_VIEW_NAME,
-	UPDATE_FOCUSED_COLUMN
+	UPDATE_EDITING_LANGUAGE_ID,
 } from './EditTableViewContext.es';
 import EditTableViewContextProvider from './EditTableViewContextProvider.es';
 import TableViewSidebar from './TableViewSidebar.es';
+import {
+	getDestructuredFields,
+	getTableViewTitle,
+	saveTableView,
+} from './utils.es';
 
 const EditTableView = withRouter(({history}) => {
+	const {popUpWindow} = useContext(AppContext);
 	const [{dataDefinition, dataListView}, dispatch] = useContext(
 		EditTableViewContext
 	);
-
-	let title = Liferay.Language.get('new-table-view');
-
-	if (dataListView.id) {
-		title = Liferay.Language.get('edit-table-view');
-	}
-
-	const onInput = event => {
-		const name = event.target.value;
-
-		dispatch({payload: {name}, type: UPDATE_DATA_LIST_VIEW_NAME});
-	};
-
-	const validate = () => {
-		const name = dataListView.name.en_US.trim();
-
-		if (!name) {
-			return null;
-		}
-
-		return {
-			...dataListView,
-			name: {
-				en_US: name
-			}
-		};
-	};
-
-	const handleSubmit = () => {
-		const dataListView = validate();
-
-		if (dataListView === null) {
-			return;
-		}
-
-		if (dataListView.id) {
-			updateItem(
-				`/o/data-engine/v2.0/data-list-views/${dataListView.id}`,
-				dataListView
-			).then(() => history.goBack());
-		} else {
-			addItem(
-				`/o/data-engine/v2.0/data-definitions/${dataDefinition.id}/data-list-views`,
-				dataListView
-			).then(() => history.goBack());
-		}
-	};
-
-	const {dataDefinitionFields} = dataDefinition;
-
-	const {
-		fieldNames,
-		name: {en_US: dataListViewName}
-	} = dataListView;
-
+	const [isLoading, setLoading] = useState(false);
 	const [isSidebarClosed, setSidebarClosed] = useState(false);
+	const [defaultLanguageId, setDefaultLanguageId] = useState('');
+	const [editingLanguageId, setEditingLanguageId] = useState('');
+
+	const onEditingLanguageIdChange = useCallback(
+		(editingLanguageId) => {
+			setEditingLanguageId(editingLanguageId);
+
+			dispatch({
+				payload: editingLanguageId,
+				type: UPDATE_EDITING_LANGUAGE_ID,
+			});
+		},
+		[dispatch]
+	);
+
+	useEffect(() => {
+		if (dataDefinition.defaultLanguageId) {
+			setDefaultLanguageId(dataDefinition.defaultLanguageId);
+
+			onEditingLanguageIdChange(dataDefinition.defaultLanguageId);
+		}
+	}, [dataDefinition.defaultLanguageId, onEditingLanguageIdChange]);
+
+	const onError = ({title}) => {
+		errorToast(title);
+	};
+
+	const onCancel = () => {
+		if (popUpWindow) {
+			window.top?.Liferay.fire('closeModal');
+		}
+		else {
+			history.goBack();
+		}
+	};
+
+	const onSuccess = (newTableView) => {
+		if (popUpWindow) {
+			const tLiferay = window.top?.Liferay;
+
+			tLiferay.fire('newTableViewCreated', {
+				newTableView,
+			});
+
+			tLiferay.fire('closeModal');
+		}
+		else {
+			successToast(
+				Liferay.Language.get('the-table-view-was-saved-successfully')
+			);
+
+			history.goBack();
+		}
+	};
+
+	const onSave = () => {
+		if (!dataListView.name[defaultLanguageId]) {
+			dataListView.name[defaultLanguageId] =
+				dataListView.name[editingLanguageId];
+		}
+
+		setLoading(true);
+
+		saveTableView(dataDefinition, {
+			...dataListView,
+			name: normalizeNames({
+				defaultName: Liferay.Language.get('untitled-table-view'),
+				localizableValue: dataListView.name,
+			}),
+		})
+			.then(onSuccess)
+			.catch((error) => {
+				onError(error);
+				setLoading(false);
+			});
+	};
 
 	const onAddFieldName = (fieldName, index = 0) => {
 		dispatch({
 			payload: {fieldName, index},
-			type: ADD_DATA_LIST_VIEW_FIELD
+			type: ADD_DATA_LIST_VIEW_FIELD,
 		});
-
-		dispatch({payload: {fieldName}, type: UPDATE_FOCUSED_COLUMN});
 	};
 
-	const onCloseSidebar = closed => setSidebarClosed(closed);
+	const onTableViewNameChange = ({target: {value}}) => {
+		dispatch({
+			payload: {
+				name: {
+					...dataListView.name,
+					[editingLanguageId]: value,
+				},
+			},
+			type: UPDATE_DATA_LIST_VIEW_NAME,
+		});
+	};
 
-	const onRemoveFieldName = fieldName => {
+	const onRemoveFieldName = (fieldName) => {
 		dispatch({payload: {fieldName}, type: REMOVE_DATA_LIST_VIEW_FIELD});
 	};
 
+	if (!defaultLanguageId) {
+		return null;
+	}
+
+	const actionButtons = (
+		<ClayButton.Group spaced>
+			<ClayButton displayType="secondary" onClick={onCancel}>
+				{Liferay.Language.get('cancel')}
+			</ClayButton>
+
+			<ClayButton
+				disabled={
+					isLoading || !dataListView.name[editingLanguageId]?.trim()
+				}
+				onClick={onSave}
+			>
+				{Liferay.Language.get('save')}
+			</ClayButton>
+		</ClayButton.Group>
+	);
+
 	return (
-		<div className="app-builder-table-view">
-			<ControlMenu backURL="../" title={title} />
+		<div
+			className={classNames(
+				'app-builder-table-view',
+				popUpWindow && 'app-builder-popup'
+			)}
+		>
+			<ControlMenu
+				backURL="../"
+				title={getTableViewTitle(dataListView)}
+			/>
 
 			<Loading isLoading={dataDefinition === null}>
 				<DragLayer />
 
 				<form
-					onSubmit={event => {
+					onSubmit={(event) => {
 						event.preventDefault();
 
-						handleSubmit();
+						if (
+							!isLoading &&
+							dataListView.name[editingLanguageId]?.trim()
+						) {
+							onSave();
+						}
 					}}
 				>
 					<UpperToolbar>
+						<UpperToolbar.Group>
+							<TranslationManager
+								availableLanguageIds={dataDefinition.availableLanguageIds.reduce(
+									(languages, languageId) => ({
+										...languages,
+										[languageId]: languageId,
+									}),
+									{}
+								)}
+								defaultLanguageId={defaultLanguageId}
+								editingLanguageId={editingLanguageId}
+								onEditingLanguageIdChange={
+									onEditingLanguageIdChange
+								}
+								translatedLanguageIds={dataListView.name}
+							/>
+						</UpperToolbar.Group>
+
 						<UpperToolbar.Input
-							onInput={onInput}
+							onChange={onTableViewNameChange}
 							placeholder={Liferay.Language.get(
 								'untitled-table-view'
 							)}
-							value={dataListViewName}
+							value={dataListView.name[editingLanguageId] || ''}
 						/>
-						<UpperToolbar.Group>
-							<UpperToolbar.Button
-								displayType="secondary"
-								onClick={() => history.goBack()}
-							>
-								{Liferay.Language.get('cancel')}
-							</UpperToolbar.Button>
 
-							<UpperToolbar.Button
-								disabled={dataListViewName.trim() === ''}
-								onClick={handleSubmit}
-							>
-								{Liferay.Language.get('save')}
-							</UpperToolbar.Button>
-						</UpperToolbar.Group>
+						{!popUpWindow && (
+							<UpperToolbar.Group>
+								{actionButtons}
+							</UpperToolbar.Group>
+						)}
 					</UpperToolbar>
 				</form>
 
 				<TableViewSidebar
+					className={classNames('app-builder-table-view__sidebar', {
+						'app-builder-table-view__sidebar--closed': isSidebarClosed,
+					})}
 					onAddFieldName={onAddFieldName}
-					onClose={onCloseSidebar}
+					onToggle={() => setSidebarClosed(!isSidebarClosed)}
 				/>
 
 				<div
-					className={classNames('app-builder-sidebar-content', {
-						closed: isSidebarClosed
+					className={classNames('app-builder-table-view__content', {
+						'app-builder-table-view__content--sidebar-closed': isSidebarClosed,
 					})}
 				>
 					<div className="container table-view-container">
 						<DropZone
-							fields={fieldNames.map(fieldName => ({
-								...dataDefinitionFields.find(
-									({name}) => name === fieldName
-								)
-							}))}
+							fields={getDestructuredFields(
+								dataDefinition,
+								dataListView
+							)}
 							onAddFieldName={onAddFieldName}
 							onRemoveFieldName={onRemoveFieldName}
 						/>
 					</div>
 				</div>
+				{popUpWindow && (
+					<div className="dialog-footer">{actionButtons}</div>
+				)}
 			</Loading>
 		</div>
 	);
 });
 
-export default props => {
+export default (props) => {
 	return (
 		<EditTableViewContextProvider>
 			<EditTableView {...props} />

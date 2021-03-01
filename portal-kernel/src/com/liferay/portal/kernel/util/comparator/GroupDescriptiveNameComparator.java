@@ -49,8 +49,9 @@ public class GroupDescriptiveNameComparator extends OrderByComparator<Group> {
 	public GroupDescriptiveNameComparator(boolean ascending, Locale locale) {
 		_ascending = ascending;
 
-		_collator = CollatorUtil.getInstance(locale);
 		_locale = locale;
+
+		_collator = CollatorUtil.getInstance(locale);
 	}
 
 	@Override
@@ -62,9 +63,9 @@ public class GroupDescriptiveNameComparator extends OrderByComparator<Group> {
 			name1 = group1.getDescriptiveName(_locale);
 			name2 = group2.getDescriptiveName(_locale);
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			if (_log.isDebugEnabled()) {
-				_log.debug(pe, pe);
+				_log.debug(portalException, portalException);
 			}
 		}
 

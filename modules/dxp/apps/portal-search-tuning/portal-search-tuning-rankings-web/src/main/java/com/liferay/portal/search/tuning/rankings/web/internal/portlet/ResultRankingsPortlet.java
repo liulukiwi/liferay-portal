@@ -18,6 +18,7 @@ import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCPortlet;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.search.engine.adapter.SearchEngineAdapter;
+import com.liferay.portal.search.index.IndexNameBuilder;
 import com.liferay.portal.search.legacy.searcher.SearchRequestBuilderFactory;
 import com.liferay.portal.search.query.Queries;
 import com.liferay.portal.search.sort.Sorts;
@@ -25,6 +26,7 @@ import com.liferay.portal.search.tuning.rankings.web.internal.constants.ResultRa
 import com.liferay.portal.search.tuning.rankings.web.internal.display.context.RankingPortletDisplayBuilder;
 import com.liferay.portal.search.tuning.rankings.web.internal.display.context.RankingPortletDisplayContext;
 import com.liferay.portal.search.tuning.rankings.web.internal.index.DocumentToRankingTranslator;
+import com.liferay.portal.search.tuning.rankings.web.internal.index.name.RankingIndexNameBuilder;
 
 import java.io.IOException;
 
@@ -70,8 +72,9 @@ public class ResultRankingsPortlet extends MVCPortlet {
 		RankingPortletDisplayContext rankingPortletDisplayContext =
 			new RankingPortletDisplayBuilder(
 				documentToRankingTranslator,
-				portal.getHttpServletRequest(renderRequest), language, queries,
-				sorts, renderRequest, renderResponse, searchEngineAdapter
+				portal.getHttpServletRequest(renderRequest), language, portal,
+				queries, rankingIndexNameBuilder, sorts, renderRequest,
+				renderResponse, searchEngineAdapter
 			).build();
 
 		renderRequest.setAttribute(
@@ -85,6 +88,9 @@ public class ResultRankingsPortlet extends MVCPortlet {
 	protected DocumentToRankingTranslator documentToRankingTranslator;
 
 	@Reference
+	protected IndexNameBuilder indexNameBuilder;
+
+	@Reference
 	protected Language language;
 
 	@Reference
@@ -92,6 +98,9 @@ public class ResultRankingsPortlet extends MVCPortlet {
 
 	@Reference
 	protected Queries queries;
+
+	@Reference
+	protected RankingIndexNameBuilder rankingIndexNameBuilder;
 
 	@Reference
 	protected SearchEngineAdapter searchEngineAdapter;

@@ -52,13 +52,13 @@ public class ModulesCompileBatchTestClassGroup
 			File moduleBaseDir, File modulesDir) {
 
 			return new ModulesCompileBatchTestClass(
-				new TestClassFile(
+				new File(
 					JenkinsResultsParserUtil.getCanonicalPath(moduleBaseDir)),
 				modulesDir);
 		}
 
 		protected ModulesCompileBatchTestClass(
-			TestClassFile moduleBaseDir, File modulesDir) {
+			File moduleBaseDir, File modulesDir) {
 
 			super(moduleBaseDir);
 
@@ -132,11 +132,11 @@ public class ModulesCompileBatchTestClassGroup
 
 					});
 			}
-			catch (IOException ioe) {
+			catch (IOException ioException) {
 				throw new RuntimeException(
 					"Unable to get module marker files from " +
 						moduleBaseDir.getPath(),
-					ioe);
+					ioException);
 			}
 
 			initTestClassMethods(modulesProjectDirs, modulesDir, "assemble");
@@ -184,7 +184,7 @@ public class ModulesCompileBatchTestClassGroup
 		for (File moduleDir : moduleDirsList) {
 			testClasses.add(
 				ModulesCompileBatchTestClass.getInstance(
-					new TestClass.TestClassFile(
+					new File(
 						JenkinsResultsParserUtil.getCanonicalPath(moduleDir)),
 					portalModulesBaseDir));
 		}

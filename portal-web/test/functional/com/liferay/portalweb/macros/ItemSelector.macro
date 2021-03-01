@@ -1,7 +1,6 @@
 definition {
 
-	macro addFromURL {
-		var key_imageSourceURL = "${imageSourceURL}";
+	macro addAudioFromURL {
 		var key_navTab = "${navTab}";
 
 		SelectFrame(locator1 = "ItemSelector#ITEM_SELECTOR_IFRAME");
@@ -9,6 +8,42 @@ definition {
 		AssertClick(
 			locator1 = "ItemSelector#NAVIGATION_SPECIFIC_TAB",
 			value1 = "URL");
+
+		AssertElementPresent(locator1 = "ItemSelector#URL_LABEL");
+
+		Type(
+			locator1 = "TextInput#URL",
+			value1 = "${audioSourceURL}");
+
+		AssertTextEquals(
+			locator1 = "TextInput#URL",
+			value1 = "${audioSourceURL}");
+
+		Pause(locator1 = "3000");
+
+		AssertElementPresent.pauseAssertVisible(
+			key_text = "Add",
+			locator1 = "Button#ANY_ENABLED");
+
+		Button.clickAdd();
+
+		SelectFrameTop(value1 = "relative=top");
+	}
+
+	macro addImageFromURL {
+		var key_imageSourceURL = "${imageSourceURL}";
+		var key_navTab = "${navTab}";
+
+		SelectFrame(locator1 = "ItemSelector#ITEM_SELECTOR_IFRAME");
+
+		if (isSet(wikiAdmin)) {
+			AssertElementNotPresent(locator1 = "ItemSelector#NAVIGATION_SPECIFIC_TAB");
+		}
+		else {
+			AssertClick(
+				locator1 = "ItemSelector#NAVIGATION_SPECIFIC_TAB",
+				value1 = "URL");
+		}
 
 		AssertElementPresent(locator1 = "ItemSelector#URL_LABEL");
 		AssertElementNotPresent(locator1 = "ItemSelector#URL_IMAGE_PREVIEW");
@@ -21,15 +56,171 @@ definition {
 			locator1 = "TextInput#URL",
 			value1 = "${imageSourceURL}");
 
-		AssertElementPresent.pauseAssertVisible(
-			imageSourceURL = "${imageSourceURL}",
-			locator1 = "ItemSelector#URL_IMAGE_SOURCE");
+		AssertTextEquals(
+			locator1 = "TextInput#URL",
+			value1 = "${imageSourceURL}");
 
-		AssertClick(
-			locator1 = "Button#ADD",
-			value1 = "Add");
+		AssertElementPresent.pauseAssertVisible(locator1 = "ItemSelector#URL_IMAGE_SOURCE");
+
+		if (IsElementPresent(locator1 = "ItemSelector#URL_IMAGE_EXAMPLE")) {
+			Click(locator1 = "ItemSelector#URL_IMAGE_EXAMPLE");
+		}
+
+		MouseOver(
+			key_text = "Add",
+			locator1 = "Button#ANY");
+
+		Button.clickAdd();
 
 		SelectFrameTop(value1 = "relative=top");
+	}
+
+	macro addVideo {
+		SelectFrame(locator1 = "ItemSelector#ITEM_SELECTOR_IFRAME");
+
+		AssertClick(
+			key_navTab = "Documents and Media",
+			locator1 = "ItemSelector#NAVIGATION_SPECIFIC_TAB",
+			value1 = "Documents and Media");
+
+		VideoShortcut.addCP(
+			extractedVideoShortcutTitle = "${extractedVideoShortcutTitle}",
+			videoShortcutDescription = "${videoShortcutDescription}",
+			videoShortcutPreview = "${videoShortcutPreview}",
+			videoShortcutTitle = "${videoShortcutTitle}",
+			videoURL = "${videoURL}");
+
+		Click(
+			key_imageFileName = "${videoShortcutTitle}",
+			locator1 = "ItemSelector#SELECT_FILE_IMAGE_CARD");
+
+		SelectFrameTop(value1 = "relative=top");
+	}
+
+	macro addVideoFromDM {
+		SelectFrame(locator1 = "ItemSelector#ITEM_SELECTOR_IFRAME");
+
+		AssertClick(
+			key_navTab = "${navTab}",
+			locator1 = "ItemSelector#NAVIGATION_SPECIFIC_TAB",
+			value1 = "${navTab}");
+
+		if (isSet(depotName)) {
+			AssertClick(
+				key_breadcrumbName = "Sites and Libraries",
+				locator1 = "Breadcrumb#BREADCRUMB_ENTRY",
+				value1 = "Sites and Libraries");
+
+			AssertClick(
+				key_groupTab = "Asset Library",
+				locator1 = "ItemSelector#NAVIGATION_GROUP_TAB",
+				value1 = "Asset Library");
+
+			LexiconCard.clickCard(card = "${depotName}");
+		}
+
+		if (isSet(videoShortcutPreview)) {
+			Click(
+				key_cardTitle = "${videoShortcutTitle}",
+				locator1 = "Icon#EYE_PREVIEW_SPECIFIC");
+
+			AssertVisible(
+				key_videoShortcutPreview = "${videoShortcutPreview}",
+				locator1 = "DocumentsAndMediaDocument#VIDEO_SHORTCUT_PREVIEW");
+
+			AssertTextEquals(
+				key_imageFileName = "${videoShortcutTitle}",
+				locator1 = "ItemSelector#VIEWER_FOOTER_IMAGE",
+				value1 = "${videoShortcutTitle}");
+
+			AssertClick(
+				locator1 = "ItemSelector#ADD_BUTTON",
+				value1 = "Add");
+		}
+		else {
+			Click(
+				key_imageFileName = "${videoShortcutTitle}",
+				locator1 = "ItemSelector#SELECT_FILE_IMAGE_CARD");
+		}
+
+		SelectFrameTop(value1 = "relative=top");
+	}
+
+	macro addVideoFromURL {
+		var key_navTab = "${navTab}";
+
+		SelectFrame(locator1 = "ItemSelector#ITEM_SELECTOR_IFRAME");
+
+		AssertClick(
+			locator1 = "ItemSelector#NAVIGATION_SPECIFIC_TAB",
+			value1 = "URL");
+
+		AssertElementPresent(locator1 = "ItemSelector#URL_LABEL");
+		AssertElementNotPresent(locator1 = "IFrame#EXTERNAL_VIDEO_IFRAME");
+
+		Type(
+			locator1 = "TextInput#VIDEO_URL",
+			value1 = "${videoSourceURL}");
+
+		Pause(locator1 = "3000");
+
+		if (!(isSet(unpublish))) {
+			AssertElementPresent.pauseAssertVisible(
+				key_text = "Add",
+				locator1 = "Button#ANY_ENABLED");
+
+			Button.clickAdd();
+		}
+
+		SelectFrameTop(value1 = "relative=top");
+	}
+
+	macro changeWorkspaces {
+		if (!(isSet(customImage))) {
+			SelectFrame(locator1 = "ItemSelector#ITEM_SELECTOR_IFRAME");
+		}
+
+		if (isSet(navTab)) {
+			AssertClick(
+				key_navTab = "${navTab}",
+				locator1 = "ItemSelector#NAVIGATION_SPECIFIC_TAB",
+				value1 = "${navTab}");
+		}
+
+		AssertClick(
+			key_breadcrumbName = "Sites and Libraries",
+			locator1 = "Breadcrumb#BREADCRUMB_ENTRY",
+			value1 = "Sites and Libraries");
+
+		AssertClick(
+			key_groupTab = "${workspacesType}",
+			locator1 = "ItemSelector#NAVIGATION_GROUP_TAB",
+			value1 = "${workspacesType}");
+	}
+
+	macro clearFilterResults {
+		Click(locator1 = "Link#CLEAR");
+
+		AssertElementNotPresent(locator1 = "Search#SEARCH_INFO");
+
+		AssertVisible(
+			key_rowEntry = "${currentSiteWebContentTitle}",
+			locator1 = "ContentRow#ENTRY_CONTENT_ENTRY_NAME");
+
+		AssertElementNotPresent(
+			key_rowEntry = "${webContentTitle}",
+			locator1 = "ContentRow#ENTRY_CONTENT_ENTRY_NAME");
+	}
+
+	macro configureFilterViaSelectFile {
+		SelectFrame(locator1 = "ItemSelector#ITEM_SELECTOR_IFRAME");
+
+		AssertClick(
+			key_navTab = "${navTab}",
+			locator1 = "ItemSelector#NAVIGATION_SPECIFIC_TAB",
+			value1 = "${navTab}");
+
+		ManagementBar.setFilterAndOrder(filterBy = "${filterBy}");
 	}
 
 	macro gotoItemSelectorViaAlloyEditor {
@@ -37,7 +228,25 @@ definition {
 
 		Click(locator1 = "AlloyEditor#CONTENT_ADD_BUTTON");
 
-		Click.clickNoMouseOver(locator1 = "AlloyEditor#CONTENT_ADD_MENUBAR_IMAGE");
+		if (isSet(video)) {
+			Click(locator1 = "AlloyEditor#CONTENT_ADD_MENUBAR_VIDEO");
+		}
+		else {
+			Click.clickNoMouseOver(locator1 = "AlloyEditor#CONTENT_ADD_MENUBAR_IMAGE");
+		}
+	}
+
+	macro gotoItemSelectorViaCKEditor {
+		if (isSet(video)) {
+			WaitForLiferayEvent.initializeLiferayEventLog();
+
+			Click.pauseClickAt(locator1 = "CKEditor#CONTENT_VIDEO_IMAGE");
+		}
+		else {
+			Click(locator1 = "CKEditor#TOOLBAR_IMAGE_BUTTON");
+
+			SelectFrame(value1 = "relative=top");
+		}
 	}
 
 	macro gotoItemSelectorViaSelectButton {
@@ -45,10 +254,6 @@ definition {
 	}
 
 	macro gotoPreviewViaSelectFile {
-		BlogsNavigator.gotoAddEntry();
-
-		BlogsNavigator.gotoSelectFile();
-
 		SelectFrame(locator1 = "ItemSelector#ITEM_SELECTOR_IFRAME");
 
 		AssertClick(
@@ -57,6 +262,88 @@ definition {
 			value1 = "${navTab}");
 
 		Click(locator1 = "Icon#EYE_PREVIEW");
+	}
+
+	macro previewEmbeddedVideo {
+		SelectFrame(locator1 = "ItemSelector#ITEM_SELECTOR_IFRAME");
+
+		if (isSet(invalidURL)) {
+			if (contains("${invalidURL}", "youtube")) {
+				SelectFrame.selectFrameNoLoading(locator1 = "IFrame#EXTERNAL_VIDEO_IFRAME");
+
+				Click(locator1 = "Button#YOUTUBE_PLAY");
+
+				AssertTextEquals.assertPartialText(
+					locator1 = "Message#ERROR_INVALID_YOUTUBE_VIDEO",
+					value1 = "An error occurred. Please try again later.");
+			}
+			else if (contains("${invalidURL}", "facebook")) {
+				SelectFrame.selectFrameNoLoading(locator1 = "IFrame#EXTERNAL_VIDEO_IFRAME");
+
+				AssertTextEquals.assertPartialText(
+					locator1 = "Message#ERROR_INVALID_FACEBOOK_VIDEO",
+					value1 = "Video Unavailable");
+			}
+			else if (contains("${invalidURL}", "vimeo")) {
+				SelectFrame.selectFrameNoLoading(locator1 = "IFrame#EXTERNAL_VIDEO_IFRAME");
+
+				AssertTextEquals.assertPartialText(
+					locator1 = "Message#ERROR_INVALID_VIMEO_VIDEO",
+					value1 = "The embed code for this video is not valid.");
+			}
+			else {
+				AssertTextEquals(
+					locator1 = "Message#INFO_EXTERNAL_VIDEO_PREVIEW",
+					value1 = "Sorry, this platform is not supported.");
+			}
+		}
+		else {
+			AssertElementPresent.pauseAssertVisible(
+				key_text = "Add",
+				locator1 = "Button#ANY_ENABLED");
+
+			AssertVisible(
+				key_videoShortcutPreview = "${validURL}",
+				locator1 = "DocumentsAndMediaDocument#VIDEO_SHORTCUT_PREVIEW");
+		}
+
+		SelectFrameTop(value1 = "relative=top");
+	}
+
+	macro previewVideoFromDM {
+		SelectFrame(locator1 = "ItemSelector#ITEM_SELECTOR_IFRAME");
+
+		AssertClick(
+			key_navTab = "${navTab}",
+			locator1 = "ItemSelector#NAVIGATION_SPECIFIC_TAB",
+			value1 = "${navTab}");
+
+		if (isSet(depotName)) {
+			AssertClick(
+				key_breadcrumbName = "Sites and Libraries",
+				locator1 = "Breadcrumb#BREADCRUMB_ENTRY",
+				value1 = "Sites and Libraries");
+
+			AssertClick(
+				key_groupTab = "Asset Library",
+				locator1 = "ItemSelector#NAVIGATION_GROUP_TAB",
+				value1 = "Asset Library");
+
+			LexiconCard.clickCard(card = "${depotName}");
+		}
+
+		Click(
+			key_cardTitle = "${videoShortcutTitle}",
+			locator1 = "Icon#EYE_PREVIEW_SPECIFIC");
+
+		AssertVisible(
+			key_videoShortcutPreview = "${validURL}",
+			locator1 = "DocumentsAndMediaDocument#VIDEO_SHORTCUT_PREVIEW");
+
+		AssertTextEquals(
+			key_imageFileName = "${videoShortcutTitle}",
+			locator1 = "ItemSelector#VIEWER_FOOTER_IMAGE",
+			value1 = "${videoShortcutTitle}");
 	}
 
 	macro searchBlogImages {
@@ -70,7 +357,7 @@ definition {
 			locator1 = "ItemSelector#NAVIGATION_SPECIFIC_TAB",
 			value1 = "Documents and Media");
 
-		AssertElementNotPresent(locator1 = "ItemSelector#SELECT_FILE_IMAGE_PREVIEW");
+		AssertElementNotPresent(locator1 = "ItemSelector#SELECT_FILE_IMAGE_CARD");
 
 		var key_navTab = "Blog Images";
 
@@ -90,7 +377,7 @@ definition {
 			locator1 = "Search#SEARCH_INFO",
 			value1 = "1 Results for ${imageFileName}");
 
-		AssertElementPresent(locator1 = "ItemSelector#SELECT_FILE_IMAGE_PREVIEW");
+		AssertElementPresent(locator1 = "ItemSelector#SELECT_FILE_IMAGE_CARD");
 
 		SelectFrameTop(value1 = "relative=top");
 	}
@@ -143,13 +430,11 @@ definition {
 			locator1 = "ItemSelector#NAVIGATION_SPECIFIC_TAB",
 			value1 = "Blog Images");
 
-		Click(locator1 = "ItemSelector#SELECT_FILE_IMAGE_PREVIEW");
+		Click(locator1 = "ItemSelector#SELECT_FILE_IMAGE_VIEW_BUTTON");
 
 		AssertTextEquals(
-			locator1 = "ItemSelector#CAPTION",
+			locator1 = "ItemSelector#FOOTER",
 			value1 = "${imageFileName}");
-
-		SelectFrameTop(value1 = "relative=top");
 
 		AssertClick(
 			locator1 = "ItemSelector#ADD_BUTTON",
@@ -162,9 +447,11 @@ definition {
 
 		SelectFrame(locator1 = "ItemSelector#ITEM_SELECTOR_IFRAME");
 
-		AssertClick(
-			locator1 = "ItemSelector#NAVIGATION_SPECIFIC_TAB",
-			value1 = "Documents and Media");
+		if (IsElementPresent(locator1 = "ItemSelector#NAVIGATION_SPECIFIC_TAB")) {
+			AssertClick(
+				locator1 = "ItemSelector#NAVIGATION_SPECIFIC_TAB",
+				value1 = "${navTab}");
+		}
 
 		if (isSet(dmFolderName)) {
 			var key_dmFolderName = "${dmFolderName}";
@@ -188,28 +475,20 @@ definition {
 	}
 
 	macro selectRepositoryImage {
-		var key_navTab = "Documents and Media";
 		var key_imageFileName = "${imageFileName}";
 
-		SelectFrame(locator1 = "ItemSelector#ITEM_SELECTOR_IFRAME");
-
-		AssertClick(
-			locator1 = "ItemSelector#NAVIGATION_SPECIFIC_TAB",
-			value1 = "Documents and Media");
-
-		AssertClick(
-			key_breadcrumbName = "Workspaces",
-			locator1 = "Breadcrumb#BREADCRUMB_ENTRY",
-			value1 = "Workspaces");
-
-		AssertClick(
-			key_groupTab = "Repository",
-			locator1 = "ItemSelector#NAVIGATION_GROUP_TAB",
-			value1 = "Repository");
+		ItemSelector.changeWorkspaces(
+			customImage = "${customImage}",
+			navTab = "${navTab}",
+			workspacesType = "Asset Library");
 
 		LexiconCard.clickCard(card = "${depotName}");
 
-		Click(locator1 = "ItemSelector#SELECT_FILE_IMAGE_PREVIEW");
+		if (isSet(folderName)) {
+			LexiconCard.clickCard(card = "${folderName}");
+		}
+
+		Click(locator1 = "ItemSelector#SELECT_FILE_IMAGE_CARD");
 	}
 
 	macro uploadFile {
@@ -218,9 +497,11 @@ definition {
 
 		SelectFrame(locator1 = "ItemSelector#ITEM_SELECTOR_IFRAME");
 
-		AssertClick(
-			locator1 = "ItemSelector#NAVIGATION_SPECIFIC_TAB",
-			value1 = "${navTab}");
+		if (IsElementPresent(locator1 = "ItemSelector#NAVIGATION_SPECIFIC_TAB")) {
+			AssertClick(
+				locator1 = "ItemSelector#NAVIGATION_SPECIFIC_TAB",
+				value1 = "${navTab}");
+		}
 
 		AssertElementPresent(locator1 = "ItemSelector#SELECT_FILE_UPLOAD_IMAGE");
 
@@ -228,9 +509,31 @@ definition {
 			locator1 = "TextInput#FILE",
 			value1 = "${uploadFileName}");
 
-		AssertClick(
-			locator1 = "ItemSelector#ADD_BUTTON",
-			value1 = "Add");
+		if (isSet(invalidFileValidation)) {
+			AssertTextEquals(
+				key_alertMessage = "${invalidFileValidation}",
+				locator1 = "Message#ERROR_ENTER_A_VALID_VALUE",
+				value1 = "${invalidFileValidation}");
+
+			AssertElementNotPresent(
+				locator1 = "ItemSelector#ADD_BUTTON",
+				value1 = "Add");
+
+			SelectFrame(value1 = "relative=top");
+
+			Click.clickNoMouseOver(locator1 = "Modal#CLOSE_BUTTON");
+		}
+		else {
+			Pause(locator1 = "5000");
+
+			AssertElementPresent.pauseAssertVisible(
+				locator1 = "ItemSelector#ADD_BUTTON",
+				value1 = "Add");
+
+			AssertClick(
+				locator1 = "ItemSelector#ADD_BUTTON",
+				value1 = "Add");
+		}
 	}
 
 	macro viewBlogImageDetails {
@@ -239,9 +542,11 @@ definition {
 
 		SelectFrame(locator1 = "ItemSelector#ITEM_SELECTOR_IFRAME");
 
-		AssertElementPresent(locator1 = "ItemSelector#SELECT_FILE_IMAGE_PREVIEW");
+		AssertElementPresent(locator1 = "ItemSelector#SELECT_FILE_IMAGE_CARD");
 
 		Click(locator1 = "Icon#EYE_PREVIEW");
+
+		AssertElementPresent.assertVisible(locator1 = "ItemSelector#VIEWER_INFO");
 
 		Click(locator1 = "ItemSelector#VIEWER_INFO");
 
@@ -286,6 +591,241 @@ definition {
 		SelectFrameTop(value1 = "relative=top");
 	}
 
+	macro viewCardThumbnails {
+		if (isSet(depotName)) {
+			ItemSelector.changeWorkspaces(
+				customImage = "${customImage}",
+				navTab = "${navTab}",
+				workspacesType = "Asset Library");
+
+			LexiconCard.clickCard(card = "${depotName}");
+		}
+		else {
+			SelectFrame(locator1 = "ItemSelector#ITEM_SELECTOR_IFRAME");
+		}
+
+		LexiconEntry.changeDisplayStyle(displayStyle = "cards");
+
+		for (var card : list "${cardList}") {
+			LexiconCard.viewCardThumbnail(card = "${card}");
+		}
+	}
+
+	macro viewCurrentSiteFilterResults {
+		SelectFrame(locator1 = "ItemSelector#ITEM_SELECTOR_IFRAME");
+
+		if (isSet(navTab)) {
+			AssertClick(
+				key_navTab = "${navTab}",
+				locator1 = "ItemSelector#NAVIGATION_SPECIFIC_TAB",
+				value1 = "${navTab}");
+		}
+
+		LexiconEntry.changeDisplayStyle(displayStyle = "cards");
+
+		AssertVisible(
+			key_imageFileName = "${imageFileName}",
+			locator1 = "ItemSelector#SELECT_FILE_IMAGE_CARD");
+
+		AssertElementNotPresent(
+			key_imageFileName = "${noImageFileName}",
+			locator1 = "ItemSelector#SELECT_FILE_IMAGE_CARD");
+
+		ManagementBar.setFilterAndOrder(filterBy = "Current Site");
+
+		AssertVisible(
+			key_imageFileName = "${imageFileName}",
+			locator1 = "ItemSelector#SELECT_FILE_IMAGE_CARD");
+
+		AssertElementNotPresent(
+			key_imageFileName = "${noImageFileName}",
+			locator1 = "ItemSelector#SELECT_FILE_IMAGE_CARD");
+
+		if (isSet(viewNoLocationInfo)) {
+			AssertElementNotPresent(
+				key_locationName = "${viewNoLocationInfo}",
+				key_title = "${imageFileName}",
+				locator1 = "ItemSelector#LOCATION_INFO_CARDS",
+				value1 = "${viewNoLocationInfo}");
+		}
+
+		AssertElementNotPresent(locator1 = "Search#SEARCH_INFO");
+
+		AssertVisible(
+			key_imageFileName = "${imageFileName}",
+			locator1 = "ItemSelector#SELECT_FILE_IMAGE_CARD");
+	}
+
+	macro viewEverywhereFilterResults {
+		SelectFrame(locator1 = "ItemSelector#ITEM_SELECTOR_IFRAME");
+
+		if (isSet(navTab)) {
+			AssertClick(
+				key_navTab = "${navTab}",
+				locator1 = "ItemSelector#NAVIGATION_SPECIFIC_TAB",
+				value1 = "${navTab}");
+		}
+
+		ManagementBar.setFilterAndOrder(filterBy = "Everywhere");
+
+		LexiconEntry.changeDisplayStyle(displayStyle = "cards");
+
+		if (isSet(dmFolderName)) {
+			Click(
+				key_card = "${dmFolderName}",
+				locator1 = "Card#CARD_TITLE");
+		}
+
+		AssertVisible(
+			key_imageFileName = "${imageFileName}",
+			locator1 = "ItemSelector#SELECT_FILE_IMAGE_CARD");
+	}
+
+	macro viewExternalVideoInDifferentViews {
+		SelectFrame(locator1 = "ItemSelector#ITEM_SELECTOR_IFRAME");
+
+		if (isSet(navTab)) {
+			AssertClick(
+				key_navTab = "${navTab}",
+				locator1 = "ItemSelector#NAVIGATION_SPECIFIC_TAB",
+				value1 = "${navTab}");
+		}
+
+		LexiconEntry.changeDisplayStyle(displayStyle = "cards");
+
+		for (var videoShortcutTitle : list "${videoShortcutList}") {
+			LexiconCard.viewCardTitle(card = "${videoShortcutTitle}");
+		}
+
+		LexiconEntry.changeDisplayStyle(displayStyle = "list");
+
+		for (var videoShortcutTitle : list "${videoShortcutList}") {
+			LexiconList.viewListEntryTitle(listEntry = "${videoShortcutTitle}");
+		}
+
+		LexiconEntry.changeDisplayStyle(displayStyle = "table");
+
+		for (var videoShortcutTitle : list "${videoShortcutList}") {
+			AssertTextEquals.assertPartialText(
+				key_tableEntry = "${videoShortcutTitle}",
+				locator1 = "LexiconTable#TABLE_ENTRY_TITLE",
+				value1 = "${videoShortcutTitle}");
+		}
+	}
+
+	macro viewListThumbnails {
+		if (isSet(depotName)) {
+			ItemSelector.changeWorkspaces(
+				customImage = "${customImage}",
+				navTab = "${navTab}",
+				workspacesType = "Asset Library");
+
+			LexiconCard.clickCard(card = "${depotName}");
+		}
+		else {
+			SelectFrame(locator1 = "ItemSelector#ITEM_SELECTOR_IFRAME");
+		}
+
+		LexiconEntry.changeDisplayStyle(displayStyle = "list");
+
+		for (var list : list "${listEntry}") {
+			AssertVisible(
+				key_list = "${list}",
+				locator1 = "DocumentsAndMediaDocument#VIDEO_SHORTCUT_THUMBNAIL_LIST");
+		}
+	}
+
+	macro viewLocationInfoViaBlogs {
+		SelectFrame(locator1 = "ItemSelector#ITEM_SELECTOR_IFRAME");
+
+		if (isSet(navTab)) {
+			AssertClick(
+				key_navTab = "${navTab}",
+				locator1 = "ItemSelector#NAVIGATION_SPECIFIC_TAB",
+				value1 = "${navTab}");
+		}
+
+		ManagementBar.setFilterAndOrder(filterBy = "Everywhere");
+
+		LexiconEntry.changeDisplayStyle(displayStyle = "cards");
+
+		for (var title : list "${titleList}") {
+			AssertTextEquals(
+				key_locationName = "${locationName}",
+				key_title = "${title}",
+				locator1 = "ItemSelector#LOCATION_INFO_CARDS",
+				value1 = "${locationName}");
+		}
+
+		LexiconEntry.changeDisplayStyle(displayStyle = "list");
+
+		for (var title : list "${titleList}") {
+			AssertTextEquals(
+				key_locationName = "${locationName}",
+				key_title = "${title}",
+				locator1 = "ItemSelector#LOCATION_INFO_LIST",
+				value1 = "${locationName}");
+		}
+
+		LexiconEntry.changeDisplayStyle(displayStyle = "table");
+
+		for (var title : list "${titleList}") {
+			AssertTextEquals(
+				key_locationName = "${locationName}",
+				key_title = "${title}",
+				locator1 = "ItemSelector#LOCATION_INFO_TABLE",
+				value1 = "${locationName}");
+		}
+	}
+
+	macro viewLocationInfoViaWCD {
+		Portlet.gotoPortletOptions(
+			portletName = "Web Content Display",
+			portletOption = "Configuration");
+
+		SelectFrame.selectFrameNoLoading(locator1 = "IFrame#MODAL_BODY");
+
+		AssertClick(
+			locator1 = "WCDConfiguration#SELECT_WEB_CONTENT_BUTTON",
+			value1 = "Select");
+
+		WaitForElementPresent(locator1 = "IFrame#MODAL_BODY");
+
+		SelectFrame.selectFrameNoLoading(locator1 = "IFrame#MODAL_BODY");
+
+		ManagementBar.setFilterAndOrder(filterBy = "Everywhere");
+
+		LexiconEntry.changeDisplayStyle(displayStyle = "cards");
+
+		for (var title : list "${titleList}") {
+			AssertTextEquals(
+				key_locationName = "${locationName}",
+				key_title = "${title}",
+				locator1 = "ItemSelector#LOCATION_INFO_CARDS_2",
+				value1 = "${locationName}");
+		}
+
+		LexiconEntry.changeDisplayStyle(displayStyle = "list");
+
+		for (var title : list "${titleList}") {
+			AssertTextEquals(
+				key_locationName = "${locationName}",
+				key_title = "${title}",
+				locator1 = "ItemSelector#LOCATION_INFO_LIST",
+				value1 = "${locationName}");
+		}
+
+		LexiconEntry.changeDisplayStyle(displayStyle = "table");
+
+		for (var title : list "${titleList}") {
+			AssertTextEquals(
+				key_locationName = "${locationName}",
+				key_title = "${title}",
+				locator1 = "ItemSelector#LOCATION_INFO_TABLE",
+				value1 = "${locationName}");
+		}
+	}
+
 	macro viewPreview {
 		AssertElementPresent(
 			key_footer = "${footer}",
@@ -296,14 +836,87 @@ definition {
 			locator1 = "ItemSelector#VIEWER_FOOTER_IMAGE");
 	}
 
+	macro viewWCCurrentSiteFilterResults {
+		LexiconEntry.changeDisplayStyle(displayStyle = "list");
+
+		AssertVisible(
+			key_rowEntry = "${webContentTitle}",
+			locator1 = "ContentRow#ENTRY_CONTENT_ENTRY_NAME");
+
+		AssertElementNotPresent(
+			key_rowEntry = "${noWebContentTitle}",
+			locator1 = "ContentRow#ENTRY_CONTENT_ENTRY_NAME");
+
+		ManagementBar.setFilterAndOrder(filterBy = "Current Site");
+
+		AssertVisible(
+			key_rowEntry = "${webContentTitle}",
+			locator1 = "ContentRow#ENTRY_CONTENT_ENTRY_NAME");
+
+		AssertElementNotPresent(
+			key_rowEntry = "${noWebContentTitle}",
+			locator1 = "ContentRow#ENTRY_CONTENT_ENTRY_NAME");
+
+		if (isSet(viewNoLocationInfo)) {
+			AssertElementNotPresent(
+				key_locationName = "${viewNoLocationInfo}",
+				key_title = "${webContentTitle}",
+				locator1 = "ItemSelector#LOCATION_INFO_CARDS_2",
+				value1 = "${viewNoLocationInfo}");
+		}
+
+		AssertElementNotPresent(locator1 = "Search#SEARCH_INFO");
+
+		AssertVisible(
+			key_rowEntry = "${webContentTitle}",
+			locator1 = "ContentRow#ENTRY_CONTENT_ENTRY_NAME");
+	}
+
+	macro viewWCEverywhereFilterResults {
+		SelectFrame(locator1 = "ItemSelector#ITEM_SELECTOR_IFRAME");
+
+		ManagementBar.setFilterAndOrder(filterBy = "Everywhere");
+
+		LexiconEntry.changeDisplayStyle(displayStyle = "list");
+
+		if (isSet(draft)) {
+			AssertElementNotPresent(
+				key_rowEntry = "${webContentTitle}",
+				locator1 = "ContentRow#ENTRY_CONTENT_ENTRY_NAME");
+
+			AssertTextEquals(
+				locator1 = "Message#EMPTY_INFO",
+				value1 = "No web content was found.");
+		}
+		else {
+			for (var webContentTitle : list "${webContentTitle}") {
+				AssertVisible(
+					key_rowEntry = "${webContentTitle}",
+					locator1 = "ContentRow#ENTRY_CONTENT_ENTRY_NAME");
+			}
+		}
+
+		if (isSet(viewFolderWC)) {
+			Click(
+				key_rowEntry = "${wcFolderName}",
+				locator1 = "ContentRow#ENTRY_CONTENT_ENTRY_NAME");
+
+			AssertVisible(
+				key_breadcrumbName = "${siteName}",
+				locator1 = "Breadcrumb#BREADCRUMB_ENTRY");
+
+			Breadcrumb.viewActiveEntry(breadcrumbName = "${wcFolderName}");
+
+			AssertVisible(
+				key_rowEntry = "${folderWebContentTitle}",
+				locator1 = "ContentRow#ENTRY_CONTENT_ENTRY_NAME");
+		}
+	}
+
 	macro viewWikiAttachment {
 		var key_imageFileName = "${imageFileName}";
 
-		AlloyEditor.clickContentField();
-
-		Click(locator1 = "AlloyEditor#CONTENT_ADD_BUTTON");
-
-		Click.clickNoMouseOver(locator1 = "AlloyEditor#CONTENT_ADD_MENUBAR_IMAGE");
+		ItemSelector.gotoItemSelectorViaCKEditor();
 
 		SelectFrame(locator1 = "ItemSelector#ITEM_SELECTOR_IFRAME");
 
@@ -311,7 +924,7 @@ definition {
 
 		AssertElementPresent(
 			key_imageFileName = "${imageFileName}",
-			locator1 = "ItemSelector#SELECT_FILE_IMAGE_PREVIEW");
+			locator1 = "ItemSelector#SELECT_FILE_IMAGE_CARD");
 	}
 
 }

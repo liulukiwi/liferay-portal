@@ -19,14 +19,15 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.tools.rest.builder.internal.freemarker.tool.java.JavaMethodParameter;
 import com.liferay.portal.tools.rest.builder.internal.freemarker.tool.java.JavaMethodSignature;
 import com.liferay.portal.tools.rest.builder.internal.freemarker.tool.java.parser.util.OpenAPIParserUtil;
+import com.liferay.portal.tools.rest.builder.internal.freemarker.util.OpenAPIUtil;
+import com.liferay.portal.tools.rest.builder.internal.yaml.config.ConfigYAML;
+import com.liferay.portal.tools.rest.builder.internal.yaml.openapi.Components;
+import com.liferay.portal.tools.rest.builder.internal.yaml.openapi.OpenAPIYAML;
+import com.liferay.portal.tools.rest.builder.internal.yaml.openapi.Operation;
+import com.liferay.portal.tools.rest.builder.internal.yaml.openapi.Parameter;
+import com.liferay.portal.tools.rest.builder.internal.yaml.openapi.Schema;
 import com.liferay.portal.vulcan.pagination.Page;
 import com.liferay.portal.vulcan.pagination.Pagination;
-import com.liferay.portal.vulcan.yaml.config.ConfigYAML;
-import com.liferay.portal.vulcan.yaml.openapi.Components;
-import com.liferay.portal.vulcan.yaml.openapi.OpenAPIYAML;
-import com.liferay.portal.vulcan.yaml.openapi.Operation;
-import com.liferay.portal.vulcan.yaml.openapi.Parameter;
-import com.liferay.portal.vulcan.yaml.openapi.Schema;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -34,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Predicate;
 
@@ -43,14 +45,21 @@ import java.util.function.Predicate;
 public class GraphQLOpenAPIParser {
 
 	public static List<JavaMethodSignature> getJavaMethodSignatures(
-		ConfigYAML configYAML, OpenAPIYAML openAPIYAML,
-		Predicate<Operation> predicate) {
+			ConfigYAML configYAML, OpenAPIYAML openAPIYAML,
+			Predicate<Operation> predicate)
+		throws Exception {
 
 		List<JavaMethodSignature> javaMethodSignatures = new ArrayList<>();
 
+		Map<String, Schema> schemas = new TreeMap<>();
+
 		Components components = openAPIYAML.getComponents();
 
-		Map<String, Schema> schemas = components.getSchemas();
+		if (components != null) {
+			schemas.putAll(components.getSchemas());
+		}
+
+		schemas.putAll(OpenAPIUtil.getAllExternalSchemas(openAPIYAML));
 
 		for (String schemaName : schemas.keySet()) {
 			javaMethodSignatures.addAll(

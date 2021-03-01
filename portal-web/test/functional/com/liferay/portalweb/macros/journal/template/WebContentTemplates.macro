@@ -4,11 +4,25 @@ definition {
 	macro _addFields {
 		if (isSet(templateFieldNames)) {
 			for (var fieldName : list "${templateFieldNames}") {
-				var key_fieldName = "${fieldName}";
+				var key_panelTitle = "Fields";
+				var key_variableName = "${fieldName}";
 
 				AssertClick(
-					locator1 = "DDMEditTemplate#SCRIPT_FIELD",
+					locator1 = "DDMEditTemplate#WEB_CONTENT_SCRIPT_VARIABLE",
 					value1 = "${fieldName}");
+			}
+		}
+	}
+
+	macro _addGeneralVariables {
+		if (isSet(generalVariables)) {
+			for (var generalVariable : list "${generalVariables}") {
+				var key_panelTitle = "General Variables";
+				var key_variableName = "${generalVariable}";
+
+				AssertClick(
+					locator1 = "DDMEditTemplate#WEB_CONTENT_SCRIPT_VARIABLE",
+					value1 = "${generalVariable}");
 			}
 		}
 	}
@@ -23,21 +37,28 @@ definition {
 	@summary = "Helper function to link structure '${structureName}' to the template"
 	macro _inputStructure {
 		if (isSet(structureName)) {
+			WaitForLiferayEvent.initializeLiferayEventLog();
+
 			AssertClick(
 				locator1 = "DDMEditTemplate#DETAILS_SELECT_STRUCTURE",
 				value1 = "Select");
 
-			SelectFrameTop();
-
-			SelectFrame(locator1 = "IFrame#DIALOG");
-
-			Click(locator1 = "Icon#BASIC_SEARCH");
+			SelectFrame(locator1 = "IFrame#MODAL_BODY");
 
 			var key_ddlDataDefinitionName = "${structureName}";
 
-			AssertClickNoError(
-				locator1 = "DDMSelectStructure#DDM_STRUCTURE_TABLE_NAME_LINK",
-				value1 = "${structureName}");
+			AssertElementPresent(locator1 = "DDMSelectStructure#DDM_STRUCTURE_TABLE_NAME_LINK");
+
+			var browserType = PropsUtil.get("browser.type");
+
+			if ("${browserType}" == "safari") {
+				Click.javaScriptClick(locator1 = "DDMSelectStructure#DDM_STRUCTURE_TABLE_NAME_LINK");
+			}
+			else {
+				AssertClick.assertTextClickAt(
+					locator1 = "DDMSelectStructure#DDM_STRUCTURE_TABLE_NAME_LINK",
+					value1 = "${structureName}");
+			}
 
 			SelectFrameTop();
 		}
@@ -47,7 +68,7 @@ definition {
 	macro _inputTemplateFile {
 		if (isSet(templateFile)) {
 			UploadCommonFile(
-				locator1 = "DDMEditTemplate#SCRIPT_FILE_FIELD",
+				locator1 = "DDMEditTemplate#WEB_CONTENT_SCRIPT_FILE_FIELD",
 				value1 = "${templateFile}");
 		}
 	}
@@ -57,6 +78,7 @@ definition {
 		LexiconEntry.gotoAdd();
 
 		WebContentTemplates.inputTemplateAddScreenFields(
+			generalVariables = "${generalVariables}",
 			imageSourceURL = "${imageSourceURL}",
 			structureName = "${structureName}",
 			templateDescription = "${templateDescription}",
@@ -66,7 +88,7 @@ definition {
 			templateName = "${templateName}",
 			templateScript = "${templateScript}");
 
-		DDLDataDefinition.save(changeListEnabled = "${changeListEnabled}");
+		DDLDataDefinition.save(publicationsEnabled = "${publicationsEnabled}");
 	}
 
 	@summary = "Attempt to add a blank template"
@@ -88,7 +110,7 @@ definition {
 			item = "Permissions",
 			templateName = "${templateName}");
 
-		SelectFrame(locator1 = "IFrame#DIALOG");
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
 
 		PermissionsInline.addOrRemoveViewPermissionFromAllRoles(
 			addOrRemoveViewPermission = "Add",
@@ -101,7 +123,9 @@ definition {
 	macro deleteCP {
 		var key_ddlTemplateName = "${templateName}";
 
-		Click(locator1 = "Icon#VERTICAL_ELLIPSIS_BUTTON");
+		Click(
+			key_card = "${templateName}",
+			locator1 = "Card#CARD_ELLIPSIS");
 
 		MenuItem.clickNoError(menuItem = "Delete");
 
@@ -121,6 +145,12 @@ definition {
 
 	@summary = "Click on '${templateName}' ellipsis > '${item}'"
 	macro gotoTemplateEllipsisItem {
+		LexiconEntry.changeDisplayStyle(displayStyle = "cards");
+
+		if ("${item}" == "Permissions") {
+			WaitForLiferayEvent.initializeLiferayEventLog();
+		}
+
 		LexiconCard.clickEllipsisItem(
 			card = "${templateName}",
 			item = "${item}");
@@ -129,8 +159,8 @@ definition {
 	@summary = "Type '${templateScript}' into the template ACE editor field"
 	macro inputScript {
 		if (isSet(templateScript)) {
-			Type.typeAceEditor(
-				locator1 = "DDMEditTemplate#SCRIPT_CONTENT_FIELD",
+			Type.typeCodeMirrorEditorNoError(
+				locator1 = "DDMEditTemplate#CODE_MIRROR_EDITOR",
 				value1 = "${templateScript}");
 		}
 	}
@@ -158,6 +188,8 @@ definition {
 		}
 		else {
 			WebContentTemplates._addFields(templateFieldNames = "${templateFieldNames}");
+
+			WebContentTemplates._addGeneralVariables(generalVariables = "${generalVariables}");
 
 			WebContentTemplates._inputTemplateFile(templateFile = "${templateFile}");
 		}
@@ -205,7 +237,7 @@ definition {
 			templateName = "${templateName}",
 			templateScript = "${templateScript}");
 
-		DDLDataDefinition.save(changeListEnabled = "${changeListEnabled}");
+		DDLDataDefinition.save(publicationsEnabled = "${publicationsEnabled}");
 	}
 
 	@summary = "Open Web Content Templates admin page for the site '${siteURLKey}'"
@@ -219,7 +251,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Web Content");
 
 		Navigator.gotoNavItem(navItem = "Templates");
@@ -338,8 +369,8 @@ definition {
 			}
 
 			if (isSet(templateScript)) {
-				AssertTextEquals.assertPartialTextAceEditor(
-					locator1 = "DDMEditTemplate#SCRIPT_CONTENT_FIELD",
+				AssertTextEquals.assertPartialText(
+					locator1 = "DDMEditTemplate#CODE_MIRROR_EDITOR_CONTENT",
 					value1 = "${templateScript}");
 			}
 		}

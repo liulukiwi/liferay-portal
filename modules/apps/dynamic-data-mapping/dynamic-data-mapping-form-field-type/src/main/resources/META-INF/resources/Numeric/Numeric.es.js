@@ -12,316 +12,222 @@
  * details.
  */
 
-import '../FieldBase/FieldBase.es';
-
-import './NumericRegister.soy.js';
-
-import Component from 'metal-component';
-import Soy from 'metal-soy';
-import {Config} from 'metal-state';
+import {ClayInput} from '@clayui/form';
+import {usePrevious} from '@liferay/frontend-js-react-web';
+import React, {useEffect, useRef, useState} from 'react';
 import createNumberMask from 'text-mask-addons/dist/createNumberMask';
 import vanillaTextMask from 'vanilla-text-mask';
 
-import templates from './Numeric.soy.js';
+import {FieldBase} from '../FieldBase/ReactFieldBase.es';
 
-class Numeric extends Component {
-	applyMask() {
-		const {dataType, element, symbols} = this;
-		const inputElement = element.querySelector('input');
-		const {value} = inputElement;
-
-		if (dataType === 'integer' && value) {
-			inputElement.value = Math.round(
-				value.replace(symbols.decimalSymbol, '.')
-			);
-		}
-
-		const mask = createNumberMask(this.getMaskConfig(dataType));
-
-		this.maskInstance = vanillaTextMask({
-			inputElement,
-			mask
-		});
-
-		this.setState({value: inputElement.value});
-	}
-
-	disposed() {
-		this.disposeMask();
-	}
-
-	disposeMask() {
-		if (this.maskInstance) {
-			this.maskInstance.destroy();
-		}
-	}
-
-	getMaskConfig(dataType) {
-		const {symbols} = this;
-
-		let config = {
-			allowLeadingZeroes: true,
-			includeThousandsSeparator: false,
-			prefix: ''
-		};
-
-		if (dataType === 'double') {
-			config = {
-				...config,
-				allowDecimal: true,
-				decimalLimit: null,
-				decimalSymbol: symbols.decimalSymbol
-			};
-		}
-
-		return config;
-	}
-
-	syncDataType() {
-		const {visible} = this;
-
-		this.syncVisible(visible);
-	}
-
-	syncVisible(visible) {
-		if (visible) {
-			this.applyMask();
-		} else {
-			this.disposeMask();
-		}
-	}
-
-	willReceiveState(changes) {
-		if (changes.value) {
-			this.setState({
-				_value: changes.value.newVal
-			});
-		}
-	}
-
-	_handleFieldBlurred(event) {
-		this.emit('fieldBlurred', {
-			fieldInstance: this,
-			originalEvent: event,
-			value: event.target.value
-		});
-	}
-
-	_handleFieldChanged(event) {
-		const value = event.target.value;
-
-		if (value.substr(-1) === this.symbols.decimalSymbol) {
-			return;
-		}
-
-		this.setState(
-			{
-				value
-			},
-			() =>
-				this.emit('fieldEdited', {
-					fieldInstance: this,
-					originalEvent: event,
-					value
-				})
-		);
-	}
-
-	_handleFieldFocused(event) {
-		this.emit('fieldFocused', {
-			fieldInstance: this,
-			originalEvent: event,
-			value: event.target.value
-		});
-	}
-
-	_internalValueFn() {
-		const {value} = this;
-
+const getGenericValue = (symbols, value) => {
+	if (typeof value === 'number' || !symbols) {
 		return value;
 	}
-}
 
-Numeric.STATE = {
-	/**
-	 * @default undefined
-	 * @instance
-	 * @memberof Text
-	 * @type {?(string|undefined)}
-	 */
-
-	_value: Config.oneOfType([Config.number(), Config.string()])
-		.internal()
-		.valueFn('_internalValueFn'),
-
-	/**
-	 * @default 'integer'
-	 * @instance
-	 * @memberof Numeric
-	 * @type {string}
-	 */
-
-	dataType: Config.string().value('integer'),
-
-	/**
-	 * @default false
-	 * @instance
-	 * @memberof Numeric
-	 * @type {?bool}
-	 */
-
-	evaluable: Config.bool().value(false),
-
-	/**
-	 * @default undefined
-	 * @instance
-	 * @memberof Numeric
-	 * @type {?(string|undefined)}
-	 */
-
-	fieldName: Config.string(),
-
-	/**
-	 * @default undefined
-	 * @instance
-	 * @memberof Numeric
-	 * @type {?(string|undefined)}
-	 */
-
-	id: Config.string(),
-
-	/**
-	 * @default undefined
-	 * @instance
-	 * @memberof Numeric
-	 * @type {?(string|undefined)}
-	 */
-
-	label: Config.string(),
-
-	/**
-	 * @default undefined
-	 * @instance
-	 * @memberof Numeric
-	 * @type {?(string|undefined)}
-	 */
-
-	name: Config.string().required(),
-
-	/**
-	 * @default undefined
-	 * @instance
-	 * @memberof Numeric
-	 * @type {?(string|undefined)}
-	 */
-
-	placeholder: Config.string(),
-
-	/**
-	 * @instance
-	 * @memberof Numeric
-	 * @type {?(string)}
-	 */
-
-	predefinedValue: Config.oneOfType([Config.number(), Config.string()]),
-
-	/**
-	 * @default false
-	 * @instance
-	 * @memberof Numeric
-	 * @type {?bool}
-	 */
-
-	readOnly: Config.bool().value(false),
-
-	/**
-	 * @default undefined
-	 * @instance
-	 * @memberof FieldBase
-	 * @type {?(bool|undefined)}
-	 */
-
-	repeatable: Config.bool(),
-
-	/**
-	 * @default false
-	 * @instance
-	 * @memberof Numeric
-	 * @type {?(bool|undefined)}
-	 */
-
-	required: Config.bool().value(false),
-
-	/**
-	 * @default true
-	 * @instance
-	 * @memberof Numeric
-	 * @type {?(bool|undefined)}
-	 */
-
-	showLabel: Config.bool().value(true),
-
-	/**
-	 * @default undefined
-	 * @instance
-	 * @memberof Numeric
-	 * @type {?(string|undefined)}
-	 */
-
-	spritemap: Config.string(),
-
-	/**
-	 * @default object
-	 * @instance
-	 * @memberof Numeric
-	 * @type {object}
-	 */
-
-	symbols: Config.shapeOf({
-		decimalSymbol: Config.string(),
-		thousandsSeparator: Config.string()
-	}).value({
-		decimalSymbol: '.',
-		thousandsSeparator: ','
-	}),
-
-	/**
-	 * @default undefined
-	 * @instance
-	 * @memberof Numeric
-	 * @type {?(string|undefined)}
-	 */
-
-	tip: Config.string(),
-
-	/**
-	 * @default undefined
-	 * @instance
-	 * @memberof FieldBase
-	 * @type {?(string|undefined)}
-	 */
-
-	tooltip: Config.string(),
-
-	/**
-	 * @default undefined
-	 * @instance
-	 * @memberof Text
-	 * @type {?(string|undefined)}
-	 */
-
-	type: Config.string().value('numeric'),
-
-	/**
-	 * @default undefined
-	 * @instance
-	 * @memberof Numeric
-	 * @type {?(string|undefined)}
-	 */
-
-	value: Config.oneOfType([Config.number(), Config.string()])
+	return value.replace(symbols.decimalSymbol, '$[DECIMAL_SYMBOL]');
 };
 
-Soy.register(Numeric, templates);
+const getMaskConfig = (dataType, symbols) => {
+	let config = {
+		allowLeadingZeroes: true,
+		allowNegative: true,
+		includeThousandsSeparator: false,
+		prefix: '',
+	};
 
-export default Numeric;
+	if (dataType === 'double') {
+		config = {
+			...config,
+			allowDecimal: true,
+			decimalLimit: null,
+			decimalSymbol: symbols.decimalSymbol,
+		};
+	}
+
+	return config;
+};
+
+const getValue = (dataType, symbols, value) => {
+	let decimalSymbol = symbols.decimalSymbol;
+
+	let newValue;
+
+	if (typeof value === 'number') {
+		newValue = `${value}`;
+		newValue = newValue.replace('.', decimalSymbol);
+	}
+	else {
+		newValue = value;
+	}
+
+	if (newValue && !newValue.includes('.') && decimalSymbol != ',') {
+		decimalSymbol = ',';
+	}
+
+	newValue = newValue.replace('$[DECIMAL_SYMBOL]', decimalSymbol);
+
+	if (dataType === 'integer' && newValue) {
+		newValue = String(Math.round(newValue.replace(decimalSymbol, '.')));
+	}
+
+	return newValue;
+};
+
+const Numeric = ({
+	dataType = 'integer',
+	defaultLanguageId,
+	disabled,
+	editingLanguageId,
+	localizable,
+	localizedValue,
+	onChange,
+	symbols = {
+		decimalSymbol: '.',
+		thousandsSeparator: ',',
+	},
+	value,
+	...otherProps
+}) => {
+	const [currentValue, setCurrentValue] = useState(value);
+	const inputRef = useRef(null);
+
+	const prevEditingLanguageId = usePrevious(editingLanguageId);
+	const prevSymbols = usePrevious(symbols);
+
+	useEffect(() => {
+		if (prevEditingLanguageId !== editingLanguageId && localizable) {
+			let newValue =
+				localizedValue[editingLanguageId] !== undefined
+					? localizedValue[editingLanguageId]
+					: getGenericValue(
+							prevSymbols,
+							localizedValue[defaultLanguageId]
+					  );
+
+			newValue = getValue(dataType, symbols, newValue);
+
+			setCurrentValue(newValue);
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [
+		defaultLanguageId,
+		editingLanguageId,
+		localizable,
+		localizedValue,
+		prevEditingLanguageId,
+		prevSymbols,
+		setCurrentValue,
+	]);
+
+	useEffect(() => {
+		let maskInstance = null;
+
+		if (inputRef.current) {
+			const newValue = getValue(dataType, symbols, value);
+
+			const mask = createNumberMask(getMaskConfig(dataType, symbols));
+
+			maskInstance = vanillaTextMask({
+				inputElement: inputRef.current,
+				mask,
+			});
+
+			if (newValue !== inputRef.current.value) {
+				setCurrentValue(newValue);
+			}
+		}
+
+		return () => {
+			if (maskInstance) {
+				maskInstance.destroy();
+			}
+		};
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [dataType, inputRef, setCurrentValue, value]);
+
+	return (
+		<ClayInput
+			{...otherProps}
+			dir={Liferay.Language.direction[editingLanguageId]}
+			disabled={disabled}
+			lang={editingLanguageId}
+			onChange={(event) => {
+				const {value: newValue} = event.target;
+
+				if (
+					dataType === 'integer' &&
+					newValue.substr(-1) === symbols.decimalSymbol
+				) {
+					return;
+				}
+
+				setCurrentValue(newValue);
+				onChange(event);
+			}}
+			ref={inputRef}
+			type="text"
+			value={currentValue}
+		/>
+	);
+};
+
+const Main = ({
+	dataType,
+	defaultLanguageId,
+	editingLanguageId,
+	id,
+	localizable,
+	localizedValue = {},
+	name,
+	onBlur,
+	onChange,
+	onFocus,
+	placeholder,
+	predefinedValue = '',
+	readOnly,
+	symbols,
+	value = '',
+	...otherProps
+}) => {
+	const [edited, setEdited] = useState(false);
+
+	return (
+		<FieldBase
+			{...otherProps}
+			id={id}
+			localizedValue={localizedValue}
+			name={name}
+			readOnly={readOnly}
+		>
+			<Numeric
+				dataType={dataType}
+				defaultLanguageId={defaultLanguageId}
+				disabled={readOnly}
+				editingLanguageId={editingLanguageId}
+				id={id}
+				localizable={localizable}
+				localizedValue={localizedValue}
+				name={name}
+				onBlur={onBlur}
+				onChange={(event) => {
+					if (!edited) {
+						setEdited(true);
+					}
+
+					onChange(event);
+				}}
+				onFocus={onFocus}
+				placeholder={placeholder}
+				predefinedValue={predefinedValue}
+				symbols={symbols}
+				value={edited || value ? value : predefinedValue}
+			/>
+		</FieldBase>
+	);
+};
+
+Main.displayName = 'Numeric';
+
+export {Main};
+export default Main;

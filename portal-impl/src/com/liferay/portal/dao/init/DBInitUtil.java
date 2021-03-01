@@ -16,6 +16,7 @@ package com.liferay.portal.dao.init;
 
 import com.liferay.petra.io.StreamUtil;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.db.partition.DBPartitionUtil;
 import com.liferay.portal.events.StartupHelperUtil;
 import com.liferay.portal.kernel.dao.db.DB;
 import com.liferay.portal.kernel.dao.db.DBManager;
@@ -51,8 +52,9 @@ public class DBInitUtil {
 	}
 
 	public static void init() throws Exception {
-		_dataSource = DataSourceFactoryUtil.initDataSource(
-			PropsUtil.getProperties("jdbc.default.", true));
+		_dataSource = DBPartitionUtil.wrapDataSource(
+			DataSourceFactoryUtil.initDataSource(
+				PropsUtil.getProperties("jdbc.default.", true)));
 
 		DB db = DBManagerUtil.getDB(
 			DBManagerUtil.getDBType(DialectDetector.getDialect(_dataSource)),
@@ -63,50 +65,9 @@ public class DBInitUtil {
 		dbManager.setDB(db);
 
 		try (Connection connection = _dataSource.getConnection()) {
-			if (_checkDefaultRelease(connection)) {
-				_setSupportsStringCaseSensitiveQuery(db, connection);
+			_init(db, connection);
 
-				return;
-			}
-
-			try {
-				db.runSQL(
-					connection,
-					"alter table Release_ add mvccVersion LONG default 0 not " +
-						"null");
-			}
-			catch (Exception e) {
-				if (_log.isDebugEnabled()) {
-					_log.debug(e.getMessage());
-				}
-			}
-
-			try {
-				db.runSQL(
-					connection,
-					"alter table Release_ add schemaVersion VARCHAR(75) null");
-			}
-			catch (Exception e) {
-				if (_log.isDebugEnabled()) {
-					_log.debug(e.getMessage());
-				}
-			}
-
-			if (_checkDefaultRelease(connection)) {
-				_setSupportsStringCaseSensitiveQuery(db, connection);
-
-				return;
-			}
-
-			// Create tables and populate with default data
-
-			if (GetterUtil.getBoolean(
-					PropsUtil.get(PropsKeys.SCHEMA_RUN_ENABLED))) {
-
-				_createTablesAndPopulate(db, connection);
-
-				_setSupportsStringCaseSensitiveQuery(db, connection);
-			}
+			DBPartitionUtil.setDefaultCompanyId(connection);
 		}
 	}
 
@@ -149,13 +110,15 @@ public class DBInitUtil {
 
 			if (!rs.next()) {
 				_addReleaseInfo(connection);
+
+				StartupHelperUtil.setDbNew(true);
 			}
 
 			return true;
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isDebugEnabled()) {
-				_log.debug(e.getMessage(), e);
+				_log.debug(exception.getMessage(), exception);
 			}
 		}
 
@@ -203,6 +166,52 @@ public class DBInitUtil {
 		return false;
 	}
 
+	private static void _init(DB db, Connection connection) throws Exception {
+		if (_checkDefaultRelease(connection)) {
+			_setSupportsStringCaseSensitiveQuery(db, connection);
+
+			return;
+		}
+
+		try {
+			db.runSQL(
+				connection,
+				"alter table Release_ add mvccVersion LONG default 0 not null");
+		}
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception.getMessage());
+			}
+		}
+
+		try {
+			db.runSQL(
+				connection,
+				"alter table Release_ add schemaVersion VARCHAR(75) null");
+		}
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception.getMessage());
+			}
+		}
+
+		if (_checkDefaultRelease(connection)) {
+			_setSupportsStringCaseSensitiveQuery(db, connection);
+
+			return;
+		}
+
+		// Create tables and populate with default data
+
+		if (GetterUtil.getBoolean(
+				PropsUtil.get(PropsKeys.SCHEMA_RUN_ENABLED))) {
+
+			_createTablesAndPopulate(db, connection);
+
+			_setSupportsStringCaseSensitiveQuery(db, connection);
+		}
+	}
+
 	private static void _runSQLTemplate(
 			DB db, Connection connection, ClassLoader classLoader, String path)
 		throws Exception {
@@ -212,7 +221,7 @@ public class DBInitUtil {
 			StreamUtil.toString(
 				classLoader.getResourceAsStream(
 					"com/liferay/portal/tools/sql/dependencies/".concat(path))),
-			false, false);
+			false);
 	}
 
 	private static void _setSupportsStringCaseSensitiveQuery(

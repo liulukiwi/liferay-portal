@@ -16,6 +16,8 @@ package com.liferay.portal.action;
 
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutConstants;
 import com.liferay.portal.kernel.portlet.PortalPreferences;
@@ -142,8 +144,9 @@ public class SessionTreeJSClickAction implements Action {
 
 			return null;
 		}
-		catch (Exception e) {
-			PortalUtil.sendError(e, httpServletRequest, httpServletResponse);
+		catch (Exception exception) {
+			PortalUtil.sendError(
+				exception, httpServletRequest, httpServletResponse);
 
 			return null;
 		}
@@ -191,9 +194,19 @@ public class SessionTreeJSClickAction implements Action {
 
 				return;
 			}
-			catch (ConcurrentModificationException cme) {
+			catch (ConcurrentModificationException
+						concurrentModificationException) {
+
+				if (_log.isDebugEnabled()) {
+					_log.debug(
+						concurrentModificationException,
+						concurrentModificationException);
+				}
 			}
 		}
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		SessionTreeJSClickAction.class);
 
 }

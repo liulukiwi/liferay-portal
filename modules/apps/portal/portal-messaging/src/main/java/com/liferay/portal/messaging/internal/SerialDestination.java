@@ -17,7 +17,6 @@ package com.liferay.portal.messaging.internal;
 import com.liferay.petra.lang.CentralizedThreadLocal;
 import com.liferay.portal.kernel.cache.thread.local.Lifecycle;
 import com.liferay.portal.kernel.cache.thread.local.ThreadLocalCacheManager;
-import com.liferay.portal.kernel.concurrent.ThreadPoolExecutor;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.messaging.Message;
@@ -38,8 +37,7 @@ import java.util.Set;
 public class SerialDestination extends BaseAsyncDestination {
 
 	public SerialDestination() {
-		setWorkersCoreSize(_WORKERS_CORE_SIZE);
-		setWorkersMaxSize(_WORKERS_MAX_SIZE);
+		setWorkersSize(_WORKERS_CORE_SIZE, _WORKERS_MAX_SIZE);
 	}
 
 	@Override
@@ -47,8 +45,6 @@ public class SerialDestination extends BaseAsyncDestination {
 		Set<MessageListener> messageListeners, final Message message) {
 
 		Thread currentThread = Thread.currentThread();
-
-		ThreadPoolExecutor threadPoolExecutor = getThreadPoolExecutor();
 
 		Runnable runnable = new MessageRunnable(message) {
 
@@ -62,9 +58,12 @@ public class SerialDestination extends BaseAsyncDestination {
 						try {
 							messageListener.receive(message);
 						}
-						catch (MessageListenerException mle) {
+						catch (MessageListenerException
+									messageListenerException) {
+
 							_log.error(
-								"Unable to process message " + message, mle);
+								"Unable to process message " + message,
+								messageListenerException);
 						}
 					}
 				}
@@ -79,7 +78,7 @@ public class SerialDestination extends BaseAsyncDestination {
 
 		};
 
-		threadPoolExecutor.execute(runnable);
+		execute(runnable);
 	}
 
 	private static final int _WORKERS_CORE_SIZE = 1;

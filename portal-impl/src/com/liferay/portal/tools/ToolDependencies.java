@@ -194,8 +194,6 @@ public class ToolDependencies {
 
 		ResourceActionsImpl resourceActionsImpl = new ResourceActionsImpl();
 
-		resourceActionsImpl.afterPropertiesSet();
-
 		resourceActionsUtil.setResourceActions(resourceActionsImpl);
 	}
 
@@ -213,6 +211,11 @@ public class ToolDependencies {
 			return _portalCacheManager.getPortalCache(portalCacheName);
 		}
 
+		/**
+		 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+		 *             #getPortalCache(String)}
+		 */
+		@Deprecated
 		@Override
 		public PortalCache<? extends Serializable, ? extends Serializable>
 			getPortalCache(String portalCacheName, boolean blocking) {
@@ -278,6 +281,11 @@ public class ToolDependencies {
 			return _portalCacheName;
 		}
 
+		/**
+		 * @deprecated As of Athanasius (7.3.x), with no direct replacement
+		 */
+		@Deprecated
+		@Override
 		public boolean isBlocking() {
 			return false;
 		}
@@ -397,15 +405,20 @@ public class ToolDependencies {
 		public PortalCache<K, V> getPortalCache(String portalCacheName)
 			throws PortalCacheException {
 
-			return getPortalCache(portalCacheName, false);
+			return getPortalCache(portalCacheName, false, false);
 		}
 
+		/**
+		 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+		 *             #getPortalCache(String)}
+		 */
+		@Deprecated
 		@Override
 		public PortalCache<K, V> getPortalCache(
 				String portalCacheName, boolean blocking)
 			throws PortalCacheException {
 
-			return getPortalCache(portalCacheName, blocking, false);
+			return getPortalCache(portalCacheName);
 		}
 
 		@Override
@@ -509,6 +522,11 @@ public class ToolDependencies {
 			return _portalCacheManager.getPortalCache(portalCacheName);
 		}
 
+		/**
+		 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+		 *             #getPortalCache(String)}
+		 */
+		@Deprecated
 		@Override
 		public PortalCache<? extends Serializable, ?> getPortalCache(
 			String portalCacheName, boolean blocking) {

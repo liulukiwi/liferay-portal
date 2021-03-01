@@ -15,9 +15,9 @@
 package com.liferay.dynamic.data.mapping.web.internal.exportimport.data.handler;
 
 import com.liferay.dynamic.data.mapping.constants.DDMPortletKeys;
+import com.liferay.dynamic.data.mapping.constants.DDMTemplateConstants;
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
 import com.liferay.dynamic.data.mapping.model.DDMTemplate;
-import com.liferay.dynamic.data.mapping.model.DDMTemplateConstants;
 import com.liferay.dynamic.data.mapping.model.DDMTemplateVersion;
 import com.liferay.dynamic.data.mapping.security.permission.DDMPermissionSupport;
 import com.liferay.dynamic.data.mapping.service.DDMStructureLocalService;
@@ -134,7 +134,11 @@ public class DDMTemplateStagedModelDataHandler
 			defaultUserId = _userLocalService.getDefaultUserId(
 				template.getCompanyId());
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
+
 			return referenceAttributes;
 		}
 
@@ -206,8 +210,7 @@ public class DDMTemplateStagedModelDataHandler
 					_ddmTemplateExportImportContentProcessor.
 						replaceExportContentReferences(
 							portletDataContext, template,
-							template.getSmallImageURL() + StringPool.SPACE,
-							true, true);
+							template.getSmallImageURL(), true, true);
 
 				template.setSmallImageURL(smallImageURL);
 			}
@@ -278,9 +281,9 @@ public class DDMTemplateStagedModelDataHandler
 			portletDataContext.addPermissions(
 				getResourceName(template), template.getPrimaryKey());
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isDebugEnabled()) {
-				_log.debug(e, e);
+				_log.debug(exception, exception);
 			}
 		}
 	}
@@ -469,12 +472,12 @@ public class DDMTemplateStagedModelDataHandler
 
 			try {
 				portletDataContext.importPermissions(
-					getResourceName(template), template.getPrimaryKey(),
+					getResourceName(importedTemplate), template.getPrimaryKey(),
 					importedTemplate.getPrimaryKey());
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 				if (_log.isDebugEnabled()) {
-					_log.debug(e, e);
+					_log.debug(exception, exception);
 				}
 			}
 
@@ -565,8 +568,8 @@ public class DDMTemplateStagedModelDataHandler
 					template.getTemplateId(),
 					DDMTemplateConstants.VERSION_DEFAULT);
 		}
-		catch (PortalException pe) {
-			_log.error(pe, pe);
+		catch (PortalException portalException) {
+			_log.error(portalException, portalException);
 		}
 
 		if ((ddmTemplateVersion != null) &&

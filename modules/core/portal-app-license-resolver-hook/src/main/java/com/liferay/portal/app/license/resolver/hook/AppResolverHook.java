@@ -80,7 +80,11 @@ public class AppResolverHook implements ResolverHook {
 			try {
 				properties = _getAppLicenseProperties(bundle);
 			}
-			catch (IllegalStateException ise) {
+			catch (IllegalStateException illegalStateException) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(illegalStateException, illegalStateException);
+				}
+
 				iterator.remove();
 
 				continue;
@@ -99,9 +103,11 @@ public class AppResolverHook implements ResolverHook {
 					bundleRevision.getSymbolicName());
 				_filteredProductIds.remove(productId);
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 				if (_filteredProductIds.add(productId)) {
-					_log.error("Unable to resolve application " + productId, e);
+					_log.error(
+						"Unable to resolve application " + productId,
+						exception);
 				}
 
 				if (_filteredBundleSymbolicNames.add(
@@ -112,7 +118,7 @@ public class AppResolverHook implements ResolverHook {
 					sb.append("Unable to resolve ");
 					sb.append(bundleRevision.getSymbolicName());
 					sb.append(": ");
-					sb.append(e.getMessage());
+					sb.append(exception.getMessage());
 
 					_log.error(sb.toString());
 				}
@@ -163,7 +169,8 @@ public class AppResolverHook implements ResolverHook {
 				"product-version-id");
 
 			appLicenseVerifier.verify(
-				bundle, productId, productType, productVersionId);
+				productId, productType, productVersionId,
+				bundle.getSymbolicName());
 
 			verified = true;
 
@@ -185,9 +192,9 @@ public class AppResolverHook implements ResolverHook {
 			try (InputStream inputStream = url.openStream()) {
 				properties.load(inputStream);
 			}
-			catch (IOException ioe) {
+			catch (IOException ioException) {
 				if (_log.isWarnEnabled()) {
-					_log.warn("Unable to read bundle properties", ioe);
+					_log.warn("Unable to read bundle properties", ioException);
 				}
 			}
 		}

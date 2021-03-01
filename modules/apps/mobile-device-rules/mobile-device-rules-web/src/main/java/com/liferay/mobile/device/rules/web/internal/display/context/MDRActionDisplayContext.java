@@ -14,25 +14,17 @@
 
 package com.liferay.mobile.device.rules.web.internal.display.context;
 
-import com.liferay.frontend.taglib.clay.servlet.taglib.util.NavigationItem;
-import com.liferay.frontend.taglib.clay.servlet.taglib.util.NavigationItemList;
+import com.liferay.mobile.device.rules.constants.MDRPortletKeys;
 import com.liferay.mobile.device.rules.model.MDRAction;
-import com.liferay.mobile.device.rules.model.MDRRuleGroup;
-import com.liferay.mobile.device.rules.model.MDRRuleGroupInstance;
 import com.liferay.mobile.device.rules.service.MDRActionLocalServiceUtil;
-import com.liferay.mobile.device.rules.service.MDRRuleGroupInstanceLocalServiceUtil;
 import com.liferay.mobile.device.rules.util.comparator.ActionCreateDateComparator;
-import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.search.EmptyOnClickRowChecker;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
-import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.language.LanguageUtil;
-import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.portlet.SearchDisplayStyleUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ParamUtil;
-import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.portal.kernel.util.PortalUtil;
 
-import java.util.List;
 import java.util.ResourceBundle;
 
 import javax.portlet.PortletURL;
@@ -53,44 +45,17 @@ public class MDRActionDisplayContext {
 		_resourceBundle = resourceBundle;
 	}
 
-	public List<NavigationItem> getActionNavigationItems()
-		throws PortalException {
-
-		ThemeDisplay themeDisplay = (ThemeDisplay)_renderRequest.getAttribute(
-			WebKeys.THEME_DISPLAY);
-
-		MDRRuleGroupInstance ruleGroupInstance =
-			MDRRuleGroupInstanceLocalServiceUtil.getRuleGroupInstance(
-				getRuleGroupInstanceId());
-
-		MDRRuleGroup ruleGroup = ruleGroupInstance.getRuleGroup();
-
-		return new NavigationItemList() {
-			{
-				add(
-					navigationItem -> {
-						navigationItem.setActive(true);
-						navigationItem.setHref(StringPool.BLANK);
-						navigationItem.setLabel(
-							LanguageUtil.format(
-								_resourceBundle, "actions-for-x",
-								ruleGroup.getName(themeDisplay.getLocale()),
-								false));
-					});
-			}
-		};
-	}
-
-	public SearchContainer getActionSearchContainer() {
+	public SearchContainer<MDRAction> getActionSearchContainer() {
 		if (_ruleActionSearchContainer != null) {
 			return _ruleActionSearchContainer;
 		}
 
 		long ruleGroupInstanceId = getRuleGroupInstanceId();
 
-		SearchContainer ruleActionSearchContainer = new SearchContainer(
-			_renderRequest, getPortletURL(), null,
-			"no-actions-are-configured-for-this-device-family");
+		SearchContainer<MDRAction> ruleActionSearchContainer =
+			new SearchContainer(
+				_renderRequest, getPortletURL(), null,
+				"no-actions-are-configured-for-this-device-family");
 
 		ruleActionSearchContainer.setOrderByCol(getOrderByCol());
 
@@ -126,8 +91,9 @@ public class MDRActionDisplayContext {
 			return _displayStyle;
 		}
 
-		_displayStyle = ParamUtil.getString(
-			_renderRequest, "displayStyle", "list");
+		_displayStyle = SearchDisplayStyleUtil.getDisplayStyle(
+			PortalUtil.getHttpServletRequest(_renderRequest),
+			MDRPortletKeys.MOBILE_DEVICE_RULES, "list");
 
 		return _displayStyle;
 	}
@@ -191,7 +157,7 @@ public class MDRActionDisplayContext {
 	private final RenderRequest _renderRequest;
 	private final RenderResponse _renderResponse;
 	private final ResourceBundle _resourceBundle;
-	private SearchContainer _ruleActionSearchContainer;
+	private SearchContainer<MDRAction> _ruleActionSearchContainer;
 	private Long _ruleGroupInstanceId;
 
 }

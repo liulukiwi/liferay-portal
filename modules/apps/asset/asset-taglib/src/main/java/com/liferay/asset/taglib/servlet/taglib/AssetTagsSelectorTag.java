@@ -19,6 +19,8 @@ import com.liferay.asset.kernel.service.AssetTagServiceUtil;
 import com.liferay.asset.taglib.internal.servlet.ServletContextUtil;
 import com.liferay.petra.string.StringPool;
 import com.liferay.petra.string.StringUtil;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.portlet.LiferayWindowState;
 import com.liferay.portal.kernel.portlet.PortletProvider;
@@ -154,6 +156,7 @@ public class AssetTagsSelectorTag extends IncludeTag {
 		_hiddenInput = "assetTagNames";
 		_id = null;
 		_ignoreRequestValue = false;
+		_namespace = null;
 		_removeCallback = null;
 		_showSelectButton = true;
 		_tagNames = null;
@@ -219,14 +222,21 @@ public class AssetTagsSelectorTag extends IncludeTag {
 				return null;
 			}
 
+			if (_groupIds != null) {
+				portletURL.setParameter(
+					"groupIds", StringUtil.merge(_groupIds, StringPool.COMMA));
+			}
+
 			portletURL.setParameter("eventName", getEventName());
 			portletURL.setParameter("selectedTagNames", "{selectedTagNames}");
-
 			portletURL.setWindowState(LiferayWindowState.POP_UP);
 
 			return portletURL;
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
 		}
 
 		return null;
@@ -241,10 +251,10 @@ public class AssetTagsSelectorTag extends IncludeTag {
 		}
 
 		if (!_ignoreRequestValue) {
-			String curTagsParam = request.getParameter(_hiddenInput);
+			String[] curTagsParam = request.getParameterValues(_hiddenInput);
 
-			if (Validator.isNotNull(curTagsParam)) {
-				return StringUtil.split(curTagsParam);
+			if (curTagsParam != null) {
+				return ListUtil.fromArray(curTagsParam);
 			}
 		}
 
@@ -297,13 +307,12 @@ public class AssetTagsSelectorTag extends IncludeTag {
 				List<Map<String, String>> selectedItems = new ArrayList<>();
 
 				for (String tagName : getTagNames()) {
-					Map<String, String> selectedItem = HashMapBuilder.put(
-						"label", tagName
-					).put(
-						"value", tagName
-					).build();
-
-					selectedItems.add(selectedItem);
+					selectedItems.add(
+						HashMapBuilder.put(
+							"label", tagName
+						).put(
+							"value", tagName
+						).build());
 				}
 
 				return selectedItems;
@@ -339,6 +348,9 @@ public class AssetTagsSelectorTag extends IncludeTag {
 	}
 
 	private static final String _PAGE = "/asset_tags_selector/page.jsp";
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		AssetTagsSelectorTag.class);
 
 	private String _addCallback;
 	private boolean _allowAddEntry = true;

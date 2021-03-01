@@ -15,6 +15,8 @@
 package com.liferay.util.servlet;
 
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.SystemProperties;
@@ -99,7 +101,11 @@ public class SessionParameters {
 				session.setAttribute(KEY, parameters);
 			}
 		}
-		catch (IllegalStateException ise) {
+		catch (IllegalStateException illegalStateException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(illegalStateException, illegalStateException);
+			}
+
 			parameters = new HashMap<>();
 		}
 
@@ -120,11 +126,18 @@ public class SessionParameters {
 				portletSession.setAttribute(KEY, parameters);
 			}
 		}
-		catch (IllegalStateException ise) {
+		catch (IllegalStateException illegalStateException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(illegalStateException, illegalStateException);
+			}
+
 			parameters = new LinkedHashMap<>();
 		}
 
 		return parameters;
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		SessionParameters.class);
 
 }

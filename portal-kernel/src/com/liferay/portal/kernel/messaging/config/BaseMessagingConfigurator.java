@@ -15,6 +15,8 @@
 package com.liferay.portal.kernel.messaging.config;
 
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.messaging.Destination;
 import com.liferay.portal.kernel.messaging.DestinationConfiguration;
 import com.liferay.portal.kernel.messaging.DestinationEventListener;
@@ -96,7 +98,7 @@ public abstract class BaseMessagingConfigurator
 		ClassLoader contextClassLoader = currentThread.getContextClassLoader();
 
 		try {
-			currentThread.setContextClassLoader(getOperatingClassloader());
+			currentThread.setContextClassLoader(getOperatingClassLoader());
 
 			for (Map.Entry<String, List<MessageListener>> messageListeners :
 					_messageListeners.entrySet()) {
@@ -154,7 +156,7 @@ public abstract class BaseMessagingConfigurator
 
 		String servletContextName =
 			ServletContextClassLoaderPool.getServletContextName(
-				getOperatingClassloader());
+				getOperatingClassLoader());
 
 		if (servletContextName != null) {
 			MessagingConfiguratorRegistry.unregisterMessagingConfigurator(
@@ -224,7 +226,10 @@ public abstract class BaseMessagingConfigurator
 
 					continue;
 				}
-				catch (Exception e) {
+				catch (Exception exception) {
+					if (_log.isDebugEnabled()) {
+						_log.debug(exception, exception);
+					}
 				}
 
 				try {
@@ -236,7 +241,10 @@ public abstract class BaseMessagingConfigurator
 
 					setMessageBusMethod.invoke(messageListener, _messageBus);
 				}
-				catch (Exception e) {
+				catch (Exception exception) {
+					if (_log.isDebugEnabled()) {
+						_log.debug(exception, exception);
+					}
 				}
 			}
 		}
@@ -244,14 +252,23 @@ public abstract class BaseMessagingConfigurator
 		_messageListeners.putAll(messageListeners);
 	}
 
-	protected abstract ClassLoader getOperatingClassloader();
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             #getOperatingClassLoader()}
+	 */
+	@Deprecated
+	protected ClassLoader getOperatingClassloader() {
+		return getOperatingClassLoader();
+	}
+
+	protected abstract ClassLoader getOperatingClassLoader();
 
 	protected void initialize() {
 		Thread currentThread = Thread.currentThread();
 
 		ClassLoader contextClassLoader = currentThread.getContextClassLoader();
 
-		ClassLoader operatingClassLoader = getOperatingClassloader();
+		ClassLoader operatingClassLoader = getOperatingClassLoader();
 
 		if (contextClassLoader == operatingClassLoader) {
 			_portalMessagingConfigurator = true;
@@ -347,12 +364,11 @@ public abstract class BaseMessagingConfigurator
 			Destination.class);
 
 		for (Destination destination : _destinations) {
-			Map<String, Object> properties = HashMapBuilder.<String, Object>put(
-				"destination.name", destination.getName()
-			).build();
-
 			_destinationServiceRegistrar.registerService(
-				Destination.class, destination, properties);
+				Destination.class, destination,
+				HashMapBuilder.<String, Object>put(
+					"destination.name", destination.getName()
+				).build());
 		}
 	}
 
@@ -373,6 +389,9 @@ public abstract class BaseMessagingConfigurator
 				MessageBusEventListener.class, messageBusEventListener);
 		}
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		BaseMessagingConfigurator.class);
 
 	private final Set<DestinationConfiguration> _destinationConfigurations =
 		new HashSet<>();
@@ -408,7 +427,7 @@ public abstract class BaseMessagingConfigurator
 				"destination.name", _destinationName
 			).put(
 				"message.listener.operating.class.loader",
-				getOperatingClassloader()
+				getOperatingClassLoader()
 			).build();
 
 			for (MessageListener messageListener : _messageListeners) {

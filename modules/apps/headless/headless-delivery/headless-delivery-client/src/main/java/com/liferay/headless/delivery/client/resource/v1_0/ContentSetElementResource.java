@@ -18,11 +18,13 @@ import com.liferay.headless.delivery.client.dto.v1_0.ContentSetElement;
 import com.liferay.headless.delivery.client.http.HttpInvoker;
 import com.liferay.headless.delivery.client.pagination.Page;
 import com.liferay.headless.delivery.client.pagination.Pagination;
+import com.liferay.headless.delivery.client.problem.Problem;
 import com.liferay.headless.delivery.client.serdes.v1_0.ContentSetElementSerDes;
 
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.Generated;
@@ -37,6 +39,26 @@ public interface ContentSetElementResource {
 	public static Builder builder() {
 		return new Builder();
 	}
+
+	public Page<ContentSetElement>
+			getAssetLibraryContentSetByKeyContentSetElementsPage(
+				Long assetLibraryId, String key, Pagination pagination)
+		throws Exception;
+
+	public HttpInvoker.HttpResponse
+			getAssetLibraryContentSetByKeyContentSetElementsPageHttpResponse(
+				Long assetLibraryId, String key, Pagination pagination)
+		throws Exception;
+
+	public Page<ContentSetElement>
+			getAssetLibraryContentSetByUuidContentSetElementsPage(
+				Long assetLibraryId, String uuid, Pagination pagination)
+		throws Exception;
+
+	public HttpInvoker.HttpResponse
+			getAssetLibraryContentSetByUuidContentSetElementsPageHttpResponse(
+				Long assetLibraryId, String uuid, Pagination pagination)
+		throws Exception;
 
 	public Page<ContentSetElement> getContentSetContentSetElementsPage(
 			Long contentSetId, Pagination pagination)
@@ -111,8 +133,8 @@ public interface ContentSetElementResource {
 		private Map<String, String> _headers = new LinkedHashMap<>();
 		private String _host = "localhost";
 		private Locale _locale;
-		private String _login = "test@liferay.com";
-		private String _password = "test";
+		private String _login = "";
+		private String _password = "";
 		private Map<String, String> _parameters = new LinkedHashMap<>();
 		private int _port = 8080;
 		private String _scheme = "http";
@@ -121,6 +143,158 @@ public interface ContentSetElementResource {
 
 	public static class ContentSetElementResourceImpl
 		implements ContentSetElementResource {
+
+		public Page<ContentSetElement>
+				getAssetLibraryContentSetByKeyContentSetElementsPage(
+					Long assetLibraryId, String key, Pagination pagination)
+			throws Exception {
+
+			HttpInvoker.HttpResponse httpResponse =
+				getAssetLibraryContentSetByKeyContentSetElementsPageHttpResponse(
+					assetLibraryId, key, pagination);
+
+			String content = httpResponse.getContent();
+
+			_logger.fine("HTTP response content: " + content);
+
+			_logger.fine("HTTP response message: " + httpResponse.getMessage());
+			_logger.fine(
+				"HTTP response status code: " + httpResponse.getStatusCode());
+
+			try {
+				return Page.of(content, ContentSetElementSerDes::toDTO);
+			}
+			catch (Exception e) {
+				_logger.log(
+					Level.WARNING,
+					"Unable to process HTTP response: " + content, e);
+
+				throw new Problem.ProblemException(Problem.toDTO(content));
+			}
+		}
+
+		public HttpInvoker.HttpResponse
+				getAssetLibraryContentSetByKeyContentSetElementsPageHttpResponse(
+					Long assetLibraryId, String key, Pagination pagination)
+			throws Exception {
+
+			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+			if (_builder._locale != null) {
+				httpInvoker.header(
+					"Accept-Language", _builder._locale.toLanguageTag());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
+			}
+
+			httpInvoker.httpMethod(HttpInvoker.HttpMethod.GET);
+
+			if (pagination != null) {
+				httpInvoker.parameter(
+					"page", String.valueOf(pagination.getPage()));
+				httpInvoker.parameter(
+					"pageSize", String.valueOf(pagination.getPageSize()));
+			}
+
+			httpInvoker.path(
+				_builder._scheme + "://" + _builder._host + ":" +
+					_builder._port +
+						"/o/headless-delivery/v1.0/asset-libraries/{assetLibraryId}/content-sets/by-key/{key}/content-set-elements");
+
+			httpInvoker.path("assetLibraryId", assetLibraryId);
+			httpInvoker.path("key", key);
+
+			httpInvoker.userNameAndPassword(
+				_builder._login + ":" + _builder._password);
+
+			return httpInvoker.invoke();
+		}
+
+		public Page<ContentSetElement>
+				getAssetLibraryContentSetByUuidContentSetElementsPage(
+					Long assetLibraryId, String uuid, Pagination pagination)
+			throws Exception {
+
+			HttpInvoker.HttpResponse httpResponse =
+				getAssetLibraryContentSetByUuidContentSetElementsPageHttpResponse(
+					assetLibraryId, uuid, pagination);
+
+			String content = httpResponse.getContent();
+
+			_logger.fine("HTTP response content: " + content);
+
+			_logger.fine("HTTP response message: " + httpResponse.getMessage());
+			_logger.fine(
+				"HTTP response status code: " + httpResponse.getStatusCode());
+
+			try {
+				return Page.of(content, ContentSetElementSerDes::toDTO);
+			}
+			catch (Exception e) {
+				_logger.log(
+					Level.WARNING,
+					"Unable to process HTTP response: " + content, e);
+
+				throw new Problem.ProblemException(Problem.toDTO(content));
+			}
+		}
+
+		public HttpInvoker.HttpResponse
+				getAssetLibraryContentSetByUuidContentSetElementsPageHttpResponse(
+					Long assetLibraryId, String uuid, Pagination pagination)
+			throws Exception {
+
+			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+			if (_builder._locale != null) {
+				httpInvoker.header(
+					"Accept-Language", _builder._locale.toLanguageTag());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
+			}
+
+			httpInvoker.httpMethod(HttpInvoker.HttpMethod.GET);
+
+			if (pagination != null) {
+				httpInvoker.parameter(
+					"page", String.valueOf(pagination.getPage()));
+				httpInvoker.parameter(
+					"pageSize", String.valueOf(pagination.getPageSize()));
+			}
+
+			httpInvoker.path(
+				_builder._scheme + "://" + _builder._host + ":" +
+					_builder._port +
+						"/o/headless-delivery/v1.0/asset-libraries/{assetLibraryId}/content-sets/by-uuid/{uuid}/content-set-elements");
+
+			httpInvoker.path("assetLibraryId", assetLibraryId);
+			httpInvoker.path("uuid", uuid);
+
+			httpInvoker.userNameAndPassword(
+				_builder._login + ":" + _builder._password);
+
+			return httpInvoker.invoke();
+		}
 
 		public Page<ContentSetElement> getContentSetContentSetElementsPage(
 				Long contentSetId, Pagination pagination)
@@ -138,7 +312,16 @@ public interface ContentSetElementResource {
 			_logger.fine(
 				"HTTP response status code: " + httpResponse.getStatusCode());
 
-			return Page.of(content, ContentSetElementSerDes::toDTO);
+			try {
+				return Page.of(content, ContentSetElementSerDes::toDTO);
+			}
+			catch (Exception e) {
+				_logger.log(
+					Level.WARNING,
+					"Unable to process HTTP response: " + content, e);
+
+				throw new Problem.ProblemException(Problem.toDTO(content));
+			}
 		}
 
 		public HttpInvoker.HttpResponse
@@ -177,8 +360,9 @@ public interface ContentSetElementResource {
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port +
-						"/o/headless-delivery/v1.0/content-sets/{contentSetId}/content-set-elements",
-				contentSetId);
+						"/o/headless-delivery/v1.0/content-sets/{contentSetId}/content-set-elements");
+
+			httpInvoker.path("contentSetId", contentSetId);
 
 			httpInvoker.userNameAndPassword(
 				_builder._login + ":" + _builder._password);
@@ -203,7 +387,16 @@ public interface ContentSetElementResource {
 			_logger.fine(
 				"HTTP response status code: " + httpResponse.getStatusCode());
 
-			return Page.of(content, ContentSetElementSerDes::toDTO);
+			try {
+				return Page.of(content, ContentSetElementSerDes::toDTO);
+			}
+			catch (Exception e) {
+				_logger.log(
+					Level.WARNING,
+					"Unable to process HTTP response: " + content, e);
+
+				throw new Problem.ProblemException(Problem.toDTO(content));
+			}
 		}
 
 		public HttpInvoker.HttpResponse
@@ -242,8 +435,10 @@ public interface ContentSetElementResource {
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port +
-						"/o/headless-delivery/v1.0/sites/{siteId}/content-sets/by-key/{key}/content-set-elements",
-				siteId, key);
+						"/o/headless-delivery/v1.0/sites/{siteId}/content-sets/by-key/{key}/content-set-elements");
+
+			httpInvoker.path("siteId", siteId);
+			httpInvoker.path("key", key);
 
 			httpInvoker.userNameAndPassword(
 				_builder._login + ":" + _builder._password);
@@ -268,7 +463,16 @@ public interface ContentSetElementResource {
 			_logger.fine(
 				"HTTP response status code: " + httpResponse.getStatusCode());
 
-			return Page.of(content, ContentSetElementSerDes::toDTO);
+			try {
+				return Page.of(content, ContentSetElementSerDes::toDTO);
+			}
+			catch (Exception e) {
+				_logger.log(
+					Level.WARNING,
+					"Unable to process HTTP response: " + content, e);
+
+				throw new Problem.ProblemException(Problem.toDTO(content));
+			}
 		}
 
 		public HttpInvoker.HttpResponse
@@ -307,8 +511,10 @@ public interface ContentSetElementResource {
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port +
-						"/o/headless-delivery/v1.0/sites/{siteId}/content-sets/by-uuid/{uuid}/content-set-elements",
-				siteId, uuid);
+						"/o/headless-delivery/v1.0/sites/{siteId}/content-sets/by-uuid/{uuid}/content-set-elements");
+
+			httpInvoker.path("siteId", siteId);
+			httpInvoker.path("uuid", uuid);
 
 			httpInvoker.userNameAndPassword(
 				_builder._login + ":" + _builder._password);

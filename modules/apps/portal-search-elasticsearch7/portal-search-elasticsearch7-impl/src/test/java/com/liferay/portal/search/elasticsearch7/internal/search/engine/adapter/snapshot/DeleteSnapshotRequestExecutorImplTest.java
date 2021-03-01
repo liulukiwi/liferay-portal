@@ -14,9 +14,11 @@
 
 package com.liferay.portal.search.elasticsearch7.internal.search.engine.adapter.snapshot;
 
+import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.search.elasticsearch7.internal.connection.ElasticsearchFixture;
 import com.liferay.portal.search.elasticsearch7.internal.search.engine.adapter.index.AnalyzeIndexRequestExecutorTest;
 import com.liferay.portal.search.engine.adapter.snapshot.DeleteSnapshotRequest;
+import com.liferay.portal.util.PropsImpl;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -30,6 +32,8 @@ public class DeleteSnapshotRequestExecutorImplTest {
 
 	@Before
 	public void setUp() throws Exception {
+		PropsUtil.setProps(new PropsImpl());
+
 		_elasticsearchFixture = new ElasticsearchFixture(
 			AnalyzeIndexRequestExecutorTest.class.getSimpleName());
 
@@ -63,7 +67,7 @@ public class DeleteSnapshotRequestExecutorImplTest {
 			elasticDeleteSnapshotRequest.repository());
 		Assert.assertEquals(
 			deleteSnapshotRequest.getSnapshotName(),
-			elasticDeleteSnapshotRequest.snapshot());
+			elasticDeleteSnapshotRequest.snapshots()[0]);
 	}
 
 	private ElasticsearchFixture _elasticsearchFixture;

@@ -20,16 +20,15 @@ import com.liferay.dynamic.data.mapping.model.DDMTemplate;
 import com.liferay.dynamic.data.mapping.service.DDMStructureLocalServiceUtil;
 import com.liferay.dynamic.data.mapping.test.util.DDMStructureTestUtil;
 import com.liferay.dynamic.data.mapping.test.util.DDMTemplateTestUtil;
+import com.liferay.journal.constants.JournalFolderConstants;
 import com.liferay.journal.exception.NoSuchArticleException;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.model.JournalFolder;
-import com.liferay.journal.model.JournalFolderConstants;
 import com.liferay.journal.service.JournalArticleLocalServiceUtil;
 import com.liferay.journal.test.util.JournalTestUtil;
 import com.liferay.portal.kernel.exception.LocaleException;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.Group;
-import com.liferay.portal.kernel.portlet.PortletRequestModel;
 import com.liferay.portal.kernel.template.TemplateConstants;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
@@ -49,6 +48,7 @@ import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import java.lang.reflect.Method;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -78,8 +78,6 @@ public class JournalTestUtilTest {
 		_group = GroupTestUtil.addGroup();
 
 		_transformMethod = JournalTestUtil.getJournalUtilTransformMethod();
-
-		_getTokensMethod = JournalTestUtil.getJournalUtilGetTokensMethod();
 	}
 
 	@Test
@@ -196,20 +194,19 @@ public class JournalTestUtilTest {
 
 	@Test
 	public void testAddDynamicContent() throws Exception {
-		Map<Locale, String> contents = HashMapBuilder.put(
-			LocaleUtil.BRAZIL, "Joe Bloggs"
-		).put(
-			LocaleUtil.US, "Joe Bloggs"
-		).build();
-
 		String xml = DDMStructureTestUtil.getSampleStructuredContent(
-			contents, LanguageUtil.getLanguageId(LocaleUtil.US));
+			HashMapBuilder.put(
+				LocaleUtil.BRAZIL, "Joe Bloggs"
+			).put(
+				LocaleUtil.US, "Joe Bloggs"
+			).build(),
+			LanguageUtil.getLanguageId(LocaleUtil.US));
 
 		String content = (String)_transformMethod.invoke(
 			null, null, getTokens(), Constants.VIEW, "en_US",
 			UnsecureSAXReaderUtil.read(xml), null,
 			JournalTestUtil.getSampleTemplateXSL(),
-			TemplateConstants.LANG_TYPE_VM);
+			TemplateConstants.LANG_TYPE_VM, false, new HashMap<>());
 
 		Assert.assertEquals("Joe Bloggs", content);
 	}
@@ -255,7 +252,7 @@ public class JournalTestUtilTest {
 					ddmStructure.getGroupId(), DDMStructure.class.getName(),
 					ddmStructure.getStructureId()));
 		}
-		catch (NoSuchArticleException nsae) {
+		catch (NoSuchArticleException noSuchArticleException) {
 		}
 	}
 
@@ -268,7 +265,7 @@ public class JournalTestUtilTest {
 			null, null, getTokens(), Constants.VIEW, "en_US",
 			UnsecureSAXReaderUtil.read(xml), null,
 			JournalTestUtil.getSampleTemplateXSL(),
-			TemplateConstants.LANG_TYPE_VM);
+			TemplateConstants.LANG_TYPE_VM, false, new HashMap<>());
 
 		Assert.assertEquals("Joe Bloggs", content);
 	}
@@ -306,24 +303,17 @@ public class JournalTestUtilTest {
 	}
 
 	protected Map<String, String> getTokens() throws Exception {
-		Map<String, String> tokens = (Map)_getTokensMethod.invoke(
-			null, TestPropsValues.getGroupId(), (PortletRequestModel)null,
-			null);
-
-		tokens.put(
-			"article_group_id", String.valueOf(TestPropsValues.getGroupId()));
-		tokens.put(
-			"company_id", String.valueOf(TestPropsValues.getCompanyId()));
-		tokens.put(
-			"ddm_structure_id", String.valueOf(_ddmStructure.getStructureId()));
-
-		return tokens;
+		return HashMapBuilder.put(
+			"article_group_id", String.valueOf(TestPropsValues.getGroupId())
+		).put(
+			"company_id", String.valueOf(TestPropsValues.getCompanyId())
+		).put(
+			"ddm_structure_id", String.valueOf(_ddmStructure.getStructureId())
+		).build();
 	}
 
 	@DeleteAfterTestRun
 	private DDMStructure _ddmStructure;
-
-	private Method _getTokensMethod;
 
 	@DeleteAfterTestRun
 	private Group _group;

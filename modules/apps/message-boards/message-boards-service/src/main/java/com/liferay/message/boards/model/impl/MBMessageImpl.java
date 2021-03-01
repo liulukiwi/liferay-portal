@@ -27,6 +27,8 @@ import com.liferay.message.boards.service.MBCategoryLocalServiceUtil;
 import com.liferay.message.boards.service.MBThreadLocalServiceUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Repository;
 import com.liferay.portal.kernel.parsers.bbcode.BBCodeTranslatorUtil;
 import com.liferay.portal.kernel.portletfilerepository.PortletFileRepositoryUtil;
@@ -136,10 +138,10 @@ public class MBMessageImpl extends MBMessageBaseImpl {
 			PortletFileRepositoryUtil.fetchPortletRepository(
 				getGroupId(), MBConstants.SERVICE_NAME);
 
-		long threadAttachmetsFolderId = getThreadAttachmentsFolderId();
+		long threadAttachmentsFolderId = getThreadAttachmentsFolderId();
 
 		if ((repository == null) ||
-			(threadAttachmetsFolderId ==
+			(threadAttachmentsFolderId ==
 				DLFolderConstants.DEFAULT_PARENT_FOLDER_ID)) {
 
 			return DLFolderConstants.DEFAULT_PARENT_FOLDER_ID;
@@ -147,12 +149,15 @@ public class MBMessageImpl extends MBMessageBaseImpl {
 
 		try {
 			Folder folder = PortletFileRepositoryUtil.getPortletFolder(
-				repository.getRepositoryId(), threadAttachmetsFolderId,
+				repository.getRepositoryId(), threadAttachmentsFolderId,
 				String.valueOf(getMessageId()));
 
 			_attachmentsFolderId = folder.getFolderId();
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
 		}
 
 		return _attachmentsFolderId;
@@ -278,6 +283,8 @@ public class MBMessageImpl extends MBMessageBaseImpl {
 	public void setAttachmentsFolderId(long attachmentsFolderId) {
 		_attachmentsFolderId = attachmentsFolderId;
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(MBMessageImpl.class);
 
 	private long _attachmentsFolderId;
 

@@ -107,18 +107,20 @@ public class JavadocManagerImpl implements JavadocManager {
 
 			return _javadocMethods.get(implMethod);
 		}
-		catch (NoSuchMethodException nsme) {
+		catch (NoSuchMethodException noSuchMethodException) {
 			if (_log.isWarnEnabled()) {
 				_log.warn(
 					StringBundler.concat(
 						"Unable to load method ", method.getName(),
-						" from class ", implClassName));
+						" from class ", implClassName),
+					noSuchMethodException);
 			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isWarnEnabled()) {
 				_log.warn(
-					"Unable to load implementation class " + implClassName);
+					"Unable to load implementation class " + implClassName,
+					exception);
 			}
 		}
 
@@ -153,8 +155,8 @@ public class JavadocManagerImpl implements JavadocManager {
 				return UnsecureSAXReaderUtil.read(inputStream, true);
 			}
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 
 		return null;
@@ -175,9 +177,10 @@ public class JavadocManagerImpl implements JavadocManager {
 			try {
 				clazz = JavadocUtil.loadClass(classLoader, type);
 			}
-			catch (ClassNotFoundException cnfe) {
+			catch (ClassNotFoundException classNotFoundException) {
 				if (_log.isWarnEnabled()) {
-					_log.warn("Unable to load class " + type);
+					_log.warn(
+						"Unable to load class " + type, classNotFoundException);
 				}
 
 				continue;
@@ -208,14 +211,15 @@ public class JavadocManagerImpl implements JavadocManager {
 					_javadocMethods.put(
 						javadocMethod.getMethod(), javadocMethod);
 				}
-				catch (Exception e) {
+				catch (Exception exception) {
 					if (_log.isWarnEnabled()) {
 						String methodName = methodElement.elementText("name");
 
 						_log.warn(
 							StringBundler.concat(
 								"Unable to load method ", methodName,
-								" from class ", type));
+								" from class ", type),
+							exception);
 					}
 				}
 			}

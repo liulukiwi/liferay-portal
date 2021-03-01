@@ -17,10 +17,10 @@
 <%@ include file="/init.jsp" %>
 
 <%
-String componentId = renderResponse.getNamespace() + "dataLayoutBuilder";
-String customObjectSidebarElementId = renderResponse.getNamespace() + "-app-builder-custom-object-sidebar";
-String dataLayoutBuilderElementId = renderResponse.getNamespace() + "-app-builder-data-layout-builder";
-String editFormViewRootElementId = renderResponse.getNamespace() + "-app-builder-edit-form-view";
+String componentId = liferayPortletResponse.getNamespace() + "dataLayoutBuilder";
+String customObjectSidebarElementId = liferayPortletResponse.getNamespace() + "-app-builder-custom-object-sidebar";
+String dataLayoutBuilderElementId = liferayPortletResponse.getNamespace() + "-app-builder-data-layout-builder";
+String editFormViewRootElementId = liferayPortletResponse.getNamespace() + "-app-builder-edit-form-view";
 
 long dataDefinitionId = ParamUtil.getLong(request, "dataDefinitionId");
 long dataLayoutId = ParamUtil.getLong(request, "dataLayoutId");
@@ -34,42 +34,53 @@ boolean newCustomObject = ParamUtil.getBoolean(request, "newCustomObject");
 
 		<portlet:renderURL var="basePortletURL" />
 
-		<div class="app-builder-form-view-app" id="<%= editFormViewRootElementId %>">
+		<%
+		String popUpCssClass = "";
 
-			<%
-			Map<String, Object> data = HashMapBuilder.<String, Object>put(
-				"basePortletURL", basePortletURL.toString()
-			).put(
-				"customObjectSidebarElementId", customObjectSidebarElementId
-			).put(
-				"dataDefinitionId", dataDefinitionId
-			).put(
-				"dataLayoutBuilderElementId", dataLayoutBuilderElementId
-			).put(
-				"dataLayoutBuilderId", componentId
-			).put(
-				"dataLayoutId", dataLayoutId
-			).put(
-				"newCustomObject", newCustomObject
-			).build();
-			%>
+		if (LiferayWindowState.isPopUp(request)) {
+			popUpCssClass = "app-builder-popup";
+		}
+		%>
 
+		<div class="app-builder-form-view-app <%= popUpCssClass %>" id="<%= editFormViewRootElementId %>">
 			<react:component
-				data="<%= data %>"
 				module="js/pages/form-view/EditFormViewApp.es"
+				props='<%=
+					HashMapBuilder.<String, Object>put(
+						"basePortletURL", basePortletURL.toString()
+					).put(
+						"customObjectSidebarElementId", customObjectSidebarElementId
+					).put(
+						"dataDefinitionId", dataDefinitionId
+					).put(
+						"dataLayoutBuilderElementId", dataLayoutBuilderElementId
+					).put(
+						"dataLayoutBuilderId", componentId
+					).put(
+						"dataLayoutId", dataLayoutId
+					).put(
+						"newCustomObject", newCustomObject
+					).put(
+						"popUpWindow", LiferayWindowState.isPopUp(request)
+					).build()
+				%>'
 			/>
 		</div>
 
-		<div class="app-builder-form-view-body">
+		<div class="app-builder-form-view-body <%= popUpCssClass %>">
 			<div class="app-builder-custom-object-sidebar" id="<%= customObjectSidebarElementId %>"></div>
 
-			<div class="app-builder-sidebar-content" id="<%= dataLayoutBuilderElementId %>">
+			<div class="data-layout-builder-wrapper" id="<%= dataLayoutBuilderElementId %>">
 				<liferay-data-engine:data-layout-builder
 					componentId="<%= componentId %>"
-					dataDefinitionInputId="dataDefinition"
+					contentType="app-builder"
+					dataDefinitionId="<%= dataDefinitionId %>"
 					dataLayoutId="<%= dataLayoutId %>"
-					dataLayoutInputId="dataLayout"
-					namespace="<%= renderResponse.getNamespace() %>"
+					fieldSetContentType="app-builder-fieldset"
+					module="js/pages/form-view/EditFormViewPropsTransformer.es"
+					moduleServletContext="<%= application %>"
+					namespace="<%= liferayPortletResponse.getNamespace() %>"
+					scopes='<%= SetUtil.fromCollection(Arrays.asList("app-builder")) %>'
 				/>
 			</div>
 		</div>

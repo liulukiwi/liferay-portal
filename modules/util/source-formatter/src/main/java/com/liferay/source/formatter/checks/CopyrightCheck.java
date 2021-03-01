@@ -16,6 +16,8 @@ package com.liferay.source.formatter.checks;
 
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.tools.ToolsUtil;
@@ -40,16 +42,20 @@ public class CopyrightCheck extends BaseFileCheck {
 			return content;
 		}
 
-		if (isModulesApp(absolutePath, true)) {
-			String commercialCopyright = _getCommercialCopyright();
+		String commercialCopyright = _getCommercialCopyright();
 
-			if (Validator.isNotNull(commercialCopyright)) {
+		if (Validator.isNotNull(commercialCopyright)) {
+			if (isModulesApp(absolutePath, true)) {
 				if (content.contains(copyright)) {
 					content = StringUtil.replace(
 						content, copyright, commercialCopyright);
 				}
 
 				copyright = commercialCopyright;
+			}
+			else if (content.contains(commercialCopyright)) {
+				content = StringUtil.replace(
+					content, commercialCopyright, copyright);
 			}
 		}
 
@@ -110,7 +116,11 @@ public class CopyrightCheck extends BaseFileCheck {
 				classLoader.getResourceAsStream(
 					"dependencies/copyright-commercial.txt"));
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
+
 			_commercialCopyright = StringPool.BLANK;
 		}
 
@@ -142,7 +152,11 @@ public class CopyrightCheck extends BaseFileCheck {
 			_copyright = StringUtil.read(
 				classLoader.getResourceAsStream("dependencies/copyright.txt"));
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
+
 			_copyright = StringPool.BLANK;
 		}
 
@@ -171,6 +185,8 @@ public class CopyrightCheck extends BaseFileCheck {
 	}
 
 	private static final String _COPYRIGHT_FILE_NAME_KEY = "copyrightFileName";
+
+	private static final Log _log = LogFactoryUtil.getLog(CopyrightCheck.class);
 
 	private String _commercialCopyright;
 	private String _copyright;

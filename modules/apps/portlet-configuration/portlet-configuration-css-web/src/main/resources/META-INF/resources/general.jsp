@@ -16,14 +16,21 @@
 
 <%@ include file="/init.jsp" %>
 
-<%
-Map<String, Object> contextUseForAllTitle = new HashMap<>();
-
-contextUseForAllTitle.put("disableOnChecked", false);
-contextUseForAllTitle.put("inputSelector", ".custom-title input");
-%>
-
-<aui:input checked="<%= portletConfigurationCSSPortletDisplayContext.isUseCustomTitle() %>" data="<%= contextUseForAllTitle %>" label="use-custom-title" name="useCustomTitle" type="toggle-switch" />
+<aui:input
+	checked="<%= portletConfigurationCSSPortletDisplayContext.isUseCustomTitle() %>"
+	data='<%=
+		HashMapBuilder.<String, Object>put(
+			"disableOnChecked", false
+		).put(
+			"inputSelector", ".custom-title input"
+		).build()
+	%>'
+	inlineLabel="right"
+	label="use-custom-title"
+	labelCssClass="simple-toggle-switch"
+	name="useCustomTitle"
+	type="toggle-switch"
+/>
 
 <aui:field-wrapper cssClass="custom-title lfr-input-text-container">
 	<liferay-ui:input-localized

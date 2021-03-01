@@ -15,16 +15,20 @@
 package com.liferay.data.engine.taglib.servlet.taglib;
 
 import com.liferay.data.engine.renderer.DataLayoutRendererContext;
+import com.liferay.data.engine.rest.dto.v2_0.DataDefinition;
+import com.liferay.data.engine.rest.dto.v2_0.DataLayout;
+import com.liferay.data.engine.taglib.internal.servlet.taglib.util.DataLayoutTaglibUtil;
 import com.liferay.data.engine.taglib.servlet.taglib.base.BaseDataLayoutRendererTag;
-import com.liferay.data.engine.taglib.servlet.taglib.util.DataLayoutTaglibUtil;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.JavaConstants;
 import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.Validator;
 
-import javax.portlet.RenderResponse;
+import javax.portlet.PortletResponse;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.jsp.JspException;
 
 /**
@@ -36,7 +40,7 @@ public class DataLayoutRendererTag extends BaseDataLayoutRendererTag {
 	public int doStartTag() throws JspException {
 		int result = super.doStartTag();
 
-		setNamespacedAttribute(request, "content", _getContent());
+		setNamespacedAttribute(getRequest(), "content", _getContent());
 
 		return result;
 	}
@@ -50,29 +54,56 @@ public class DataLayoutRendererTag extends BaseDataLayoutRendererTag {
 
 			dataLayoutRendererContext.setContainerId(getContainerId());
 
-			if (getDataRecordId() != null) {
+			HttpServletRequest httpServletRequest = getRequest();
+
+			if (Validator.isNotNull(getDataRecordId())) {
 				dataLayoutRendererContext.setDataRecordValues(
 					DataLayoutTaglibUtil.getDataRecordValues(
-						getDataRecordId(), request));
+						getDataRecordId(), httpServletRequest));
 			}
 			else {
 				dataLayoutRendererContext.setDataRecordValues(
 					getDataRecordValues());
 			}
 
-			dataLayoutRendererContext.setHttpServletRequest(request);
+			if (Validator.isNotNull(getDefaultLanguageId())) {
+				dataLayoutRendererContext.setDefaultLanguageId(
+					getDefaultLanguageId());
+			}
+
+			dataLayoutRendererContext.setHttpServletRequest(httpServletRequest);
 			dataLayoutRendererContext.setHttpServletResponse(
 				PortalUtil.getHttpServletResponse(
-					(RenderResponse)request.getAttribute(
+					(PortletResponse)httpServletRequest.getAttribute(
 						JavaConstants.JAVAX_PORTLET_RESPONSE)));
-			dataLayoutRendererContext.setPortletNamespace(getNamespace());
 
-			content = DataLayoutTaglibUtil.renderDataLayout(
-				getDataLayoutId(), dataLayoutRendererContext);
+			if (Validator.isNotNull(getLanguageId())) {
+				dataLayoutRendererContext.setLanguageId(getLanguageId());
+			}
+
+			dataLayoutRendererContext.setPortletNamespace(getNamespace());
+			dataLayoutRendererContext.setReadOnly(getReadOnly());
+
+			if (Validator.isNotNull(getDataLayoutId())) {
+				content = DataLayoutTaglibUtil.renderDataLayout(
+					getDataLayoutId(), dataLayoutRendererContext);
+			}
+			else if (Validator.isNotNull(getDataDefinitionId())) {
+				DataDefinition dataDefinition =
+					DataLayoutTaglibUtil.getDataDefinition(
+						getDataDefinitionId(), httpServletRequest);
+
+				DataLayout dataLayout = dataDefinition.getDefaultDataLayout();
+
+				if (dataLayout != null) {
+					content = DataLayoutTaglibUtil.renderDataLayout(
+						dataLayout.getId(), dataLayoutRendererContext);
+				}
+			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isDebugEnabled()) {
-				_log.debug(e, e);
+				_log.debug(exception, exception);
 			}
 		}
 

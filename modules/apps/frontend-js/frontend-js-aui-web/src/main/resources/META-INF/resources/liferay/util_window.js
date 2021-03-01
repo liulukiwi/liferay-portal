@@ -14,7 +14,7 @@
 
 AUI.add(
 	'liferay-util-window',
-	A => {
+	(A) => {
 		var DOM = A.DOM;
 		var Lang = A.Lang;
 		var UA = A.UA;
@@ -28,7 +28,7 @@ AUI.add(
 
 		var IE11 = IE == 11;
 
-		var setWidth = function(modal, width) {
+		var setWidth = function (modal, width) {
 			if (IE9) {
 				modal.set('width', width + 1);
 				modal.set('width', width);
@@ -38,23 +38,30 @@ AUI.add(
 		var LiferayModal = A.Component.create({
 			ATTRS: {
 				autoHeight: {
-					value: false
+					value: false,
 				},
 
 				autoHeightRatio: {
-					value: 0.95
+					value: 0.95,
 				},
 
 				autoSizeNode: {
-					setter: A.one
+					setter: A.one,
 				},
 
 				autoWidth: {
-					value: false
+					value: false,
 				},
 
 				autoWidthRatio: {
-					value: 0.95
+					value: 0.95,
+				},
+
+				toolbarCssClass: {
+					value: {
+						footer: 'ml-auto',
+						header: 'order-1',
+					},
 				},
 
 				toolbars: {
@@ -67,9 +74,9 @@ AUI.add(
 									cssClass: 'close',
 									discardDefaultButtonCssClasses: true,
 									labelHTML:
-										'<svg class="lexicon-icon" focusable="false"><use data-href="' +
+										'<svg class="lexicon-icon" focusable="false"><use href="' +
 										Liferay.ThemeDisplay.getPathThemeImages() +
-										'/lexicon/icons.svg#times" /><title>' +
+										'/clay/icons.svg#times" /><title>' +
 										Liferay.Language.get('close') +
 										'</title></svg>',
 									on: {
@@ -77,21 +84,21 @@ AUI.add(
 											instance.hide();
 
 											event.domEvent.stopPropagation();
-										}
+										},
 									},
-									render: true
-								}
-							]
+									render: true,
+								},
+							],
 						};
-					}
-				}
+					},
+				},
 			},
 
 			EXTENDS: A.Modal,
 
 			NAME: A.Modal.NAME,
 
-			prototype: {}
+			prototype: {},
 		});
 
 		A.mix(Window, {
@@ -126,7 +133,8 @@ AUI.add(
 						if (openerInFrame) {
 							if (IE9) {
 								instance._syncWindowsUI();
-							} else if (IE11) {
+							}
+							else if (IE11) {
 								instance._resetFocus(modal);
 							}
 						}
@@ -140,30 +148,34 @@ AUI.add(
 				var liferayHandles = modal._liferayHandles;
 
 				liferayHandles.push(
-					Liferay.after('hashChange', event => {
+					Liferay.after('hashChange', (event) => {
 						modal.iframe.set('uri', event.uri);
 					})
 				);
 
 				liferayHandles.push(
-					Liferay.after('popupReady', event => {
+					Liferay.after('popupReady', (event) => {
 						var iframeId = id + instance.IFRAME_SUFFIX;
 
 						if (event.windowName === iframeId) {
 							event.dialog = modal;
 							event.details[0].dialog = modal;
 
-							if (event.doc) {
-								Util.afterIframeLoaded(event);
+							var iframeNode = modal.iframe.node;
 
+							var iframeElement = iframeNode.getDOM();
+
+							if (event.doc) {
 								var modalUtil = event.win.Liferay.Util;
 
 								modalUtil.Window._opener = modal._opener;
 
 								modalUtil.Window._name = id;
-							}
 
-							var iframeNode = modal.iframe.node;
+								iframeElement.onload = function () {
+									Util.afterIframeLoaded(event);
+								};
+							}
 
 							iframeNode.focus();
 
@@ -223,7 +235,7 @@ AUI.add(
 					uri = iframeURL.toString();
 
 					var defaultDialogIframeConfig = {
-						bodyCssClass: ''
+						bodyCssClass: '',
 					};
 
 					dialogIframeConfig = A.merge(
@@ -240,7 +252,7 @@ AUI.add(
 								var liferayHandles = modal._liferayHandles;
 
 								liferayHandles.push(
-									Liferay.on('popupReady', event => {
+									Liferay.on('popupReady', (event) => {
 										instance.fire('load', event);
 
 										popupReady = true;
@@ -251,7 +263,7 @@ AUI.add(
 									instance.node.on('load', () => {
 										if (!popupReady) {
 											Liferay.fire('popupReady', {
-												windowName: iframeId
+												windowName: iframeId,
 											});
 										}
 
@@ -262,7 +274,7 @@ AUI.add(
 
 							iframeId,
 							iframeTitle: config.title || '',
-							uri
+							uri,
 						}
 					);
 				}
@@ -288,7 +300,7 @@ AUI.add(
 
 					if (config.stack !== false) {
 						A.mix(modalConfig, {
-							plugins: [Liferay.WidgetZIndex]
+							plugins: [Liferay.WidgetZIndex],
 						});
 					}
 
@@ -297,7 +309,7 @@ AUI.add(
 							{
 								cssClass: 'modal-full-screen',
 								headerContent: titleNode,
-								id
+								id,
 							},
 							modalConfig
 						)
@@ -312,7 +324,8 @@ AUI.add(
 					instance._register(modal);
 
 					instance._bindWindowHooks(modal, config);
-				} else {
+				}
+				else {
 					if (!config.zIndex && modal.hasPlugin('zindex')) {
 						delete modalConfig.zIndex;
 					}
@@ -335,20 +348,21 @@ AUI.add(
 
 					var originalFn = modal.iframe._onLoadIframe;
 
-					modal.iframe._onLoadIframe = function() {
+					modal.iframe._onLoadIframe = function () {
 						try {
 							originalFn.call(this);
-						} catch (err) {}
+						}
+						catch (err) {}
 					};
 
 					modal.get('boundingBox').addClass('dialog-iframe-modal');
 				}
 
 				if (!Lang.isValue(config.title)) {
-					config.title = '&nbsp;';
+					config.title = '';
 				}
 
-				modal.titleNode.html(config.title);
+				modal.titleNode.html(Lang.String.escapeHTML(config.title));
 
 				modal.fillHeight(modal.bodyNode);
 
@@ -415,7 +429,8 @@ AUI.add(
 
 					if (autoSizeNode) {
 						height = autoSizeNode.get('offsetHeight');
-					} else {
+					}
+					else {
 						height = DOM.winHeight();
 					}
 
@@ -423,7 +438,8 @@ AUI.add(
 
 					if (modal.get('height') === 'auto') {
 						modal._fillMaxHeight(height);
-					} else {
+					}
+					else {
 						modal.set('height', height);
 					}
 				}
@@ -436,7 +452,8 @@ AUI.add(
 
 						if (autoSizeNode) {
 							width = autoSizeNode.get('offsetWidth');
-						} else {
+						}
+						else {
 							width = DOM.winWidth();
 						}
 
@@ -444,10 +461,12 @@ AUI.add(
 
 						if (width != widthInitial) {
 							modal.set('width', width);
-						} else {
+						}
+						else {
 							setWidth(modal, widthInitial);
 						}
-					} else {
+					}
+					else {
 						setWidth(modal, modal.get('width'));
 					}
 				}
@@ -458,7 +477,7 @@ AUI.add(
 
 				var modals = instance._map;
 
-				A.each(modals, modal => {
+				A.each(modals, (modal) => {
 					if (modal.get('visible')) {
 						instance._setWindowDefaultSizeIfNeeded(modal);
 
@@ -484,7 +503,7 @@ AUI.add(
 				centered: true,
 				modal: true,
 				visible: true,
-				zIndex: Liferay.zIndex.WINDOW
+				zIndex: Liferay.zIndex.WINDOW,
 			},
 
 			IFRAME_SUFFIX: '_iframe_',
@@ -510,6 +529,19 @@ AUI.add(
 
 				instance._setWindowDefaultSizeIfNeeded(modal);
 
+				// LPS-106470, LPS-109906 resize modal mask
+
+				var mask = modal.get('maskNode');
+
+				if (mask.getStyle('position') == 'absolute') {
+					mask.setStyle('height', '100%');
+					mask.setStyle(
+						'top',
+						document.documentElement.scrollTop + 'px'
+					);
+					mask.setStyle('width', '100%');
+				}
+
 				modal.align();
 
 				return modal;
@@ -529,7 +561,7 @@ AUI.add(
 				if (dialog && dialog.io) {
 					dialog.io.start();
 				}
-			}
+			},
 		});
 	},
 	'',
@@ -539,7 +571,7 @@ AUI.add(
 			'aui-modal',
 			'aui-url',
 			'event-resize',
-			'liferay-widget-zindex'
-		]
+			'liferay-widget-zindex',
+		],
 	}
 );

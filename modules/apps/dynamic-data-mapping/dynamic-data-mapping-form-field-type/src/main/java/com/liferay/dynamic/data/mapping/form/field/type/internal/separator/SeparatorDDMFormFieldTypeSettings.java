@@ -51,7 +51,7 @@ import com.liferay.dynamic.data.mapping.model.LocalizedValue;
 						@DDMFormLayoutColumn(
 							size = 12,
 							value = {
-								"name", "style", "localizable", "dataType",
+								"name", "fieldReference", "style", "dataType",
 								"type", "showLabel", "repeatable"
 							}
 						)
@@ -63,6 +63,10 @@ import com.liferay.dynamic.data.mapping.model.LocalizedValue;
 )
 public interface SeparatorDDMFormFieldTypeSettings
 	extends DefaultDDMFormFieldTypeSettings {
+
+	@DDMFormField(predefinedValue = "", visibilityExpression = "FALSE")
+	@Override
+	public String dataType();
 
 	@DDMFormField(
 		label = "%style", properties = "displayStyle=multiline", type = "text"

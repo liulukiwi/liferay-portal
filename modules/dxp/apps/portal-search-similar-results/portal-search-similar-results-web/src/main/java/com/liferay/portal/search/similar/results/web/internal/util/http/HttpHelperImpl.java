@@ -17,6 +17,8 @@ package com.liferay.portal.search.similar.results.web.internal.util.http;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.Http;
 import com.liferay.portal.kernel.util.Portal;
@@ -43,7 +45,11 @@ public class HttpHelperImpl implements HttpHelper {
 			return StringUtil.split(
 				subpath[subpath.length - 1], CharPool.FORWARD_SLASH);
 		}
-		catch (RuntimeException re) {
+		catch (RuntimeException runtimeException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(runtimeException, runtimeException);
+			}
+
 			return StringPool.EMPTY_ARRAY;
 		}
 	}
@@ -69,7 +75,33 @@ public class HttpHelperImpl implements HttpHelper {
 					StringPool.UNDERLINE, ppid, StringPool.UNDERLINE,
 					parameterName))[0];
 		}
-		catch (RuntimeException re) {
+		catch (RuntimeException runtimeException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(runtimeException, runtimeException);
+			}
+
+			return null;
+		}
+	}
+
+	@Override
+	public String getPortletIdParameter(
+		String urlString, String parameterName, String portletId) {
+
+		try {
+			Map<String, String[]> parameterMap = _http.parameterMapFromString(
+				_http.getQueryString(urlString));
+
+			return parameterMap.get(
+				StringBundler.concat(
+					StringPool.UNDERLINE, portletId, StringPool.UNDERLINE,
+					parameterName))[0];
+		}
+		catch (RuntimeException runtimeException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(runtimeException, runtimeException);
+			}
+
 			return null;
 		}
 	}
@@ -78,6 +110,8 @@ public class HttpHelperImpl implements HttpHelper {
 	public void setHttp(Http http) {
 		_http = http;
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(HttpHelperImpl.class);
 
 	private Http _http;
 

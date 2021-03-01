@@ -24,11 +24,11 @@
 	navigationItems="<%= siteMySitesDisplayContext.getNavigationItems() %>"
 />
 
-<clay:management-toolbar
-	displayContext="<%= new SiteMySitesManagementToolbarDisplayContext(liferayPortletRequest, liferayPortletResponse, request, siteMySitesDisplayContext) %>"
+<clay:management-toolbar-v2
+	displayContext="<%= new SiteMySitesManagementToolbarDisplayContext(request, liferayPortletRequest, liferayPortletResponse, siteMySitesDisplayContext) %>"
 />
 
-<aui:form action="<%= siteMySitesDisplayContext.getPortletURL() %>" cssClass="container-fluid-1280" method="get" name="fm">
+<aui:form action="<%= siteMySitesDisplayContext.getPortletURL() %>" cssClass="container-fluid container-fluid-max-xl" method="get" name="fm">
 	<liferay-ui:search-container
 		searchContainer="<%= siteMySitesDisplayContext.getGroupSearchContainer() %>"
 	>
@@ -50,6 +50,8 @@
 			else if (Objects.equals(siteMySitesDisplayContext.getTabs1(), "my-sites") && (group.getPrivateLayoutsPageCount() > 0)) {
 				rowURL = group.getDisplayURL(themeDisplay, true);
 			}
+
+			List<DropdownItem> dropdownItems = siteMySitesDisplayContext.getGroupActionDropdownItems(group);
 			%>
 
 			<c:choose>
@@ -107,19 +109,16 @@
 						</c:if>
 					</liferay-ui:search-container-column-text>
 
-					<liferay-ui:search-container-column-text>
-						<clay:dropdown-actions
-							defaultEventHandler="<%= MySitesWebKeys.SITES_DROPDOWN_DEFAULT_EVENT_HANDLER %>"
-							dropdownItems="<%= siteMySitesDisplayContext.getArticleActionDropdownItems(group) %>"
-						/>
-					</liferay-ui:search-container-column-text>
+					<c:if test="<%= ListUtil.isNotEmpty(dropdownItems) %>">
+						<liferay-ui:search-container-column-text>
+							<clay:dropdown-actions
+								dropdownItems="<%= dropdownItems %>"
+								propsTransformer="js/SiteDropdownDefaultPropsTransformer"
+							/>
+						</liferay-ui:search-container-column-text>
+					</c:if>
 				</c:when>
 				<c:when test='<%= Objects.equals(siteMySitesDisplayContext.getDisplayStyle(), "icon") %>'>
-
-					<%
-					row.setCssClass("entry-card lfr-asset-item");
-					%>
-
 					<liferay-ui:search-container-column-text>
 						<clay:vertical-card
 							verticalCard="<%= new SiteVerticalCard(group, renderRequest, renderResponse, siteMySitesDisplayContext.getTabs1(), siteMySitesDisplayContext.getGroupUsersCounts(group.getGroupId())) %>"
@@ -171,12 +170,14 @@
 						/>
 					</liferay-ui:search-container-column-text>
 
-					<liferay-ui:search-container-column-text>
-						<clay:dropdown-actions
-							defaultEventHandler="<%= MySitesWebKeys.SITES_DROPDOWN_DEFAULT_EVENT_HANDLER %>"
-							dropdownItems="<%= siteMySitesDisplayContext.getArticleActionDropdownItems(group) %>"
-						/>
-					</liferay-ui:search-container-column-text>
+					<c:if test="<%= ListUtil.isNotEmpty(dropdownItems) %>">
+						<liferay-ui:search-container-column-text>
+							<clay:dropdown-actions
+								dropdownItems="<%= dropdownItems %>"
+								propsTransformer="js/SiteDropdownDefaultPropsTransformer"
+							/>
+						</liferay-ui:search-container-column-text>
+					</c:if>
 				</c:when>
 			</c:choose>
 		</liferay-ui:search-container-row>
@@ -187,8 +188,3 @@
 		/>
 	</liferay-ui:search-container>
 </aui:form>
-
-<liferay-frontend:component
-	componentId="<%= MySitesWebKeys.SITES_DROPDOWN_DEFAULT_EVENT_HANDLER %>"
-	module="js/SiteDropdownDefaultEventHandler.es"
-/>

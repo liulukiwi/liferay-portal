@@ -21,10 +21,10 @@ SelectOrganizationsDisplayContext selectOrganizationsDisplayContext = new Select
 %>
 
 <clay:management-toolbar
-	displayContext="<%= new SelectOrganizationsManagementToolbarDisplayContext(liferayPortletRequest, liferayPortletResponse, request, selectOrganizationsDisplayContext) %>"
+	managementToolbarDisplayContext="<%= new SelectOrganizationsManagementToolbarDisplayContext(request, liferayPortletRequest, liferayPortletResponse, selectOrganizationsDisplayContext) %>"
 />
 
-<aui:form cssClass="container-fluid-1280" name="fm">
+<aui:form cssClass="container-fluid container-fluid-max-xl" name="fm">
 	<liferay-ui:search-container
 		id="organizations"
 		searchContainer="<%= selectOrganizationsDisplayContext.getOrganizationSearchContainer() %>"
@@ -57,14 +57,14 @@ SelectOrganizationsDisplayContext selectOrganizationsDisplayContext = new Select
 		'<portlet:namespace />organizations'
 	);
 
-	searchContainer.on('rowToggled', function(event) {
+	searchContainer.on('rowToggled', (event) => {
 		var result = {};
 
 		var data = event.elements.allSelectedElements.getDOMNodes();
 
 		if (data.length) {
 			result = {
-				data: data
+				data: data,
 			};
 		}
 

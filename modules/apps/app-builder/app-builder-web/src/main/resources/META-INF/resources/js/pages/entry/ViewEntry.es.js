@@ -12,24 +12,52 @@
  * details.
  */
 
-import openToast from 'frontend-js-web/liferay/toast/commands/OpenToast.es';
-import React, {useEffect, useState, useContext} from 'react';
-import {withRouter} from 'react-router-dom';
+import {usePrevious} from '@liferay/frontend-js-react-web';
+import Loading from 'data-engine-js-components-web/js/components/loading/Loading.es';
+import useQuery from 'data-engine-js-components-web/js/hooks/useQuery.es';
+import {getItem} from 'data-engine-js-components-web/js/utils/client.es';
+import {errorToast} from 'data-engine-js-components-web/js/utils/toast.es';
+import {isEqualObjects} from 'data-engine-js-components-web/js/utils/utils.es';
+import React, {useContext, useEffect, useState} from 'react';
 
 import {AppContext} from '../../AppContext.es';
 import ControlMenu from '../../components/control-menu/ControlMenu.es';
-import {Loading} from '../../components/loading/Loading.es';
-import useQuery, {toQueryString} from '../../hooks/useQuery.es';
-import {confirmDelete, getItem} from '../../utils/client.es';
-import FieldPreview from './FieldPreview.es';
+import useDataLayout from '../../hooks/useDataLayout.es';
+import FieldPreview, {SectionRenderer} from './FieldPreview.es';
+import ViewEntryInfoBar from './ViewEntryInfoBar.es';
 import ViewEntryUpperToolbar from './ViewEntryUpperToolbar.es';
+import {ENTRY_STATUS} from './constants.es';
 
-const ViewDataLayoutPageValues = ({
+const getSections = ({dataDefinitionFields = []}) => {
+	const sections = {};
+
+	dataDefinitionFields.forEach(
+		({
+			customProperties: {collapsible},
+			name,
+			nestedDataDefinitionFields,
+		}) => {
+			if (nestedDataDefinitionFields.length) {
+				sections[name] = {
+					collapsible,
+					fields: nestedDataDefinitionFields.map(({name}) => name),
+					nestedDataDefinitionFields,
+				};
+			}
+		}
+	);
+
+	return sections;
+};
+
+export function ViewDataLayoutPageValues({
 	dataDefinition,
 	dataLayoutPage,
-	dataRecordValues
-}) => {
+	dataRecordValues,
+}) {
 	const {dataLayoutRows} = dataLayoutPage;
+	const {defaultLanguageId} = dataDefinition;
+	const sections = getSections(dataDefinition);
 
 	return dataLayoutRows
 		.reduce(
@@ -38,129 +66,159 @@ const ViewDataLayoutPageValues = ({
 				...dataLayoutColumns.reduce(
 					(fields, {fieldNames = []}) => [...fields, ...fieldNames],
 					[]
-				)
+				),
 			],
 			[]
 		)
-		.map(fieldName => (
-			<FieldPreview
-				dataDefinition={dataDefinition}
-				dataRecordValues={dataRecordValues}
-				fieldName={fieldName}
-				key={fieldName}
-			/>
-		));
-};
+		.map((fieldName) => {
+			const fieldGroup = sections[fieldName];
 
-export default withRouter(({history, match: {params: {entryIndex}}}) => {
-	const {appId, basePortletURL} = useContext(AppContext);
-	const [isLoading, setLoading] = useState(true);
-	const [dataDefinition, setDataDefinition] = useState();
-	const [dataLayout, setDataLayout] = useState({});
+			if (fieldGroup) {
+				return (
+					<SectionRenderer
+						collapsible={fieldGroup.collapsible}
+						dataDefinition={dataDefinition}
+						fieldName={fieldName}
+					>
+						{fieldGroup.fields.map((field) => (
+							<FieldPreview
+								dataDefinition={{
+									...dataDefinition,
+									dataDefinitionFields:
+										fieldGroup.nestedDataDefinitionFields,
+								}}
+								dataRecordValues={dataRecordValues}
+								defaultLanguageId={defaultLanguageId}
+								fieldName={field}
+								key={field}
+							/>
+						))}
+					</SectionRenderer>
+				);
+			}
 
-	const [{dataRecord, page, total}, setResults] = useState({
+			return (
+				<FieldPreview
+					dataDefinition={dataDefinition}
+					dataRecordValues={dataRecordValues}
+					defaultLanguageId={defaultLanguageId}
+					fieldName={fieldName}
+					key={fieldName}
+				/>
+			);
+		});
+}
+
+export default function ViewEntry({
+	history,
+	match: {
+		params: {entryIndex},
+	},
+}) {
+	const {
+		dataDefinitionId,
+		dataLayoutId,
+		dataListViewId,
+		workflowClassName,
+	} = useContext(AppContext);
+	const {
+		dataDefinition,
+		dataLayout: {dataLayoutPages},
+		isLoading,
+	} = useDataLayout(dataLayoutId, dataDefinitionId);
+
+	const [{dataRecord, isFetching, page, totalCount}, setState] = useState({
 		dataRecord: {},
+		isFetching: true,
 		page: 1,
-		total: 0
+		totalCount: 0,
 	});
+
+	const {dataRecordValues = {}, id: dataRecordId, status} = dataRecord;
 
 	const [query] = useQuery(history, {
 		keywords: '',
 		page: 1,
-		sort: ''
+		sort: '',
 	});
 
+	const previousQuery = usePrevious(query);
+	const previousIndex = usePrevious(entryIndex);
+
 	useEffect(() => {
-		getItem(`/o/app-builder/v1.0/apps/${appId}`).then(
-			({dataDefinitionId, dataLayoutId}) => {
-				Promise.all([
-					getItem(
-						`/o/data-engine/v2.0/data-definitions/${dataDefinitionId}/data-records`,
-						{...query, page: entryIndex, pageSize: 1}
-					).then(({items = [], page, totalCount}) => {
-						if (items.length > 0) {
-							setResults({
-								dataRecord: items.pop(),
-								page,
-								total: totalCount
-							});
-						}
-					}),
-					getItem(
-						`/o/data-engine/v2.0/data-definitions/${dataDefinitionId}`
-					).then(dataDefinition => setDataDefinition(dataDefinition)),
-					getItem(
-						`/o/data-engine/v2.0/data-layouts/${dataLayoutId}`
-					).then(dataLayout => setDataLayout(dataLayout))
-				]).then(() => setLoading(false));
-			}
-		);
-	}, [appId, entryIndex, query]);
+		if (
+			!isEqualObjects(query, previousQuery) ||
+			entryIndex !== previousIndex
+		) {
+			getItem(
+				`/o/data-engine/v2.0/data-definitions/${dataDefinitionId}/data-records`,
+				{...query, dataListViewId, page: entryIndex, pageSize: 1}
+			)
+				.then(({items = [], ...response}) => {
+					if (items.length > 0) {
+						setState({
+							dataRecord: items.pop(),
+							isFetching: false,
+							...response,
+						});
+					}
+				})
+				.catch(() => {
+					setState((prevState) => ({
+						...prevState,
+						isFetching: false,
+					}));
 
-	const {dataRecordValues = {}} = dataRecord;
-	const {dataLayoutPages} = dataLayout;
-
-	const onDelete = () => {
-		confirmDelete('/o/data-engine/v2.0/data-records/')({
-			id: dataRecord.id
-		}).then(confirmed => {
-			if (confirmed) {
-				openToast({
-					message: Liferay.Language.get('an-entry-was-deleted'),
-					title: Liferay.Language.get('success'),
-					type: 'success'
+					errorToast();
 				});
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [entryIndex, query]);
 
-				history.push('/');
-			}
-		});
-	};
+	useEffect(() => {
+		if (dataRecordId && status !== ENTRY_STATUS.APPROVED) {
+			getItem(`/o/headless-admin-workflow/v1.0/workflow-instances`, {
+				assetClassName: [workflowClassName],
+				assetPrimaryKey: [dataRecordId],
+				completed: false,
+			}).then(({items}) => {
+				setState((prevState) => ({
+					...prevState,
+					dataRecord: {
+						...prevState.dataRecord,
+						stepName: items.pop()?.state,
+					},
+				}));
+			});
+		}
+	}, [dataRecordId, status, workflowClassName]);
 
-	const onEdit = () => {
-		Liferay.Util.navigate(
-			Liferay.Util.PortletURL.createRenderURL(basePortletURL, {
-				dataDefinitionId: dataDefinition.id,
-				dataLayoutId: dataLayout.id,
-				dataRecordId: dataRecord.id,
-				mvcPath: '/edit_entry.jsp',
-				redirect: location.href
-			})
-		);
-	};
+	const getBackURL = () => {
+		const urlParams = new URLSearchParams(window.location.hash);
+		const backURL = urlParams.get('backURL') || '../../';
 
-	const onNext = () => {
-		const nextIndex = Math.min(parseInt(entryIndex, 10) + 1, total);
-
-		setLoading(true);
-
-		history.push(`/entries/${nextIndex}?${toQueryString(query)}`);
-	};
-
-	const onPrev = () => {
-		const prevIndex = Math.max(parseInt(entryIndex, 10) - 1, 1);
-
-		setLoading(true);
-
-		history.push(`/entries/${prevIndex}?${toQueryString(query)}`);
+		return backURL;
 	};
 
 	return (
 		<div className="view-entry">
 			<ControlMenu
-				backURL="../../"
+				backURL={getBackURL()}
 				title={Liferay.Language.get('details-view')}
 			/>
 
 			<ViewEntryUpperToolbar
-				onDelete={onDelete}
-				onEdit={onEdit}
-				onNext={onNext}
-				onPrev={onPrev}
+				dataRecordId={dataRecordId}
 				page={page}
-				total={total}
-			/>
+				totalCount={totalCount}
+			>
+				{dataRecord && <ViewEntryInfoBar {...dataRecord} />}
+			</ViewEntryUpperToolbar>
 
-			<Loading isLoading={isLoading}>
+			<Loading
+				className="loading-wrapper"
+				isLoading={isLoading || isFetching}
+			>
 				<div className="container">
 					<div className="justify-content-center row">
 						<div className="col-lg-8">
@@ -182,4 +240,4 @@ export default withRouter(({history, match: {params: {entryIndex}}}) => {
 			</Loading>
 		</div>
 	);
-});
+}

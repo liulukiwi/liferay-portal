@@ -152,9 +152,8 @@ public class TLDUtil {
 					continue;
 				}
 
-				String fileName = _getFileName(schemaLocation);
-
-				File curDefinitionFile = _portalDefinitions.get(fileName);
+				File curDefinitionFile = _portalDefinitions.get(
+					_getFileName(schemaLocation));
 
 				if (curDefinitionFile == null) {
 					continue;
@@ -186,9 +185,8 @@ public class TLDUtil {
 					continue;
 				}
 
-				String fileName = _getFileName(schemaLocation);
-
-				File curDefinitionFile = _portalDefinitions.get(fileName);
+				File curDefinitionFile = _portalDefinitions.get(
+					_getFileName(schemaLocation));
 
 				if (curDefinitionFile == null) {
 					continue;
@@ -224,33 +222,35 @@ public class TLDUtil {
 
 		String[] values = schemLocation.split("\\s+");
 
-		if (values.length != 2) {
+		if ((values.length % 2) != 0) {
 			return;
 		}
 
-		String definitionFileName = _getFileName(values[1]);
+		for (int i = 0; i < values.length; i += 2) {
+			String definitionFileName = _getFileName(values[i + 1]);
 
-		File xsdFile = _portalDefinitions.get(definitionFileName);
+			File xsdFile = _portalDefinitions.get(definitionFileName);
 
-		if (xsdFile == null) {
-			return;
-		}
+			if (xsdFile == null) {
+				return;
+			}
 
-		xsdConsumer.accept(values[0], xsdFile);
+			xsdConsumer.accept(values[i], xsdFile);
 
-		Map<String, File> nestedXSDFiles = _nestedXSDCache.computeIfAbsent(
-			xsdFile,
-			keyXSDFile -> {
-				try {
-					return _scanNestedXSD(keyXSDFile);
-				}
-				catch (Exception e) {
-					throw new RuntimeException(e);
-				}
-			});
+			Map<String, File> nestedXSDFiles = _nestedXSDCache.computeIfAbsent(
+				xsdFile,
+				keyXSDFile -> {
+					try {
+						return _scanNestedXSD(keyXSDFile);
+					}
+					catch (Exception exception) {
+						throw new RuntimeException(exception);
+					}
+				});
 
-		for (Map.Entry<String, File> entry : nestedXSDFiles.entrySet()) {
-			xsdConsumer.accept(entry.getKey(), entry.getValue());
+			for (Map.Entry<String, File> entry : nestedXSDFiles.entrySet()) {
+				xsdConsumer.accept(entry.getKey(), entry.getValue());
+			}
 		}
 	}
 

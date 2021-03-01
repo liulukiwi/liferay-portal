@@ -49,13 +49,10 @@ public class TCKJunitBatchTestClassGroup extends BatchTestClassGroup {
 
 			return new TCKBatchTestClass(
 				batchName,
-				new TestClassFile(
-					JenkinsResultsParserUtil.getCanonicalPath(warFile)));
+				new File(JenkinsResultsParserUtil.getCanonicalPath(warFile)));
 		}
 
-		protected TCKBatchTestClass(
-			String batchName, TestClassFile testClassFile) {
-
+		protected TCKBatchTestClass(String batchName, File testClassFile) {
 			super(testClassFile);
 
 			addTestClassMethod(batchName);
@@ -68,18 +65,17 @@ public class TCKJunitBatchTestClassGroup extends BatchTestClassGroup {
 
 		super(batchName, portalTestClassJob);
 
-		_tckHomeDirectory = new File(
-			JenkinsResultsParserUtil.getProperty(jobProperties, "tck.home"));
+		_tckHomeDir = _getTCKHomeDir();
 
 		excludesPathMatchers.addAll(
 			getPathMatchers(
 				getFirstPropertyValue("test.batch.class.names.excludes"),
-				_tckHomeDirectory));
+				_tckHomeDir));
 
 		includesPathMatchers.addAll(
 			getPathMatchers(
 				getFirstPropertyValue("test.batch.class.names.includes"),
-				_tckHomeDirectory));
+				_tckHomeDir));
 
 		if (includeStableTestSuite && isStableTestSuiteBatch()) {
 			excludesPathMatchers.addAll(
@@ -87,25 +83,27 @@ public class TCKJunitBatchTestClassGroup extends BatchTestClassGroup {
 					getFirstPropertyValue(
 						"test.batch.class.names.excludes", batchName,
 						NAME_STABLE_TEST_SUITE),
-					_tckHomeDirectory));
+					_tckHomeDir));
 
 			includesPathMatchers.addAll(
 				getPathMatchers(
 					getFirstPropertyValue(
 						"test.batch.class.names.includes", batchName,
 						NAME_STABLE_TEST_SUITE),
-					_tckHomeDirectory));
+					_tckHomeDir));
 		}
 
 		setTestClasses();
 
 		setAxisTestClassGroups();
+
+		setSegmentTestClassGroups();
 	}
 
 	protected void setTestClasses() {
 		try {
 			Files.walkFileTree(
-				_tckHomeDirectory.toPath(),
+				_tckHomeDir.toPath(),
 				new SimpleFileVisitor<Path>() {
 
 					@Override
@@ -133,16 +131,41 @@ public class TCKJunitBatchTestClassGroup extends BatchTestClassGroup {
 
 				});
 		}
-		catch (IOException ioe) {
+		catch (IOException ioException) {
 			throw new RuntimeException(
 				"Unable to search for test file names in " +
-					_tckHomeDirectory.getPath(),
-				ioe);
+					_tckHomeDir.getPath(),
+				ioException);
 		}
 
 		Collections.sort(testClasses);
 	}
 
-	private final File _tckHomeDirectory;
+	private File _getTCKHomeDir() {
+		String tckHome = JenkinsResultsParserUtil.getProperty(
+			jobProperties, "tck.home");
+
+		if ((tckHome == null) || tckHome.isEmpty()) {
+			File jenkinsDir = new File(
+				"/opt/dev/projects/github/liferay-jenkins-ee");
+
+			if (jenkinsDir.exists()) {
+				tckHome = JenkinsResultsParserUtil.getProperty(
+					JenkinsResultsParserUtil.getProperties(
+						new File(
+							jenkinsDir,
+							"commands/dependencies/test.properties")),
+					"tck.home");
+			}
+		}
+
+		if ((tckHome == null) || tckHome.isEmpty()) {
+			throw new RuntimeException("Unable find the TCK home");
+		}
+
+		return new File(tckHome);
+	}
+
+	private final File _tckHomeDir;
 
 }

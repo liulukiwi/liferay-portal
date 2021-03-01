@@ -29,6 +29,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>SUBMIT_BUTTON</td>
+	<td>//button[@type='submit' and @id='ddm-form-submit']</td>
+	<td></td>
+</tr>
+<tr>
 	<td>FORM_PAGE</td>
 	<td>//*[contains(@class,'nav-link') and contains(.,'${key_formPageName}')]</td>
 	<td></td>
@@ -55,7 +60,7 @@
 </tr>
 <tr>
 	<td>SUCCESS_PAGE_DESCRIPTION</td>
-	<td>//div[contains(@class,'basic-info')]//h5[contains(.,'${key_successPageDescription}')]</td>
+	<td>//div[contains(@class,'basic-info')]//p[contains(.,'${key_successPageDescription}')]</td>
 	<td></td>
 </tr>
 </tbody>

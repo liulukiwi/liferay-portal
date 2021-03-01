@@ -37,7 +37,7 @@ import org.osgi.service.component.annotations.Component;
 	immediate = true,
 	property = {
 		"javax.portlet.name=" + ExportImportPortletKeys.EXPORT_IMPORT,
-		"mvc.command.name=publishLayoutsSimple"
+		"mvc.command.name=/export_import/publish_layouts_simple"
 	},
 	service = MVCRenderCommand.class
 )
@@ -58,16 +58,16 @@ public class PublishLayoutsSimpleMVCRenderCommand implements MVCRenderCommand {
 
 			ActionUtil.getGroup(renderRequest);
 		}
-		catch (Exception e) {
-			if (e instanceof NoSuchGroupException ||
-				e instanceof PrincipalException) {
+		catch (Exception exception) {
+			if (exception instanceof NoSuchGroupException ||
+				exception instanceof PrincipalException) {
 
-				SessionErrors.add(renderRequest, e.getClass());
+				SessionErrors.add(renderRequest, exception.getClass());
 
 				return "/error.jsp";
 			}
 
-			throw new PortletException(e);
+			throw new PortletException(exception);
 		}
 
 		return "/publish/simple/publish_layouts_simple.jsp";

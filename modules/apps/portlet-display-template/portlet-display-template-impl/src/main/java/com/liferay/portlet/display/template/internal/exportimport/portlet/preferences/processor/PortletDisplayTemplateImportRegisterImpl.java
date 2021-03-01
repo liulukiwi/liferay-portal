@@ -15,6 +15,8 @@
 package com.liferay.portlet.display.template.internal.exportimport.portlet.preferences.processor;
 
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.service.PortletLocalService;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -54,7 +56,10 @@ public class PortletDisplayTemplateImportRegisterImpl
 				return portletPreferences.getValue("displayStyle", null);
 			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
 		}
 
 		return null;
@@ -74,11 +79,17 @@ public class PortletDisplayTemplateImportRegisterImpl
 					portletPreferences.getValue("displayStyleGroupId", null));
 			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
 		}
 
 		return 0;
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		PortletDisplayTemplateImportRegisterImpl.class);
 
 	@Reference(unbind = "-")
 	private PortletLocalService _portletLocalService;

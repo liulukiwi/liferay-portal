@@ -17,7 +17,7 @@
 <%@ include file="/facets/init.jsp" %>
 
 <%
-UserSearchFacetDisplayBuilder userSearchFacetDisplayBuilder = new UserSearchFacetDisplayBuilder();
+UserSearchFacetDisplayBuilder userSearchFacetDisplayBuilder = new UserSearchFacetDisplayBuilder(renderRequest);
 
 userSearchFacetDisplayBuilder.setFacet(facet);
 userSearchFacetDisplayBuilder.setFrequenciesVisible(dataJSONObject.getBoolean("showAssetCount", true));
@@ -34,7 +34,7 @@ UserSearchFacetDisplayContext userSearchFacetDisplayContext = userSearchFacetDis
 		<aui:input autocomplete="off" name="<%= HtmlUtil.escapeAttribute(userSearchFacetDisplayContext.getParamName()) %>" type="hidden" value="<%= userSearchFacetDisplayContext.getParamValue() %>" />
 	</c:when>
 	<c:otherwise>
-		<div class="panel panel-default">
+		<div class="panel panel-secondary">
 			<div class="panel-heading">
 				<div class="panel-title">
 					<liferay-ui:message key="users" />

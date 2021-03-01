@@ -15,6 +15,8 @@
 package com.liferay.portal.verify.test.util;
 
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.settings.CompanyServiceSettingsLocator;
@@ -62,15 +64,15 @@ public abstract class BaseCompanySettingsVerifyProcessTestCase
 	public void setUp() throws Exception {
 		super.setUp();
 
-		UnicodeProperties properties = new UnicodeProperties();
+		UnicodeProperties unicodeProperties = new UnicodeProperties();
 
-		populateLegacyProperties(properties);
+		populateLegacyProperties(unicodeProperties);
 
 		List<Company> companies = companyLocalService.getCompanies(false);
 
 		for (Company company : companies) {
 			companyLocalService.updatePreferences(
-				company.getCompanyId(), properties);
+				company.getCompanyId(), unicodeProperties);
 		}
 	}
 
@@ -119,8 +121,8 @@ public abstract class BaseCompanySettingsVerifyProcessTestCase
 			return settingsFactory.getSettings(
 				new CompanyServiceSettingsLocator(companyId, getSettingsId()));
 		}
-		catch (SettingsException se) {
-			throw new IllegalStateException(se);
+		catch (SettingsException settingsException) {
+			throw new IllegalStateException(settingsException);
 		}
 	}
 
@@ -144,7 +146,11 @@ public abstract class BaseCompanySettingsVerifyProcessTestCase
 			return (VerifyProcess)_bundleContext.getService(
 				serviceReferences[0]);
 		}
-		catch (Exception ise) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
+
 			throw new IllegalStateException("Unable to get verify process");
 		}
 	}
@@ -152,7 +158,7 @@ public abstract class BaseCompanySettingsVerifyProcessTestCase
 	protected abstract String getVerifyProcessName();
 
 	protected abstract void populateLegacyProperties(
-		UnicodeProperties properties);
+		UnicodeProperties unicodeProperties);
 
 	@Inject
 	protected CompanyLocalService companyLocalService;
@@ -162,6 +168,9 @@ public abstract class BaseCompanySettingsVerifyProcessTestCase
 
 	@Inject
 	protected SettingsFactory settingsFactory;
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		BaseCompanySettingsVerifyProcessTestCase.class);
 
 	private static BundleContext _bundleContext;
 

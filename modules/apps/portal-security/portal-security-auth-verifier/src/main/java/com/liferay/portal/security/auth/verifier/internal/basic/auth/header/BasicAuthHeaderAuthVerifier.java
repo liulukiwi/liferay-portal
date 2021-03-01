@@ -31,14 +31,14 @@ import java.util.Properties;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+
 /**
  * @author Tomas Polesovsky
  */
+@Component(service = AuthVerifier.class)
 public class BasicAuthHeaderAuthVerifier implements AuthVerifier {
-
-	public BasicAuthHeaderAuthVerifier(AutoLogin autoLogin) {
-		_autoLogin = autoLogin;
-	}
 
 	@Override
 	public String getAuthType() {
@@ -69,16 +69,16 @@ public class BasicAuthHeaderAuthVerifier implements AuthVerifier {
 
 			return authVerifierResult;
 		}
-		catch (AutoLoginException ale) {
+		catch (AutoLoginException autoLoginException) {
 			if (isBasicAuth(accessControlContext, properties)) {
 				if (_log.isDebugEnabled()) {
-					_log.debug(ale, ale);
+					_log.debug(autoLoginException, autoLoginException);
 				}
 
 				return generateChallenge(accessControlContext);
 			}
 
-			throw new AuthException(ale);
+			throw new AuthException(autoLoginException);
 		}
 	}
 
@@ -117,6 +117,7 @@ public class BasicAuthHeaderAuthVerifier implements AuthVerifier {
 	private static final Log _log = LogFactoryUtil.getLog(
 		BasicAuthHeaderAuthVerifier.class);
 
-	private final AutoLogin _autoLogin;
+	@Reference(target = "(&(private.auto.login=true)(type=basic.auth.header))")
+	private AutoLogin _autoLogin;
 
 }

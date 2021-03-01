@@ -18,6 +18,7 @@ import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.fragment.constants.FragmentConstants;
 import com.liferay.fragment.constants.FragmentExportImportConstants;
 import com.liferay.fragment.importer.FragmentsImporter;
+import com.liferay.fragment.importer.FragmentsImporterResultEntry;
 import com.liferay.fragment.model.FragmentCollection;
 import com.liferay.fragment.model.FragmentEntry;
 import com.liferay.fragment.service.FragmentCollectionLocalService;
@@ -29,7 +30,6 @@ import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.User;
-import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
@@ -55,6 +55,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -112,10 +113,8 @@ public class FragmentsImporterTest {
 		Assert.assertEquals(
 			fragmentCollections.toString(), 0, fragmentCollections.size());
 
-		ServiceContext serviceContext =
-			ServiceContextTestUtil.getServiceContext(_group.getGroupId());
-
-		ServiceContextThreadLocal.pushServiceContext(serviceContext);
+		ServiceContextThreadLocal.pushServiceContext(
+			ServiceContextTestUtil.getServiceContext(_group.getGroupId()));
 
 		try {
 			_fragmentsImporter.importFile(
@@ -138,15 +137,13 @@ public class FragmentsImporterTest {
 			_fragmentEntryLocalService.getFragmentEntries(
 				fragmentCollection.getFragmentCollectionId());
 
-		Assert.assertTrue(!fragmentEntries.isEmpty());
+		Assert.assertFalse(fragmentEntries.isEmpty());
 	}
 
 	@Test
 	public void testImportFragmentsWithReservedNames() throws Exception {
-		ServiceContext serviceContext =
-			ServiceContextTestUtil.getServiceContext(_group.getGroupId());
-
-		ServiceContextThreadLocal.pushServiceContext(serviceContext);
+		ServiceContextThreadLocal.pushServiceContext(
+			ServiceContextTestUtil.getServiceContext(_group.getGroupId()));
 
 		try {
 			_fragmentsImporter.importFile(
@@ -178,6 +175,128 @@ public class FragmentsImporterTest {
 	}
 
 	@Test
+	public void testImportFragmentWithInvalidConfiguration() throws Exception {
+		ServiceContextThreadLocal.pushServiceContext(
+			ServiceContextTestUtil.getServiceContext(_group.getGroupId()));
+
+		try {
+			_fragmentsImporter.importFile(
+				_user.getUserId(), _group.getGroupId(), 0, _file, false);
+		}
+		finally {
+			ServiceContextThreadLocal.popServiceContext();
+		}
+
+		List<FragmentCollection> fragmentCollections =
+			_fragmentCollectionLocalService.getFragmentCollections(
+				_group.getGroupId(), QueryUtil.ALL_POS, QueryUtil.ALL_POS);
+
+		FragmentCollection fragmentCollection = fragmentCollections.get(0);
+
+		List<FragmentEntry> fragmentEntries =
+			_fragmentEntryLocalService.getFragmentEntries(
+				fragmentCollection.getFragmentCollectionId());
+
+		Stream<FragmentEntry> stream = fragmentEntries.stream();
+
+		List<FragmentEntry> filteredFragmentEntries = stream.filter(
+			fragmentEntry -> Objects.equals(
+				fragmentEntry.getName(), "Fragment With Invalid Configuration")
+		).collect(
+			Collectors.toList()
+		);
+
+		Assert.assertEquals(
+			filteredFragmentEntries.toString(), 1,
+			filteredFragmentEntries.size());
+
+		FragmentEntry fragmentEntry = filteredFragmentEntries.get(0);
+
+		Assert.assertTrue(fragmentEntry.isDraft());
+	}
+
+	@Test
+	public void testImportFragmentWithInvalidHTML() throws Exception {
+		ServiceContextThreadLocal.pushServiceContext(
+			ServiceContextTestUtil.getServiceContext(_group.getGroupId()));
+
+		try {
+			_fragmentsImporter.importFile(
+				_user.getUserId(), _group.getGroupId(), 0, _file, false);
+		}
+		finally {
+			ServiceContextThreadLocal.popServiceContext();
+		}
+
+		List<FragmentCollection> fragmentCollections =
+			_fragmentCollectionLocalService.getFragmentCollections(
+				_group.getGroupId(), QueryUtil.ALL_POS, QueryUtil.ALL_POS);
+
+		FragmentCollection fragmentCollection = fragmentCollections.get(0);
+
+		List<FragmentEntry> fragmentEntries =
+			_fragmentEntryLocalService.getFragmentEntries(
+				fragmentCollection.getFragmentCollectionId());
+
+		Stream<FragmentEntry> stream = fragmentEntries.stream();
+
+		List<FragmentEntry> filteredFragmentEntries = stream.filter(
+			fragmentEntry -> Objects.equals(
+				fragmentEntry.getName(), "Fragment With Invalid HTML")
+		).collect(
+			Collectors.toList()
+		);
+
+		Assert.assertEquals(
+			filteredFragmentEntries.toString(), 1,
+			filteredFragmentEntries.size());
+
+		FragmentEntry fragmentEntry = filteredFragmentEntries.get(0);
+
+		Assert.assertTrue(fragmentEntry.isDraft());
+	}
+
+	@Test
+	public void testImportReactFragmentWithInvalidConfiguration()
+		throws Exception {
+
+		ServiceContextThreadLocal.pushServiceContext(
+			ServiceContextTestUtil.getServiceContext(_group.getGroupId()));
+
+		try {
+			List<FragmentsImporterResultEntry> fragmentsImporterResultEntries =
+				_fragmentsImporter.importFragmentEntries(
+					_user.getUserId(), _group.getGroupId(), 0, _file, false);
+
+			Stream<FragmentsImporterResultEntry> stream =
+				fragmentsImporterResultEntries.stream();
+
+			List<FragmentsImporterResultEntry>
+				filteredFragmentsImporterResultEntries = stream.filter(
+					fragmentsImporterResultEntry -> Objects.equals(
+						fragmentsImporterResultEntry.getName(),
+						"React Fragment With Invalid Configuration")
+				).collect(
+					Collectors.toList()
+				);
+
+			Assert.assertEquals(
+				filteredFragmentsImporterResultEntries.toString(), 1,
+				filteredFragmentsImporterResultEntries.size());
+
+			FragmentsImporterResultEntry fragmentsImporterResultEntry =
+				filteredFragmentsImporterResultEntries.get(0);
+
+			Assert.assertEquals(
+				FragmentsImporterResultEntry.Status.INVALID,
+				fragmentsImporterResultEntry.getStatus());
+		}
+		finally {
+			ServiceContextThreadLocal.popServiceContext();
+		}
+	}
+
+	@Test
 	public void testImportSections() throws Exception {
 		_importFragmentsByType(FragmentConstants.TYPE_SECTION);
 	}
@@ -202,8 +321,7 @@ public class FragmentsImporterTest {
 
 		String entryPath = path + StringPool.FORWARD_SLASH + key;
 
-		String zipPath = StringUtil.replace(
-			entryPath, _FRAGMENTS_PATH, StringPool.BLANK);
+		String zipPath = StringUtil.removeSubstring(entryPath, _FRAGMENTS_PATH);
 
 		URL url = _bundle.getEntry(entryPath);
 
@@ -214,15 +332,14 @@ public class FragmentsImporterTest {
 		ZipWriter zipWriter = ZipWriterFactoryUtil.getZipWriter();
 
 		URL collectionURL = _bundle.getEntry(
-			path + FragmentExportImportConstants.FILE_NAME_COLLECTION_CONFIG);
+			path + FragmentExportImportConstants.FILE_NAME_COLLECTION);
 
 		zipWriter.addEntry(
-			FragmentExportImportConstants.FILE_NAME_COLLECTION_CONFIG,
+			FragmentExportImportConstants.FILE_NAME_COLLECTION,
 			collectionURL.openStream());
 
 		Enumeration<URL> enumeration = _bundle.findEntries(
-			path, FragmentExportImportConstants.FILE_NAME_FRAGMENT_CONFIG,
-			true);
+			path, FragmentExportImportConstants.FILE_NAME_FRAGMENT, true);
 
 		try {
 			while (enumeration.hasMoreElements()) {
@@ -231,20 +348,16 @@ public class FragmentsImporterTest {
 				_populateZipWriter(zipWriter, url);
 			}
 
-			zipWriter.finish();
-
 			return zipWriter.getFile();
 		}
-		catch (Exception e) {
-			throw new Exception(e);
+		catch (Exception exception) {
+			throw new Exception(exception);
 		}
 	}
 
 	private void _importFragmentsByType(int type) throws Exception {
-		ServiceContext serviceContext =
-			ServiceContextTestUtil.getServiceContext(_group.getGroupId());
-
-		ServiceContextThreadLocal.pushServiceContext(serviceContext);
+		ServiceContextThreadLocal.pushServiceContext(
+			ServiceContextTestUtil.getServiceContext(_group.getGroupId()));
 
 		try {
 			_fragmentsImporter.importFile(
@@ -291,8 +404,9 @@ public class FragmentsImporterTest {
 		String path = FileUtil.getPath(url.getPath());
 
 		_addZipWriterEntry(
-			zipWriter, path,
-			FragmentExportImportConstants.FILE_NAME_FRAGMENT_CONFIG);
+			zipWriter, path, FragmentExportImportConstants.FILE_NAME_FRAGMENT);
+		_addZipWriterEntry(
+			zipWriter, path, jsonObject.getString("configurationPath"));
 		_addZipWriterEntry(zipWriter, path, jsonObject.getString("cssPath"));
 		_addZipWriterEntry(zipWriter, path, jsonObject.getString("htmlPath"));
 		_addZipWriterEntry(zipWriter, path, jsonObject.getString("jsPath"));

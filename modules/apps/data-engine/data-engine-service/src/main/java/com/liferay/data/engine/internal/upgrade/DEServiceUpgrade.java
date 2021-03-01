@@ -34,6 +34,16 @@ public class DEServiceUpgrade implements UpgradeStepRegistrator {
 		registry.register("1.0.0", "1.1.0", new UpgradeSchema());
 
 		registry.register("1.1.0", "2.0.0", new UpgradeCompanyId());
+
+		registry.register(
+			"2.0.0", "2.1.0",
+			new com.liferay.data.engine.internal.upgrade.v2_1_0.
+				UpgradeDEDataDefinitionFieldLink());
+
+		registry.register(
+			"2.1.0", "2.1.1",
+			new com.liferay.data.engine.internal.upgrade.v2_1_1.
+				UpgradeDEDataDefinitionFieldLink());
 	}
 
 }

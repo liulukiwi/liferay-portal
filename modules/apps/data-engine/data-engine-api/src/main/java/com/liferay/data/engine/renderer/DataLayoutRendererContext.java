@@ -32,6 +32,10 @@ public class DataLayoutRendererContext {
 		return _dataRecordValues;
 	}
 
+	public String getDefaultLanguageId() {
+		return _defaultLanguageId;
+	}
+
 	public HttpServletRequest getHttpServletRequest() {
 		return _httpServletRequest;
 	}
@@ -40,8 +44,16 @@ public class DataLayoutRendererContext {
 		return _httpServletResponse;
 	}
 
+	public String getLanguageId() {
+		return _languageId;
+	}
+
 	public String getPortletNamespace() {
 		return _portletNamespace;
+	}
+
+	public boolean isReadOnly() {
+		return _readOnly;
 	}
 
 	public void setContainerId(String containerId) {
@@ -50,6 +62,10 @@ public class DataLayoutRendererContext {
 
 	public void setDataRecordValues(Map<String, Object> dataRecordValues) {
 		_dataRecordValues = dataRecordValues;
+	}
+
+	public void setDefaultLanguageId(String defaultLanguageId) {
+		_defaultLanguageId = defaultLanguageId;
 	}
 
 	public void setHttpServletRequest(HttpServletRequest httpServletRequest) {
@@ -62,14 +78,25 @@ public class DataLayoutRendererContext {
 		_httpServletResponse = httpServletResponse;
 	}
 
+	public void setLanguageId(String languageId) {
+		_languageId = languageId;
+	}
+
 	public void setPortletNamespace(String portletNamespace) {
 		_portletNamespace = portletNamespace;
 	}
 
+	public void setReadOnly(boolean readOnly) {
+		_readOnly = readOnly;
+	}
+
 	private String _containerId;
 	private Map<String, Object> _dataRecordValues;
+	private String _defaultLanguageId;
 	private HttpServletRequest _httpServletRequest;
 	private HttpServletResponse _httpServletResponse;
+	private String _languageId;
 	private String _portletNamespace;
+	private boolean _readOnly;
 
 }

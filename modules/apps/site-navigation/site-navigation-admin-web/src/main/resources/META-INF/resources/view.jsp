@@ -17,18 +17,18 @@
 <%@ include file="/init.jsp" %>
 
 <%
-SiteNavigationAdminManagementToolbarDisplayContext siteNavigationAdminManagementToolbarDisplayContext = new SiteNavigationAdminManagementToolbarDisplayContext(liferayPortletRequest, liferayPortletResponse, request, siteNavigationAdminDisplayContext);
+SiteNavigationAdminManagementToolbarDisplayContext siteNavigationAdminManagementToolbarDisplayContext = new SiteNavigationAdminManagementToolbarDisplayContext(request, liferayPortletRequest, liferayPortletResponse, siteNavigationAdminDisplayContext);
 %>
 
-<clay:management-toolbar
+<clay:management-toolbar-v2
 	displayContext="<%= siteNavigationAdminManagementToolbarDisplayContext %>"
 />
 
-<portlet:actionURL name="/navigation_menu/delete_site_navigation_menu" var="deleteSitaNavigationMenuURL">
+<portlet:actionURL name="/site_navigation_admin/delete_site_navigation_menu" var="deleteSitaNavigationMenuURL">
 	<portlet:param name="redirect" value="<%= currentURL %>" />
 </portlet:actionURL>
 
-<aui:form action="<%= deleteSitaNavigationMenuURL %>" cssClass="container-fluid-1280" name="fm">
+<aui:form action="<%= deleteSitaNavigationMenuURL %>" cssClass="container-fluid container-fluid-max-xl" name="fm">
 	<liferay-ui:search-container
 		id="siteNavigationMenus"
 		searchContainer="<%= siteNavigationAdminDisplayContext.getSearchContainer() %>"
@@ -40,11 +40,10 @@ SiteNavigationAdminManagementToolbarDisplayContext siteNavigationAdminManagement
 		>
 
 			<%
-			Map<String, Object> rowData = new HashMap<>();
-
-			rowData.put("actions", siteNavigationAdminManagementToolbarDisplayContext.getAvailableActions(siteNavigationMenu));
-
-			row.setData(rowData);
+			row.setData(
+				HashMapBuilder.<String, Object>put(
+					"actions", siteNavigationAdminManagementToolbarDisplayContext.getAvailableActions(siteNavigationMenu)
+				).build());
 			%>
 
 			<portlet:renderURL var="editSiteNavigationMenuURL">
@@ -104,11 +103,17 @@ SiteNavigationAdminManagementToolbarDisplayContext siteNavigationAdminManagement
 						value="<%= HtmlUtil.escape(siteNavigationMenu.getName()) %>"
 					/>
 
-					<liferay-ui:search-container-column-text
-						cssClass="table-cell-expand-smaller"
-						name="add-new-pages"
-						value='<%= siteNavigationMenu.isAuto() ? LanguageUtil.get(request, "yes") : StringPool.BLANK %>'
-					/>
+					<%
+					Group scopeGroup = themeDisplay.getScopeGroup();
+					%>
+
+					<c:if test="<%= !scopeGroup.isCompany() %>">
+						<liferay-ui:search-container-column-text
+							cssClass="table-cell-expand-smaller"
+							name="add-new-pages"
+							value='<%= siteNavigationMenu.isAuto() ? LanguageUtil.get(request, "yes") : StringPool.BLANK %>'
+						/>
+					</c:if>
 
 					<liferay-ui:search-container-column-text
 						cssClass="table-cell-expand-smaller table-cell-minw-150"
@@ -142,12 +147,14 @@ SiteNavigationAdminManagementToolbarDisplayContext siteNavigationAdminManagement
 	</liferay-ui:search-container>
 </aui:form>
 
-<aui:script require="metal-dom/src/all/dom as dom,frontend-js-web/liferay/modal/commands/OpenSimpleInputModal.es as openSimpleInputModal" sandbox="<%= true %>">
-	var renameSiteNavigationMenuClickHandler = dom.delegate(
+<aui:script require="frontend-js-web/liferay/delegate/delegate.es as delegateModule,frontend-js-web/liferay/modal/commands/OpenSimpleInputModal.es as openSimpleInputModal">
+	var delegate = delegateModule.default;
+
+	var renameSiteNavigationMenuClickHandler = delegate(
 		document.body,
 		'click',
 		'.<portlet:namespace />update-site-navigation-menu-action-option > a',
-		function(event) {
+		(event) => {
 			var data = event.delegateTarget.dataset;
 
 			event.preventDefault();
@@ -164,13 +171,13 @@ SiteNavigationAdminManagementToolbarDisplayContext siteNavigationAdminManagement
 				mainFieldValue: data.mainFieldValue,
 				namespace: '<portlet:namespace />',
 				spritemap:
-					'<%= themeDisplay.getPathThemeImages() %>/lexicon/icons.svg'
+					'<%= themeDisplay.getPathThemeImages() %>/clay/icons.svg',
 			});
 		}
 	);
 
 	function handleDestroyPortlet() {
-		renameSiteNavigationMenuClickHandler.removeListener();
+		renameSiteNavigationMenuClickHandler.dispose();
 
 		Liferay.detach('destroyPortlet', handleDestroyPortlet);
 	}
@@ -180,5 +187,5 @@ SiteNavigationAdminManagementToolbarDisplayContext siteNavigationAdminManagement
 
 <liferay-frontend:component
 	componentId="<%= siteNavigationAdminManagementToolbarDisplayContext.getDefaultEventHandler() %>"
-	module="js/ManagementToolbarDefaultEventHandler.es"
+	module="js/ManagementToolbarDefaultEventHandler"
 />

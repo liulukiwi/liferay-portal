@@ -1,0 +1,45 @@
+.price-value {
+	font-weight: 500;
+	margin-right: $spacer;
+
+	&:last-of-type {
+		margin-right: 0;
+	}
+
+	&-big {
+		font-size: 1.15rem;
+	}
+
+	&-discount,
+	&-final {
+		color: $danger-primary;
+
+		&:not(.hide) + .price-value {
+			text-decoration: line-through;
+		}
+	}
+
+	&-inactive {
+		color: $gray-600;
+		font-weight: normal;
+		text-decoration: line-through;
+	}
+
+	&-percentages {
+		font-size: 10px;
+		white-space: nowrap;
+
+		&::after {
+			color: $gray-600;
+			content: ' | ';
+		}
+
+		&:last-child::after {
+			content: '';
+		}
+	}
+
+	&-promo {
+		color: $danger-primary;
+	}
+}

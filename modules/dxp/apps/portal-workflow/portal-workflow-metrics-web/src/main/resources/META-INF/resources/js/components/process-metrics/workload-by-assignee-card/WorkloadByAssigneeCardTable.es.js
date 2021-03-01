@@ -11,74 +11,59 @@
 
 import React, {useContext} from 'react';
 
-import {filterKeys} from '../../../shared/components/filter/util/filterConstants.es';
-import {ChildLink} from '../../../shared/components/router/routerWrapper.es';
+import filterConstants from '../../../shared/components/filter/util/filterConstants.es';
+import ChildLink from '../../../shared/components/router/ChildLink.es';
 import {getFormattedPercentage} from '../../../shared/util/util.es';
 import {AppContext} from '../../AppContext.es';
-import {processStatusConstants} from '../filter/store/ProcessStatusStore.es';
-import {slaStatusConstants} from '../filter/store/SLAStatusStore.es';
+import {processStatusConstants} from '../../filter/ProcessStatusFilter.es';
+import {slaStatusConstants} from '../../filter/SLAStatusFilter.es';
 
 const Item = ({
+	assignee: {id, name},
 	currentTab,
-	id,
-	name,
 	onTimeTaskCount,
 	overdueTaskCount,
 	processId,
 	processStepKey,
-	taskCount
+	taskCount,
 }) => {
-	const currentCount =
-		currentTab === 'overdue'
-			? overdueTaskCount
-			: currentTab === 'onTime'
-			? onTimeTaskCount
-			: taskCount;
 	const {defaultDelta} = useContext(AppContext);
 
-	const formattedPercentage = getFormattedPercentage(currentCount, taskCount);
-
-	const getFiltersQuery = () => {
-		const filterParams = {
-			[filterKeys.assignee]: [id],
-			[filterKeys.processStatus]: [processStatusConstants.pending],
-			[filterKeys.slaStatus]: [slaStatusConstants[currentTab]]
-		};
-
-		if (processStepKey && processStepKey !== 'allSteps') {
-			filterParams[filterKeys.processStep] = [processStepKey];
-		}
-
-		return filterParams;
+	const counts = {
+		onTime: onTimeTaskCount,
+		overdue: overdueTaskCount,
+		total: taskCount,
 	};
 
-	const instancesListPath = `/instance/${processId}/${defaultDelta}/1`;
+	const filters = {
+		[filterConstants.assignee.key]: [id],
+		[filterConstants.processStatus.key]: [processStatusConstants.pending],
+		[filterConstants.processStep.key]: [processStepKey],
+		[filterConstants.slaStatus.key]: [slaStatusConstants[currentTab]],
+	};
+
+	const formattedPercentage = getFormattedPercentage(
+		counts[currentTab],
+		taskCount
+	);
 
 	return (
 		<tr>
-			<td
-				className="assignee-name border-0"
-				data-testid="workloadByAssigneeCardItem"
-			>
+			<td className="assignee-name border-0">
 				<ChildLink
 					className={'workload-by-assignee-link'}
-					query={{filters: getFiltersQuery()}}
-					to={instancesListPath}
+					query={{filters}}
+					to={`/instance/${processId}/${defaultDelta}/1`}
 				>
-					<span data-testid="assigneeName">{name}</span>
+					<span>{name}</span>
 				</ChildLink>
 			</td>
 
-			<td className="border-0 text-right" data-testid="taskCount">
-				<span className="task-count-value" data-testid="taskCountValue">
-					{currentCount}
-				</span>
+			<td className="border-0 text-right">
+				<span className="task-count-value">{counts[currentTab]}</span>
 
 				{currentTab !== 'total' && (
-					<span
-						className="task-count-percentage"
-						data-testid="taskCountPercentage"
-					>
+					<span className="task-count-percentage">
 						{' / '}
 
 						{formattedPercentage}

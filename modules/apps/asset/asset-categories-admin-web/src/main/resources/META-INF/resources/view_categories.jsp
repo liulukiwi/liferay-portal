@@ -17,15 +17,10 @@
 <%@ include file="/init.jsp" %>
 
 <%
-AssetCategoriesManagementToolbarDisplayContext assetCategoriesManagementToolbarDisplayContext = new AssetCategoriesManagementToolbarDisplayContext(liferayPortletRequest, liferayPortletResponse, request, assetCategoriesDisplayContext);
+AssetCategoriesManagementToolbarDisplayContext assetCategoriesManagementToolbarDisplayContext = new AssetCategoriesManagementToolbarDisplayContext(request, liferayPortletRequest, liferayPortletResponse, assetCategoriesDisplayContext);
 %>
 
-<clay:navigation-bar
-	inverted="<%= true %>"
-	navigationItems="<%= assetCategoriesDisplayContext.getAssetCategoriesNavigationItems() %>"
-/>
-
-<clay:management-toolbar
+<clay:management-toolbar-v2
 	displayContext="<%= assetCategoriesManagementToolbarDisplayContext %>"
 />
 
@@ -33,10 +28,17 @@ AssetCategoriesManagementToolbarDisplayContext assetCategoriesManagementToolbarD
 	<portlet:param name="redirect" value="<%= currentURL %>" />
 </portlet:actionURL>
 
-<aui:form action="<%= deleteCategoryURL %>" cssClass="container-fluid-1280" name="fm">
-	<liferay-site-navigation:breadcrumb
-		breadcrumbEntries="<%= AssetCategoryUtil.getAssetCategoriesBreadcrumbEntries(assetCategoriesDisplayContext.getVocabulary(), assetCategoriesDisplayContext.getCategory(), request, renderResponse) %>"
-	/>
+<aui:form action="<%= deleteCategoryURL %>" cssClass="container-fluid container-fluid-max-xl" name="fm">
+
+	<%
+	List<BreadcrumbEntry> breadcrumbEntries = AssetCategoryUtil.getAssetCategoriesBreadcrumbEntries(assetCategoriesDisplayContext.getVocabulary(), assetCategoriesDisplayContext.getCategory(), request, renderResponse);
+	%>
+
+	<c:if test="<%= ListUtil.isNotEmpty(breadcrumbEntries) %>">
+		<liferay-site-navigation:breadcrumb
+			breadcrumbEntries="<%= breadcrumbEntries %>"
+		/>
+	</c:if>
 
 	<liferay-ui:search-container
 		id="assetCategories"
@@ -48,7 +50,7 @@ AssetCategoriesManagementToolbarDisplayContext assetCategoriesManagementToolbarD
 			modelVar="curCategory"
 		>
 			<portlet:renderURL var="rowURL">
-				<portlet:param name="mvcPath" value="/view_categories.jsp" />
+				<portlet:param name="mvcPath" value="/view.jsp" />
 				<portlet:param name="categoryId" value="<%= String.valueOf(curCategory.getCategoryId()) %>" />
 				<portlet:param name="vocabularyId" value="<%= String.valueOf(curCategory.getVocabularyId()) %>" />
 			</portlet:renderURL>
@@ -56,11 +58,10 @@ AssetCategoriesManagementToolbarDisplayContext assetCategoriesManagementToolbarD
 			<%
 			int subcategoriesCount = AssetCategoryLocalServiceUtil.getChildCategoriesCount(curCategory.getCategoryId());
 
-			Map<String, Object> rowData = HashMapBuilder.<String, Object>put(
-				"actions", assetCategoriesManagementToolbarDisplayContext.getAvailableActions(curCategory)
-			).build();
-
-			row.setData(rowData);
+			row.setData(
+				HashMapBuilder.<String, Object>put(
+					"actions", assetCategoriesManagementToolbarDisplayContext.getAvailableActions(curCategory)
+				).build());
 			%>
 
 			<c:choose>
@@ -153,7 +154,7 @@ AssetCategoriesManagementToolbarDisplayContext assetCategoriesManagementToolbarD
 
 <portlet:actionURL name="moveCategory" var="moveCategoryURL">
 	<portlet:param name="redirect" value="<%= currentURL %>" />
-	<portlet:param name="mvcPath" value="/view_categories.jsp" />
+	<portlet:param name="mvcPath" value="/view.jsp" />
 </portlet:actionURL>
 
 <aui:form action="<%= moveCategoryURL %>" name="moveCategoryFm">

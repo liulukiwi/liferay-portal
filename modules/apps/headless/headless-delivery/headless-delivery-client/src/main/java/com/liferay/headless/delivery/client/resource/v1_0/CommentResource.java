@@ -18,9 +18,11 @@ import com.liferay.headless.delivery.client.dto.v1_0.Comment;
 import com.liferay.headless.delivery.client.http.HttpInvoker;
 import com.liferay.headless.delivery.client.pagination.Page;
 import com.liferay.headless.delivery.client.pagination.Pagination;
+import com.liferay.headless.delivery.client.problem.Problem;
 import com.liferay.headless.delivery.client.serdes.v1_0.CommentSerDes;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.logging.Level;
@@ -40,13 +42,13 @@ public interface CommentResource {
 	}
 
 	public Page<Comment> getBlogPostingCommentsPage(
-			Long blogPostingId, String search, String filterString,
-			Pagination pagination, String sortString)
+			Long blogPostingId, String search, List<String> aggregations,
+			String filterString, Pagination pagination, String sortString)
 		throws Exception;
 
 	public HttpInvoker.HttpResponse getBlogPostingCommentsPageHttpResponse(
-			Long blogPostingId, String search, String filterString,
-			Pagination pagination, String sortString)
+			Long blogPostingId, String search, List<String> aggregations,
+			String filterString, Pagination pagination, String sortString)
 		throws Exception;
 
 	public Comment postBlogPostingComment(Long blogPostingId, Comment comment)
@@ -56,9 +58,24 @@ public interface CommentResource {
 			Long blogPostingId, Comment comment)
 		throws Exception;
 
+	public void postBlogPostingCommentBatch(
+			Long blogPostingId, String callbackURL, Object object)
+		throws Exception;
+
+	public HttpInvoker.HttpResponse postBlogPostingCommentBatchHttpResponse(
+			Long blogPostingId, String callbackURL, Object object)
+		throws Exception;
+
 	public void deleteComment(Long commentId) throws Exception;
 
 	public HttpInvoker.HttpResponse deleteCommentHttpResponse(Long commentId)
+		throws Exception;
+
+	public void deleteCommentBatch(String callbackURL, Object object)
+		throws Exception;
+
+	public HttpInvoker.HttpResponse deleteCommentBatchHttpResponse(
+			String callbackURL, Object object)
 		throws Exception;
 
 	public Comment getComment(Long commentId) throws Exception;
@@ -72,14 +89,21 @@ public interface CommentResource {
 			Long commentId, Comment comment)
 		throws Exception;
 
+	public void putCommentBatch(String callbackURL, Object object)
+		throws Exception;
+
+	public HttpInvoker.HttpResponse putCommentBatchHttpResponse(
+			String callbackURL, Object object)
+		throws Exception;
+
 	public Page<Comment> getCommentCommentsPage(
-			Long parentCommentId, String search, String filterString,
-			Pagination pagination, String sortString)
+			Long parentCommentId, String search, List<String> aggregations,
+			String filterString, Pagination pagination, String sortString)
 		throws Exception;
 
 	public HttpInvoker.HttpResponse getCommentCommentsPageHttpResponse(
-			Long parentCommentId, String search, String filterString,
-			Pagination pagination, String sortString)
+			Long parentCommentId, String search, List<String> aggregations,
+			String filterString, Pagination pagination, String sortString)
 		throws Exception;
 
 	public Comment postCommentComment(Long parentCommentId, Comment comment)
@@ -90,13 +114,13 @@ public interface CommentResource {
 		throws Exception;
 
 	public Page<Comment> getDocumentCommentsPage(
-			Long documentId, String search, String filterString,
-			Pagination pagination, String sortString)
+			Long documentId, String search, List<String> aggregations,
+			String filterString, Pagination pagination, String sortString)
 		throws Exception;
 
 	public HttpInvoker.HttpResponse getDocumentCommentsPageHttpResponse(
-			Long documentId, String search, String filterString,
-			Pagination pagination, String sortString)
+			Long documentId, String search, List<String> aggregations,
+			String filterString, Pagination pagination, String sortString)
 		throws Exception;
 
 	public Comment postDocumentComment(Long documentId, Comment comment)
@@ -106,14 +130,23 @@ public interface CommentResource {
 			Long documentId, Comment comment)
 		throws Exception;
 
+	public void postDocumentCommentBatch(
+			Long documentId, String callbackURL, Object object)
+		throws Exception;
+
+	public HttpInvoker.HttpResponse postDocumentCommentBatchHttpResponse(
+			Long documentId, String callbackURL, Object object)
+		throws Exception;
+
 	public Page<Comment> getStructuredContentCommentsPage(
-			Long structuredContentId, String search, String filterString,
-			Pagination pagination, String sortString)
+			Long structuredContentId, String search, List<String> aggregations,
+			String filterString, Pagination pagination, String sortString)
 		throws Exception;
 
 	public HttpInvoker.HttpResponse
 			getStructuredContentCommentsPageHttpResponse(
-				Long structuredContentId, String search, String filterString,
+				Long structuredContentId, String search,
+				List<String> aggregations, String filterString,
 				Pagination pagination, String sortString)
 		throws Exception;
 
@@ -123,6 +156,15 @@ public interface CommentResource {
 
 	public HttpInvoker.HttpResponse postStructuredContentCommentHttpResponse(
 			Long structuredContentId, Comment comment)
+		throws Exception;
+
+	public void postStructuredContentCommentBatch(
+			Long structuredContentId, String callbackURL, Object object)
+		throws Exception;
+
+	public HttpInvoker.HttpResponse
+			postStructuredContentCommentBatchHttpResponse(
+				Long structuredContentId, String callbackURL, Object object)
 		throws Exception;
 
 	public static class Builder {
@@ -170,8 +212,8 @@ public interface CommentResource {
 		private Map<String, String> _headers = new LinkedHashMap<>();
 		private String _host = "localhost";
 		private Locale _locale;
-		private String _login = "test@liferay.com";
-		private String _password = "test";
+		private String _login = "";
+		private String _password = "";
 		private Map<String, String> _parameters = new LinkedHashMap<>();
 		private int _port = 8080;
 		private String _scheme = "http";
@@ -181,14 +223,14 @@ public interface CommentResource {
 	public static class CommentResourceImpl implements CommentResource {
 
 		public Page<Comment> getBlogPostingCommentsPage(
-				Long blogPostingId, String search, String filterString,
-				Pagination pagination, String sortString)
+				Long blogPostingId, String search, List<String> aggregations,
+				String filterString, Pagination pagination, String sortString)
 			throws Exception {
 
 			HttpInvoker.HttpResponse httpResponse =
 				getBlogPostingCommentsPageHttpResponse(
-					blogPostingId, search, filterString, pagination,
-					sortString);
+					blogPostingId, search, aggregations, filterString,
+					pagination, sortString);
 
 			String content = httpResponse.getContent();
 
@@ -198,12 +240,21 @@ public interface CommentResource {
 			_logger.fine(
 				"HTTP response status code: " + httpResponse.getStatusCode());
 
-			return Page.of(content, CommentSerDes::toDTO);
+			try {
+				return Page.of(content, CommentSerDes::toDTO);
+			}
+			catch (Exception e) {
+				_logger.log(
+					Level.WARNING,
+					"Unable to process HTTP response: " + content, e);
+
+				throw new Problem.ProblemException(Problem.toDTO(content));
+			}
 		}
 
 		public HttpInvoker.HttpResponse getBlogPostingCommentsPageHttpResponse(
-				Long blogPostingId, String search, String filterString,
-				Pagination pagination, String sortString)
+				Long blogPostingId, String search, List<String> aggregations,
+				String filterString, Pagination pagination, String sortString)
 			throws Exception {
 
 			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
@@ -249,8 +300,9 @@ public interface CommentResource {
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port +
-						"/o/headless-delivery/v1.0/blog-postings/{blogPostingId}/comments",
-				blogPostingId);
+						"/o/headless-delivery/v1.0/blog-postings/{blogPostingId}/comments");
+
+			httpInvoker.path("blogPostingId", blogPostingId);
 
 			httpInvoker.userNameAndPassword(
 				_builder._login + ":" + _builder._password);
@@ -281,7 +333,7 @@ public interface CommentResource {
 					Level.WARNING,
 					"Unable to process HTTP response: " + content, e);
 
-				throw e;
+				throw new Problem.ProblemException(Problem.toDTO(content));
 			}
 		}
 
@@ -315,8 +367,71 @@ public interface CommentResource {
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port +
-						"/o/headless-delivery/v1.0/blog-postings/{blogPostingId}/comments",
-				blogPostingId);
+						"/o/headless-delivery/v1.0/blog-postings/{blogPostingId}/comments");
+
+			httpInvoker.path("blogPostingId", blogPostingId);
+
+			httpInvoker.userNameAndPassword(
+				_builder._login + ":" + _builder._password);
+
+			return httpInvoker.invoke();
+		}
+
+		public void postBlogPostingCommentBatch(
+				Long blogPostingId, String callbackURL, Object object)
+			throws Exception {
+
+			HttpInvoker.HttpResponse httpResponse =
+				postBlogPostingCommentBatchHttpResponse(
+					blogPostingId, callbackURL, object);
+
+			String content = httpResponse.getContent();
+
+			_logger.fine("HTTP response content: " + content);
+
+			_logger.fine("HTTP response message: " + httpResponse.getMessage());
+			_logger.fine(
+				"HTTP response status code: " + httpResponse.getStatusCode());
+		}
+
+		public HttpInvoker.HttpResponse postBlogPostingCommentBatchHttpResponse(
+				Long blogPostingId, String callbackURL, Object object)
+			throws Exception {
+
+			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+			httpInvoker.body(object.toString(), "application/json");
+
+			if (_builder._locale != null) {
+				httpInvoker.header(
+					"Accept-Language", _builder._locale.toLanguageTag());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
+			}
+
+			httpInvoker.httpMethod(HttpInvoker.HttpMethod.POST);
+
+			if (callbackURL != null) {
+				httpInvoker.parameter(
+					"callbackURL", String.valueOf(callbackURL));
+			}
+
+			httpInvoker.path(
+				_builder._scheme + "://" + _builder._host + ":" +
+					_builder._port +
+						"/o/headless-delivery/v1.0/blog-postings/{blogPostingId}/comments/batch");
+
+			httpInvoker.path("blogPostingId", blogPostingId);
 
 			httpInvoker.userNameAndPassword(
 				_builder._login + ":" + _builder._password);
@@ -335,6 +450,17 @@ public interface CommentResource {
 			_logger.fine("HTTP response message: " + httpResponse.getMessage());
 			_logger.fine(
 				"HTTP response status code: " + httpResponse.getStatusCode());
+
+			try {
+				return;
+			}
+			catch (Exception e) {
+				_logger.log(
+					Level.WARNING,
+					"Unable to process HTTP response: " + content, e);
+
+				throw new Problem.ProblemException(Problem.toDTO(content));
+			}
 		}
 
 		public HttpInvoker.HttpResponse deleteCommentHttpResponse(
@@ -365,8 +491,65 @@ public interface CommentResource {
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port +
-						"/o/headless-delivery/v1.0/comments/{commentId}",
-				commentId);
+						"/o/headless-delivery/v1.0/comments/{commentId}");
+
+			httpInvoker.path("commentId", commentId);
+
+			httpInvoker.userNameAndPassword(
+				_builder._login + ":" + _builder._password);
+
+			return httpInvoker.invoke();
+		}
+
+		public void deleteCommentBatch(String callbackURL, Object object)
+			throws Exception {
+
+			HttpInvoker.HttpResponse httpResponse =
+				deleteCommentBatchHttpResponse(callbackURL, object);
+
+			String content = httpResponse.getContent();
+
+			_logger.fine("HTTP response content: " + content);
+
+			_logger.fine("HTTP response message: " + httpResponse.getMessage());
+			_logger.fine(
+				"HTTP response status code: " + httpResponse.getStatusCode());
+		}
+
+		public HttpInvoker.HttpResponse deleteCommentBatchHttpResponse(
+				String callbackURL, Object object)
+			throws Exception {
+
+			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+			if (_builder._locale != null) {
+				httpInvoker.header(
+					"Accept-Language", _builder._locale.toLanguageTag());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
+			}
+
+			httpInvoker.httpMethod(HttpInvoker.HttpMethod.DELETE);
+
+			if (callbackURL != null) {
+				httpInvoker.parameter(
+					"callbackURL", String.valueOf(callbackURL));
+			}
+
+			httpInvoker.path(
+				_builder._scheme + "://" + _builder._host + ":" +
+					_builder._port +
+						"/o/headless-delivery/v1.0/comments/batch");
 
 			httpInvoker.userNameAndPassword(
 				_builder._login + ":" + _builder._password);
@@ -394,7 +577,7 @@ public interface CommentResource {
 					Level.WARNING,
 					"Unable to process HTTP response: " + content, e);
 
-				throw e;
+				throw new Problem.ProblemException(Problem.toDTO(content));
 			}
 		}
 
@@ -425,8 +608,9 @@ public interface CommentResource {
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port +
-						"/o/headless-delivery/v1.0/comments/{commentId}",
-				commentId);
+						"/o/headless-delivery/v1.0/comments/{commentId}");
+
+			httpInvoker.path("commentId", commentId);
 
 			httpInvoker.userNameAndPassword(
 				_builder._login + ":" + _builder._password);
@@ -456,7 +640,7 @@ public interface CommentResource {
 					Level.WARNING,
 					"Unable to process HTTP response: " + content, e);
 
-				throw e;
+				throw new Problem.ProblemException(Problem.toDTO(content));
 			}
 		}
 
@@ -490,8 +674,67 @@ public interface CommentResource {
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port +
-						"/o/headless-delivery/v1.0/comments/{commentId}",
-				commentId);
+						"/o/headless-delivery/v1.0/comments/{commentId}");
+
+			httpInvoker.path("commentId", commentId);
+
+			httpInvoker.userNameAndPassword(
+				_builder._login + ":" + _builder._password);
+
+			return httpInvoker.invoke();
+		}
+
+		public void putCommentBatch(String callbackURL, Object object)
+			throws Exception {
+
+			HttpInvoker.HttpResponse httpResponse = putCommentBatchHttpResponse(
+				callbackURL, object);
+
+			String content = httpResponse.getContent();
+
+			_logger.fine("HTTP response content: " + content);
+
+			_logger.fine("HTTP response message: " + httpResponse.getMessage());
+			_logger.fine(
+				"HTTP response status code: " + httpResponse.getStatusCode());
+		}
+
+		public HttpInvoker.HttpResponse putCommentBatchHttpResponse(
+				String callbackURL, Object object)
+			throws Exception {
+
+			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+			httpInvoker.body(object.toString(), "application/json");
+
+			if (_builder._locale != null) {
+				httpInvoker.header(
+					"Accept-Language", _builder._locale.toLanguageTag());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
+			}
+
+			httpInvoker.httpMethod(HttpInvoker.HttpMethod.PUT);
+
+			if (callbackURL != null) {
+				httpInvoker.parameter(
+					"callbackURL", String.valueOf(callbackURL));
+			}
+
+			httpInvoker.path(
+				_builder._scheme + "://" + _builder._host + ":" +
+					_builder._port +
+						"/o/headless-delivery/v1.0/comments/batch");
 
 			httpInvoker.userNameAndPassword(
 				_builder._login + ":" + _builder._password);
@@ -500,14 +743,14 @@ public interface CommentResource {
 		}
 
 		public Page<Comment> getCommentCommentsPage(
-				Long parentCommentId, String search, String filterString,
-				Pagination pagination, String sortString)
+				Long parentCommentId, String search, List<String> aggregations,
+				String filterString, Pagination pagination, String sortString)
 			throws Exception {
 
 			HttpInvoker.HttpResponse httpResponse =
 				getCommentCommentsPageHttpResponse(
-					parentCommentId, search, filterString, pagination,
-					sortString);
+					parentCommentId, search, aggregations, filterString,
+					pagination, sortString);
 
 			String content = httpResponse.getContent();
 
@@ -517,12 +760,21 @@ public interface CommentResource {
 			_logger.fine(
 				"HTTP response status code: " + httpResponse.getStatusCode());
 
-			return Page.of(content, CommentSerDes::toDTO);
+			try {
+				return Page.of(content, CommentSerDes::toDTO);
+			}
+			catch (Exception e) {
+				_logger.log(
+					Level.WARNING,
+					"Unable to process HTTP response: " + content, e);
+
+				throw new Problem.ProblemException(Problem.toDTO(content));
+			}
 		}
 
 		public HttpInvoker.HttpResponse getCommentCommentsPageHttpResponse(
-				Long parentCommentId, String search, String filterString,
-				Pagination pagination, String sortString)
+				Long parentCommentId, String search, List<String> aggregations,
+				String filterString, Pagination pagination, String sortString)
 			throws Exception {
 
 			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
@@ -568,8 +820,9 @@ public interface CommentResource {
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port +
-						"/o/headless-delivery/v1.0/comments/{parentCommentId}/comments",
-				parentCommentId);
+						"/o/headless-delivery/v1.0/comments/{parentCommentId}/comments");
+
+			httpInvoker.path("parentCommentId", parentCommentId);
 
 			httpInvoker.userNameAndPassword(
 				_builder._login + ":" + _builder._password);
@@ -599,7 +852,7 @@ public interface CommentResource {
 					Level.WARNING,
 					"Unable to process HTTP response: " + content, e);
 
-				throw e;
+				throw new Problem.ProblemException(Problem.toDTO(content));
 			}
 		}
 
@@ -633,8 +886,9 @@ public interface CommentResource {
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port +
-						"/o/headless-delivery/v1.0/comments/{parentCommentId}/comments",
-				parentCommentId);
+						"/o/headless-delivery/v1.0/comments/{parentCommentId}/comments");
+
+			httpInvoker.path("parentCommentId", parentCommentId);
 
 			httpInvoker.userNameAndPassword(
 				_builder._login + ":" + _builder._password);
@@ -643,13 +897,14 @@ public interface CommentResource {
 		}
 
 		public Page<Comment> getDocumentCommentsPage(
-				Long documentId, String search, String filterString,
-				Pagination pagination, String sortString)
+				Long documentId, String search, List<String> aggregations,
+				String filterString, Pagination pagination, String sortString)
 			throws Exception {
 
 			HttpInvoker.HttpResponse httpResponse =
 				getDocumentCommentsPageHttpResponse(
-					documentId, search, filterString, pagination, sortString);
+					documentId, search, aggregations, filterString, pagination,
+					sortString);
 
 			String content = httpResponse.getContent();
 
@@ -659,12 +914,21 @@ public interface CommentResource {
 			_logger.fine(
 				"HTTP response status code: " + httpResponse.getStatusCode());
 
-			return Page.of(content, CommentSerDes::toDTO);
+			try {
+				return Page.of(content, CommentSerDes::toDTO);
+			}
+			catch (Exception e) {
+				_logger.log(
+					Level.WARNING,
+					"Unable to process HTTP response: " + content, e);
+
+				throw new Problem.ProblemException(Problem.toDTO(content));
+			}
 		}
 
 		public HttpInvoker.HttpResponse getDocumentCommentsPageHttpResponse(
-				Long documentId, String search, String filterString,
-				Pagination pagination, String sortString)
+				Long documentId, String search, List<String> aggregations,
+				String filterString, Pagination pagination, String sortString)
 			throws Exception {
 
 			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
@@ -710,8 +974,9 @@ public interface CommentResource {
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port +
-						"/o/headless-delivery/v1.0/documents/{documentId}/comments",
-				documentId);
+						"/o/headless-delivery/v1.0/documents/{documentId}/comments");
+
+			httpInvoker.path("documentId", documentId);
 
 			httpInvoker.userNameAndPassword(
 				_builder._login + ":" + _builder._password);
@@ -741,7 +1006,7 @@ public interface CommentResource {
 					Level.WARNING,
 					"Unable to process HTTP response: " + content, e);
 
-				throw e;
+				throw new Problem.ProblemException(Problem.toDTO(content));
 			}
 		}
 
@@ -775,8 +1040,71 @@ public interface CommentResource {
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port +
-						"/o/headless-delivery/v1.0/documents/{documentId}/comments",
-				documentId);
+						"/o/headless-delivery/v1.0/documents/{documentId}/comments");
+
+			httpInvoker.path("documentId", documentId);
+
+			httpInvoker.userNameAndPassword(
+				_builder._login + ":" + _builder._password);
+
+			return httpInvoker.invoke();
+		}
+
+		public void postDocumentCommentBatch(
+				Long documentId, String callbackURL, Object object)
+			throws Exception {
+
+			HttpInvoker.HttpResponse httpResponse =
+				postDocumentCommentBatchHttpResponse(
+					documentId, callbackURL, object);
+
+			String content = httpResponse.getContent();
+
+			_logger.fine("HTTP response content: " + content);
+
+			_logger.fine("HTTP response message: " + httpResponse.getMessage());
+			_logger.fine(
+				"HTTP response status code: " + httpResponse.getStatusCode());
+		}
+
+		public HttpInvoker.HttpResponse postDocumentCommentBatchHttpResponse(
+				Long documentId, String callbackURL, Object object)
+			throws Exception {
+
+			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+			httpInvoker.body(object.toString(), "application/json");
+
+			if (_builder._locale != null) {
+				httpInvoker.header(
+					"Accept-Language", _builder._locale.toLanguageTag());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
+			}
+
+			httpInvoker.httpMethod(HttpInvoker.HttpMethod.POST);
+
+			if (callbackURL != null) {
+				httpInvoker.parameter(
+					"callbackURL", String.valueOf(callbackURL));
+			}
+
+			httpInvoker.path(
+				_builder._scheme + "://" + _builder._host + ":" +
+					_builder._port +
+						"/o/headless-delivery/v1.0/documents/{documentId}/comments/batch");
+
+			httpInvoker.path("documentId", documentId);
 
 			httpInvoker.userNameAndPassword(
 				_builder._login + ":" + _builder._password);
@@ -785,14 +1113,15 @@ public interface CommentResource {
 		}
 
 		public Page<Comment> getStructuredContentCommentsPage(
-				Long structuredContentId, String search, String filterString,
+				Long structuredContentId, String search,
+				List<String> aggregations, String filterString,
 				Pagination pagination, String sortString)
 			throws Exception {
 
 			HttpInvoker.HttpResponse httpResponse =
 				getStructuredContentCommentsPageHttpResponse(
-					structuredContentId, search, filterString, pagination,
-					sortString);
+					structuredContentId, search, aggregations, filterString,
+					pagination, sortString);
 
 			String content = httpResponse.getContent();
 
@@ -802,14 +1131,23 @@ public interface CommentResource {
 			_logger.fine(
 				"HTTP response status code: " + httpResponse.getStatusCode());
 
-			return Page.of(content, CommentSerDes::toDTO);
+			try {
+				return Page.of(content, CommentSerDes::toDTO);
+			}
+			catch (Exception e) {
+				_logger.log(
+					Level.WARNING,
+					"Unable to process HTTP response: " + content, e);
+
+				throw new Problem.ProblemException(Problem.toDTO(content));
+			}
 		}
 
 		public HttpInvoker.HttpResponse
 				getStructuredContentCommentsPageHttpResponse(
 					Long structuredContentId, String search,
-					String filterString, Pagination pagination,
-					String sortString)
+					List<String> aggregations, String filterString,
+					Pagination pagination, String sortString)
 			throws Exception {
 
 			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
@@ -855,8 +1193,9 @@ public interface CommentResource {
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port +
-						"/o/headless-delivery/v1.0/structured-contents/{structuredContentId}/comments",
-				structuredContentId);
+						"/o/headless-delivery/v1.0/structured-contents/{structuredContentId}/comments");
+
+			httpInvoker.path("structuredContentId", structuredContentId);
 
 			httpInvoker.userNameAndPassword(
 				_builder._login + ":" + _builder._password);
@@ -888,7 +1227,7 @@ public interface CommentResource {
 					Level.WARNING,
 					"Unable to process HTTP response: " + content, e);
 
-				throw e;
+				throw new Problem.ProblemException(Problem.toDTO(content));
 			}
 		}
 
@@ -923,8 +1262,72 @@ public interface CommentResource {
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port +
-						"/o/headless-delivery/v1.0/structured-contents/{structuredContentId}/comments",
-				structuredContentId);
+						"/o/headless-delivery/v1.0/structured-contents/{structuredContentId}/comments");
+
+			httpInvoker.path("structuredContentId", structuredContentId);
+
+			httpInvoker.userNameAndPassword(
+				_builder._login + ":" + _builder._password);
+
+			return httpInvoker.invoke();
+		}
+
+		public void postStructuredContentCommentBatch(
+				Long structuredContentId, String callbackURL, Object object)
+			throws Exception {
+
+			HttpInvoker.HttpResponse httpResponse =
+				postStructuredContentCommentBatchHttpResponse(
+					structuredContentId, callbackURL, object);
+
+			String content = httpResponse.getContent();
+
+			_logger.fine("HTTP response content: " + content);
+
+			_logger.fine("HTTP response message: " + httpResponse.getMessage());
+			_logger.fine(
+				"HTTP response status code: " + httpResponse.getStatusCode());
+		}
+
+		public HttpInvoker.HttpResponse
+				postStructuredContentCommentBatchHttpResponse(
+					Long structuredContentId, String callbackURL, Object object)
+			throws Exception {
+
+			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+			httpInvoker.body(object.toString(), "application/json");
+
+			if (_builder._locale != null) {
+				httpInvoker.header(
+					"Accept-Language", _builder._locale.toLanguageTag());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
+			}
+
+			httpInvoker.httpMethod(HttpInvoker.HttpMethod.POST);
+
+			if (callbackURL != null) {
+				httpInvoker.parameter(
+					"callbackURL", String.valueOf(callbackURL));
+			}
+
+			httpInvoker.path(
+				_builder._scheme + "://" + _builder._host + ":" +
+					_builder._port +
+						"/o/headless-delivery/v1.0/structured-contents/{structuredContentId}/comments/batch");
+
+			httpInvoker.path("structuredContentId", structuredContentId);
 
 			httpInvoker.userNameAndPassword(
 				_builder._login + ":" + _builder._password);

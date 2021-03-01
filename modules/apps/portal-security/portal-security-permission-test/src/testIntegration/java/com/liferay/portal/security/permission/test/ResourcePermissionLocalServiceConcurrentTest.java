@@ -15,6 +15,7 @@
 package com.liferay.portal.security.permission.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.portal.kernel.bean.ClassLoaderBeanHandler;
 import com.liferay.portal.kernel.model.BaseModel;
 import com.liferay.portal.kernel.model.ResourceAction;
 import com.liferay.portal.kernel.model.ResourcePermission;
@@ -23,16 +24,17 @@ import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.service.ResourceActionLocalService;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
+import com.liferay.portal.kernel.service.ServiceWrapper;
 import com.liferay.portal.kernel.service.persistence.ResourcePermissionPersistence;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
+import com.liferay.portal.kernel.test.SynchronousInvocationHandler;
+import com.liferay.portal.kernel.test.constants.ServiceTestConstants;
 import com.liferay.portal.kernel.test.randomizerbumpers.UniqueStringRandomizerBumper;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.service.impl.ResourcePermissionLocalServiceImpl;
-import com.liferay.portal.service.test.ServiceTestUtil;
-import com.liferay.portal.service.test.SynchronousInvocationHandler;
 import com.liferay.portal.spring.aop.AopInvocationHandler;
 import com.liferay.portal.spring.transaction.DefaultTransactionExecutor;
 import com.liferay.portal.test.rule.ExpectedDBType;
@@ -79,7 +81,7 @@ public class ResourcePermissionLocalServiceConcurrentTest {
 	public void setUp() throws NoSuchMethodException {
 		Assume.assumeTrue(PropsValues.RETRY_ADVICE_MAX_RETRIES != 0);
 
-		_threadCount = ServiceTestUtil.THREAD_COUNT;
+		_threadCount = ServiceTestConstants.THREAD_COUNT;
 
 		if ((PropsValues.RETRY_ADVICE_MAX_RETRIES > 0) &&
 			(_threadCount > PropsValues.RETRY_ADVICE_MAX_RETRIES)) {
@@ -101,10 +103,19 @@ public class ResourcePermissionLocalServiceConcurrentTest {
 			ProxyUtil.fetchInvocationHandler(
 				_resourcePermissionLocalService, AopInvocationHandler.class);
 
+		ServiceWrapper<ResourcePermissionLocalService>
+			resourcePermissionLocalServiceWrapper =
+				(ServiceWrapper<ResourcePermissionLocalService>)
+					aopInvocationHandler.getTarget();
+
+		ClassLoaderBeanHandler classLoaderBeanHandler =
+			(ClassLoaderBeanHandler)ProxyUtil.getInvocationHandler(
+				resourcePermissionLocalServiceWrapper.getWrappedService());
+
 		final ResourcePermissionLocalServiceImpl
 			resourcePermissionLocalServiceImpl =
 				(ResourcePermissionLocalServiceImpl)
-					aopInvocationHandler.getTarget();
+					classLoaderBeanHandler.getBean();
 
 		final ResourcePermissionPersistence resourcePermissionPersistence =
 			resourcePermissionLocalServiceImpl.
@@ -185,6 +196,11 @@ public class ResourcePermissionLocalServiceConcurrentTest {
 						expectedDBType = ExpectedDBType.POSTGRESQL,
 						expectedLog = "duplicate key",
 						expectedType = ExpectedType.CONTAINS
+					),
+					@ExpectedLog(
+						expectedDBType = ExpectedDBType.SQLSERVER,
+						expectedLog = "Cannot insert duplicate key row",
+						expectedType = ExpectedType.PREFIX
 					),
 					@ExpectedLog(
 						expectedDBType = ExpectedDBType.SYBASE,

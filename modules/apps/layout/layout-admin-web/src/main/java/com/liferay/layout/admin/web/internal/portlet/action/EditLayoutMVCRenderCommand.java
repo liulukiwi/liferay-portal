@@ -36,7 +36,7 @@ import org.osgi.service.component.annotations.Reference;
 	immediate = true,
 	property = {
 		"javax.portlet.name=" + LayoutAdminPortletKeys.GROUP_PAGES,
-		"mvc.command.name=/layout/edit_layout"
+		"mvc.command.name=/layout_admin/edit_layout"
 	},
 	service = MVCRenderCommand.class
 )
@@ -52,16 +52,16 @@ public class EditLayoutMVCRenderCommand implements MVCRenderCommand {
 
 			_layoutLocalService.getLayout(selPlid);
 		}
-		catch (Exception e) {
-			if (e instanceof NoSuchLayoutException ||
-				e instanceof PrincipalException) {
+		catch (Exception exception) {
+			if (exception instanceof NoSuchLayoutException ||
+				exception instanceof PrincipalException) {
 
-				SessionErrors.add(renderRequest, e.getClass());
+				SessionErrors.add(renderRequest, exception.getClass());
 
 				return "/error.jsp";
 			}
 
-			throw new PortletException(e);
+			throw new PortletException(exception);
 		}
 
 		return "/edit_layout.jsp";

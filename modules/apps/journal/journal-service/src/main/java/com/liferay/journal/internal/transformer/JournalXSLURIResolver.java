@@ -54,17 +54,17 @@ public class JournalXSLURIResolver implements Externalizable, XSLURIResolver {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof JournalXSLURIResolver)) {
+		if (!(object instanceof JournalXSLURIResolver)) {
 			return false;
 		}
 
 		JournalXSLURIResolver journalXSLURIResolver =
-			(JournalXSLURIResolver)obj;
+			(JournalXSLURIResolver)object;
 
 		if (Objects.equals(_languageId, journalXSLURIResolver._languageId) &&
 			_tokens.equals(journalXSLURIResolver._tokens)) {
@@ -122,8 +122,9 @@ public class JournalXSLURIResolver implements Externalizable, XSLURIResolver {
 
 			return new StreamSource(new UnsyncStringReader(content));
 		}
-		catch (Exception e) {
-			_log.error(href + " does not reference a valid template");
+		catch (Exception exception) {
+			_log.error(
+				href + " does not reference a valid template", exception);
 
 			return null;
 		}

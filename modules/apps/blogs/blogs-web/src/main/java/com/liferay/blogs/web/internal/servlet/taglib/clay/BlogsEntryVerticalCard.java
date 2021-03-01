@@ -72,15 +72,9 @@ public class BlogsEntryVerticalCard extends BaseVerticalCard {
 			return blogsEntryActionDropdownItemsProvider.
 				getActionDropdownItems();
 		}
-		catch (PortalException pe) {
-			return ReflectionUtil.throwException(pe);
+		catch (PortalException portalException) {
+			return ReflectionUtil.throwException(portalException);
 		}
-	}
-
-	@Override
-	public String getAspectRatioCssClasses() {
-		return "aspect-ratio-item-center-middle " +
-			"aspect-ratio-item-vertical-fluid";
 	}
 
 	@Override
@@ -99,8 +93,8 @@ public class BlogsEntryVerticalCard extends BaseVerticalCard {
 
 			return _blogsEntryURL;
 		}
-		catch (PortalException pe) {
-			return ReflectionUtil.throwException(pe);
+		catch (PortalException portalException) {
+			return ReflectionUtil.throwException(portalException);
 		}
 	}
 
@@ -120,8 +114,8 @@ public class BlogsEntryVerticalCard extends BaseVerticalCard {
 
 			return coverImageURL;
 		}
-		catch (PortalException pe) {
-			return ReflectionUtil.throwException(pe);
+		catch (PortalException portalException) {
+			return ReflectionUtil.throwException(portalException);
 		}
 	}
 
@@ -144,6 +138,11 @@ public class BlogsEntryVerticalCard extends BaseVerticalCard {
 	@Override
 	public String getTitle() {
 		return BlogsEntryUtil.getDisplayTitle(_resourceBundle, _blogsEntry);
+	}
+
+	@Override
+	public Boolean isFlushHorizontal() {
+		return true;
 	}
 
 	private final BlogsEntry _blogsEntry;

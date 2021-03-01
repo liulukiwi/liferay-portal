@@ -20,8 +20,6 @@
 List<MicroblogsEntry> microblogsEntries = (List<MicroblogsEntry>)request.getAttribute(WebKeys.MICROBLOGS_ENTRIES);
 
 PortletURL microblogsEntriesURL = (PortletURL)request.getAttribute(WebKeys.MICROBLOGS_ENTRIES_URL);
-
-boolean comment = GetterUtil.getBoolean((String)request.getAttribute("view_comments.jsp-comment"));
 %>
 
 <c:if test="<%= microblogsEntries.isEmpty() %>">
@@ -48,13 +46,14 @@ boolean comment = GetterUtil.getBoolean((String)request.getAttribute("view_comme
 	</div>
 </c:if>
 
-<%
-if (microblogsEntries != null) {
+<c:if test="<%= microblogsEntries != null %>">
+
+	<%
 	for (MicroblogsEntry microblogsEntry : microblogsEntries) {
 		String userFullName = HtmlUtil.escape(PortalUtil.getUserName(microblogsEntry));
 
 		User curUser = UserLocalServiceUtil.fetchUserById(microblogsEntry.getUserId());
-%>
+	%>
 
 		<div class="microblogs-entry" id="<portlet:namespace />microblogsEntry<%= microblogsEntry.getMicroblogsEntryId() %>">
 			<span class="thumbnail">
@@ -124,11 +123,11 @@ if (microblogsEntries != null) {
 							</portlet:renderURL>
 
 							<%
-							String repostURL = "javascript:Liferay.Microblogs.displayPopup('" + repostMicroblogsEntryURL + "','" + LanguageUtil.get(request, "repost") + "');";
+							String taglibRepostURL = "javascript:Liferay.Microblogs.displayPopup('" + repostMicroblogsEntryURL + "','" + LanguageUtil.get(request, "repost") + "');";
 							%>
 
 							<span class="action repost">
-								<a data-microblogsEntryId="<%= microblogsEntry.getMicroblogsEntryId() %>" href="<%= repostURL %>"><liferay-ui:message key="repost" /></a>
+								<a data-microblogsEntryId="<%= microblogsEntry.getMicroblogsEntryId() %>" href="<%= taglibRepostURL %>"><liferay-ui:message key="repost" /></a>
 							</span>
 						</c:if>
 
@@ -161,7 +160,8 @@ if (microblogsEntries != null) {
 			<div class="comments-container reply" id="<portlet:namespace />commentsContainer<%= microblogsEntry.getMicroblogsEntryId() %>"><!-- --></div>
 		</div>
 
-<%
+	<%
 	}
-}
-%>
+	%>
+
+</c:if>

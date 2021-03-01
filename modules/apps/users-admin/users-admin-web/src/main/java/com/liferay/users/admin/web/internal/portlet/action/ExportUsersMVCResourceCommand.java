@@ -26,8 +26,6 @@ import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.portlet.PortletResponseUtil;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCResourceCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCResourceCommand;
-import com.liferay.portal.kernel.search.Indexer;
-import com.liferay.portal.kernel.search.IndexerRegistryUtil;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.service.UserLocalService;
@@ -94,10 +92,10 @@ public class ExportUsersMVCResourceCommand extends BaseMVCResourceCommand {
 				resourceRequest, resourceResponse, "users.csv", csv.getBytes(),
 				ContentTypes.TEXT_CSV_UTF8);
 		}
-		catch (Exception e) {
-			SessionErrors.add(resourceRequest, e.getClass());
+		catch (Exception exception) {
+			SessionErrors.add(resourceRequest, exception.getClass());
 
-			_log.error(e, e);
+			_log.error(exception, exception);
 		}
 	}
 
@@ -205,12 +203,6 @@ public class ExportUsersMVCResourceCommand extends BaseMVCResourceCommand {
 			params.put("usersUserGroups", Long.valueOf(userGroupId));
 		}
 
-		Indexer<?> indexer = IndexerRegistryUtil.nullSafeGetIndexer(User.class);
-
-		if (indexer.isIndexerEnabled() && PropsValues.USERS_SEARCH_WITH_INDEX) {
-			params.put("expandoAttributes", searchTerms.getKeywords());
-		}
-
 		if (searchTerms.isAdvancedSearch()) {
 			return _userLocalService.search(
 				themeDisplay.getCompanyId(), searchTerms.getFirstName(),
@@ -256,7 +248,7 @@ public class ExportUsersMVCResourceCommand extends BaseMVCResourceCommand {
 
 			sb.append(getUserCSV(user));
 
-			percentage = Math.min(10 + (i * 90) / total, 99);
+			percentage = Math.min(10 + ((i * 90) / total), 99);
 
 			progressTracker.setPercent(percentage);
 		}

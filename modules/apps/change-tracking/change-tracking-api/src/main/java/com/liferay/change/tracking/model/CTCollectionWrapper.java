@@ -48,6 +48,7 @@ public class CTCollectionWrapper
 		attributes.put("userId", getUserId());
 		attributes.put("createDate", getCreateDate());
 		attributes.put("modifiedDate", getModifiedDate());
+		attributes.put("schemaVersionId", getSchemaVersionId());
 		attributes.put("name", getName());
 		attributes.put("description", getDescription());
 		attributes.put("status", getStatus());
@@ -93,6 +94,12 @@ public class CTCollectionWrapper
 
 		if (modifiedDate != null) {
 			setModifiedDate(modifiedDate);
+		}
+
+		Long schemaVersionId = (Long)attributes.get("schemaVersionId");
+
+		if (schemaVersionId != null) {
+			setSchemaVersionId(schemaVersionId);
 		}
 
 		String name = (String)attributes.get("name");
@@ -207,6 +214,16 @@ public class CTCollectionWrapper
 	}
 
 	/**
+	 * Returns the schema version ID of this ct collection.
+	 *
+	 * @return the schema version ID of this ct collection
+	 */
+	@Override
+	public long getSchemaVersionId() {
+		return model.getSchemaVersionId();
+	}
+
+	/**
 	 * Returns the status of this ct collection.
 	 *
 	 * @return the status of this ct collection
@@ -276,11 +293,6 @@ public class CTCollectionWrapper
 		return model.isProduction();
 	}
 
-	/**
-	 * NOTE FOR DEVELOPERS:
-	 *
-	 * Never modify or reference this class directly. All methods that expect a ct collection model instance should use the <code>CTCollection</code> interface instead.
-	 */
 	@Override
 	public void persist() {
 		model.persist();
@@ -364,6 +376,16 @@ public class CTCollectionWrapper
 	@Override
 	public void setPrimaryKey(long primaryKey) {
 		model.setPrimaryKey(primaryKey);
+	}
+
+	/**
+	 * Sets the schema version ID of this ct collection.
+	 *
+	 * @param schemaVersionId the schema version ID of this ct collection
+	 */
+	@Override
+	public void setSchemaVersionId(long schemaVersionId) {
+		model.setSchemaVersionId(schemaVersionId);
 	}
 
 	/**

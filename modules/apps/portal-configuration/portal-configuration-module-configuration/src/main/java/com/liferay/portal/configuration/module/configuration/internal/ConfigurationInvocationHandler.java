@@ -16,6 +16,7 @@ package com.liferay.portal.configuration.module.configuration.internal;
 
 import aQute.bnd.annotation.metatype.Meta;
 
+import com.liferay.portal.configuration.persistence.ConfigurationOverridePropertiesUtil;
 import com.liferay.portal.kernel.module.configuration.ConfigurationException;
 import com.liferay.portal.kernel.settings.LocalizedValuesMap;
 import com.liferay.portal.kernel.settings.TypedSettings;
@@ -26,6 +27,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+
+import java.util.Map;
 
 /**
  * @author Iván Zaera
@@ -42,6 +45,9 @@ public class ConfigurationInvocationHandler<S> implements InvocationHandler {
 		_configurationOverrideInstance =
 			ConfigurationOverrideInstance.getConfigurationOverrideInstance(
 				clazz, typedSettings);
+		_overrideProperties =
+			ConfigurationOverridePropertiesUtil.getOverrideProperties(
+				clazz.getName());
 	}
 
 	public S createProxy() {
@@ -54,6 +60,15 @@ public class ConfigurationInvocationHandler<S> implements InvocationHandler {
 		throws InvocationTargetException {
 
 		try {
+			if (_overrideProperties != null) {
+				Object overrideValue = _overrideProperties.get(
+					method.getName());
+
+				if (overrideValue != null) {
+					return overrideValue;
+				}
+			}
+
 			if (_configurationOverrideInstance != null) {
 				Object result = _configurationOverrideInstance.invoke(method);
 
@@ -64,11 +79,11 @@ public class ConfigurationInvocationHandler<S> implements InvocationHandler {
 
 			return _invokeTypedSettings(method);
 		}
-		catch (InvocationTargetException ite) {
-			throw ite;
+		catch (InvocationTargetException invocationTargetException) {
+			throw invocationTargetException;
 		}
-		catch (ReflectiveOperationException roe) {
-			throw new RuntimeException(roe);
+		catch (ReflectiveOperationException reflectiveOperationException) {
+			throw new RuntimeException(reflectiveOperationException);
 		}
 	}
 
@@ -189,6 +204,7 @@ public class ConfigurationInvocationHandler<S> implements InvocationHandler {
 
 	private final Class<S> _clazz;
 	private final ConfigurationOverrideInstance _configurationOverrideInstance;
+	private final Map<String, Object> _overrideProperties;
 	private final TypedSettings _typedSettings;
 
 }

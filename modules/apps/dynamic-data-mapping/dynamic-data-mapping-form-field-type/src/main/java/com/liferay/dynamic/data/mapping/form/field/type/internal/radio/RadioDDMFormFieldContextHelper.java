@@ -18,12 +18,10 @@ import com.liferay.dynamic.data.mapping.model.DDMFormFieldOptions;
 import com.liferay.dynamic.data.mapping.model.LocalizedValue;
 import com.liferay.dynamic.data.mapping.render.DDMFormFieldRenderingContext;
 import com.liferay.portal.kernel.util.HashMapBuilder;
-import com.liferay.portal.kernel.util.HtmlUtil;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 /**
  * @author Marcellus Tavares
@@ -43,26 +41,21 @@ public class RadioDDMFormFieldContextHelper {
 		List<Object> options = new ArrayList<>();
 
 		for (String optionValue : _ddmFormFieldOptions.getOptionsValues()) {
-			Map<String, String> optionMap = HashMapBuilder.put(
-				"label",
-				() -> {
-					LocalizedValue optionLabel =
-						_ddmFormFieldOptions.getOptionLabels(optionValue);
+			options.add(
+				HashMapBuilder.put(
+					"label",
+					() -> {
+						LocalizedValue optionLabel =
+							_ddmFormFieldOptions.getOptionLabels(optionValue);
 
-					String optionLabelString = optionLabel.getString(_locale);
-
-					if (ddmFormFieldRenderingContext.isViewMode()) {
-						optionLabelString = HtmlUtil.extractText(
-							optionLabelString);
+						return optionLabel.getString(_locale);
 					}
-
-					return optionLabelString;
-				}
-			).put(
-				"value", optionValue
-			).build();
-
-			options.add(optionMap);
+				).put(
+					"reference",
+					_ddmFormFieldOptions.getOptionReference(optionValue)
+				).put(
+					"value", optionValue
+				).build());
 		}
 
 		return options;

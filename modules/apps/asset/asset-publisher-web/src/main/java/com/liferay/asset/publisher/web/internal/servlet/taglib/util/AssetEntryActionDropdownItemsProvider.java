@@ -19,6 +19,8 @@ import com.liferay.asset.kernel.model.AssetRenderer;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemList;
 import com.liferay.portal.kernel.language.LanguageUtil;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.portlet.LiferayWindowState;
@@ -42,8 +44,9 @@ import javax.servlet.http.HttpServletRequest;
 public class AssetEntryActionDropdownItemsProvider {
 
 	public AssetEntryActionDropdownItemsProvider(
-		AssetRenderer assetRenderer, List<AssetEntryAction> assetEntryActions,
-		String fullContentRedirect, LiferayPortletRequest liferayPortletRequest,
+		AssetRenderer<?> assetRenderer,
+		List<AssetEntryAction<?>> assetEntryActions, String fullContentRedirect,
+		LiferayPortletRequest liferayPortletRequest,
 		LiferayPortletResponse liferayPortletResponse) {
 
 		_assetRenderer = assetRenderer;
@@ -67,46 +70,54 @@ public class AssetEntryActionDropdownItemsProvider {
 				if (editAssetEntryURL != null) {
 					add(
 						dropdownItem -> {
-							dropdownItem.setIcon("pencil");
 							dropdownItem.putData(
 								"useDialog", Boolean.FALSE.toString());
 							dropdownItem.setHref(editAssetEntryURL.toString());
+							dropdownItem.setIcon("pencil");
 							dropdownItem.setLabel(
 								LanguageUtil.get(_httpServletRequest, "edit"));
 						});
 				}
 
 				if (ListUtil.isNotEmpty(_assetEntryActions)) {
-					for (AssetEntryAction assetEntryAction :
+					for (AssetEntryAction<?> assetEntryAction :
 							_assetEntryActions) {
 
+						AssetEntryAction<Object> objectAssetEntryAction =
+							(AssetEntryAction<Object>)assetEntryAction;
+
 						try {
-							if (!assetEntryAction.hasPermission(
+							if (!objectAssetEntryAction.hasPermission(
 									_themeDisplay.getPermissionChecker(),
-									_assetRenderer)) {
+									(AssetRenderer<Object>)_assetRenderer)) {
 
 								continue;
 							}
 						}
-						catch (Exception e) {
+						catch (Exception exception) {
+							if (_log.isDebugEnabled()) {
+								_log.debug(exception, exception);
+							}
+
 							continue;
 						}
 
-						String title = assetEntryAction.getMessage(
+						String title = objectAssetEntryAction.getMessage(
 							_themeDisplay.getLocale());
 
 						add(
 							dropdownItem -> {
-								dropdownItem.setHref(
-									assetEntryAction.getDialogURL(
-										_httpServletRequest, _assetRenderer));
-								dropdownItem.setIcon(
-									assetEntryAction.getIcon());
 								dropdownItem.putData(
 									"destroyOnHide", Boolean.TRUE.toString());
+								dropdownItem.putData("title", title);
 								dropdownItem.putData(
 									"useDialog", Boolean.TRUE.toString());
-								dropdownItem.putData("title", title);
+								dropdownItem.setHref(
+									objectAssetEntryAction.getDialogURL(
+										_httpServletRequest,
+										(AssetRenderer<Object>)_assetRenderer));
+								dropdownItem.setIcon(
+									objectAssetEntryAction.getIcon());
 								dropdownItem.setLabel(title);
 							});
 					}
@@ -147,14 +158,20 @@ public class AssetEntryActionDropdownItemsProvider {
 
 			return portletURL;
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
 		}
 
 		return null;
 	}
 
-	private final List<AssetEntryAction> _assetEntryActions;
-	private final AssetRenderer _assetRenderer;
+	private static final Log _log = LogFactoryUtil.getLog(
+		AssetEntryActionDropdownItemsProvider.class);
+
+	private final List<AssetEntryAction<?>> _assetEntryActions;
+	private final AssetRenderer<?> _assetRenderer;
 	private final String _fullContentRedirect;
 	private final HttpServletRequest _httpServletRequest;
 	private final LiferayPortletRequest _liferayPortletRequest;

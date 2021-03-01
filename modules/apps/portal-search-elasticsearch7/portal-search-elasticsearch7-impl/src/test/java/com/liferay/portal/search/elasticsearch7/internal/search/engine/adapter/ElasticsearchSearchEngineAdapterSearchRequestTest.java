@@ -23,6 +23,7 @@ import com.liferay.portal.kernel.search.suggest.CompletionSuggester;
 import com.liferay.portal.kernel.search.suggest.PhraseSuggester;
 import com.liferay.portal.kernel.search.suggest.Suggester;
 import com.liferay.portal.kernel.search.suggest.TermSuggester;
+import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.search.elasticsearch7.internal.connection.ElasticsearchClientResolver;
 import com.liferay.portal.search.elasticsearch7.internal.connection.ElasticsearchFixture;
 import com.liferay.portal.search.elasticsearch7.internal.document.DefaultElasticsearchDocumentFactory;
@@ -34,6 +35,7 @@ import com.liferay.portal.search.engine.adapter.search.SuggestSearchRequest;
 import com.liferay.portal.search.engine.adapter.search.SuggestSearchResponse;
 import com.liferay.portal.search.engine.adapter.search.SuggestSearchResult;
 import com.liferay.portal.search.test.util.indexing.DocumentFixture;
+import com.liferay.portal.util.PropsImpl;
 
 import java.io.IOException;
 
@@ -67,6 +69,8 @@ public class ElasticsearchSearchEngineAdapterSearchRequestTest {
 
 	@BeforeClass
 	public static void setUpClass() throws Exception {
+		PropsUtil.setProps(new PropsImpl());
+
 		_elasticsearchFixture = new ElasticsearchFixture(
 			ElasticsearchSearchEngineAdapterSearchRequestTest.class);
 
@@ -125,10 +129,10 @@ public class ElasticsearchSearchEngineAdapterSearchRequestTest {
 		SuggestSearchRequest suggestSearchRequest = new SuggestSearchRequest(
 			_INDEX_NAME);
 
-		Suggester suggester = new CompletionSuggester(
+		Suggester suggester1 = new CompletionSuggester(
 			"completion", "keywordSuggestion", "sear");
 
-		suggestSearchRequest.addSuggester(suggester);
+		suggestSearchRequest.addSuggester(suggester1);
 
 		Suggester suggester2 = new CompletionSuggester(
 			"completion2", "keywordSuggestion", "messa");
@@ -138,12 +142,9 @@ public class ElasticsearchSearchEngineAdapterSearchRequestTest {
 		SuggestSearchResponse suggestSearchResponse =
 			_searchEngineAdapter.execute(suggestSearchRequest);
 
-		Map<String, SuggestSearchResult> suggestSearchResultMap =
-			suggestSearchResponse.getSuggestSearchResultMap();
-
 		assertSuggestion(
-			suggestSearchResultMap, "completion|[search]",
-			"completion2|[message]");
+			suggestSearchResponse.getSuggestSearchResultMap(),
+			"completion|[search]", "completion2|[message]");
 	}
 
 	@Test
@@ -167,11 +168,9 @@ public class ElasticsearchSearchEngineAdapterSearchRequestTest {
 		SuggestSearchResponse suggestSearchResponse =
 			_searchEngineAdapter.execute(suggestSearchRequest);
 
-		Map<String, SuggestSearchResult> suggestSearchResultMap =
-			suggestSearchResponse.getSuggestSearchResultMap();
-
 		assertSuggestion(
-			suggestSearchResultMap, "completion|[search]", "term|[search]");
+			suggestSearchResponse.getSuggestSearchResultMap(),
+			"completion|[search]", "term|[search]");
 	}
 
 	@Test
@@ -196,11 +195,9 @@ public class ElasticsearchSearchEngineAdapterSearchRequestTest {
 		SuggestSearchResponse suggestSearchResponse =
 			_searchEngineAdapter.execute(suggestSearchRequest);
 
-		Map<String, SuggestSearchResult> suggestSearchResultMap =
-			suggestSearchResponse.getSuggestSearchResultMap();
-
 		assertSuggestion(
-			suggestSearchResultMap, "completion|[message]", "term|[search]");
+			suggestSearchResponse.getSuggestSearchResultMap(),
+			"completion|[message]", "term|[search]");
 	}
 
 	@Test
@@ -220,11 +217,9 @@ public class ElasticsearchSearchEngineAdapterSearchRequestTest {
 		SuggestSearchResponse suggestSearchResponse =
 			_searchEngineAdapter.execute(suggestSearchRequest);
 
-		Map<String, SuggestSearchResult> suggestSearchResultMap =
-			suggestSearchResponse.getSuggestSearchResultMap();
-
 		assertSuggestion(
-			suggestSearchResultMap, 2, "phrase|[indexef phrase, index phrasd]");
+			suggestSearchResponse.getSuggestSearchResultMap(), 2,
+			"phrase|[indexef phrase, index phrasd]");
 	}
 
 	@Test
@@ -243,10 +238,9 @@ public class ElasticsearchSearchEngineAdapterSearchRequestTest {
 		SuggestSearchResponse suggestSearchResponse =
 			_searchEngineAdapter.execute(suggestSearchRequest);
 
-		Map<String, SuggestSearchResult> suggestSearchResultMap =
-			suggestSearchResponse.getSuggestSearchResultMap();
-
-		assertSuggestion(suggestSearchResultMap, "termSuggestion|[search]");
+		assertSuggestion(
+			suggestSearchResponse.getSuggestSearchResultMap(),
+			"termSuggestion|[search]");
 	}
 
 	protected void assertSuggestion(
@@ -374,8 +368,8 @@ public class ElasticsearchSearchEngineAdapterSearchRequestTest {
 		try {
 			_indicesClient.create(createIndexRequest, RequestOptions.DEFAULT);
 		}
-		catch (IOException ioe) {
-			throw new RuntimeException(ioe);
+		catch (IOException ioException) {
+			throw new RuntimeException(ioException);
 		}
 	}
 
@@ -386,8 +380,8 @@ public class ElasticsearchSearchEngineAdapterSearchRequestTest {
 		try {
 			_indicesClient.delete(deleteIndexRequest, RequestOptions.DEFAULT);
 		}
-		catch (IOException ioe) {
-			throw new RuntimeException(ioe);
+		catch (IOException ioException) {
+			throw new RuntimeException(ioException);
 		}
 	}
 
@@ -400,8 +394,8 @@ public class ElasticsearchSearchEngineAdapterSearchRequestTest {
 		try {
 			return _restHighLevelClient.get(getRequest, RequestOptions.DEFAULT);
 		}
-		catch (IOException ioe) {
-			throw new RuntimeException(ioe);
+		catch (IOException ioException) {
+			throw new RuntimeException(ioException);
 		}
 	}
 
@@ -415,16 +409,15 @@ public class ElasticsearchSearchEngineAdapterSearchRequestTest {
 		ElasticsearchDocumentFactory elasticsearchDocumentFactory =
 			new DefaultElasticsearchDocumentFactory();
 
-		String elasticsearchDocument =
-			elasticsearchDocumentFactory.getElasticsearchDocument(document);
-
-		indexRequest.source(elasticsearchDocument, XContentType.JSON);
+		indexRequest.source(
+			elasticsearchDocumentFactory.getElasticsearchDocument(document),
+			XContentType.JSON);
 
 		try {
 			_restHighLevelClient.index(indexRequest, RequestOptions.DEFAULT);
 		}
-		catch (IOException ioe) {
-			throw new RuntimeException(ioe);
+		catch (IOException ioException) {
+			throw new RuntimeException(ioException);
 		}
 	}
 
@@ -439,8 +432,8 @@ public class ElasticsearchSearchEngineAdapterSearchRequestTest {
 			_indicesClient.putMapping(
 				putMappingRequest, RequestOptions.DEFAULT);
 		}
-		catch (IOException ioe) {
-			throw new RuntimeException(ioe);
+		catch (IOException ioException) {
+			throw new RuntimeException(ioException);
 		}
 	}
 

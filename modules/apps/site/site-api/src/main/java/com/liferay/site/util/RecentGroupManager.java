@@ -32,6 +32,7 @@ import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.SessionClicks;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.util.PropsValues;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -80,6 +81,9 @@ public class RecentGroupManager {
 
 		groupIds.add(0, liveGroupId);
 
+		groupIds = ListUtil.subList(
+			groupIds, 0, PropsValues.RECENT_GROUPS_MAX_ELEMENTS);
+
 		_setRecentGroupsValue(httpServletRequest, StringUtil.merge(groupIds));
 	}
 
@@ -93,11 +97,38 @@ public class RecentGroupManager {
 
 			return getRecentGroups(value, portletRequest);
 		}
-		catch (Exception e) {
-			_log.error("Unable to get recent groups", e);
+		catch (Exception exception) {
+			_log.error("Unable to get recent groups", exception);
 		}
 
 		return Collections.emptyList();
+	}
+
+	/**
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             #getRecentGroups(String, PortletRequest)}
+	 */
+	@Deprecated
+	protected List<Group> getRecentGroups(String value) {
+		long[] groupIds = StringUtil.split(value, 0L);
+
+		if (ArrayUtil.isEmpty(groupIds)) {
+			return Collections.emptyList();
+		}
+
+		List<Group> groups = new ArrayList<>(groupIds.length);
+
+		for (long groupId : groupIds) {
+			Group group = _groupLocalService.fetchGroup(groupId);
+
+			if (!_groupLocalService.isLiveGroupActive(group)) {
+				continue;
+			}
+
+			groups.add(group);
+		}
+
+		return groups;
 	}
 
 	protected List<Group> getRecentGroups(

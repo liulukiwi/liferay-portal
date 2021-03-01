@@ -21,6 +21,7 @@ import com.liferay.gradle.plugins.defaults.internal.LiferayRelengPlugin;
 import com.liferay.gradle.plugins.defaults.internal.util.FileUtil;
 import com.liferay.gradle.plugins.defaults.internal.util.GradlePluginsDefaultsUtil;
 import com.liferay.gradle.plugins.defaults.internal.util.GradleUtil;
+import com.liferay.gradle.plugins.defaults.internal.util.LiferayRelengUtil;
 import com.liferay.gradle.plugins.defaults.tasks.WritePropertiesTask;
 import com.liferay.gradle.plugins.jsdoc.AppJSDocConfigurationExtension;
 import com.liferay.gradle.plugins.jsdoc.AppJSDocPlugin;
@@ -191,8 +192,8 @@ public class LiferayAppDefaultsPlugin implements Plugin<Project> {
 							file.toPath(),
 							packageJSON.getBytes(StandardCharsets.UTF_8));
 					}
-					catch (IOException ioe) {
-						throw new UncheckedIOException(ioe);
+					catch (IOException ioException) {
+						throw new UncheckedIOException(ioException);
 					}
 				}
 
@@ -333,9 +334,7 @@ public class LiferayAppDefaultsPlugin implements Plugin<Project> {
 		}
 
 		if (Validator.isNotNull(appTitle) && Validator.isNotNull(appVersion)) {
-			String title = String.format("%s %s API", appTitle, appVersion);
-
-			javadoc.setTitle(title);
+			javadoc.setTitle(String.format("%s %s API", appTitle, appVersion));
 		}
 	}
 
@@ -444,7 +443,7 @@ public class LiferayAppDefaultsPlugin implements Plugin<Project> {
 	}
 
 	private Properties _getAppProperties(Project project) {
-		File relengDir = LiferayRelengPlugin.getRelengDir(project);
+		File relengDir = LiferayRelengUtil.getRelengDir(project);
 
 		if (relengDir != null) {
 			File appPropertiesFile = new File(relengDir, "app.properties");
@@ -465,8 +464,8 @@ public class LiferayAppDefaultsPlugin implements Plugin<Project> {
 				"com/liferay/gradle/plugins/defaults/internal/dependencies" +
 					"/config-jsdoc.json");
 		}
-		catch (IOException ioe) {
-			throw new ExceptionInInitializerError(ioe);
+		catch (IOException ioException) {
+			throw new ExceptionInInitializerError(ioException);
 		}
 	}
 

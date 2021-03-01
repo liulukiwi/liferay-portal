@@ -68,14 +68,9 @@
 	<#if getterUtil.getBoolean(enableComments) && assetRenderer.isCommentable()>
 		<br />
 
-		<#assign discussionURL = renderResponse.createActionURL() />
-
-		${discussionURL.setParameter("javax.portlet.action", "invokeTaglibDiscussion")}
-
 		<@liferay_comment["discussion"]
 			className=entry.getClassName()
 			classPK=entry.getClassPK()
-			formAction=discussionURL?string
 			formName="fm" + entry.getClassPK()
 			ratingsEnabled=getterUtil.getBoolean(enableCommentRatings)
 			redirect=currentURL
@@ -171,7 +166,7 @@
 <#macro getRatings>
 	<#if getterUtil.getBoolean(enableRatings) && assetRenderer.isRatable()>
 		<div class="asset-ratings">
-			<@liferay_ui["ratings"]
+			<@liferay_ratings["ratings"]
 				className=entry.getClassName()
 				classPK=entry.getClassPK()
 			/>
@@ -195,6 +190,7 @@
 		displayStyle="${socialBookmarksDisplayStyle}"
 		target="_blank"
 		title=entry.getTitle(locale)
+		types="${socialBookmarksTypes}"
 		url=viewURL
 	/>
 </#macro>

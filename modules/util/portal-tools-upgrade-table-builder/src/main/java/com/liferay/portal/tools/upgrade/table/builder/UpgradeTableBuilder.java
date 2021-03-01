@@ -64,8 +64,8 @@ public class UpgradeTableBuilder {
 				baseDirName, osgiModule, releaseInfoVersion,
 				upgradeTableDirName);
 		}
-		catch (Exception e) {
-			ArgumentsUtil.processMainException(arguments, e);
+		catch (Exception exception) {
+			ArgumentsUtil.processMainException(arguments, exception);
 		}
 	}
 
@@ -167,9 +167,8 @@ public class UpgradeTableBuilder {
 
 		String author = _getAuthor(content);
 
-		Path indexesFilePath = _getIndexesFilePath(upgradeFileVersion);
-
-		String[] addIndexes = _getAddIndexes(indexesFilePath, tableName);
+		String[] addIndexes = _getAddIndexes(
+			_getIndexesFilePath(upgradeFileVersion), tableName);
 
 		content = _getContent(
 			packagePath, className, upgradeFileContent, author, addIndexes);
@@ -275,7 +274,7 @@ public class UpgradeTableBuilder {
 
 		content = content.substring(x, y + 1);
 
-		content = StringUtil.replace(content, "\t", "");
+		content = StringUtil.removeSubstring(content, "\t");
 		content = StringUtil.replace(content, "{ \"", "{\"");
 		content = StringUtil.replace(content, "new Integer(Types.", "Types.");
 		content = StringUtil.replace(content, ") }", "}");

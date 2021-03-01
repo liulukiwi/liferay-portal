@@ -18,17 +18,24 @@ import ClayIcon from '@clayui/icon';
 import ClaySticker from '@clayui/sticker';
 import {fetch} from 'frontend-js-web';
 import PropTypes from 'prop-types';
-import React, {useState, useRef} from 'react';
+import React, {useRef, useState} from 'react';
 
-function PersonalMenu({color, isImpersonated, itemsURL, label, size}) {
+function PersonalMenu({
+	color,
+	isImpersonated,
+	itemsURL,
+	label,
+	size,
+	userPortraitURL,
+}) {
 	const [items, setItems] = useState([]);
 	const preloadPromise = useRef();
 
 	function preloadItems() {
 		if (!preloadPromise.current) {
 			preloadPromise.current = fetch(itemsURL)
-				.then(response => response.json())
-				.then(items => setItems(items));
+				.then((response) => response.json())
+				.then((items) => setItems(items));
 		}
 	}
 
@@ -45,6 +52,7 @@ function PersonalMenu({color, isImpersonated, itemsURL, label, size}) {
 					/>
 				) : (
 					<ClayButton
+						aria-label={Liferay.Language.get('personal-menu')}
 						displayType="unstyled"
 						onFocus={preloadItems}
 						onMouseOver={preloadItems}
@@ -55,7 +63,14 @@ function PersonalMenu({color, isImpersonated, itemsURL, label, size}) {
 								shape="circle"
 								size={size}
 							>
-								<ClayIcon symbol="user" />
+								{userPortraitURL ? (
+									<img
+										className="sticker-img"
+										src={userPortraitURL}
+									/>
+								) : (
+									<ClayIcon symbol="user" />
+								)}
 							</ClaySticker>
 
 							{isImpersonated && (
@@ -81,9 +96,7 @@ function PersonalMenu({color, isImpersonated, itemsURL, label, size}) {
 }
 
 PersonalMenu.propTypes = {
-	itemsURL: PropTypes.string
+	itemsURL: PropTypes.string,
 };
 
-export default function(props) {
-	return <PersonalMenu {...props} />;
-}
+export default PersonalMenu;

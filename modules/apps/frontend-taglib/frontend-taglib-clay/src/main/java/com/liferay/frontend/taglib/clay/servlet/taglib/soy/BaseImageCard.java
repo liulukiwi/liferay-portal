@@ -15,9 +15,11 @@
 package com.liferay.frontend.taglib.clay.servlet.taglib.soy;
 
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.LabelItem;
-import com.liferay.frontend.taglib.clay.servlet.taglib.util.LabelItemList;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.LabelItemListBuilder;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.search.RowChecker;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.AuditedModel;
 import com.liferay.portal.kernel.model.BaseModel;
 import com.liferay.portal.kernel.model.User;
@@ -55,15 +57,13 @@ public abstract class BaseImageCard
 			return Collections.emptyList();
 		}
 
-		WorkflowedModel workflowedModel = (WorkflowedModel)baseModel;
+		return LabelItemListBuilder.add(
+			labelItem -> {
+				WorkflowedModel workflowedModel = (WorkflowedModel)baseModel;
 
-		return new LabelItemList() {
-			{
-				add(
-					labelItem -> labelItem.setStatus(
-						workflowedModel.getStatus()));
+				labelItem.setStatus(workflowedModel.getStatus());
 			}
-		};
+		).build();
 	}
 
 	@Override
@@ -80,7 +80,10 @@ public abstract class BaseImageCard
 			try {
 				return user.getPortraitURL(themeDisplay);
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(exception, exception);
+				}
 			}
 		}
 
@@ -111,5 +114,7 @@ public abstract class BaseImageCard
 
 	protected final RenderRequest renderRequest;
 	protected final ThemeDisplay themeDisplay;
+
+	private static final Log _log = LogFactoryUtil.getLog(BaseImageCard.class);
 
 }

@@ -83,6 +83,16 @@ public class DataRecordSerDes {
 			sb.append(dataRecord.getId());
 		}
 
+		if (dataRecord.getStatus() != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"status\": ");
+
+			sb.append(dataRecord.getStatus());
+		}
+
 		sb.append("}");
 
 		return sb.toString();
@@ -126,6 +136,13 @@ public class DataRecordSerDes {
 			map.put("id", String.valueOf(dataRecord.getId()));
 		}
 
+		if (dataRecord.getStatus() == null) {
+			map.put("status", null);
+		}
+		else {
+			map.put("status", String.valueOf(dataRecord.getStatus()));
+		}
+
 		return map;
 	}
 
@@ -166,9 +183,14 @@ public class DataRecordSerDes {
 						Long.valueOf((String)jsonParserFieldValue));
 				}
 			}
-			else {
-				throw new IllegalArgumentException(
-					"Unsupported field name " + jsonParserFieldName);
+			else if (Objects.equals(jsonParserFieldName, "status")) {
+				if (jsonParserFieldValue != null) {
+					dataRecord.setStatus(
+						Integer.valueOf((String)jsonParserFieldValue));
+				}
+			}
+			else if (jsonParserFieldName.equals("status")) {
+				throw new IllegalArgumentException();
 			}
 		}
 
@@ -224,10 +246,13 @@ public class DataRecordSerDes {
 
 				sb.append("]");
 			}
-			else {
+			else if (value instanceof String) {
 				sb.append("\"");
 				sb.append(_escape(entry.getValue()));
 				sb.append("\"");
+			}
+			else {
+				sb.append(String.valueOf(entry.getValue()));
 			}
 
 			if (iterator.hasNext()) {

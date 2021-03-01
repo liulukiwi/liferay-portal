@@ -12,25 +12,80 @@
  * details.
  */
 
-import {ClaySelectWithOption} from '@clayui/form';
-import React from 'react';
+import React, {useEffect, useMemo} from 'react';
+
+import togglePermissions from '../../../app/actions/togglePermission';
+import {config} from '../../../app/config/index';
+import selectSegmentsExperienceId from '../../../app/selectors/selectSegmentsExperienceId';
+import {useDispatch, useSelector} from '../../../app/store/index';
+import ExperienceSelector from './ExperienceSelector';
 
 // TODO: show how to colocate CSS with plugins (may use loaders)
+
 export default function ExperienceToolbarSection({selectId}) {
+	const availableSegmentsExperiences = useSelector(
+		(state) => state.availableSegmentsExperiences
+	);
+	const dispatch = useDispatch();
+	const segmentsExperienceId = useSelector(selectSegmentsExperienceId);
+
+	const experiences = useMemo(
+		() =>
+			Object.values(availableSegmentsExperiences)
+				.sort((a, b) => b.priority - a.priority)
+				.map((experience, _, experiences) => {
+					const segmentsEntryName =
+						config.availableSegmentsEntries[
+							experience.segmentsEntryId
+						].name;
+
+					const firstExperience = experiences.find(
+						(exp) =>
+							exp.segmentsEntryId ===
+								experience.segmentsEntryId ||
+							exp.segmentsEntryId ===
+								config.defaultSegmentsEntryId
+					);
+
+					return {
+						...experience,
+						active:
+							firstExperience.segmentsExperienceId ===
+							experience.segmentsExperienceId,
+						segmentsEntryName,
+					};
+				}),
+		[availableSegmentsExperiences]
+	);
+	const segments = useMemo(
+		() => Object.values(config.availableSegmentsEntries),
+		[]
+	);
+
+	const selectedExperience =
+		availableSegmentsExperiences[segmentsExperienceId];
+
+	useEffect(() => {
+		dispatch(
+			togglePermissions(
+				'LOCKED_SEGMENTS_EXPERIMENT',
+				selectedExperience.hasLockedSegmentsExperiment
+			)
+		);
+	}, [dispatch, selectedExperience.hasLockedSegmentsExperiment]);
+
 	return (
-		<div className="mr-2 page-editor-toolbar-experience">
-			<label className="mr-2" htmlFor={selectId}>
-				Experience
+		<div className="page-editor__toolbar-experience">
+			<label className="d-lg-block d-none mr-2" htmlFor={selectId}>
+				{Liferay.Language.get('experience')}
 			</label>
-			<ClaySelectWithOption
-				disabled={false}
-				id={selectId}
-				options={[
-					{
-						label: 'Default',
-						value: '1'
-					}
-				]}
+
+			<ExperienceSelector
+				editSegmentsEntryURL={config.editSegmentsEntryURL}
+				experiences={experiences}
+				segments={segments}
+				selectId={selectId}
+				selectedExperience={selectedExperience}
 			/>
 		</div>
 	);

@@ -19,6 +19,7 @@ import com.liferay.asset.kernel.model.AssetEntry;
 import com.liferay.asset.kernel.model.AssetRenderer;
 import com.liferay.asset.kernel.model.AssetRendererFactory;
 import com.liferay.asset.kernel.service.AssetEntryLocalService;
+import com.liferay.document.library.kernel.model.DLFileEntry;
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
 import com.liferay.dynamic.data.mapping.model.DDMTemplate;
 import com.liferay.dynamic.data.mapping.service.DDMTemplateLocalService;
@@ -26,7 +27,6 @@ import com.liferay.exportimport.content.processor.ExportImportContentProcessor;
 import com.liferay.exportimport.kernel.lar.ExportImportThreadLocal;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
-import com.liferay.fragment.model.FragmentEntryLink;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
@@ -35,28 +35,23 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.ClassedModel;
 import com.liferay.portal.kernel.model.Layout;
-import com.liferay.portal.kernel.model.PortletPreferences;
 import com.liferay.portal.kernel.model.StagedModel;
-import com.liferay.portal.kernel.service.PortletPreferencesLocalService;
+import com.liferay.portal.kernel.repository.model.FileEntry;
+import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.Portal;
-import com.liferay.portal.kernel.util.PortletKeys;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.xml.Element;
-import com.liferay.segments.constants.SegmentsExperienceConstants;
-import com.liferay.segments.model.SegmentsExperience;
-import com.liferay.segments.service.SegmentsExperienceLocalService;
-import com.liferay.segments.util.SegmentsExperiencePortletUtil;
+import com.liferay.site.navigation.model.SiteNavigationMenu;
+import com.liferay.site.navigation.model.SiteNavigationMenuItem;
+import com.liferay.site.navigation.service.SiteNavigationMenuLocalService;
 import com.liferay.staging.StagingGroupHelper;
 import com.liferay.staging.StagingGroupHelperUtil;
 
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -81,64 +76,35 @@ public class FragmentEntryLinkExportImportContentProcessor
 			boolean escapeContent)
 		throws Exception {
 
-		content =
-			_dlReferencesExportImportContentProcessor.
-				replaceExportContentReferences(
-					portletDataContext, stagedModel, content, true, false);
-
 		JSONObject editableValuesJSONObject = JSONFactoryUtil.createJSONObject(
 			content);
 
-		Iterator<String> keysIterator = editableValuesJSONObject.keys();
+		String portletId = editableValuesJSONObject.getString("portletId");
 
-		while (keysIterator.hasNext()) {
-			String key = keysIterator.next();
-
-			JSONObject editableProcessorJSONObject =
-				editableValuesJSONObject.getJSONObject(key);
-
-			if (editableProcessorJSONObject == null) {
-				continue;
-			}
-
-			if (Objects.equals(key, _KEY_EDITABLE_FRAGMENT_ENTRY_PROCESSOR)) {
-				Iterator<String> editableKeysIterator =
-					editableProcessorJSONObject.keys();
-
-				while (editableKeysIterator.hasNext()) {
-					String editableKey = editableKeysIterator.next();
-
-					JSONObject editableJSONObject =
-						editableProcessorJSONObject.getJSONObject(editableKey);
-
-					_replaceMappedFieldExportContentReferences(
-						portletDataContext, stagedModel, editableJSONObject,
-						exportReferencedContent);
-
-					_replaceSegmentsExperienceExportContentReferences(
-						portletDataContext, stagedModel, editableJSONObject);
-				}
-			}
-			else if (Objects.equals(
-						key, _KEY_FREEMARKER_FRAGMENT_ENTRY_PROCESSOR)) {
-
-				_replaceSegmentsExperienceExportContentReferences(
-					portletDataContext, stagedModel,
-					editableProcessorJSONObject);
-			}
+		if (Validator.isNotNull(portletId)) {
+			return content;
 		}
 
-		if (stagedModel instanceof FragmentEntryLink) {
-			FragmentEntryLink fragmentEntryLink =
-				(FragmentEntryLink)stagedModel;
+		content =
+			_dlReferencesExportImportContentProcessor.
+				replaceExportContentReferences(
+					portletDataContext, stagedModel, content,
+					exportReferencedContent, escapeContent);
+		content =
+			_layoutReferencesExportImportContentProcessor.
+				replaceExportContentReferences(
+					portletDataContext, stagedModel, content,
+					exportReferencedContent, escapeContent);
 
-			if (fragmentEntryLink.getClassNameId() == _portal.getClassNameId(
-					Layout.class)) {
+		editableValuesJSONObject = JSONFactoryUtil.createJSONObject(content);
 
-				_exportPortletPreferencesSegmentsExperience(
-					portletDataContext, fragmentEntryLink);
-			}
-		}
+		_replaceEditableExportContentReferences(
+			editableValuesJSONObject, exportReferencedContent,
+			portletDataContext, stagedModel);
+
+		_replaceConfigurationExportContentReferences(
+			editableValuesJSONObject, exportReferencedContent,
+			portletDataContext, stagedModel);
 
 		return editableValuesJSONObject.toString();
 	}
@@ -149,64 +115,31 @@ public class FragmentEntryLinkExportImportContentProcessor
 			String content)
 		throws Exception {
 
+		JSONObject editableValuesJSONObject = JSONFactoryUtil.createJSONObject(
+			content);
+
+		String portletId = editableValuesJSONObject.getString("portletId");
+
+		if (Validator.isNotNull(portletId)) {
+			return content;
+		}
+
 		content =
 			_dlReferencesExportImportContentProcessor.
 				replaceImportContentReferences(
 					portletDataContext, stagedModel, content);
+		content =
+			_layoutReferencesExportImportContentProcessor.
+				replaceImportContentReferences(
+					portletDataContext, stagedModel, content);
 
-		JSONObject editableValuesJSONObject = JSONFactoryUtil.createJSONObject(
-			content);
+		editableValuesJSONObject = JSONFactoryUtil.createJSONObject(content);
 
-		Iterator<String> keysIterator = editableValuesJSONObject.keys();
+		_replaceEditableImportContentReferences(
+			editableValuesJSONObject, portletDataContext);
 
-		while (keysIterator.hasNext()) {
-			String key = keysIterator.next();
-
-			JSONObject editableProcessorJSONObject =
-				editableValuesJSONObject.getJSONObject(key);
-
-			if (editableProcessorJSONObject == null) {
-				continue;
-			}
-
-			if (Objects.equals(key, _KEY_EDITABLE_FRAGMENT_ENTRY_PROCESSOR)) {
-				Iterator<String> editableKeysIterator =
-					editableProcessorJSONObject.keys();
-
-				while (editableKeysIterator.hasNext()) {
-					String editableKey = editableKeysIterator.next();
-
-					JSONObject editableJSONObject =
-						editableProcessorJSONObject.getJSONObject(editableKey);
-
-					_replaceMappedFieldImportContentReferences(
-						portletDataContext, editableJSONObject);
-
-					_replaceSegmentsExperienceImportContentReferences(
-						portletDataContext, editableJSONObject);
-				}
-			}
-			else {
-				if (Objects.equals(
-						key, _KEY_FREEMARKER_FRAGMENT_ENTRY_PROCESSOR)) {
-
-					_replaceSegmentsExperienceImportContentReferences(
-						portletDataContext, editableProcessorJSONObject);
-				}
-			}
-		}
-
-		if (stagedModel instanceof FragmentEntryLink) {
-			FragmentEntryLink fragmentEntryLink =
-				(FragmentEntryLink)stagedModel;
-
-			if (fragmentEntryLink.getClassNameId() == _portal.getClassNameId(
-					Layout.class)) {
-
-				_importPortletPreferencesSegmentsExperience(
-					portletDataContext, fragmentEntryLink.getClassPK());
-			}
-		}
+		_replaceConfigurationImportContentReferences(
+			editableValuesJSONObject, portletDataContext);
 
 		return editableValuesJSONObject.toString();
 	}
@@ -216,83 +149,193 @@ public class FragmentEntryLinkExportImportContentProcessor
 		throws PortalException {
 	}
 
-	private void _exportPortletPreferencesSegmentsExperience(
+	private void _exportSiteNavigationMenu(
+			JSONObject configurationValueJSONObject,
+			boolean exportReferencedContent,
 			PortletDataContext portletDataContext,
-			FragmentEntryLink fragmentEntryLink)
-		throws PortalException {
+			StagedModel referrerStagedModel)
+		throws Exception {
 
-		List<PortletPreferences> portletPreferencesList =
-			_portletPreferencesLocalService.getPortletPreferences(
-				PortletKeys.PREFS_OWNER_ID_DEFAULT,
-				PortletKeys.PREFS_OWNER_TYPE_LAYOUT,
-				fragmentEntryLink.getClassPK());
+		long siteNavigationMenuId = configurationValueJSONObject.getLong(
+			"siteNavigationMenuId");
 
-		for (PortletPreferences portletPreferences : portletPreferencesList) {
-			long segmentsExperienceId =
-				SegmentsExperiencePortletUtil.getSegmentsExperienceId(
-					portletPreferences.getPortletId());
+		StagedModel stagedModel = null;
 
-			SegmentsExperience segmentsExperience =
-				_segmentsExperienceLocalService.fetchSegmentsExperience(
-					segmentsExperienceId);
+		if (siteNavigationMenuId > 0) {
+			stagedModel =
+				_siteNavigationMenuLocalService.fetchSiteNavigationMenu(
+					siteNavigationMenuId);
+		}
+		else {
+			stagedModel = _layoutLocalService.fetchLayout(
+				configurationValueJSONObject.getLong(
+					"parentSiteNavigationMenuItemId"));
+		}
 
-			if (segmentsExperience == null) {
-				continue;
-			}
+		if (stagedModel == null) {
+			return;
+		}
 
+		if (exportReferencedContent) {
 			StagedModelDataHandlerUtil.exportReferenceStagedModel(
-				portletDataContext, fragmentEntryLink, segmentsExperience,
+				portletDataContext, referrerStagedModel, stagedModel,
 				PortletDataContext.REFERENCE_TYPE_DEPENDENCY);
+		}
+		else {
+			Element entityElement = portletDataContext.getExportDataElement(
+				referrerStagedModel);
+
+			portletDataContext.addReferenceElement(
+				referrerStagedModel, entityElement, stagedModel,
+				PortletDataContext.REFERENCE_TYPE_DEPENDENCY, true);
 		}
 	}
 
-	private void _importPortletPreferencesSegmentsExperience(
-			PortletDataContext portletDataContext, long plid)
-		throws PortalException {
+	private void _replaceAllEditableExportContentReferences(
+			JSONObject editableValuesJSONObject,
+			boolean exportReferencedContent,
+			PortletDataContext portletDataContext, StagedModel stagedModel)
+		throws Exception {
 
-		Map<Long, Long> plids =
-			(Map<Long, Long>)portletDataContext.getNewPrimaryKeysMap(
-				Layout.class);
+		if ((editableValuesJSONObject == null) ||
+			(editableValuesJSONObject.length() <= 0)) {
 
-		Map<Long, Long> segmentsExperienceIds =
-			(Map<Long, Long>)portletDataContext.getNewPrimaryKeysMap(
-				SegmentsExperience.class);
+			return;
+		}
 
-		long importedPlid = MapUtil.getLong(plids, plid, plid);
+		_replaceMappedFieldExportContentReferences(
+			portletDataContext, stagedModel, editableValuesJSONObject,
+			exportReferencedContent);
 
-		List<PortletPreferences> portletPreferencesList =
-			_portletPreferencesLocalService.getPortletPreferences(
-				PortletKeys.PREFS_OWNER_ID_DEFAULT,
-				PortletKeys.PREFS_OWNER_TYPE_LAYOUT, importedPlid);
+		Iterator<String> editableKeysIterator = editableValuesJSONObject.keys();
 
-		for (PortletPreferences portletPreferences : portletPreferencesList) {
-			String portletId = portletPreferences.getPortletId();
+		while (editableKeysIterator.hasNext()) {
+			String editableKey = editableKeysIterator.next();
 
-			long segmentsExperienceId =
-				SegmentsExperiencePortletUtil.getSegmentsExperienceId(
-					portletId);
+			JSONObject editableJSONObject =
+				editableValuesJSONObject.getJSONObject(editableKey);
 
-			if (segmentsExperienceId > 0) {
-				long importedSegmentsExperienceId = MapUtil.getLong(
-					segmentsExperienceIds, segmentsExperienceId,
-					segmentsExperienceId);
+			_replaceAllEditableExportContentReferences(
+				editableJSONObject, exportReferencedContent, portletDataContext,
+				stagedModel);
+		}
+	}
 
-				if (importedSegmentsExperienceId != segmentsExperienceId) {
-					portletPreferences.setPortletId(
-						SegmentsExperiencePortletUtil.setSegmentsExperienceId(
-							portletId, importedSegmentsExperienceId));
+	private void _replaceAllEditableImportContentReferences(
+		JSONObject editableValuesJSONObject,
+		PortletDataContext portletDataContext) {
 
-					_portletPreferencesLocalService.deletePortletPreferences(
-						portletPreferences.getPortletPreferencesId());
+		if ((editableValuesJSONObject == null) ||
+			(editableValuesJSONObject.length() <= 0)) {
 
-					_portletPreferencesLocalService.updatePreferences(
-						PortletKeys.PREFS_OWNER_ID_DEFAULT,
-						PortletKeys.PREFS_OWNER_TYPE_LAYOUT, importedPlid,
-						portletPreferences.getPortletId(),
-						portletPreferences.getPreferences());
-				}
+			return;
+		}
+
+		_replaceMappedFieldImportContentReferences(
+			portletDataContext, editableValuesJSONObject);
+
+		Iterator<String> editableKeysIterator = editableValuesJSONObject.keys();
+
+		while (editableKeysIterator.hasNext()) {
+			String editableKey = editableKeysIterator.next();
+
+			JSONObject editableJSONObject =
+				editableValuesJSONObject.getJSONObject(editableKey);
+
+			_replaceAllEditableImportContentReferences(
+				editableJSONObject, portletDataContext);
+		}
+	}
+
+	private void _replaceConfigurationExportContentReferences(
+			JSONObject editableValuesJSONObject,
+			boolean exportReferencedContent,
+			PortletDataContext portletDataContext, StagedModel stagedModel)
+		throws Exception {
+
+		JSONObject configurationValuesJSONObject =
+			editableValuesJSONObject.getJSONObject(
+				_KEY_FREEMARKER_FRAGMENT_ENTRY_PROCESSOR);
+
+		if (configurationValuesJSONObject == null) {
+			return;
+		}
+
+		Iterator<String> configurationValuesIterator =
+			configurationValuesJSONObject.keys();
+
+		while (configurationValuesIterator.hasNext()) {
+			String configurationValueKey = configurationValuesIterator.next();
+
+			JSONObject configurationValueJSONObject =
+				configurationValuesJSONObject.getJSONObject(
+					configurationValueKey);
+
+			if ((configurationValueJSONObject != null) &&
+				configurationValueJSONObject.has("siteNavigationMenuId")) {
+
+				_exportSiteNavigationMenu(
+					configurationValueJSONObject, exportReferencedContent,
+					portletDataContext, stagedModel);
 			}
 		}
+	}
+
+	private void _replaceConfigurationImportContentReferences(
+		JSONObject editableValuesJSONObject,
+		PortletDataContext portletDataContext) {
+
+		JSONObject editableProcessorJSONObject =
+			editableValuesJSONObject.getJSONObject(
+				_KEY_FREEMARKER_FRAGMENT_ENTRY_PROCESSOR);
+
+		if (editableProcessorJSONObject == null) {
+			return;
+		}
+
+		Iterator<String> editableKeysIterator =
+			editableProcessorJSONObject.keys();
+
+		while (editableKeysIterator.hasNext()) {
+			String editableKey = editableKeysIterator.next();
+
+			JSONObject configurationValueJSONObject =
+				editableProcessorJSONObject.getJSONObject(editableKey);
+
+			if ((configurationValueJSONObject != null) &&
+				configurationValueJSONObject.has("siteNavigationMenuId")) {
+
+				_replaceSiteNavigationMenuIds(
+					configurationValueJSONObject, portletDataContext);
+			}
+		}
+	}
+
+	private void _replaceEditableExportContentReferences(
+			JSONObject editableValuesJSONObject,
+			boolean exportReferencedContent,
+			PortletDataContext portletDataContext, StagedModel stagedModel)
+		throws Exception {
+
+		JSONObject editableProcessorJSONObject =
+			editableValuesJSONObject.getJSONObject(
+				_KEY_EDITABLE_FRAGMENT_ENTRY_PROCESSOR);
+
+		_replaceAllEditableExportContentReferences(
+			editableProcessorJSONObject, exportReferencedContent,
+			portletDataContext, stagedModel);
+	}
+
+	private void _replaceEditableImportContentReferences(
+		JSONObject editableValuesJSONObject,
+		PortletDataContext portletDataContext) {
+
+		JSONObject editableProcessorJSONObject =
+			editableValuesJSONObject.getJSONObject(
+				_KEY_EDITABLE_FRAGMENT_ENTRY_PROCESSOR);
+
+		_replaceAllEditableImportContentReferences(
+			editableProcessorJSONObject, portletDataContext);
 	}
 
 	private void _replaceMappedFieldExportContentReferences(
@@ -325,16 +368,28 @@ public class FragmentEntryLinkExportImportContentProcessor
 			}
 		}
 
-		AssetEntry assetEntry = _assetEntryLocalService.getEntry(
-			_portal.getClassName(classNameId), classPK);
+		// LPS-111037
 
-		AssetRenderer assetRenderer = assetEntry.getAssetRenderer();
+		String className = _portal.getClassName(classNameId);
+
+		if (Objects.equals(className, FileEntry.class.getName())) {
+			className = DLFileEntry.class.getName();
+		}
+
+		AssetEntry assetEntry = _assetEntryLocalService.fetchEntry(
+			className, classPK);
+
+		if (assetEntry == null) {
+			return;
+		}
+
+		AssetRenderer<?> assetRenderer = assetEntry.getAssetRenderer();
 
 		if (assetRenderer == null) {
 			return;
 		}
 
-		AssetRendererFactory assetRendererFactory =
+		AssetRendererFactory<?> assetRendererFactory =
 			assetRenderer.getAssetRendererFactory();
 
 		StagingGroupHelper stagingGroupHelper =
@@ -357,7 +412,7 @@ public class FragmentEntryLinkExportImportContentProcessor
 					(StagedModel)assetRenderer.getAssetObject(),
 					PortletDataContext.REFERENCE_TYPE_DEPENDENCY);
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 				if (_log.isDebugEnabled()) {
 					StringBundler messageSB = new StringBundler(11);
 
@@ -371,16 +426,16 @@ public class FragmentEntryLinkExportImportContentProcessor
 					messageSB.append(" and class name ");
 					messageSB.append(_portal.getClassName(classNameId));
 					messageSB.append(" that could not be exported due to ");
-					messageSB.append(e);
+					messageSB.append(exception);
 
 					String errorMessage = messageSB.toString();
 
-					if (Validator.isNotNull(e.getMessage())) {
+					if (Validator.isNotNull(exception.getMessage())) {
 						errorMessage = StringBundler.concat(
-							errorMessage, ": ", e.getMessage());
+							errorMessage, ": ", exception.getMessage());
 					}
 
-					_log.debug(errorMessage, e);
+					_log.debug(errorMessage, exception);
 				}
 			}
 		}
@@ -429,9 +484,19 @@ public class FragmentEntryLinkExportImportContentProcessor
 			}
 		}
 
-		AssetRendererFactory assetRendererFactory =
+		// LPS-111037
+
+		String assetRendererFactoryByClassName = className;
+
+		if (Objects.equals(
+				assetRendererFactoryByClassName, FileEntry.class.getName())) {
+
+			assetRendererFactoryByClassName = DLFileEntry.class.getName();
+		}
+
+		AssetRendererFactory<?> assetRendererFactory =
 			AssetRendererFactoryRegistryUtil.getAssetRendererFactoryByClassName(
-				className);
+				assetRendererFactoryByClassName);
 
 		StagingGroupHelper stagingGroupHelper =
 			StagingGroupHelperUtil.getStagingGroupHelper();
@@ -461,77 +526,45 @@ public class FragmentEntryLinkExportImportContentProcessor
 		editableJSONObject.put("classPK", classPK);
 	}
 
-	private void _replaceSegmentsExperienceExportContentReferences(
-			PortletDataContext portletDataContext, StagedModel stagedModel,
-			JSONObject editableJSONObject)
-		throws Exception {
+	private void _replaceSiteNavigationMenuIds(
+		JSONObject configurationValueJSONObject,
+		PortletDataContext portletDataContext) {
 
-		Iterator<String> editableKeysIterator = editableJSONObject.keys();
+		long siteNavigationMenuId = configurationValueJSONObject.getLong(
+			"siteNavigationMenuId");
 
-		while (editableKeysIterator.hasNext()) {
-			String editableKey = editableKeysIterator.next();
+		long parentSiteNavigationMenuItemId =
+			configurationValueJSONObject.getLong(
+				"parentSiteNavigationMenuItemId");
 
-			if (!editableKey.startsWith(
-					SegmentsExperienceConstants.ID_PREFIX)) {
-
-				continue;
-			}
-
-			long segmentsExperienceId = GetterUtil.getLong(
-				editableKey.substring(
-					SegmentsExperienceConstants.ID_PREFIX.length()));
-
-			SegmentsExperience segmentsExperience =
-				_segmentsExperienceLocalService.fetchSegmentsExperience(
-					segmentsExperienceId);
-
-			if (segmentsExperience == null) {
-				continue;
-			}
-
-			StagedModelDataHandlerUtil.exportReferenceStagedModel(
-				portletDataContext, stagedModel, segmentsExperience,
-				PortletDataContext.REFERENCE_TYPE_DEPENDENCY);
-		}
-	}
-
-	private void _replaceSegmentsExperienceImportContentReferences(
-		PortletDataContext portletDataContext, JSONObject editableJSONObject) {
-
-		Iterator<String> editableKeysIterator = editableJSONObject.keys();
-
-		Set<String> editableKeys = new HashSet<>();
-
-		editableKeysIterator.forEachRemaining(editableKeys::add);
-
-		for (String editableKey : editableKeys) {
-			if (!editableKey.startsWith(
-					SegmentsExperienceConstants.ID_PREFIX)) {
-
-				continue;
-			}
-
-			long segmentsExperienceId = GetterUtil.getLong(
-				editableKey.substring(
-					SegmentsExperienceConstants.ID_PREFIX.length()));
-
-			Map<Long, Long> segmentsExperienceIds =
+		if (siteNavigationMenuId == 0) {
+			Map<Long, Long> layoutNewPrimaryKeys =
 				(Map<Long, Long>)portletDataContext.getNewPrimaryKeysMap(
-					SegmentsExperience.class);
+					Layout.class.getName());
 
-			long importedSegmentsExperienceId = MapUtil.getLong(
-				segmentsExperienceIds, segmentsExperienceId,
-				segmentsExperienceId);
+			configurationValueJSONObject.put(
+				"parentSiteNavigationMenuItemId",
+				layoutNewPrimaryKeys.getOrDefault(
+					parentSiteNavigationMenuItemId, 0L));
+		}
+		else {
+			Map<Long, Long> siteNavigationMenuNewPrimaryKeys =
+				(Map<Long, Long>)portletDataContext.getNewPrimaryKeysMap(
+					SiteNavigationMenu.class.getName());
 
-			JSONObject segmentsExperienceJSONObject =
-				editableJSONObject.getJSONObject(editableKey);
+			configurationValueJSONObject.put(
+				"siteNavigationMenuId",
+				siteNavigationMenuNewPrimaryKeys.getOrDefault(
+					siteNavigationMenuId, 0L));
 
-			editableJSONObject.remove(editableKey);
+			Map<Long, Long> siteNavigationMenuItemNewPrimaryKeys =
+				(Map<Long, Long>)portletDataContext.getNewPrimaryKeysMap(
+					SiteNavigationMenuItem.class.getName());
 
-			editableJSONObject.put(
-				SegmentsExperienceConstants.ID_PREFIX +
-					importedSegmentsExperienceId,
-				segmentsExperienceJSONObject);
+			configurationValueJSONObject.put(
+				"parentSiteNavigationMenuItemId",
+				siteNavigationMenuItemNewPrimaryKeys.getOrDefault(
+					parentSiteNavigationMenuItemId, 0L));
 		}
 	}
 
@@ -559,12 +592,16 @@ public class FragmentEntryLinkExportImportContentProcessor
 		_dlReferencesExportImportContentProcessor;
 
 	@Reference
+	private LayoutLocalService _layoutLocalService;
+
+	@Reference(target = "(content.processor.type=LayoutReferences)")
+	private ExportImportContentProcessor<String>
+		_layoutReferencesExportImportContentProcessor;
+
+	@Reference
 	private Portal _portal;
 
 	@Reference
-	private PortletPreferencesLocalService _portletPreferencesLocalService;
-
-	@Reference
-	private SegmentsExperienceLocalService _segmentsExperienceLocalService;
+	private SiteNavigationMenuLocalService _siteNavigationMenuLocalService;
 
 }

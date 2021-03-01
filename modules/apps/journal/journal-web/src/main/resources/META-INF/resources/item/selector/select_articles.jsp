@@ -20,11 +20,14 @@
 JournalArticleItemSelectorViewDisplayContext journalArticleItemSelectorViewDisplayContext = (JournalArticleItemSelectorViewDisplayContext)request.getAttribute(JournalWebConstants.JOURNAL_ARTICLE_ITEM_SELECTOR_VIEW_DISPLAY_CONTEXT);
 %>
 
-<clay:management-toolbar
-	displayContext="<%= new JournalArticleItemSelectorViewManagementToolbarDisplayContext(liferayPortletRequest, liferayPortletResponse, request, journalArticleItemSelectorViewDisplayContext) %>"
+<clay:management-toolbar-v2
+	displayContext="<%= new JournalArticleItemSelectorViewManagementToolbarDisplayContext(request, liferayPortletRequest, liferayPortletResponse, journalArticleItemSelectorViewDisplayContext) %>"
 />
 
-<div class="container-fluid container-fluid-max-xl item-selector lfr-item-viewer" id="<portlet:namespace />articlesContainer">
+<clay:container-fluid
+	cssClass="item-selector lfr-item-viewer"
+	id='<%= liferayPortletResponse.getNamespace() + "articlesContainer" %>'
+>
 	<liferay-site-navigation:breadcrumb
 		breadcrumbEntries="<%= journalArticleItemSelectorViewDisplayContext.getPortletBreadcrumbEntries() %>"
 	/>
@@ -36,7 +39,6 @@ JournalArticleItemSelectorViewDisplayContext journalArticleItemSelectorViewDispl
 	>
 		<liferay-ui:search-container-row
 			className="Object"
-			cssClass="entry-display-style"
 			modelVar="object"
 		>
 
@@ -60,8 +62,6 @@ JournalArticleItemSelectorViewDisplayContext journalArticleItemSelectorViewDispl
 					<%
 					row.setCssClass("articles " + row.getCssClass());
 
-					Map<String, Object> data = new HashMap<>();
-
 					JSONObject articleJSONObject = JSONUtil.put(
 						"className", JournalArticle.class.getName()
 					).put(
@@ -72,15 +72,22 @@ JournalArticleItemSelectorViewDisplayContext journalArticleItemSelectorViewDispl
 
 					String title = curArticle.getTitle(locale);
 
+					String defaultTitle = curArticle.getTitle(LocaleUtil.fromLanguageId(curArticle.getDefaultLanguageId()));
+
 					if (Validator.isNull(title)) {
-						title = curArticle.getTitle(LocaleUtil.fromLanguageId(curArticle.getDefaultLanguageId()));
+						title = defaultTitle;
 					}
 
-					articleJSONObject.put("title", title);
+					articleJSONObject.put(
+						"title", defaultTitle
+					).put(
+						"titleMap", curArticle.getTitleMap()
+					);
 
-					data.put("value", articleJSONObject.toString());
-
-					row.setData(data);
+					row.setData(
+						HashMapBuilder.<String, Object>put(
+							"value", articleJSONObject.toString()
+						).build());
 					%>
 
 					<c:choose>
@@ -113,14 +120,22 @@ JournalArticleItemSelectorViewDisplayContext journalArticleItemSelectorViewDispl
 								<p class="font-weight-bold h5">
 									<%= HtmlUtil.escape(title) %>
 								</p>
+
+								<c:if test="<%= journalArticleItemSelectorViewDisplayContext.isSearchEverywhere() %>">
+									<h6 class="text-default">
+										<liferay-ui:message key="location" />:
+										<span class="text-secondary">
+											<clay:icon
+												symbol="<%= journalArticleItemSelectorViewDisplayContext.getGroupCssIcon(curArticle.getGroupId()) %>"
+											/>
+
+											<small><%= journalArticleItemSelectorViewDisplayContext.getGroupLabel(curArticle.getGroupId(), locale) %></small>
+										</span>
+									</h6>
+								</c:if>
 							</liferay-ui:search-container-column-text>
 						</c:when>
 						<c:when test='<%= Objects.equals(journalArticleItemSelectorViewDisplayContext.getDisplayStyle(), "icon") %>'>
-
-							<%
-							row.setCssClass("entry-card lfr-asset-item " + row.getCssClass());
-							%>
-
 							<liferay-ui:search-container-column-text>
 								<clay:vertical-card
 									verticalCard="<%= new JournalArticleItemSelectorVerticalCard(curArticle, renderRequest) %>"
@@ -133,6 +148,13 @@ JournalArticleItemSelectorViewDisplayContext journalArticleItemSelectorViewDispl
 							row.setCssClass("item-preview " + row.getCssClass());
 							%>
 
+							<c:if test="<%= journalArticleItemSelectorViewDisplayContext.showArticleId() %>">
+								<liferay-ui:search-container-column-text
+									name="id"
+									value="<%= HtmlUtil.escape(curArticle.getArticleId()) %>"
+								/>
+							</c:if>
+
 							<liferay-ui:search-container-column-text
 								cssClass="table-cell-expand table-cell-minw-200 table-title"
 								name="title"
@@ -140,10 +162,24 @@ JournalArticleItemSelectorViewDisplayContext journalArticleItemSelectorViewDispl
 							/>
 
 							<liferay-ui:search-container-column-text
-								cssClass="table-cell-expand table-cell-minw-200"
+								cssClass="table-cell-expand table-cell-minw-200 text-truncate"
 								name="description"
 								value="<%= StringUtil.shorten(HtmlUtil.stripHtml(curArticle.getDescription(locale)), 200) %>"
 							/>
+
+							<c:if test="<%= journalArticleItemSelectorViewDisplayContext.isSearchEverywhere() %>">
+								<liferay-ui:search-container-column-text
+									name="location"
+								>
+									<span class="text-secondary">
+										<clay:icon
+											symbol="<%= journalArticleItemSelectorViewDisplayContext.getGroupCssIcon(curArticle.getGroupId()) %>"
+										/>
+
+										<small><%= journalArticleItemSelectorViewDisplayContext.getGroupLabel(curArticle.getGroupId(), locale) %></small>
+									</span>
+								</liferay-ui:search-container-column-text>
+							</c:if>
 
 							<liferay-ui:search-container-column-text
 								cssClass="table-cell-expand-smallest table-cell-minw-100"
@@ -180,6 +216,7 @@ JournalArticleItemSelectorViewDisplayContext journalArticleItemSelectorViewDispl
 					<%
 					PortletURL rowURL = journalArticleItemSelectorViewDisplayContext.getPortletURL();
 
+					rowURL.setParameter("groupId", String.valueOf(curFolder.getGroupId()));
 					rowURL.setParameter("folderId", String.valueOf(curFolder.getFolderId()));
 					%>
 
@@ -209,20 +246,59 @@ JournalArticleItemSelectorViewDisplayContext journalArticleItemSelectorViewDispl
 										<%= HtmlUtil.escape(curFolder.getName()) %>
 									</a>
 								</p>
+
+								<c:if test="<%= journalArticleItemSelectorViewDisplayContext.isSearchEverywhere() %>">
+									<h6 class="text-default">
+										<liferay-ui:message key="location" />:
+										<span class="text-secondary">
+											<clay:icon
+												symbol="<%= journalArticleItemSelectorViewDisplayContext.getGroupCssIcon(curFolder.getGroupId()) %>"
+											/>
+
+											<small><%= journalArticleItemSelectorViewDisplayContext.getGroupLabel(curFolder.getGroupId(), locale) %></small>
+										</span>
+									</h6>
+								</c:if>
 							</liferay-ui:search-container-column-text>
 						</c:when>
 						<c:when test='<%= Objects.equals(journalArticleItemSelectorViewDisplayContext.getDisplayStyle(), "icon") %>'>
 
 							<%
-							row.setCssClass("entry-card lfr-asset-folder " + row.getCssClass());
+							row.setCssClass("card-page-item card-page-item-directory " + row.getCssClass());
 							%>
 
 							<liferay-ui:search-container-column-text
 								colspan="<%= 2 %>"
 							>
-								<clay:horizontal-card
-									horizontalCard="<%= new JournalFolderItemSelectorHorizontalCard(curFolder, journalArticleItemSelectorViewDisplayContext) %>"
-								/>
+								<div class="card card-horizontal card-interactive card-interactive-secondary card-type-directory">
+									<div class="card-body">
+										<div class="card-row">
+											<clay:content-col>
+												<clay:sticker
+													displayType="secondary"
+													icon="folder"
+													inline="<%= true %>"
+												/>
+											</clay:content-col>
+
+											<div class="autofit-col autofit-col-expand autofit-col-gutters">
+												<a class="card-title text-truncate" href="<%= rowURL %>" title="<%= HtmlUtil.escapeAttribute(curFolder.getName()) %>">
+													<%= HtmlUtil.escape(curFolder.getName()) %>
+												</a>
+
+												<c:if test="<%= journalArticleItemSelectorViewDisplayContext.isSearchEverywhere() %>">
+													<span class="text-secondary">
+														<clay:icon
+															symbol="<%= journalArticleItemSelectorViewDisplayContext.getGroupCssIcon(curFolder.getGroupId()) %>"
+														/>
+
+														<small><%= journalArticleItemSelectorViewDisplayContext.getGroupLabel(curFolder.getGroupId(), locale) %></small>
+													</span>
+												</c:if>
+											</div>
+										</div>
+									</div>
+								</div>
 							</liferay-ui:search-container-column-text>
 						</c:when>
 						<c:otherwise>
@@ -234,10 +310,24 @@ JournalArticleItemSelectorViewDisplayContext journalArticleItemSelectorViewDispl
 							/>
 
 							<liferay-ui:search-container-column-text
-								cssClass="table-cell-expand table-cell-minw-200"
+								cssClass="table-cell-expand table-cell-minw-200 text-truncate"
 								name="description"
 								value="<%= HtmlUtil.escape(curFolder.getDescription()) %>"
 							/>
+
+							<c:if test="<%= journalArticleItemSelectorViewDisplayContext.isSearchEverywhere() %>">
+								<liferay-ui:search-container-column-text
+									name="location"
+								>
+									<span class="text-secondary">
+										<clay:icon
+											symbol="<%= journalArticleItemSelectorViewDisplayContext.getGroupCssIcon(curFolder.getGroupId()) %>"
+										/>
+
+										<small><%= journalArticleItemSelectorViewDisplayContext.getGroupLabel(curFolder.getGroupId(), locale) %></small>
+									</span>
+								</liferay-ui:search-container-column-text>
+							</c:if>
 
 							<liferay-ui:search-container-column-text
 								cssClass="table-cell-expand-smallest table-cell-minw-150"
@@ -275,34 +365,47 @@ JournalArticleItemSelectorViewDisplayContext journalArticleItemSelectorViewDispl
 			searchContainer="<%= searchContainer %>"
 		/>
 	</liferay-ui:search-container>
-</div>
+</clay:container-fluid>
 
-<aui:script require="metal-dom/src/all/dom as dom">
-	var selectArticleHandler = dom.delegate(
-		document.querySelector('#<portlet:namespace/>articlesContainer'),
+<aui:script require="frontend-js-web/liferay/delegate/delegate.es as delegateModule" sandbox="<%= true %>">
+	var delegate = delegateModule.default;
+
+	var selectArticleHandler = delegate(
+		document.querySelector('#<portlet:namespace />articlesContainer'),
 		'click',
 		'.articles',
-		function(event) {
+		(event) => {
 			<c:choose>
 				<c:when test='<%= Objects.equals(journalArticleItemSelectorViewDisplayContext.getDisplayStyle(), "icon") %>'>
-					dom.removeClasses(
-						document.querySelectorAll('.form-check-card.active'),
-						'active'
+					var activeFormCheckCards = document.querySelectorAll(
+						'.form-check-card.active'
 					);
-					dom.addClasses(
-						dom.closest(event.delegateTarget, '.form-check-card'),
-						'active'
-					);
+
+					var formCheckCard = event.delegateTarget.closest('.form-check-card');
+
+					if (activeFormCheckCards.length) {
+						activeFormCheckCards.forEach((card) => {
+							card.classList.remove('active');
+						});
+					}
+
+					if (formCheckCard) {
+						formCheckCard.classList.add('active');
+					}
 				</c:when>
 				<c:otherwise>
-					dom.removeClasses(
-						document.querySelectorAll('.articles.active'),
-						'active'
-					);
-					dom.addClasses(
-						dom.closest(event.delegateTarget, '.articles'),
-						'active'
-					);
+					var activeArticles = document.querySelectorAll('.articles.active');
+					var articles = event.delegateTarget.closest('.articles');
+
+					if (activeArticles.length) {
+						activeArticles.forEach((article) => {
+							article.classList.remove('active');
+						});
+					}
+
+					if (articles) {
+						articles.classList.add('active');
+					}
 				</c:otherwise>
 			</c:choose>
 
@@ -312,15 +415,15 @@ JournalArticleItemSelectorViewDisplayContext journalArticleItemSelectorViewDispl
 					data: {
 						returnType:
 							'<%= InfoItemItemSelectorReturnType.class.getName() %>',
-						value: event.delegateTarget.dataset.value
-					}
+						value: event.delegateTarget.dataset.value,
+					},
 				}
 			);
 		}
 	);
 
 	Liferay.on('destroyPortlet', function removeListener() {
-		selectArticleHandler.removeListener();
+		selectArticleHandler.dispose();
 
 		Liferay.detach('destroyPortlet', removeListener);
 	});

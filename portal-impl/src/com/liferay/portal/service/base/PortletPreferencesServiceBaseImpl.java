@@ -29,6 +29,7 @@ import com.liferay.portal.kernel.service.persistence.LayoutPersistence;
 import com.liferay.portal.kernel.service.persistence.LayoutRevisionPersistence;
 import com.liferay.portal.kernel.service.persistence.PortletItemPersistence;
 import com.liferay.portal.kernel.service.persistence.PortletPersistence;
+import com.liferay.portal.kernel.service.persistence.PortletPreferenceValuePersistence;
 import com.liferay.portal.kernel.service.persistence.PortletPreferencesFinder;
 import com.liferay.portal.kernel.service.persistence.PortletPreferencesPersistence;
 import com.liferay.portal.kernel.service.persistence.UserFinder;
@@ -52,7 +53,7 @@ public abstract class PortletPreferencesServiceBaseImpl
 	extends BaseServiceImpl
 	implements IdentifiableOSGiService, PortletPreferencesService {
 
-	/**
+	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this class directly. Use <code>PortletPreferencesService</code> via injection or a <code>org.osgi.util.tracker.ServiceTracker</code> or use <code>com.liferay.portal.kernel.service.PortletPreferencesServiceUtil</code>.
@@ -416,6 +417,53 @@ public abstract class PortletPreferencesServiceBaseImpl
 	}
 
 	/**
+	 * Returns the portlet preference value local service.
+	 *
+	 * @return the portlet preference value local service
+	 */
+	public com.liferay.portal.kernel.service.PortletPreferenceValueLocalService
+		getPortletPreferenceValueLocalService() {
+
+		return portletPreferenceValueLocalService;
+	}
+
+	/**
+	 * Sets the portlet preference value local service.
+	 *
+	 * @param portletPreferenceValueLocalService the portlet preference value local service
+	 */
+	public void setPortletPreferenceValueLocalService(
+		com.liferay.portal.kernel.service.PortletPreferenceValueLocalService
+			portletPreferenceValueLocalService) {
+
+		this.portletPreferenceValueLocalService =
+			portletPreferenceValueLocalService;
+	}
+
+	/**
+	 * Returns the portlet preference value persistence.
+	 *
+	 * @return the portlet preference value persistence
+	 */
+	public PortletPreferenceValuePersistence
+		getPortletPreferenceValuePersistence() {
+
+		return portletPreferenceValuePersistence;
+	}
+
+	/**
+	 * Sets the portlet preference value persistence.
+	 *
+	 * @param portletPreferenceValuePersistence the portlet preference value persistence
+	 */
+	public void setPortletPreferenceValuePersistence(
+		PortletPreferenceValuePersistence portletPreferenceValuePersistence) {
+
+		this.portletPreferenceValuePersistence =
+			portletPreferenceValuePersistence;
+	}
+
+	/**
 	 * Returns the user local service.
 	 *
 	 * @return the user local service
@@ -537,8 +585,8 @@ public abstract class PortletPreferencesServiceBaseImpl
 
 			sqlUpdate.update();
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 	}
 
@@ -615,6 +663,17 @@ public abstract class PortletPreferencesServiceBaseImpl
 
 	@BeanReference(type = PortletItemPersistence.class)
 	protected PortletItemPersistence portletItemPersistence;
+
+	@BeanReference(
+		type = com.liferay.portal.kernel.service.PortletPreferenceValueLocalService.class
+	)
+	protected
+		com.liferay.portal.kernel.service.PortletPreferenceValueLocalService
+			portletPreferenceValueLocalService;
+
+	@BeanReference(type = PortletPreferenceValuePersistence.class)
+	protected PortletPreferenceValuePersistence
+		portletPreferenceValuePersistence;
 
 	@BeanReference(
 		type = com.liferay.portal.kernel.service.UserLocalService.class

@@ -122,6 +122,25 @@ public class AssetTagStagedModelDataHandler
 	}
 
 	@Override
+	protected void doImportMissingReference(
+			PortletDataContext portletDataContext, String uuid, long groupId,
+			long tagId)
+		throws Exception {
+
+		AssetTag existingTag = fetchMissingReference(uuid, groupId);
+
+		if (existingTag == null) {
+			return;
+		}
+
+		Map<Long, Long> tagIds =
+			(Map<Long, Long>)portletDataContext.getNewPrimaryKeysMap(
+				AssetTag.class);
+
+		tagIds.put(tagId, existingTag.getTagId());
+	}
+
+	@Override
 	protected void doImportStagedModel(
 			PortletDataContext portletDataContext, AssetTag assetTag)
 		throws Exception {
@@ -165,9 +184,9 @@ public class AssetTagStagedModelDataHandler
 					userId, portletDataContext.getScopeGroupId(),
 					assetTag.getName(), serviceContext);
 			}
-			catch (DuplicateTagException dte) {
+			catch (DuplicateTagException duplicateTagException) {
 				if (_log.isDebugEnabled()) {
-					_log.debug(dte, dte);
+					_log.debug(duplicateTagException, duplicateTagException);
 				}
 
 				importedAssetTag = _assetTagLocalService.addTag(
@@ -181,9 +200,9 @@ public class AssetTagStagedModelDataHandler
 					userId, existingAssetTag.getTagId(), assetTag.getName(),
 					serviceContext);
 			}
-			catch (DuplicateTagException dte) {
+			catch (DuplicateTagException duplicateTagException) {
 				if (_log.isDebugEnabled()) {
-					_log.debug(dte, dte);
+					_log.debug(duplicateTagException, duplicateTagException);
 				}
 
 				importedAssetTag = _assetTagLocalService.updateTag(

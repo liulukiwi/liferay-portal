@@ -15,7 +15,7 @@
 package com.liferay.journal.internal.exportimport.content.processor;
 
 import com.liferay.document.library.kernel.service.DLAppService;
-import com.liferay.dynamic.data.mapping.model.DDMFormFieldType;
+import com.liferay.dynamic.data.mapping.form.field.type.constants.DDMFormFieldTypeConstants;
 import com.liferay.dynamic.data.mapping.model.Value;
 import com.liferay.dynamic.data.mapping.storage.DDMFormFieldValue;
 import com.liferay.dynamic.data.mapping.util.DDMFormFieldValueTransformer;
@@ -42,9 +42,8 @@ public class ImageExportDDMFormFieldValueTransformer
 	implements DDMFormFieldValueTransformer {
 
 	public ImageExportDDMFormFieldValueTransformer(
-		String content, DLAppService dlAppService,
-		boolean exportReferencedContent, PortletDataContext portletDataContext,
-		StagedModel stagedModel) {
+		DLAppService dlAppService, boolean exportReferencedContent,
+		PortletDataContext portletDataContext, StagedModel stagedModel) {
 
 		_dlAppService = dlAppService;
 		_exportReferencedContent = exportReferencedContent;
@@ -54,7 +53,7 @@ public class ImageExportDDMFormFieldValueTransformer
 
 	@Override
 	public String getFieldType() {
-		return DDMFormFieldType.IMAGE;
+		return DDMFormFieldTypeConstants.IMAGE;
 	}
 
 	@Override
@@ -71,9 +70,9 @@ public class ImageExportDDMFormFieldValueTransformer
 			try {
 				jsonObject = JSONFactoryUtil.createJSONObject(valueString);
 			}
-			catch (JSONException jsone) {
+			catch (JSONException jsonException) {
 				if (_log.isDebugEnabled()) {
-					_log.debug("Unable to parse JSON", jsone);
+					_log.debug("Unable to parse JSON", jsonException);
 				}
 
 				continue;
@@ -109,9 +108,9 @@ public class ImageExportDDMFormFieldValueTransformer
 					_stagedModel, entityElement, fileEntry,
 					PortletDataContext.REFERENCE_TYPE_DEPENDENCY, true);
 			}
-			catch (PortalException pe) {
+			catch (PortalException portalException) {
 				if (_log.isDebugEnabled()) {
-					_log.debug(pe, pe);
+					_log.debug(portalException, portalException);
 				}
 			}
 		}

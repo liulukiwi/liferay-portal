@@ -45,8 +45,9 @@ public class GitUtil {
 		try {
 			process = JenkinsResultsParserUtil.executeBashCommands(command);
 		}
-		catch (IOException | TimeoutException e) {
-			throw new RuntimeException("Unable to clone " + remoteURL, e);
+		catch (IOException | TimeoutException exception) {
+			throw new RuntimeException(
+				"Unable to clone " + remoteURL, exception);
 		}
 
 		if ((process != null) && (process.exitValue() != 0)) {
@@ -56,8 +57,8 @@ public class GitUtil {
 				errorString = JenkinsResultsParserUtil.readInputStream(
 					process.getErrorStream());
 			}
-			catch (IOException ioe) {
-				ioe.printStackTrace();
+			catch (IOException ioException) {
+				ioException.printStackTrace();
 			}
 
 			throw new RuntimeException(
@@ -182,8 +183,8 @@ public class GitUtil {
 						remoteGitBranchName, workingDirectory,
 						gitHubDevNodeRemoteURL);
 				}
-				catch (Exception e) {
-					e.printStackTrace();
+				catch (Exception exception) {
+					exception.printStackTrace();
 				}
 
 				usedGitHubDevNodeHostnames.add(gitHubDevNodeHostname);
@@ -216,7 +217,7 @@ public class GitUtil {
 
 		if (remoteGitBranchName != null) {
 			command = JenkinsResultsParserUtil.combine(
-				"git ls-remote -h ", remoteURL, " ", remoteGitBranchName);
+				"git ls-remote -h -t ", remoteURL, " ", remoteGitBranchName);
 		}
 		else {
 			command = JenkinsResultsParserUtil.combine(
@@ -247,7 +248,7 @@ public class GitUtil {
 		try {
 			username = remoteURLMatcher.group("username");
 		}
-		catch (IllegalArgumentException iae) {
+		catch (IllegalArgumentException illegalArgumentException) {
 		}
 
 		RemoteGitRepository remoteGitRepository =
@@ -377,9 +378,6 @@ public class GitUtil {
 				gitHubDevNodeHostname = gitHubDevNodeHostname.substring(6);
 
 				for (int i = 0; i < modifiedCommands.length; i++) {
-					Matcher matcher = GitRemote.getRemoteURLMatcher(
-						modifiedCommands[i]);
-
 					String modifiedCommand = modifiedCommands[i];
 
 					if (!modifiedCommand.contains(
@@ -388,8 +386,13 @@ public class GitUtil {
 						continue;
 					}
 
+					Matcher matcher = GitRemote.getRemoteURLMatcher(
+						modifiedCommands[i]);
+
 					if (matcher != null) {
 						while (matcher.find()) {
+							retryDelay = 0;
+
 							modifiedCommand = modifiedCommand.replaceFirst(
 								matcher.group(0),
 								toSlaveGitHubDevNodeRemoteURL(
@@ -404,6 +407,13 @@ public class GitUtil {
 				for (int i = 0; i < modifiedCommands.length; i++) {
 					modifiedCommands[i] = modifiedCommands[i].replace(
 						_HOSTNAME_GITHUB_CACHE_PROXY, gitHubDevNodeHostname);
+
+					if ((retryDelay != 0) &&
+						modifiedCommands[i].contains(
+							_HOSTNAME_GITHUB_CACHE_PROXY)) {
+
+						retryDelay = 0;
+					}
 				}
 			}
 
@@ -412,25 +422,37 @@ public class GitUtil {
 
 				process = JenkinsResultsParserUtil.executeBashCommands(
 					true, workingDirectory, timeout, modifiedCommands);
-
-				break;
 			}
-			catch (IOException | TimeoutException e) {
+			catch (IOException | TimeoutException exception) {
 				if (retries == maxRetries) {
 					throw new RuntimeException(
 						"Unable to execute bash commands: " +
 							Arrays.toString(commands),
-						e);
+						exception);
 				}
 
-				usedGitHubDevNodeHostnames.add(gitHubDevNodeHostname);
+				exception.printStackTrace();
+			}
+			finally {
+				try {
+					if ((process != null) && (process.exitValue() == 0)) {
+						break;
+					}
 
-				System.out.println(
-					"Unable to execute bash commands retrying... ");
+					if (retries < maxRetries) {
+						usedGitHubDevNodeHostnames.add(gitHubDevNodeHostname);
 
-				e.printStackTrace();
+						System.out.println(
+							"Unable to execute bash commands retrying... ");
 
-				JenkinsResultsParserUtil.sleep(retryDelay);
+						JenkinsResultsParserUtil.sleep(retryDelay);
+					}
+				}
+				finally {
+					if (process != null) {
+						_debugDNS(process);
+					}
+				}
 			}
 		}
 
@@ -440,7 +462,7 @@ public class GitUtil {
 			standardErr = JenkinsResultsParserUtil.readInputStream(
 				process.getErrorStream());
 		}
-		catch (IOException ioe) {
+		catch (IOException ioException) {
 			standardErr = "";
 		}
 
@@ -450,13 +472,47 @@ public class GitUtil {
 			standardOut = JenkinsResultsParserUtil.readInputStream(
 				process.getInputStream());
 		}
-		catch (IOException ioe) {
+		catch (IOException ioException) {
 			throw new RuntimeException(
-				"Unable to read process input stream", ioe);
+				"Unable to read process input stream", ioException);
 		}
 
 		return new ExecutionResult(
 			process.exitValue(), standardErr.trim(), standardOut.trim());
+	}
+
+	private static void _debugDNS(Process process) {
+		String standardErr = "";
+
+		try {
+			standardErr = JenkinsResultsParserUtil.readInputStream(
+				process.getErrorStream());
+		}
+		catch (IOException ioException) {
+			standardErr = "";
+		}
+
+		Matcher matcher = _dnsDebugPattern.matcher(standardErr);
+
+		if (matcher.find()) {
+			String hostname = matcher.group("hostname");
+
+			try {
+				Process digProcess =
+					JenkinsResultsParserUtil.executeBashCommands(
+						new String[] {
+							"dig " + hostname, "dig @10.0.1.11 " + hostname
+						});
+
+				System.out.println(
+					JenkinsResultsParserUtil.readInputStream(
+						digProcess.getInputStream()));
+			}
+			catch (Exception exception) {
+				System.out.println(
+					"Unable to execute debug DNS: " + exception.getMessage());
+			}
+		}
 	}
 
 	private static String _getDefaultBranchName(
@@ -490,6 +546,8 @@ public class GitUtil {
 	private static final String _HOSTNAME_GITHUB_CACHE_PROXY =
 		"github-dev.liferay.com";
 
+	private static final Pattern _dnsDebugPattern = Pattern.compile(
+		"Unable to resolve hostname (?<hostname>[^:]+): ");
 	private static final Pattern _gitHubRefURLPattern = Pattern.compile(
 		JenkinsResultsParserUtil.combine(
 			"https://github.com/(?<username>[^/]+)/",

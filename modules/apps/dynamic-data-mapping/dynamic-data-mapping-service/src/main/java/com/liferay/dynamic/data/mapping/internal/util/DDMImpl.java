@@ -31,6 +31,7 @@ import com.liferay.dynamic.data.mapping.io.DDMFormValuesSerializerSerializeRespo
 import com.liferay.dynamic.data.mapping.model.DDMForm;
 import com.liferay.dynamic.data.mapping.model.DDMFormField;
 import com.liferay.dynamic.data.mapping.model.DDMFormFieldOptions;
+import com.liferay.dynamic.data.mapping.model.DDMFormFieldType;
 import com.liferay.dynamic.data.mapping.model.DDMFormLayout;
 import com.liferay.dynamic.data.mapping.model.DDMFormLayoutColumn;
 import com.liferay.dynamic.data.mapping.model.DDMFormLayoutPage;
@@ -43,8 +44,8 @@ import com.liferay.dynamic.data.mapping.service.DDMStructureLocalServiceUtil;
 import com.liferay.dynamic.data.mapping.service.DDMTemplateLocalServiceUtil;
 import com.liferay.dynamic.data.mapping.storage.DDMFormValues;
 import com.liferay.dynamic.data.mapping.storage.Field;
-import com.liferay.dynamic.data.mapping.storage.FieldConstants;
 import com.liferay.dynamic.data.mapping.storage.Fields;
+import com.liferay.dynamic.data.mapping.storage.constants.FieldConstants;
 import com.liferay.dynamic.data.mapping.util.DDM;
 import com.liferay.dynamic.data.mapping.util.DDMFormValuesToFieldsConverter;
 import com.liferay.dynamic.data.mapping.util.FieldsToDDMFormValuesConverter;
@@ -85,7 +86,6 @@ import com.liferay.portal.kernel.util.TimeZoneUtil;
 import com.liferay.portal.kernel.util.UnicodeFormatter;
 import com.liferay.portal.kernel.util.Validator;
 
-import java.io.File;
 import java.io.Serializable;
 
 import java.text.DateFormat;
@@ -116,26 +116,6 @@ import org.osgi.service.component.annotations.Reference;
  */
 @Component(immediate = true, service = DDM.class)
 public class DDMImpl implements DDM {
-
-	public static final String FIELDS_DISPLAY_NAME = "_fieldsDisplay";
-
-	public static final String INSTANCE_SEPARATOR = "_INSTANCE_";
-
-	public static final String TYPE_CHECKBOX = "checkbox";
-
-	public static final String TYPE_DDM_DATE = "ddm-date";
-
-	public static final String TYPE_DDM_DOCUMENTLIBRARY = "ddm-documentlibrary";
-
-	public static final String TYPE_DDM_IMAGE = "ddm-image";
-
-	public static final String TYPE_DDM_LINK_TO_PAGE = "ddm-link-to-page";
-
-	public static final String TYPE_DDM_TEXT_HTML = "ddm-text-html";
-
-	public static final String TYPE_RADIO = "radio";
-
-	public static final String TYPE_SELECT = "select";
 
 	@Override
 	public DDMForm getDDMForm(long classNameId, long classPK)
@@ -278,9 +258,7 @@ public class DDMImpl implements DDM {
 
 		DDMFormLayoutPage ddmFormLayoutPage = new DDMFormLayoutPage();
 
-		LocalizedValue title = getDefaultDDMFormPageTitle(defaultLocale);
-
-		ddmFormLayoutPage.setTitle(title);
+		ddmFormLayoutPage.setTitle(getDefaultDDMFormPageTitle(defaultLocale));
 
 		for (DDMFormField ddmFormField : ddmForm.getDDMFormFields()) {
 			ddmFormLayoutPage.addDDMFormLayoutRow(
@@ -297,11 +275,11 @@ public class DDMImpl implements DDM {
 			ThemeDisplay themeDisplay, Serializable fieldValue, String type)
 		throws Exception {
 
-		if (type.equals(DDMImpl.TYPE_DDM_DATE)) {
+		if (type.equals(DDMFormFieldType.DATE)) {
 			fieldValue = DateUtil.formatDate(
 				"yyyy-MM-dd", fieldValue.toString(), themeDisplay.getLocale());
 		}
-		else if (type.equals(DDMImpl.TYPE_CHECKBOX)) {
+		else if (type.equals(DDMFormFieldType.CHECKBOX)) {
 			Boolean valueBoolean = (Boolean)fieldValue;
 
 			if (valueBoolean) {
@@ -311,7 +289,7 @@ public class DDMImpl implements DDM {
 				fieldValue = LanguageUtil.get(themeDisplay.getLocale(), "no");
 			}
 		}
-		else if (type.equals(DDMImpl.TYPE_DDM_DOCUMENTLIBRARY)) {
+		else if (type.equals(DDMFormFieldType.DOCUMENT_LIBRARY)) {
 			if (Validator.isNull(fieldValue)) {
 				return StringPool.BLANK;
 			}
@@ -331,7 +309,7 @@ public class DDMImpl implements DDM {
 				fileEntry, fileEntry.getFileVersion(), null, StringPool.BLANK,
 				false, true);
 		}
-		else if (type.equals(DDMImpl.TYPE_DDM_LINK_TO_PAGE)) {
+		else if (type.equals(DDMFormFieldType.LINK_TO_PAGE)) {
 			if (Validator.isNull(fieldValue)) {
 				return StringPool.BLANK;
 			}
@@ -350,14 +328,15 @@ public class DDMImpl implements DDM {
 
 			fieldValue = _portal.getLayoutFriendlyURL(layout, themeDisplay);
 		}
-		else if (type.equals(DDMImpl.TYPE_SELECT)) {
+		else if (type.equals(DDMFormFieldType.SELECT)) {
 			String valueString = String.valueOf(fieldValue);
 
 			JSONArray jsonArray = JSONFactoryUtil.createJSONArray(valueString);
 
 			String[] stringArray = ArrayUtil.toStringArray(jsonArray);
 
-			fieldValue = stringArray[0];
+			fieldValue = StringUtil.merge(
+				stringArray, StringPool.COMMA_AND_SPACE);
 		}
 
 		return fieldValue;
@@ -479,14 +458,19 @@ public class DDMImpl implements DDM {
 
 			fieldValue = dateFormat.format(valueDate);
 		}
-		else if (type.equals(DDMImpl.TYPE_SELECT)) {
+		else if (type.equals(DDMFormFieldType.SELECT)) {
 			String valueString = (String)fieldValue;
 
 			JSONArray jsonArray = JSONFactoryUtil.createJSONArray(valueString);
 
 			String[] stringArray = ArrayUtil.toStringArray(jsonArray);
 
-			fieldValue = stringArray[0];
+			if (stringArray.length > 1) {
+				fieldValue = stringArray;
+			}
+			else {
+				fieldValue = stringArray[0];
+			}
 		}
 
 		return fieldValue;
@@ -544,10 +528,10 @@ public class DDMImpl implements DDM {
 		String[] existingFieldsDisplayValues = splitFieldsDisplayValue(
 			existingFields.get(DDMImpl.FIELDS_DISPLAY_NAME));
 
-		Iterator<Field> itr = newFields.iterator(true);
+		Iterator<Field> iterator = newFields.iterator(true);
 
-		while (itr.hasNext()) {
-			Field newField = itr.next();
+		while (iterator.hasNext()) {
+			Field newField = iterator.next();
 
 			Field existingField = existingFields.get(newField.getName());
 
@@ -589,9 +573,9 @@ public class DDMImpl implements DDM {
 
 		DDMForm ddmFormCopy = new DDMForm(ddmForm);
 
-		Locale defautLocale = ddmForm.getDefaultLocale();
+		Locale defaultLocale = ddmForm.getDefaultLocale();
 
-		if (defautLocale.equals(newDefaultLocale)) {
+		if (defaultLocale.equals(newDefaultLocale)) {
 			return ddmFormCopy;
 		}
 
@@ -630,7 +614,7 @@ public class DDMImpl implements DDM {
 			propertyValue = localizedValue.getString(defaultLocale);
 		}
 
-		if (type.equals(DDMImpl.TYPE_SELECT) &&
+		if (type.equals(DDMFormFieldType.SELECT) &&
 			propertyName.equals("predefinedValue")) {
 
 			try {
@@ -638,7 +622,10 @@ public class DDMImpl implements DDM {
 					propertyName,
 					JSONFactoryUtil.createJSONArray(propertyValue));
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(exception, exception);
+				}
 			}
 
 			return;
@@ -653,8 +640,8 @@ public class DDMImpl implements DDM {
 
 		String type = ddmFormField.getType();
 
-		if (!(type.equals(DDMImpl.TYPE_RADIO) ||
-			  type.equals(DDMImpl.TYPE_SELECT))) {
+		if (!(type.equals(DDMFormFieldType.RADIO) ||
+			  type.equals(DDMFormFieldType.SELECT))) {
 
 			return;
 		}
@@ -688,15 +675,17 @@ public class DDMImpl implements DDM {
 				JSONFactoryUtil.createJSONObject();
 
 			for (Locale availableLocale : availableLocales) {
-				JSONObject localeMap = JSONFactoryUtil.createJSONObject();
+				JSONObject localeMapJSONObject =
+					JSONFactoryUtil.createJSONObject();
 
 				addDDMFormFieldLocalizedProperty(
-					localeMap, "label",
+					localeMapJSONObject, "label",
 					ddmFormFieldOptions.getOptionLabels(optionValue),
 					availableLocale, defaultLocale, "option");
 
 				localizationMapJSONObject.put(
-					LocaleUtil.toLanguageId(availableLocale), localeMap);
+					LocaleUtil.toLanguageId(availableLocale),
+					localeMapJSONObject);
 			}
 
 			optionJSONObject.put("localizationMap", localizationMapJSONObject);
@@ -776,9 +765,9 @@ public class DDMImpl implements DDM {
 					scriptDDMForm.getAvailableLocales(),
 					scriptDDMForm.getDefaultLocale());
 			}
-			catch (PortalException pe) {
+			catch (PortalException portalException) {
 				if (_log.isWarnEnabled()) {
-					_log.warn(pe, pe);
+					_log.warn(portalException, portalException);
 				}
 			}
 		}
@@ -827,13 +816,16 @@ public class DDMImpl implements DDM {
 				JSONFactoryUtil.createJSONObject();
 
 			for (Locale availableLocale : availableLocales) {
-				JSONObject localeMap = JSONFactoryUtil.createJSONObject();
+				JSONObject localeMapJSONObject =
+					JSONFactoryUtil.createJSONObject();
 
 				addDDMFormFieldLocalizedProperties(
-					localeMap, ddmFormField, availableLocale, defaultLocale);
+					localeMapJSONObject, ddmFormField, availableLocale,
+					defaultLocale);
 
 				localizationMapJSONObject.put(
-					LocaleUtil.toLanguageId(availableLocale), localeMap);
+					LocaleUtil.toLanguageId(availableLocale),
+					localeMapJSONObject);
 			}
 
 			jsonObject.put(
@@ -1022,7 +1014,7 @@ public class DDMImpl implements DDM {
 					serviceContext.getLocale());
 			}
 
-			if (fieldType.equals(DDMImpl.TYPE_CHECKBOX) &&
+			if (fieldType.equals(DDMFormFieldType.CHECKBOX) &&
 				Validator.isNull(fieldValue)) {
 
 				fieldValue = "false";
@@ -1048,8 +1040,10 @@ public class DDMImpl implements DDM {
 							String.valueOf(fieldValue),
 							serviceContext.getLocale());
 					}
-					catch (ParseException pe) {
-						_log.error("Unable to parse date " + fieldValue);
+					catch (ParseException parseException) {
+						_log.error(
+							"Unable to parse date " + fieldValue,
+							parseException);
 					}
 				}
 
@@ -1077,7 +1071,7 @@ public class DDMImpl implements DDM {
 				return null;
 			}
 
-			if (DDMImpl.TYPE_SELECT.equals(fieldType)) {
+			if (DDMFormFieldType.SELECT.equals(fieldType)) {
 				String predefinedValueString = predefinedValue.getString(
 					serviceContext.getLocale());
 
@@ -1110,9 +1104,8 @@ public class DDMImpl implements DDM {
 			UploadRequest uploadRequest, String fieldNameValue)
 		throws Exception {
 
-		File file = uploadRequest.getFile(fieldNameValue + "File");
-
-		byte[] bytes = FileUtil.getBytes(file);
+		byte[] bytes = FileUtil.getBytes(
+			uploadRequest.getFile(fieldNameValue + "File"));
 
 		if (ArrayUtil.isNotEmpty(bytes)) {
 			return bytes;
@@ -1148,7 +1141,10 @@ public class DDMImpl implements DDM {
 				return jsonObject.toString();
 			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
 		}
 
 		return StringPool.BLANK;

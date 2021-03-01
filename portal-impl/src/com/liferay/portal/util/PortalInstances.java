@@ -127,8 +127,8 @@ public class PortalInstances {
 						}
 					}
 				}
-				catch (Exception e) {
-					_log.error(e, e);
+				catch (Exception exception) {
+					_log.error(exception, exception);
 				}
 			}
 		}
@@ -169,8 +169,8 @@ public class PortalInstances {
 						WebKeys.VIRTUAL_HOST_LAYOUT_SET, layoutSet);
 				}
 			}
-			catch (Exception e) {
-				_log.error(e, e);
+			catch (Exception exception) {
+				_log.error(exception, exception);
 			}
 		}
 
@@ -184,25 +184,15 @@ public class PortalInstances {
 	public static long[] getCompanyIdsBySQL() throws SQLException {
 		List<Long> companyIds = new ArrayList<>();
 
-		Connection con = null;
-		PreparedStatement ps = null;
-		ResultSet rs = null;
-
-		try {
-			con = DataAccess.getConnection();
-
-			ps = con.prepareStatement(_GET_COMPANY_IDS);
-
-			rs = ps.executeQuery();
+		try (Connection con = DataAccess.getConnection();
+			PreparedStatement ps = con.prepareStatement(_GET_COMPANY_IDS);
+			ResultSet rs = ps.executeQuery()) {
 
 			while (rs.next()) {
 				long companyId = rs.getLong("companyId");
 
 				companyIds.add(companyId);
 			}
-		}
-		finally {
-			DataAccess.cleanUp(con, ps, rs);
 		}
 
 		return ArrayUtil.toArray(companyIds.toArray(new Long[0]));
@@ -240,8 +230,8 @@ public class PortalInstances {
 
 			_webIds = webIdsList.toArray(new String[0]);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 
 		if (ArrayUtil.isEmpty(_webIds)) {
@@ -263,12 +253,14 @@ public class PortalInstances {
 		long companyId = 0;
 
 		try {
-			Company company = CompanyLocalServiceUtil.checkCompany(webId);
+			Company company = CompanyLocalServiceUtil.getCompanyByWebId(webId);
 
 			companyId = company.getCompanyId();
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
+
+			return companyId;
 		}
 
 		Long currentThreadCompanyId = CompanyThreadLocal.getCompanyId();
@@ -277,6 +269,13 @@ public class PortalInstances {
 
 		try {
 			CompanyThreadLocal.setCompanyId(companyId);
+
+			try {
+				CompanyLocalServiceUtil.checkCompany(webId);
+			}
+			catch (Exception exception) {
+				_log.error(exception, exception);
+			}
 
 			String principalName = null;
 
@@ -329,8 +328,8 @@ public class PortalInstances {
 				WebAppPool.put(
 					companyId, WebKeys.PORTLET_CATEGORY, portletCategory);
 			}
-			catch (Exception e) {
-				_log.error(e, e);
+			catch (Exception exception) {
+				_log.error(exception, exception);
 			}
 
 			// Process application startup events
@@ -345,8 +344,8 @@ public class PortalInstances {
 					PropsValues.APPLICATION_STARTUP_EVENTS,
 					new String[] {String.valueOf(companyId)});
 			}
-			catch (Exception e) {
-				_log.error(e, e);
+			catch (Exception exception) {
+				_log.error(exception, exception);
 			}
 
 			// End initializing company
@@ -386,8 +385,8 @@ public class PortalInstances {
 				return company.isActive();
 			}
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 
 		return false;
@@ -419,8 +418,8 @@ public class PortalInstances {
 				PropsValues.APPLICATION_SHUTDOWN_EVENTS,
 				new String[] {String.valueOf(companyId)});
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 
 		_companyIds = ArrayUtil.remove(_companyIds, companyId);
@@ -489,8 +488,8 @@ public class PortalInstances {
 
 			return virtualHost.getCompanyId();
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 
 		return 0;

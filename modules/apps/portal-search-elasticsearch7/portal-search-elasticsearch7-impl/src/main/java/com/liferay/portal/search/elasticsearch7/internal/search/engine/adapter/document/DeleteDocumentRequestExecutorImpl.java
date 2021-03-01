@@ -15,7 +15,6 @@
 package com.liferay.portal.search.elasticsearch7.internal.search.engine.adapter.document;
 
 import com.liferay.portal.search.elasticsearch7.internal.connection.ElasticsearchClientResolver;
-import com.liferay.portal.search.engine.adapter.document.BulkableDocumentRequestTranslator;
 import com.liferay.portal.search.engine.adapter.document.DeleteDocumentRequest;
 import com.liferay.portal.search.engine.adapter.document.DeleteDocumentResponse;
 
@@ -42,33 +41,42 @@ public class DeleteDocumentRequestExecutorImpl
 		DeleteDocumentRequest deleteDocumentRequest) {
 
 		DeleteRequest deleteRequest =
-			_bulkableDocumentRequestTranslator.translate(deleteDocumentRequest);
+			_elasticsearchBulkableDocumentRequestTranslator.translate(
+				deleteDocumentRequest);
 
-		DeleteResponse deleteResponse = getDeleteResponse(deleteRequest);
+		DeleteResponse deleteResponse = getDeleteResponse(
+			deleteRequest, deleteDocumentRequest);
 
 		RestStatus restStatus = deleteResponse.status();
 
 		return new DeleteDocumentResponse(restStatus.getStatus());
 	}
 
-	protected DeleteResponse getDeleteResponse(DeleteRequest deleteRequest) {
+	protected DeleteResponse getDeleteResponse(
+		DeleteRequest deleteRequest,
+		DeleteDocumentRequest deleteDocumentRequest) {
+
 		RestHighLevelClient restHighLevelClient =
-			_elasticsearchClientResolver.getRestHighLevelClient();
+			_elasticsearchClientResolver.getRestHighLevelClient(
+				deleteDocumentRequest.getConnectionId(),
+				deleteDocumentRequest.isPreferLocalCluster());
 
 		try {
 			return restHighLevelClient.delete(
 				deleteRequest, RequestOptions.DEFAULT);
 		}
-		catch (IOException ioe) {
-			throw new RuntimeException(ioe);
+		catch (IOException ioException) {
+			throw new RuntimeException(ioException);
 		}
 	}
 
 	@Reference(target = "(search.engine.impl=Elasticsearch)", unbind = "-")
 	protected void setBulkableDocumentRequestTranslator(
-		BulkableDocumentRequestTranslator bulkableDocumentRequestTranslator) {
+		ElasticsearchBulkableDocumentRequestTranslator
+			elasticsearchBulkableDocumentRequestTranslator) {
 
-		_bulkableDocumentRequestTranslator = bulkableDocumentRequestTranslator;
+		_elasticsearchBulkableDocumentRequestTranslator =
+			elasticsearchBulkableDocumentRequestTranslator;
 	}
 
 	@Reference(unbind = "-")
@@ -78,8 +86,8 @@ public class DeleteDocumentRequestExecutorImpl
 		_elasticsearchClientResolver = elasticsearchClientResolver;
 	}
 
-	private BulkableDocumentRequestTranslator
-		_bulkableDocumentRequestTranslator;
+	private ElasticsearchBulkableDocumentRequestTranslator
+		_elasticsearchBulkableDocumentRequestTranslator;
 	private ElasticsearchClientResolver _elasticsearchClientResolver;
 
 }

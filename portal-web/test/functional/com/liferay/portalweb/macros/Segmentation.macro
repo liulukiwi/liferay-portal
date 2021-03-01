@@ -31,18 +31,48 @@ definition {
 			value1 = "${criterionInputOption}");
 	}
 
+	macro clickAssignSiteRolesOption {
+		Click(locator1 = "Segmentation#SEGMENT_OPTIONS_MENU");
+
+		Click(locator1 = "Segmentation#ASSIGN_SITE_ROLES_OPTION");
+
+		SelectFrame(value1 = "relative=top");
+
+		AssertTextPresent(
+			locator1 = "Segmentation#ASSIGN_SITE_ROLES_MODAL_TITLE",
+			value1 = "Assign Site Roles");
+	}
+
+	macro deleteProperties {
+		Click(locator1 = "Segmentation#DELETE_SEGMENT");
+	}
+
 	macro editSegment {
 		while (IsElementPresent(locator1 = "Icon#BODY_VERTICAL_ELLIPSIS")) {
 			LexiconEntry.gotoEllipsisMenuItemNoError(menuItem = "Edit");
 		}
 	}
 
-	macro fillEmailAddress {
-		Click(locator1 = "Segmentation#EMAIL_ADDRESS_FIELD");
+	macro enableAssingRolesBySegmentsCheckbox {
+		Click(locator1 = "Segmentation#ENABLE_ASSIGN_ROLES_SEGMENTS_CHECKBOX");
+
+		if (IsElementPresent(locator1 = "Button#SAVE")) {
+			Click(locator1 = "Button#SAVE");
+		}
+
+		if (IsElementPresent(locator1 = "Button#UPDATE")) {
+			Click(locator1 = "Button#UPDATE");
+		}
+
+		Pause(locator1 = "3000");
+	}
+
+	macro fillProperty {
+		Click(locator1 = "Segmentation#PROPERTY_FIELD");
 
 		Type(
-			locator1 = "Segmentation#EMAIL_ADDRESS_FIELD",
-			value1 = "${emailAddressField}");
+			locator1 = "Segmentation#PROPERTY_FIELD",
+			value1 = "${PropertyField}");
 	}
 
 	macro fillTitle {
@@ -53,12 +83,62 @@ definition {
 			value1 = "${titleField}");
 	}
 
+	macro openSegmentsAdmin {
+		Navigator.openWithAppendToBaseURL(urlAppend = "group/${siteURLKey}/~/control_panel/manage?p_p_id=com_liferay_segments_web_internal_portlet_SegmentsPortlet");
+	}
+
+	macro selectOrganization {
+		Click(locator1 = "Segmentation#ORGANIZATION_MENU");
+	}
+
+	macro selectSession {
+		Click(locator1 = "Segmentation#SESSION_MENU");
+	}
+
+	macro selectTag {
+		Click(locator1 = "Segmentation#ADD_TAG_BUTTON");
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
+
+		Click(locator1 = "Segmentation#SEARCH_TAG_FIELD");
+
+		Type(
+			locator1 = "Segmentation#SEARCH_TAG_FIELD",
+			value1 = "${tagOption}");
+
+		KeyPress(
+			locator1 = "Segmentation#SEARCH_TAG_FIELD",
+			value1 = "\ENTER");
+
+		Click(locator1 = "Segmentation#TAG_OPTION");
+
+		SelectFrameTop();
+	}
+
 	macro tearDown {
 		while (IsElementPresent(locator1 = "Segmentation#SEGMENT_LIST")) {
 			Segmentation._deleteAllSegments();
 		}
 
 		AssertElementNotPresent(locator1 = "Segmentation#SEGMENT_LIST");
+	}
+
+	macro viewMembers {
+		var key_memberName = "${memberName}";
+
+		Click(locator1 = "Segmentation#VIEW_MEMBERS_BUTTON");
+
+		SelectFrame.selectFrameNoLoading(locator1 = "IFrame#MODAL_BODY");
+
+		AssertTextPresent(
+			locator1 = "Segmentation#MEMBER_NAME_LISTED",
+			value1 = "Test Test");
+
+		SelectFrame(value1 = "relative=top");
+
+		Click(locator1 = "Segmentation#CLOSE_MODAL");
+
+		SelectFrame(value1 = "relative=top");
 	}
 
 }

@@ -28,6 +28,7 @@ import com.liferay.portal.security.sso.openid.connect.OpenIdConnectSession;
 import com.liferay.portal.security.sso.openid.connect.constants.OpenIdConnectConstants;
 import com.liferay.portal.security.sso.openid.connect.constants.OpenIdConnectWebKeys;
 import com.liferay.portal.security.sso.openid.connect.internal.exception.StrangersNotAllowedException;
+import com.liferay.portal.security.sso.openid.connect.provider.OpenIdConnectSessionProvider;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -80,8 +81,8 @@ public class OpenIdConnectFilter extends BaseFilter {
 
 		try {
 			OpenIdConnectSession openIdConnectSession =
-				(OpenIdConnectSession)httpSession.getAttribute(
-					OpenIdConnectWebKeys.OPEN_ID_CONNECT_SESSION);
+				_openIdConnectSessionProvider.getOpenIdConnectSession(
+					httpSession);
 
 			if (openIdConnectSession == null) {
 				return;
@@ -118,9 +119,9 @@ public class OpenIdConnectFilter extends BaseFilter {
 			}
 		}
 		catch (StrangersNotAllowedException |
-			   UserEmailAddressException.MustNotUseCompanyMx e) {
+			   UserEmailAddressException.MustNotUseCompanyMx exception) {
 
-			Class<?> clazz = e.getClass();
+			Class<?> clazz = exception.getClass();
 
 			httpSession.removeAttribute(
 				OpenIdConnectWebKeys.OPEN_ID_CONNECT_SESSION);
@@ -128,16 +129,17 @@ public class OpenIdConnectFilter extends BaseFilter {
 			sendError(
 				clazz.getSimpleName(), httpServletRequest, httpServletResponse);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			_log.error(
 				"Unable to process OpenID Connect authentication response: " +
-					e.getMessage(),
-				e);
+					exception.getMessage(),
+				exception);
 
 			httpSession.removeAttribute(
 				OpenIdConnectWebKeys.OPEN_ID_CONNECT_SESSION);
 
-			_portal.sendError(e, httpServletRequest, httpServletResponse);
+			_portal.sendError(
+				exception, httpServletRequest, httpServletResponse);
 		}
 	}
 
@@ -188,6 +190,9 @@ public class OpenIdConnectFilter extends BaseFilter {
 
 	@Reference
 	private OpenIdConnectServiceHandler _openIdConnectServiceHandler;
+
+	@Reference
+	private OpenIdConnectSessionProvider _openIdConnectSessionProvider;
 
 	@Reference
 	private Portal _portal;

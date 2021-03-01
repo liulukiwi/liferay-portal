@@ -57,16 +57,16 @@ public class SearcherImpl implements Searcher {
 		);
 	}
 
-	protected static RuntimeException uncheck(SearchException se) {
-		if (se.getCause() instanceof RuntimeException) {
-			return (RuntimeException)se.getCause();
+	protected static RuntimeException uncheck(SearchException searchException) {
+		if (searchException.getCause() instanceof RuntimeException) {
+			return (RuntimeException)searchException.getCause();
 		}
 
-		if (se.getCause() != null) {
-			return new RuntimeException(se.getCause());
+		if (searchException.getCause() != null) {
+			return new RuntimeException(searchException.getCause());
 		}
 
-		return new RuntimeException(se);
+		return new RuntimeException(searchException);
 	}
 
 	protected void doFederatedSearches(
@@ -87,11 +87,13 @@ public class SearcherImpl implements Searcher {
 		SearchRequestImpl searchRequestImpl,
 		SearchResponseBuilder searchResponseBuilder) {
 
-		Class<?> singleIndexerClass = getSingleIndexerClass(searchRequestImpl);
+		String singleIndexerClassName = getSingleIndexerClassName(
+			searchRequestImpl);
 
-		if (singleIndexerClass != null) {
+		if (singleIndexerClassName != null) {
 			doSingleIndexerSearch(
-				singleIndexerClass, searchRequestImpl, searchResponseBuilder);
+				singleIndexerClassName, searchRequestImpl,
+				searchResponseBuilder);
 		}
 		else {
 			doMultiIndexerSearch(searchRequestImpl, searchResponseBuilder);
@@ -157,10 +159,10 @@ public class SearcherImpl implements Searcher {
 	}
 
 	protected void doSingleIndexerSearch(
-		Class<?> clazz, SearchRequestImpl searchRequestImpl,
+		String singleIndexerClassName, SearchRequestImpl searchRequestImpl,
 		SearchResponseBuilder searchResponseBuilder) {
 
-		Indexer<?> indexer = indexerRegistry.getIndexer(clazz);
+		Indexer<?> indexer = indexerRegistry.getIndexer(singleIndexerClassName);
 
 		SearchContext searchContext = searchRequestImpl.getSearchContext();
 
@@ -201,14 +203,14 @@ public class SearcherImpl implements Searcher {
 			searchRequestContributor -> searchRequestContributor::contribute);
 	}
 
-	protected Class<?> getSingleIndexerClass(
+	protected String getSingleIndexerClassName(
 		SearchRequestImpl searchRequestImpl) {
 
-		List<Class<?>> modelIndexerClasses =
-			searchRequestImpl.getModelIndexerClasses();
+		List<String> modelIndexerClassNames =
+			searchRequestImpl.getModelIndexerClassNames();
 
-		if (modelIndexerClasses.size() == 1) {
-			return modelIndexerClasses.get(0);
+		if (modelIndexerClassNames.size() == 1) {
+			return modelIndexerClassNames.get(0);
 		}
 
 		return null;
@@ -230,26 +232,28 @@ public class SearcherImpl implements Searcher {
 		try {
 			return facetedSearcher.search(searchContext);
 		}
-		catch (SearchException se) {
-			throw uncheck(se);
+		catch (SearchException searchException) {
+			throw uncheck(searchException);
 		}
 	}
 
-	protected Hits search(Indexer indexer, SearchContext searchContext) {
+	protected Hits search(Indexer<?> indexer, SearchContext searchContext) {
 		try {
 			return indexer.search(searchContext);
 		}
-		catch (SearchException se) {
-			throw uncheck(se);
+		catch (SearchException searchException) {
+			throw uncheck(searchException);
 		}
 	}
 
-	protected long searchCount(Indexer indexer, SearchContext searchContext) {
+	protected long searchCount(
+		Indexer<?> indexer, SearchContext searchContext) {
+
 		try {
 			return indexer.searchCount(searchContext);
 		}
-		catch (SearchException se) {
-			throw uncheck(se);
+		catch (SearchException searchException) {
+			throw uncheck(searchException);
 		}
 	}
 

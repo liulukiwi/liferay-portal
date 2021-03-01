@@ -14,11 +14,16 @@
 
 package com.liferay.staging.processes.web.internal.portlet.configuration.icon;
 
+import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.portlet.configuration.icon.BasePortletConfigurationIcon;
 import com.liferay.portal.kernel.portlet.configuration.icon.PortletConfigurationIcon;
+import com.liferay.portal.kernel.security.permission.ActionKeys;
+import com.liferay.portal.kernel.service.permission.GroupPermissionUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.ResourceBundleUtil;
@@ -64,7 +69,8 @@ public class PublishTemplatesConfigurationIcon
 			portletRequest, StagingProcessesPortletKeys.STAGING_PROCESSES,
 			PortletRequest.RENDER_PHASE);
 
-		portletURL.setParameter("mvcPath", "/publish_templates/view.jsp");
+		portletURL.setParameter(
+			"mvcPath", "/publish_templates/view_publish_configurations.jsp");
 		portletURL.setParameter("redirect", themeDisplay.getURLCurrent());
 
 		return portletURL.toString();
@@ -81,6 +87,22 @@ public class PublishTemplatesConfigurationIcon
 			WebKeys.THEME_DISPLAY);
 
 		Group scopeGroup = themeDisplay.getScopeGroup();
+
+		try {
+			if (!GroupPermissionUtil.contains(
+					themeDisplay.getPermissionChecker(), scopeGroup,
+					ActionKeys.PUBLISH_STAGING)) {
+
+				return false;
+			}
+		}
+		catch (PortalException portalException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(portalException, portalException);
+			}
+
+			return false;
+		}
 
 		if ((scopeGroup != null) &&
 			(scopeGroup.hasStagingGroup() ||
@@ -109,6 +131,9 @@ public class PublishTemplatesConfigurationIcon
 	public boolean isUseDialog() {
 		return false;
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		PublishTemplatesConfigurationIcon.class);
 
 	@Reference
 	private Portal _portal;

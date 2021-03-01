@@ -9,85 +9,64 @@
  * distribution rights of the Software.
  */
 
-import {useReducer, useMemo} from 'react';
+import {useContext, useMemo} from 'react';
 
+import {FilterContext} from '../components/filter/FilterContext.es';
 import {useFiltersConstants} from '../components/filter/hooks/useFiltersConstants.es';
 import {
+	getCapitalizedFilterKey,
 	getFilterResults,
-	getSelectedItems
+	getSelectedItems,
 } from '../components/filter/util/filterUtil.es';
 import {useRouterParams} from './useRouterParams.es';
 
-const buildFilterItem = data => {
-	if (typeof data === 'string') {
-		return {
-			active: true,
-			key: data
-		};
-	}
+const useFilter = ({
+	filterKeys = [],
+	prefixKeys = [''],
+	withoutRouteParams,
+}) => {
+	const {dispatch, dispatchFilter, filterState, filterValues} = useContext(
+		FilterContext
+	);
 
-	return {
-		...data,
-		active: true
-	};
-};
-
-const buildInitialState = (filterKeys, filters, prefixKeys) => {
-	const initialState = {};
-
-	filterKeys.forEach(filterKey => {
-		prefixKeys.forEach(prefixKey => {
-			const key = `${prefixKey}${filterKey}`;
-
-			if (filters[key]) {
-				initialState[key] = filters[key].map(buildFilterItem);
-			}
-		});
-	});
-
-	return initialState;
-};
-
-const reducer = (state, {filterKey, selectedItems}) => {
-	return {
-		...state,
-		[filterKey]: selectedItems
-	};
-};
-
-const useFilter = (filterKeys, prefixKeys = ['']) => {
 	const {filters} = useRouterParams();
-	const {keys, titles} = useFiltersConstants(filterKeys);
+	const {keys, pinnedValues, titles} = useFiltersConstants(filterKeys);
 
-	const initialState = useMemo(
-		() => buildInitialState(keys, filters, prefixKeys),
-		// eslint-disable-next-line react-hooks/exhaustive-deps
+	const filtersError = filterKeys
+		.map((filterKey) => filterState.errors?.includes(filterKey))
+		.some((hasError) => hasError);
+
+	const prefixedKeys = keys.reduce(
+		(keys, key) => [
+			...keys,
+			...prefixKeys.map((prefix) => getCapitalizedFilterKey(prefix, key)),
+		],
 		[]
 	);
 
-	const [filterState, dispatch] = useReducer(reducer, initialState);
-
-	const filterValues = {};
-
-	Object.keys(filterState).forEach(filterKey => {
-		if (filterState[filterKey]) {
-			filterValues[filterKey] = filterState[filterKey].map(
-				item => item.key
-			);
-		}
-	});
-
-	const filterResults = useMemo(
-		() => getFilterResults(keys, titles, filterState),
+	const selectedFilters = useMemo(
+		() =>
+			getSelectedItems(
+				getFilterResults(
+					prefixedKeys,
+					pinnedValues,
+					titles,
+					filterState
+				)
+			),
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-		[filterValues]
+		[filterState]
 	);
 
-	const selectedFilters = useMemo(() => getSelectedItems(filterResults), [
-		filterResults
-	]);
-
-	return {dispatch, filterValues, selectedFilters};
+	return {
+		dispatch,
+		dispatchFilter,
+		filterState,
+		filterValues: withoutRouteParams ? filterValues : filters,
+		filtersError,
+		prefixedKeys,
+		selectedFilters,
+	};
 };
 
 export {useFilter};

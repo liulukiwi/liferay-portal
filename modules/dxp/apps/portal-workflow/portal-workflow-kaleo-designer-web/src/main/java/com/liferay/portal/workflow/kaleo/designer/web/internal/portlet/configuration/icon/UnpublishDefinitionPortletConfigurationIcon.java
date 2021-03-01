@@ -73,7 +73,8 @@ public class UnpublishDefinitionPortletConfigurationIcon
 			PortletRequest.ACTION_PHASE);
 
 		portletURL.setParameter(
-			ActionRequest.ACTION_NAME, "unpublishKaleoDefinitionVersion");
+			ActionRequest.ACTION_NAME,
+			"/kaleo_designer/unpublish_kaleo_definition_version");
 
 		portletURL.setParameter(
 			"mvcPath", portletRequest.getParameter("mvcPath"));
@@ -119,9 +120,9 @@ public class UnpublishDefinitionPortletConfigurationIcon
 					return true;
 				}
 			}
-			catch (PortalException pe) {
+			catch (PortalException portalException) {
 				if (_log.isDebugEnabled()) {
-					_log.debug(pe, pe);
+					_log.debug(portalException, portalException);
 				}
 			}
 		}
@@ -142,9 +143,9 @@ public class UnpublishDefinitionPortletConfigurationIcon
 		try {
 			return kaleoDefinitionVersion.getKaleoDefinition();
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			if (_log.isDebugEnabled()) {
-				_log.debug(pe, pe);
+				_log.debug(portalException, portalException);
 			}
 		}
 

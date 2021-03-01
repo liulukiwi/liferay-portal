@@ -17,10 +17,10 @@
 <%@ include file="/init.jsp" %>
 
 <%
-ContributedFragmentManagementToolbarDisplayContext contributedFragmentManagementToolbarDisplayContext = new ContributedFragmentManagementToolbarDisplayContext(liferayPortletRequest, liferayPortletResponse, request, fragmentDisplayContext);
+ContributedFragmentManagementToolbarDisplayContext contributedFragmentManagementToolbarDisplayContext = new ContributedFragmentManagementToolbarDisplayContext(request, liferayPortletRequest, liferayPortletResponse, fragmentDisplayContext);
 %>
 
-<clay:management-toolbar
+<clay:management-toolbar-v2
 	displayContext="<%= contributedFragmentManagementToolbarDisplayContext %>"
 />
 
@@ -33,11 +33,6 @@ ContributedFragmentManagementToolbarDisplayContext contributedFragmentManagement
 			keyProperty="fragmentEntryKey"
 			modelVar="fragmentEntry"
 		>
-
-			<%
-			row.setCssClass("card-page-item-asset " + row.getCssClass());
-			%>
-
 			<liferay-ui:search-container-column-text>
 				<clay:vertical-card
 					verticalCard="<%= new ContributedFragmentEntryVerticalCard(fragmentEntry, renderRequest, renderResponse, searchContainer.getRowChecker()) %>"
@@ -48,7 +43,6 @@ ContributedFragmentManagementToolbarDisplayContext contributedFragmentManagement
 		<liferay-ui:search-iterator
 			displayStyle="icon"
 			markupView="lexicon"
-			searchResultCssClass="card-page"
 		/>
 	</liferay-ui:search-container>
 </aui:form>

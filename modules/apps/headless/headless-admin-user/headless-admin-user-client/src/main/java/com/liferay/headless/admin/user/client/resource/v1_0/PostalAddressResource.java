@@ -17,6 +17,7 @@ package com.liferay.headless.admin.user.client.resource.v1_0;
 import com.liferay.headless.admin.user.client.dto.v1_0.PostalAddress;
 import com.liferay.headless.admin.user.client.http.HttpInvoker;
 import com.liferay.headless.admin.user.client.pagination.Page;
+import com.liferay.headless.admin.user.client.problem.Problem;
 import com.liferay.headless.admin.user.client.serdes.v1_0.PostalAddressSerDes;
 
 import java.util.LinkedHashMap;
@@ -39,11 +40,12 @@ public interface PostalAddressResource {
 	}
 
 	public Page<PostalAddress> getOrganizationPostalAddressesPage(
-			Long organizationId)
+			String organizationId)
 		throws Exception;
 
 	public HttpInvoker.HttpResponse
-			getOrganizationPostalAddressesPageHttpResponse(Long organizationId)
+			getOrganizationPostalAddressesPageHttpResponse(
+				String organizationId)
 		throws Exception;
 
 	public PostalAddress getPostalAddress(Long postalAddressId)
@@ -106,8 +108,8 @@ public interface PostalAddressResource {
 		private Map<String, String> _headers = new LinkedHashMap<>();
 		private String _host = "localhost";
 		private Locale _locale;
-		private String _login = "test@liferay.com";
-		private String _password = "test";
+		private String _login = "";
+		private String _password = "";
 		private Map<String, String> _parameters = new LinkedHashMap<>();
 		private int _port = 8080;
 		private String _scheme = "http";
@@ -118,7 +120,7 @@ public interface PostalAddressResource {
 		implements PostalAddressResource {
 
 		public Page<PostalAddress> getOrganizationPostalAddressesPage(
-				Long organizationId)
+				String organizationId)
 			throws Exception {
 
 			HttpInvoker.HttpResponse httpResponse =
@@ -132,12 +134,21 @@ public interface PostalAddressResource {
 			_logger.fine(
 				"HTTP response status code: " + httpResponse.getStatusCode());
 
-			return Page.of(content, PostalAddressSerDes::toDTO);
+			try {
+				return Page.of(content, PostalAddressSerDes::toDTO);
+			}
+			catch (Exception e) {
+				_logger.log(
+					Level.WARNING,
+					"Unable to process HTTP response: " + content, e);
+
+				throw new Problem.ProblemException(Problem.toDTO(content));
+			}
 		}
 
 		public HttpInvoker.HttpResponse
 				getOrganizationPostalAddressesPageHttpResponse(
-					Long organizationId)
+					String organizationId)
 			throws Exception {
 
 			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
@@ -164,8 +175,9 @@ public interface PostalAddressResource {
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port +
-						"/o/headless-admin-user/v1.0/organizations/{organizationId}/postal-addresses",
-				organizationId);
+						"/o/headless-admin-user/v1.0/organizations/{organizationId}/postal-addresses");
+
+			httpInvoker.path("organizationId", organizationId);
 
 			httpInvoker.userNameAndPassword(
 				_builder._login + ":" + _builder._password);
@@ -195,7 +207,7 @@ public interface PostalAddressResource {
 					Level.WARNING,
 					"Unable to process HTTP response: " + content, e);
 
-				throw e;
+				throw new Problem.ProblemException(Problem.toDTO(content));
 			}
 		}
 
@@ -227,8 +239,9 @@ public interface PostalAddressResource {
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port +
-						"/o/headless-admin-user/v1.0/postal-addresses/{postalAddressId}",
-				postalAddressId);
+						"/o/headless-admin-user/v1.0/postal-addresses/{postalAddressId}");
+
+			httpInvoker.path("postalAddressId", postalAddressId);
 
 			httpInvoker.userNameAndPassword(
 				_builder._login + ":" + _builder._password);
@@ -251,7 +264,16 @@ public interface PostalAddressResource {
 			_logger.fine(
 				"HTTP response status code: " + httpResponse.getStatusCode());
 
-			return Page.of(content, PostalAddressSerDes::toDTO);
+			try {
+				return Page.of(content, PostalAddressSerDes::toDTO);
+			}
+			catch (Exception e) {
+				_logger.log(
+					Level.WARNING,
+					"Unable to process HTTP response: " + content, e);
+
+				throw new Problem.ProblemException(Problem.toDTO(content));
+			}
 		}
 
 		public HttpInvoker.HttpResponse
@@ -283,8 +305,9 @@ public interface PostalAddressResource {
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port +
-						"/o/headless-admin-user/v1.0/user-accounts/{userAccountId}/postal-addresses",
-				userAccountId);
+						"/o/headless-admin-user/v1.0/user-accounts/{userAccountId}/postal-addresses");
+
+			httpInvoker.path("userAccountId", userAccountId);
 
 			httpInvoker.userNameAndPassword(
 				_builder._login + ":" + _builder._password);

@@ -70,9 +70,7 @@ public class PluginExecutor extends BaseExecutor {
 		AutoDeploymentContext autoDeploymentContext =
 			new AutoDeploymentContext();
 
-		String context = arguments.poll();
-
-		autoDeploymentContext.setContext(context);
+		autoDeploymentContext.setContext(arguments.poll());
 
 		File tempFile = getTempFile(httpServletRequest, responseJSONObject);
 
@@ -356,8 +354,8 @@ public class PluginExecutor extends BaseExecutor {
 		try {
 			tempFile = getFileItemTempFile(httpServletRequest);
 		}
-		catch (Exception e) {
-			_log.error(message, e);
+		catch (Exception exception) {
+			_log.error(message, exception);
 		}
 
 		if (tempFile != null) {

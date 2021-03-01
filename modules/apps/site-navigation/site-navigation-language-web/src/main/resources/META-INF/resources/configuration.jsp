@@ -24,7 +24,7 @@
 	action="<%= configurationActionURL %>"
 	method="post"
 	name="fm"
-	onSubmit='<%= "event.preventDefault(); " + renderResponse.getNamespace() + "saveConfiguration();" %>'
+	onSubmit='<%= "event.preventDefault(); " + liferayPortletResponse.getNamespace() + "saveConfiguration();" %>'
 >
 	<aui:input name="<%= Constants.CMD %>" type="hidden" value="<%= Constants.UPDATE %>" />
 	<aui:input name="redirect" type="hidden" value="<%= configurationRenderURL %>" />
@@ -45,7 +45,7 @@
 					/>
 				</div>
 
-				<aui:input name="preferences--displayCurrentLocale--" type="toggle-switch" value="<%= languagePortletInstanceConfiguration.displayCurrentLocale() %>" />
+				<aui:input inlineLabel="right" labelCssClass="simple-toggle-switch" name="preferences--displayCurrentLocale--" type="toggle-switch" value="<%= languagePortletInstanceConfiguration.displayCurrentLocale() %>" />
 			</liferay-frontend:fieldset>
 
 			<liferay-frontend:fieldset
@@ -87,8 +87,8 @@
 		if (currentLanguageIdsInput) {
 			Liferay.Util.postForm(form, {
 				data: {
-					languageIds: Liferay.Util.listSelect(currentLanguageIdsInput)
-				}
+					languageIds: Liferay.Util.listSelect(currentLanguageIdsInput),
+				},
 			});
 		}
 	}

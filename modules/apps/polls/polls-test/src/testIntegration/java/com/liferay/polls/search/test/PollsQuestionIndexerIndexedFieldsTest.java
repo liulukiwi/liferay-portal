@@ -22,8 +22,6 @@ import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.search.Field;
-import com.liferay.portal.kernel.search.SearchEngine;
-import com.liferay.portal.kernel.search.SearchEngineHelper;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
@@ -34,6 +32,7 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.search.test.util.FieldValuesAssert;
 import com.liferay.portal.search.test.util.IndexedFieldsFixture;
 import com.liferay.portal.search.test.util.IndexerFixture;
+import com.liferay.portal.search.test.util.SearchTestRule;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
@@ -43,7 +42,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Assume;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -78,9 +76,6 @@ public class PollsQuestionIndexerIndexedFieldsTest {
 
 	@Test
 	public void testIndexedFields() throws Exception {
-		Assume.assumeFalse(
-			isNumberSortableImplementedAsDoubleForSearchEngine());
-
 		PollsQuestion pollsQuestion =
 			pollsQuestionFixture.createPollsQuestion();
 
@@ -95,22 +90,12 @@ public class PollsQuestionIndexerIndexedFieldsTest {
 			_expectedFieldValues(pollsQuestion), document, searchTerm);
 	}
 
-	protected boolean isNumberSortableImplementedAsDoubleForSearchEngine() {
-		SearchEngine searchEngine = searchEngineHelper.getSearchEngine(
-			searchEngineHelper.getDefaultSearchEngineId());
-
-		String vendor = searchEngine.getVendor();
-
-		if (vendor.equals("Solr")) {
-			return true;
-		}
-
-		return false;
-	}
+	@Rule
+	public SearchTestRule searchTestRule = new SearchTestRule();
 
 	protected void setUpIndexedFieldsFixture() {
 		indexedFieldsFixture = new IndexedFieldsFixture(
-			resourcePermissionLocalService, searchEngineHelper);
+			resourcePermissionLocalService);
 	}
 
 	protected void setUpPollsQuestionFixture() {
@@ -141,9 +126,6 @@ public class PollsQuestionIndexerIndexedFieldsTest {
 
 	@Inject
 	protected ResourcePermissionLocalService resourcePermissionLocalService;
-
-	@Inject
-	protected SearchEngineHelper searchEngineHelper;
 
 	protected UserSearchFixture userSearchFixture;
 

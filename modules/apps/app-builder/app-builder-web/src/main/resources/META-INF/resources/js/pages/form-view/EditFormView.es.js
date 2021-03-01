@@ -12,21 +12,21 @@
  * details.
  */
 
-import React, {useState, useContext} from 'react';
+import React, {useContext, useState} from 'react';
+import {DndProvider} from 'react-dnd';
+import {HTML5Backend} from 'react-dnd-html5-backend';
 import {createPortal} from 'react-dom';
 
 import {AppContext} from '../../AppContext.es';
 import {ControlMenuBase} from '../../components/control-menu/ControlMenu.es';
 import CustomObjectSidebar from './CustomObjectSidebar.es';
-import DataLayoutBuilderDragAndDrop from './DataLayoutBuilderDragAndDrop.es';
-import DataLayoutBuilderSidebar from './DataLayoutBuilderSidebar.es';
 import FormViewContextProvider from './FormViewContextProvider.es';
 import FormViewUpperToolbar from './FormViewUpperToolbar.es';
 
 const parseProps = ({dataDefinitionId, dataLayoutId, ...props}) => ({
 	...props,
 	dataDefinitionId: Number(dataDefinitionId),
-	dataLayoutId: Number(dataLayoutId)
+	dataLayoutId: Number(dataLayoutId),
 });
 
 const FormViewControlMenu = ({backURL, dataLayoutId}) => {
@@ -41,14 +41,14 @@ const FormViewControlMenu = ({backURL, dataLayoutId}) => {
 	);
 };
 
-const EditFormView = props => {
+const EditFormView = (props) => {
 	const {
 		customObjectSidebarElementId,
 		dataDefinitionId,
 		dataLayoutBuilder,
-		dataLayoutBuilderElementId,
 		dataLayoutId,
-		newCustomObject
+		newCustomObject,
+		popUpWindow,
 	} = parseProps(props);
 	const {basePortletURL} = useContext(AppContext);
 
@@ -58,35 +58,37 @@ const EditFormView = props => {
 		backURL = basePortletURL;
 	}
 
+	let WrapperComponent = ({children}) => children;
+
+	if (document.querySelector('.change-tracking-indicator')) {
+		WrapperComponent = ({children}) => (
+			<div className="menu-indicator-enabled">{children}</div>
+		);
+	}
+
 	return (
-		<FormViewContextProvider
-			dataDefinitionId={dataDefinitionId}
-			dataLayoutBuilder={dataLayoutBuilder}
-			dataLayoutId={dataLayoutId}
-		>
-			<FormViewControlMenu
-				backURL={backURL}
-				dataLayoutId={dataLayoutId}
-			/>
+		<DndProvider backend={HTML5Backend}>
+			<FormViewContextProvider dataLayoutBuilder={dataLayoutBuilder}>
+				<WrapperComponent>
+					<FormViewControlMenu
+						backURL={backURL}
+						dataLayoutId={dataLayoutId}
+					/>
 
-			<FormViewUpperToolbar newCustomObject={newCustomObject} />
+					<FormViewUpperToolbar
+						newCustomObject={newCustomObject}
+						popUpWindow={popUpWindow}
+					/>
 
-			{createPortal(
-				<CustomObjectSidebar
-					customObjectSidebarElementId={customObjectSidebarElementId}
-				/>,
-				document.querySelector(`#${customObjectSidebarElementId}`)
-			)}
-
-			<DataLayoutBuilderSidebar
-				dataLayoutBuilder={dataLayoutBuilder}
-				dataLayoutBuilderElementId={dataLayoutBuilderElementId}
-			/>
-
-			<DataLayoutBuilderDragAndDrop
-				dataLayoutBuilder={dataLayoutBuilder}
-			/>
-		</FormViewContextProvider>
+					{createPortal(
+						<CustomObjectSidebar />,
+						document.querySelector(
+							`#${customObjectSidebarElementId}`
+						)
+					)}
+				</WrapperComponent>
+			</FormViewContextProvider>
+		</DndProvider>
 	);
 };
 

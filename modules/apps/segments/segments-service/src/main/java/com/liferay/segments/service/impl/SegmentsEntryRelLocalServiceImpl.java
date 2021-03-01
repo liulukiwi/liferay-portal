@@ -62,9 +62,19 @@ public class SegmentsEntryRelLocalServiceImpl
 		segmentsEntryRel.setClassNameId(classNameId);
 		segmentsEntryRel.setClassPK(classPK);
 
-		segmentsEntryRelPersistence.update(segmentsEntryRel);
+		return segmentsEntryRelPersistence.update(segmentsEntryRel);
+	}
 
-		return segmentsEntryRel;
+	@Override
+	public void addSegmentsEntryRels(
+			long segmentsEntryId, long classNameId, long[] classPKs,
+			ServiceContext serviceContext)
+		throws PortalException {
+
+		for (long classPK : classPKs) {
+			addSegmentsEntryRel(
+				segmentsEntryId, classNameId, classPK, serviceContext);
+		}
 	}
 
 	@Override
@@ -84,6 +94,16 @@ public class SegmentsEntryRelLocalServiceImpl
 	@Override
 	public void deleteSegmentsEntryRels(long classNameId, long classPK) {
 		segmentsEntryRelPersistence.removeByCN_CPK(classNameId, classPK);
+	}
+
+	@Override
+	public void deleteSegmentsEntryRels(
+			long segmentsEntryId, long classNameId, long[] classPKs)
+		throws PortalException {
+
+		for (long classPK : classPKs) {
+			deleteSegmentsEntryRel(segmentsEntryId, classNameId, classPK);
+		}
 	}
 
 	@Override
@@ -139,12 +159,13 @@ public class SegmentsEntryRelLocalServiceImpl
 	public boolean hasSegmentsEntryRel(
 		long segmentsEntryId, long classNameId, long classPK) {
 
-		SegmentsEntryRel segmentsEntryRel =
-			segmentsEntryRelPersistence.fetchByS_CN_CPK(
-				segmentsEntryId, classNameId, classPK);
+		List<SegmentsEntryRel> segmentsEntryRels =
+			segmentsEntryRelPersistence.findByCN_CPK(classNameId, classPK);
 
-		if (segmentsEntryRel != null) {
-			return true;
+		for (SegmentsEntryRel segmentsEntryRel : segmentsEntryRels) {
+			if (segmentsEntryRel.getSegmentsEntryId() == segmentsEntryId) {
+				return true;
+			}
 		}
 
 		return false;

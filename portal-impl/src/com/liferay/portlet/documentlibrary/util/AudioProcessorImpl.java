@@ -36,6 +36,7 @@ import com.liferay.portal.kernel.repository.event.FileVersionPreviewEventListene
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.repository.model.FileVersion;
 import com.liferay.portal.kernel.util.FileUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.ServerDetector;
 import com.liferay.portal.kernel.util.ServiceProxyFactory;
@@ -145,8 +146,8 @@ public class AudioProcessorImpl
 				_queueGeneration(null, fileVersion);
 			}
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 
 		return hasAudio;
@@ -309,17 +310,29 @@ public class AudioProcessorImpl
 					_fileVersionPreviewEventListener.onSuccess(
 						destinationFileVersion);
 				}
-				catch (Exception e) {
+				catch (Exception exception) {
 					_fileVersionPreviewEventListener.onFailure(
 						destinationFileVersion);
 
-					_log.error(e, e);
+					if (_log.isWarnEnabled()) {
+						_log.warn(
+							StringBundler.concat(
+								"Unable to process ",
+								destinationFileVersion.getFileVersionId(), " ",
+								destinationFileVersion.getTitle()));
+					}
+
+					if (_log.isDebugEnabled()) {
+						_log.debug(exception, exception);
+					}
+
+					throw exception;
 				}
 			}
 		}
-		catch (NoSuchFileEntryException nsfee) {
+		catch (NoSuchFileEntryException noSuchFileEntryException) {
 			if (_log.isDebugEnabled()) {
-				_log.debug(nsfee, nsfee);
+				_log.debug(noSuchFileEntryException, noSuchFileEntryException);
 			}
 
 			_fileVersionPreviewEventListener.onFailure(destinationFileVersion);
@@ -354,8 +367,12 @@ public class AudioProcessorImpl
 					new LiferayAudioProcessCallable(
 						ServerDetector.getServerId(),
 						PropsUtil.get(PropsKeys.LIFERAY_HOME),
-						Log4JUtil.getCustomLogSettings(), srcFile, destFile,
-						containerType,
+						HashMapBuilder.putAll(
+							Log4JUtil.getCustomLogSettings()
+						).put(
+							PropsUtil.class.getName(), "WARN"
+						).build(),
+						srcFile, destFile, containerType,
 						PropsUtil.getProperties(
 							PropsKeys.DL_FILE_ENTRY_PREVIEW_AUDIO, false));
 
@@ -384,21 +401,22 @@ public class AudioProcessorImpl
 				liferayConverter.convert();
 			}
 		}
-		catch (CancellationException ce) {
+		catch (CancellationException cancellationException) {
 			if (_log.isInfoEnabled()) {
 				_log.info(
 					StringBundler.concat(
 						"Cancellation received for ",
 						fileVersion.getFileVersionId(), " ",
-						fileVersion.getTitle()));
+						fileVersion.getTitle()),
+					cancellationException);
 			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			_log.error(
 				StringBundler.concat(
 					"Unable to process ", fileVersion.getFileVersionId(), " ",
-					fileVersion.getTitle(), "."),
-				e);
+					fileVersion.getTitle()),
+				exception);
 		}
 
 		addFileToStore(
@@ -423,8 +441,8 @@ public class AudioProcessorImpl
 					fileVersion, srcFile, destFiles[i], _PREVIEW_TYPES[i]);
 			}
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 	}
 
@@ -493,7 +511,7 @@ public class AudioProcessorImpl
 
 		@Override
 		public String call() throws ProcessException {
-			XugglerAutoInstallHelper.installNativeLibraries();
+			XugglerAutoInstallUtil.installNativeLibraries();
 
 			Properties systemProperties = System.getProperties();
 
@@ -513,8 +531,8 @@ public class AudioProcessorImpl
 
 				liferayConverter.convert();
 			}
-			catch (Exception e) {
-				throw new ProcessException(e);
+			catch (Exception exception) {
+				throw new ProcessException(exception);
 			}
 
 			return StringPool.BLANK;

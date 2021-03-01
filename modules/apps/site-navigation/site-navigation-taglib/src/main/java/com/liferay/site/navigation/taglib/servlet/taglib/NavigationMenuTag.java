@@ -40,7 +40,6 @@ import com.liferay.taglib.util.IncludeTag;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 import javax.servlet.http.HttpServletRequest;
@@ -67,6 +66,10 @@ public class NavigationMenuTag extends IncludeTag {
 
 	public String getExpandedLevels() {
 		return _expandedLevels;
+	}
+
+	public NavigationMenuMode getNavigationMenuMode() {
+		return _navigationMenuMode;
 	}
 
 	public String getRootItemId() {
@@ -121,34 +124,32 @@ public class NavigationMenuTag extends IncludeTag {
 				branchNavItems = getBranchNavItems(request);
 
 				navItems = NavItemUtil.getNavItems(
-					request, _rootItemType, _rootItemLevel, _rootItemId,
-					branchNavItems);
+					_navigationMenuMode, request, _rootItemType, _rootItemLevel,
+					_rootItemId, branchNavItems);
 			}
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 
 		HttpServletResponse httpServletResponse =
 			(HttpServletResponse)pageContext.getResponse();
 
-		Map<String, Object> contextObjects = HashMapBuilder.<String, Object>put(
-			"branchNavItems", branchNavItems
-		).put(
-			"displayDepth", _displayDepth
-		).put(
-			"includedLayouts", _expandedLevels
-		).put(
-			"preview", _preview
-		).put(
-			"rootLayoutLevel", _rootItemLevel
-		).put(
-			"rootLayoutType", _rootItemType
-		).build();
-
 		String result = portletDisplayTemplate.renderDDMTemplate(
 			request, httpServletResponse, portletDisplayDDMTemplate, navItems,
-			contextObjects);
+			HashMapBuilder.<String, Object>put(
+				"branchNavItems", branchNavItems
+			).put(
+				"displayDepth", _displayDepth
+			).put(
+				"includedLayouts", _expandedLevels
+			).put(
+				"preview", _preview
+			).put(
+				"rootLayoutLevel", _rootItemLevel
+			).put(
+				"rootLayoutType", _rootItemType
+			).build());
 
 		JspWriter jspWriter = pageContext.getOut();
 
@@ -171,6 +172,10 @@ public class NavigationMenuTag extends IncludeTag {
 
 	public void setExpandedLevels(String expandedLevels) {
 		_expandedLevels = expandedLevels;
+	}
+
+	public void setNavigationMenuMode(NavigationMenuMode navigationMenuMode) {
+		_navigationMenuMode = navigationMenuMode;
 	}
 
 	@Override
@@ -208,6 +213,7 @@ public class NavigationMenuTag extends IncludeTag {
 		_ddmTemplateKey = null;
 		_displayDepth = 0;
 		_expandedLevels = "auto";
+		_navigationMenuMode = NavigationMenuMode.DEFAULT;
 		_preview = false;
 		_rootItemId = null;
 		_rootItemLevel = 1;
@@ -376,6 +382,7 @@ public class NavigationMenuTag extends IncludeTag {
 	private String _ddmTemplateKey;
 	private int _displayDepth;
 	private String _expandedLevels = "auto";
+	private NavigationMenuMode _navigationMenuMode = NavigationMenuMode.DEFAULT;
 	private boolean _preview;
 	private String _rootItemId;
 	private int _rootItemLevel = 1;

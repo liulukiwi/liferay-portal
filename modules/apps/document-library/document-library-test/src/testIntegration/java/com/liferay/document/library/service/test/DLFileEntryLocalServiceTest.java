@@ -64,12 +64,12 @@ import com.liferay.portal.kernel.repository.model.FileVersion;
 import com.liferay.portal.kernel.repository.model.Folder;
 import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.test.constants.TestDataConstants;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
-import com.liferay.portal.kernel.test.util.TestDataConstants;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -140,6 +140,41 @@ public class DLFileEntryLocalServiceTest {
 	}
 
 	@Test
+	public void testChangeOriginalExtensionAfterChangingTheFileName()
+		throws Exception {
+
+		String content = StringUtil.randomString();
+
+		ServiceContext serviceContext =
+			ServiceContextTestUtil.getServiceContext(
+				_group.getGroupId(), TestPropsValues.getUserId());
+
+		DLFileEntry dlFileEntry = DLFileEntryLocalServiceUtil.addFileEntry(
+			TestPropsValues.getUserId(), _group.getGroupId(),
+			_group.getGroupId(), DLFolderConstants.DEFAULT_PARENT_FOLDER_ID,
+			"file.txt", ContentTypes.TEXT_PLAIN, "file.txt", StringPool.BLANK,
+			StringPool.BLANK, -1, new HashMap<>(), null,
+			new ByteArrayInputStream(content.getBytes()), 0, serviceContext);
+
+		FileEntry fileEntry = DLAppServiceUtil.updateFileEntry(
+			dlFileEntry.getFileEntryId(), "file.pdf", null, "file.txt",
+			StringPool.BLANK, StringPool.BLANK,
+			DLVersionNumberIncrease.fromMajorVersion(false), null, 0,
+			serviceContext);
+
+		Assert.assertEquals(
+			content, StringUtil.read(fileEntry.getContentStream()));
+
+		Assert.assertEquals("pdf", fileEntry.getExtension());
+
+		Assert.assertEquals("file.txt", fileEntry.getTitle());
+
+		Assert.assertEquals("file.pdf", fileEntry.getFileName());
+
+		Assert.assertEquals(ContentTypes.TEXT_PLAIN, fileEntry.getMimeType());
+	}
+
+	@Test
 	public void testCopyFileEntry() throws Exception {
 		ExpandoTable expandoTable =
 			ExpandoTableLocalServiceUtil.addDefaultTable(
@@ -162,12 +197,10 @@ public class DLFileEntryLocalServiceTest {
 			long fileEntryTypeId = populateServiceContextFileEntryType(
 				serviceContext);
 
-			Map<String, Serializable> expandoBridgeAttributes =
+			serviceContext.setExpandoBridgeAttributes(
 				HashMapBuilder.<String, Serializable>put(
 					"ExpandoAttributeName", "ExpandoAttributeValue"
-				).build();
-
-			serviceContext.setExpandoBridgeAttributes(expandoBridgeAttributes);
+				).build());
 
 			FileEntry fileEntry = DLAppLocalServiceUtil.addFileEntry(
 				TestPropsValues.getUserId(), _group.getGroupId(),
@@ -376,11 +409,11 @@ public class DLFileEntryLocalServiceTest {
 			RandomTestUtil.randomString(), DLVersionNumberIncrease.MINOR,
 			TestDataConstants.TEST_BYTE_ARRAY, serviceContext);
 
-		Assert.assertEquals("FE1.exe.txt", fileEntry.getFileName());
+		Assert.assertEquals("FE2.txt", fileEntry.getFileName());
 
 		fileVersion = fileEntry.getFileVersion();
 
-		Assert.assertEquals("FE1.exe.txt", fileVersion.getFileName());
+		Assert.assertEquals("FE2.txt", fileVersion.getFileName());
 	}
 
 	@Test
@@ -389,7 +422,7 @@ public class DLFileEntryLocalServiceTest {
 
 		byte[] bytes = TestDataConstants.TEST_BYTE_ARRAY;
 
-		InputStream is = new ByteArrayInputStream(bytes);
+		InputStream inputStream = new ByteArrayInputStream(bytes);
 
 		ServiceContext serviceContext =
 			ServiceContextTestUtil.getServiceContext(dlFolder.getGroupId());
@@ -398,16 +431,16 @@ public class DLFileEntryLocalServiceTest {
 			TestPropsValues.getUserId(), dlFolder.getRepositoryId(),
 			dlFolder.getFolderId(), RandomTestUtil.randomString(),
 			ContentTypes.TEXT_PLAIN, RandomTestUtil.randomString(),
-			StringPool.BLANK, StringPool.BLANK, is, bytes.length,
+			StringPool.BLANK, StringPool.BLANK, inputStream, bytes.length,
 			serviceContext);
 
-		is = new ByteArrayInputStream(bytes);
+		inputStream = new ByteArrayInputStream(bytes);
 
 		FileEntry noAssetFileEntry = DLAppLocalServiceUtil.addFileEntry(
 			TestPropsValues.getUserId(), dlFolder.getRepositoryId(),
 			dlFolder.getFolderId(), RandomTestUtil.randomString(),
 			ContentTypes.TEXT_PLAIN, RandomTestUtil.randomString(),
-			StringPool.BLANK, StringPool.BLANK, is, bytes.length,
+			StringPool.BLANK, StringPool.BLANK, inputStream, bytes.length,
 			serviceContext);
 
 		AssetEntry assetEntry = AssetEntryLocalServiceUtil.fetchEntry(
@@ -442,16 +475,14 @@ public class DLFileEntryLocalServiceTest {
 			new ByteArrayInputStream(content.getBytes()), 0, serviceContext);
 
 		FileEntry fileEntry = DLAppServiceUtil.updateFileEntry(
-			dlFileEntry.getFileEntryId(), "file.pdf", null, "file.pdf",
-			StringPool.BLANK, StringPool.BLANK, false, null, 0, serviceContext);
+			dlFileEntry.getFileEntryId(), "file.txt", null, "file.pdf",
+			StringPool.BLANK, StringPool.BLANK,
+			DLVersionNumberIncrease.fromMajorVersion(false), null, 0,
+			serviceContext);
 
 		Assert.assertEquals(
 			content, StringUtil.read(fileEntry.getContentStream()));
-
 		Assert.assertEquals("txt", fileEntry.getExtension());
-
-		Assert.assertEquals("file.pdf.txt", fileEntry.getFileName());
-
 		Assert.assertEquals(ContentTypes.TEXT_PLAIN, fileEntry.getMimeType());
 	}
 

@@ -14,20 +14,24 @@
 
 package com.liferay.portal.template.react.renderer.internal;
 
+import com.liferay.frontend.js.module.launcher.JSModuleDependency;
+import com.liferay.frontend.js.module.launcher.JSModuleLauncher;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONSerializer;
-import com.liferay.portal.kernel.servlet.taglib.aui.ScriptData;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringUtil;
-import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.template.react.renderer.ComponentDescriptor;
 
 import java.io.IOException;
 import java.io.Writer;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -38,9 +42,9 @@ import javax.servlet.http.HttpServletRequest;
 public class ReactRendererUtil {
 
 	public static void renderReact(
-			ComponentDescriptor componentDescriptor, Map<String, Object> data,
+			ComponentDescriptor componentDescriptor, Map<String, Object> props,
 			HttpServletRequest httpServletRequest,
-			String npmResolvedPackageName, Portal portal, Writer writer)
+			JSModuleLauncher jsModuleLauncher, Portal portal, Writer writer)
 		throws IOException {
 
 		String placeholderId = StringUtil.randomId();
@@ -48,118 +52,190 @@ public class ReactRendererUtil {
 		_renderPlaceholder(writer, placeholderId);
 
 		_renderJavaScript(
-			componentDescriptor, data, httpServletRequest,
-			npmResolvedPackageName, placeholderId, portal, writer);
+			componentDescriptor, props, httpServletRequest, placeholderId,
+			jsModuleLauncher, portal, writer);
 	}
 
-	private static Map<String, Object> _prepareData(
-		ComponentDescriptor componentDescriptor, Map<String, Object> data,
-		HttpServletRequest httpServletRequest) {
+	private static String _getRenderInvocation(
+		ComponentDescriptor componentDescriptor, Map<String, Object> props,
+		HttpServletRequest httpServletRequest, String placeholderId,
+		Portal portal) {
 
-		Map<String, Object> modifiedData = null;
+		StringBundler javascriptSB = new StringBundler(7);
 
-		if (!data.containsKey("componentId")) {
-			if (modifiedData == null) {
-				modifiedData = new HashMap<>(data);
-			}
-
-			modifiedData.put(
-				"componentId", componentDescriptor.getComponentId());
-		}
-
-		if (!data.containsKey("locale")) {
-			if (modifiedData == null) {
-				modifiedData = new HashMap<>(data);
-			}
-
-			modifiedData.put("locale", LocaleUtil.getMostRelevantLocale());
-		}
-
-		if (!data.containsKey("portletId")) {
-			if (modifiedData == null) {
-				modifiedData = new HashMap<>(data);
-			}
-
-			modifiedData.put(
-				"portletId",
-				httpServletRequest.getAttribute(WebKeys.PORTLET_ID));
-		}
-
-		if (!data.containsKey("portletNamespace")) {
-			if (modifiedData == null) {
-				modifiedData = new HashMap<>(data);
-			}
-
-			modifiedData.put(
-				"portletNamespace",
-				httpServletRequest.getAttribute(WebKeys.PORTLET_ID));
-		}
-
-		if (modifiedData == null) {
-			return data;
-		}
-
-		return modifiedData;
-	}
-
-	private static void _renderJavaScript(
-			ComponentDescriptor componentDescriptor, Map<String, Object> data,
-			HttpServletRequest httpServletRequest,
-			String npmResolvedPackageName, String placeholderId, Portal portal,
-			Writer writer)
-		throws IOException {
-
-		StringBundler dependenciesSB = new StringBundler(7);
-
-		dependenciesSB.append(npmResolvedPackageName);
-		dependenciesSB.append("/render.es as render");
-		dependenciesSB.append(placeholderId);
-		dependenciesSB.append(", ");
-		dependenciesSB.append(componentDescriptor.getModule());
-		dependenciesSB.append(" as renderFunction");
-		dependenciesSB.append(placeholderId);
+		javascriptSB.append("try {\nrender(component.default, ");
 
 		JSONSerializer jsonSerializer = JSONFactoryUtil.createJSONSerializer();
 
-		StringBundler javascriptSB = new StringBundler(9);
-
-		javascriptSB.append("render");
-		javascriptSB.append(placeholderId);
-		javascriptSB.append(".default(renderFunction");
-		javascriptSB.append(placeholderId);
-		javascriptSB.append(".default, ");
-		javascriptSB.append(
-			jsonSerializer.serializeDeep(
-				_prepareData(componentDescriptor, data, httpServletRequest)));
-		javascriptSB.append(", '");
-		javascriptSB.append(placeholderId);
-		javascriptSB.append("');");
-
-		if (componentDescriptor.isPositionInLine()) {
-			ScriptData scriptData = new ScriptData();
-
-			scriptData.append(
-				portal.getPortletId(httpServletRequest),
-				javascriptSB.toString(), dependenciesSB.toString(),
-				ScriptData.ModulesType.ES6);
-
-			scriptData.writeTo(writer);
+		if (Validator.isNotNull(componentDescriptor.getPropsTransformer())) {
+			javascriptSB.append("propsTransformer.default(");
+			javascriptSB.append(
+				jsonSerializer.serializeDeep(
+					_prepareProps(
+						componentDescriptor, props, httpServletRequest,
+						portal)));
+			javascriptSB.append(")");
 		}
 		else {
-			ScriptData scriptData = (ScriptData)httpServletRequest.getAttribute(
-				WebKeys.AUI_SCRIPT_DATA);
+			javascriptSB.append(
+				jsonSerializer.serializeDeep(
+					_prepareProps(
+						componentDescriptor, props, httpServletRequest,
+						portal)));
+		}
 
-			if (scriptData == null) {
-				scriptData = new ScriptData();
+		javascriptSB.append(", '");
+		javascriptSB.append(placeholderId);
+		javascriptSB.append("');\n} catch (err) {console.error(err);}");
 
-				httpServletRequest.setAttribute(
-					WebKeys.AUI_SCRIPT_DATA, scriptData);
+		return javascriptSB.toString();
+	}
+
+	private static Map<String, Object> _prepareProps(
+		ComponentDescriptor componentDescriptor, Map<String, Object> props,
+		HttpServletRequest httpServletRequest, Portal portal) {
+
+		Map<String, Object> modifiedProps = null;
+
+		if (!props.containsKey("componentId")) {
+			if (modifiedProps == null) {
+				modifiedProps = new HashMap<>(props);
 			}
 
-			scriptData.append(
-				portal.getPortletId(httpServletRequest),
-				javascriptSB.toString(), dependenciesSB.toString(),
-				ScriptData.ModulesType.ES6);
+			modifiedProps.put(
+				"componentId", componentDescriptor.getComponentId());
+		}
+
+		if (!props.containsKey("locale")) {
+			if (modifiedProps == null) {
+				modifiedProps = new HashMap<>(props);
+			}
+
+			modifiedProps.put("locale", LocaleUtil.getMostRelevantLocale());
+		}
+
+		String portletId = (String)props.get("portletId");
+
+		if (portletId == null) {
+			if (modifiedProps == null) {
+				modifiedProps = new HashMap<>(props);
+			}
+
+			portletId = portal.getPortletId(httpServletRequest);
+
+			modifiedProps.put("portletId", portletId);
+		}
+
+		if ((portletId != null) && !props.containsKey("portletNamespace")) {
+			if (modifiedProps == null) {
+				modifiedProps = new HashMap<>(props);
+			}
+
+			modifiedProps.put(
+				"portletNamespace", portal.getPortletNamespace(portletId));
+		}
+
+		if (modifiedProps == null) {
+			return props;
+		}
+
+		return modifiedProps;
+	}
+
+	private static void _registerJSModuleDependency(
+		JSModuleLauncher jsModuleLauncher,
+		JSModuleDependency jsModuleDependency,
+		List<JSModuleDependency> jsModuleDependencies,
+		List<JSModuleDependency> amdJSModuleDependencies) {
+
+		if (jsModuleLauncher.isValidModule(
+				jsModuleDependency.getModuleName())) {
+
+			jsModuleDependencies.add(jsModuleDependency);
+		}
+		else {
+			amdJSModuleDependencies.add(jsModuleDependency);
+		}
+	}
+
+	private static void _renderJavaScript(
+		ComponentDescriptor componentDescriptor, Map<String, Object> props,
+		HttpServletRequest httpServletRequest, String placeholderId,
+		JSModuleLauncher jsModuleLauncher, Portal portal, Writer writer) {
+
+		List<JSModuleDependency> jsModuleDependencies = new ArrayList<>();
+		List<JSModuleDependency> amdJSModuleDependencies = new ArrayList<>();
+
+		jsModuleDependencies.add(
+			new JSModuleDependency(
+				"portal-template-react-renderer-impl", "{render}"));
+
+		_registerJSModuleDependency(
+			jsModuleLauncher,
+			new JSModuleDependency(
+				componentDescriptor.getModule(), "component"),
+			jsModuleDependencies, amdJSModuleDependencies);
+
+		String propsTransformer = componentDescriptor.getPropsTransformer();
+
+		if (Validator.isNotNull(propsTransformer)) {
+			_registerJSModuleDependency(
+				jsModuleLauncher,
+				new JSModuleDependency(propsTransformer, "propsTransformer"),
+				jsModuleDependencies, amdJSModuleDependencies);
+		}
+
+		String javaScriptCode = _getRenderInvocation(
+			componentDescriptor, props, httpServletRequest, placeholderId,
+			portal);
+
+		if (!amdJSModuleDependencies.isEmpty()) {
+			StringBundler javascriptSB = new StringBundler(
+				5 + (6 * amdJSModuleDependencies.size()) - 2);
+
+			javascriptSB.append("Liferay.Loader.require([");
+
+			for (int i = 0; i < amdJSModuleDependencies.size(); i++) {
+				JSModuleDependency jsModuleDependency =
+					amdJSModuleDependencies.get(i);
+
+				if (i > 0) {
+					javascriptSB.append(StringPool.COMMA_AND_SPACE);
+				}
+
+				javascriptSB.append(StringPool.APOSTROPHE);
+				javascriptSB.append(jsModuleDependency.getModuleName());
+				javascriptSB.append(StringPool.APOSTROPHE);
+			}
+
+			javascriptSB.append("], function(");
+
+			for (int i = 0; i < amdJSModuleDependencies.size(); i++) {
+				JSModuleDependency jsModuleDependency =
+					amdJSModuleDependencies.get(i);
+
+				if (i > 0) {
+					javascriptSB.append(StringPool.COMMA_AND_SPACE);
+				}
+
+				javascriptSB.append(jsModuleDependency.getVariableName());
+			}
+
+			javascriptSB.append(") {\n");
+			javascriptSB.append(javaScriptCode);
+			javascriptSB.append("});");
+
+			javaScriptCode = javascriptSB.toString();
+		}
+
+		if (componentDescriptor.isPositionInLine()) {
+			jsModuleLauncher.writeScript(
+				writer, jsModuleDependencies, javaScriptCode);
+		}
+		else {
+			jsModuleLauncher.appendPortletScript(
+				httpServletRequest, portal.getPortletId(httpServletRequest),
+				jsModuleDependencies, javaScriptCode);
 		}
 	}
 

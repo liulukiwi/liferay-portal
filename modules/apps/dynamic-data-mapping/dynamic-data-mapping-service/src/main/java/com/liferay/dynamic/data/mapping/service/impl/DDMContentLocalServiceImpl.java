@@ -29,13 +29,16 @@ import java.util.List;
 import org.osgi.service.component.annotations.Component;
 
 /**
- * @author Brian Wing Shun Chan
- * @author Eduardo Lundgren
+ * @author     Brian Wing Shun Chan
+ * @author     Eduardo Lundgren
+ * @deprecated As of Cavanaugh (7.4.x), replaced by {@link
+ *             DDMFieldLocalServiceImpl}
  */
 @Component(
 	property = "model.class.name=com.liferay.dynamic.data.mapping.model.DDMContent",
 	service = AopService.class
 )
+@Deprecated
 public class DDMContentLocalServiceImpl extends DDMContentLocalServiceBaseImpl {
 
 	@Override
@@ -61,9 +64,7 @@ public class DDMContentLocalServiceImpl extends DDMContentLocalServiceBaseImpl {
 		content.setDescription(description);
 		content.setData(data);
 
-		ddmContentPersistence.update(content);
-
-		return content;
+		return ddmContentPersistence.update(content);
 	}
 
 	@Override
@@ -120,9 +121,7 @@ public class DDMContentLocalServiceImpl extends DDMContentLocalServiceBaseImpl {
 		content.setDescription(description);
 		content.setData(data);
 
-		ddmContentPersistence.update(content);
-
-		return content;
+		return ddmContentPersistence.update(content);
 	}
 
 	protected void validate(long contentId, String name, String data)

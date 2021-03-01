@@ -114,7 +114,7 @@
 <aui:script use="aui-base,liferay-search-container">
 	var assetSelectorHandle = A.getBody().delegate(
 		'click',
-		function(event) {
+		(event) => {
 			event.preventDefault();
 
 			var searchContainerName =
@@ -126,30 +126,19 @@
 
 			if (searchContainerData) {
 				searchContainerData = searchContainerData.split(',');
-			} else {
+			}
+			else {
 				searchContainerData = [];
 			}
 
-			Liferay.Loader.require(
-				'frontend-js-web/liferay/ItemSelectorDialog.es',
-				function(ItemSelectorDialog) {
-					var itemSelectorDialog = new ItemSelectorDialog.default({
-						buttonAddLabel: '<liferay-ui:message key="done" />',
-						eventName:
-							'<%= inputAssetLinksDisplayContext.getEventName() %>',
-						title: event.currentTarget.attr('data-title'),
-						url: event.currentTarget.attr('data-href')
-					});
-
-					itemSelectorDialog.open();
-
-					itemSelectorDialog.on('selectedItemChange', function(event) {
-						var assetEntryIds = event.selectedItem;
-
-						if (assetEntryIds) {
-							Array.prototype.forEach.call(assetEntryIds, function(
-								assetEntry
-							) {
+			Liferay.Util.openSelectionModal({
+				buttonAddLabel: '<liferay-ui:message key="done" />',
+				multiple: true,
+				onSelect: function (assetEntryIds) {
+					if (assetEntryIds) {
+						Array.prototype.forEach.call(
+							assetEntryIds,
+							(assetEntry) => {
 								var entityId = assetEntry.entityid;
 
 								if (searchContainerData.indexOf(entityId) == -1) {
@@ -180,16 +169,20 @@
 
 									searchContainer.updateDataStore();
 								}
-							});
-						}
-					});
-				}
-			);
+							}
+						);
+					}
+				},
+				selectEventName:
+					'<%= inputAssetLinksDisplayContext.getEventName() %>',
+				title: event.currentTarget.attr('data-title'),
+				url: event.currentTarget.attr('data-href'),
+			});
 		},
 		'.asset-selector a'
 	);
 
-	var clearAssetSelectorHandle = function(event) {
+	var clearAssetSelectorHandle = function (event) {
 		if (event.portletId === '<%= portletDisplay.getId() %>') {
 			assetSelectorHandle.detach();
 
@@ -207,7 +200,7 @@
 
 	searchContainer.get('contentBox').delegate(
 		'click',
-		function(event) {
+		(event) => {
 			var link = event.currentTarget;
 
 			var tr = link.ancestor('tr');

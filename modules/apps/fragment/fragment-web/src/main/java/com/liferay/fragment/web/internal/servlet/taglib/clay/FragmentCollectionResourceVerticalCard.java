@@ -62,7 +62,10 @@ public class FragmentCollectionResourceVerticalCard implements VerticalCard {
 			return fragmentCollectionResourceActionDropdownItemsProvider.
 				getActionDropdownItems();
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
 		}
 
 		return null;
@@ -88,9 +91,9 @@ public class FragmentCollectionResourceVerticalCard implements VerticalCard {
 				_fileEntry, _fileEntry.getFileVersion(), null, StringPool.BLANK,
 				false, false);
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			if (_log.isDebugEnabled()) {
-				_log.debug(pe, pe);
+				_log.debug(portalException, portalException);
 			}
 		}
 

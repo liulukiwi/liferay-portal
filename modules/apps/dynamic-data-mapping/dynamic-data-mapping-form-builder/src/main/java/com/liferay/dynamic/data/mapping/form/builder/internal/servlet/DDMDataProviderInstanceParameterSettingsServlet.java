@@ -183,6 +183,8 @@ public class DDMDataProviderInstanceParameterSettingsServlet
 			}
 
 			inputJSONObject.put(
+				"id", name
+			).put(
 				"name", name
 			).put(
 				"required",
@@ -257,9 +259,9 @@ public class DDMDataProviderInstanceParameterSettingsServlet
 
 			return createParametersJSONObject(ddmDataProvider, ddmFormValues);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isDebugEnabled()) {
-				_log.debug(e, e);
+				_log.debug(exception, exception);
 			}
 		}
 
@@ -272,9 +274,9 @@ public class DDMDataProviderInstanceParameterSettingsServlet
 
 			return typeJSONArray.getString(0);
 		}
-		catch (JSONException jsone) {
+		catch (JSONException jsonException) {
 			if (_log.isDebugEnabled()) {
-				_log.debug(jsone, jsone);
+				_log.debug(jsonException, jsonException);
 			}
 
 			return type;

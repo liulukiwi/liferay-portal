@@ -15,13 +15,13 @@
 package com.liferay.portal.kernel.portlet;
 
 import com.liferay.petra.string.CharPool;
+import com.liferay.portal.kernel.change.tracking.CTTransactionException;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.model.PortletApp;
-import com.liferay.portal.kernel.servlet.BrowserSnifferUtil;
 import com.liferay.portal.kernel.servlet.ServletResponseUtil;
 import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.servlet.SessionMessages;
@@ -109,14 +109,22 @@ public class LiferayPortlet extends GenericPortlet {
 				addSuccessMessage(actionRequest, actionResponse);
 			}
 		}
-		catch (PortletException pe) {
-			Throwable cause = pe.getCause();
+		catch (PortletException portletException) {
+			Throwable throwable = portletException.getCause();
 
-			if (isSessionErrorException(cause)) {
-				SessionErrors.add(actionRequest, cause.getClass(), cause);
+			if (throwable instanceof CTTransactionException) {
+				_log.error(throwable, throwable);
+
+				SessionErrors.add(
+					PortalUtil.getHttpServletRequest(actionRequest),
+					throwable.getClass(), throwable);
+			}
+			else if (isSessionErrorException(throwable)) {
+				SessionErrors.add(
+					actionRequest, throwable.getClass(), throwable);
 			}
 			else {
-				throw pe;
+				throw portletException;
 			}
 		}
 	}
@@ -175,27 +183,31 @@ public class LiferayPortlet extends GenericPortlet {
 
 			return true;
 		}
-		catch (NoSuchMethodException nsme) {
+		catch (NoSuchMethodException noSuchMethodException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(noSuchMethodException, noSuchMethodException);
+			}
+
 			try {
 				super.processAction(actionRequest, actionResponse);
 
 				return true;
 			}
-			catch (Exception e) {
-				throw new PortletException(e);
+			catch (Exception exception) {
+				throw new PortletException(exception);
 			}
 		}
-		catch (InvocationTargetException ite) {
-			Throwable cause = ite.getCause();
+		catch (InvocationTargetException invocationTargetException) {
+			Throwable throwable = invocationTargetException.getCause();
 
-			if (cause != null) {
-				throw new PortletException(cause);
+			if (throwable != null) {
+				throw new PortletException(throwable);
 			}
 
-			throw new PortletException(ite);
+			throw new PortletException(invocationTargetException);
 		}
-		catch (Exception e) {
-			throw new PortletException(e);
+		catch (Exception exception) {
+			throw new PortletException(exception);
 		}
 	}
 
@@ -220,27 +232,31 @@ public class LiferayPortlet extends GenericPortlet {
 
 			return true;
 		}
-		catch (NoSuchMethodException nsme) {
+		catch (NoSuchMethodException noSuchMethodException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(noSuchMethodException, noSuchMethodException);
+			}
+
 			try {
 				super.serveResource(resourceRequest, resourceResponse);
 
 				return true;
 			}
-			catch (Exception e) {
-				throw new PortletException(e);
+			catch (Exception exception) {
+				throw new PortletException(exception);
 			}
 		}
-		catch (InvocationTargetException ite) {
-			Throwable cause = ite.getCause();
+		catch (InvocationTargetException invocationTargetException) {
+			Throwable throwable = invocationTargetException.getCause();
 
-			if (cause != null) {
-				throw new PortletException(cause);
+			if (throwable != null) {
+				throw new PortletException(throwable);
 			}
 
-			throw new PortletException(ite);
+			throw new PortletException(invocationTargetException);
 		}
-		catch (Exception e) {
-			throw new PortletException(e);
+		catch (Exception exception) {
+			throw new PortletException(exception);
 		}
 	}
 
@@ -361,16 +377,6 @@ public class LiferayPortlet extends GenericPortlet {
 		return method;
 	}
 
-	protected String getJSONContentType(PortletRequest portletRequest) {
-		if (BrowserSnifferUtil.isIe(
-				PortalUtil.getHttpServletRequest(portletRequest))) {
-
-			return ContentTypes.TEXT_HTML;
-		}
-
-		return ContentTypes.APPLICATION_JSON;
-	}
-
 	/**
 	 * @deprecated As of Mueller (7.2.x), with no direct replacement
 	 */
@@ -455,7 +461,11 @@ public class LiferayPortlet extends GenericPortlet {
 		try {
 			return PortalUtil.getPortletTitle(renderRequest);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
+
 			return super.getTitle(renderRequest);
 		}
 	}
@@ -565,12 +575,12 @@ public class LiferayPortlet extends GenericPortlet {
 		return isProcessPortletRequest(resourceRequest);
 	}
 
-	protected boolean isSessionErrorException(Throwable cause) {
+	protected boolean isSessionErrorException(Throwable throwable) {
 		if (_log.isDebugEnabled()) {
-			_log.debug(cause, cause);
+			_log.debug(throwable, throwable);
 		}
 
-		if (cause instanceof PortalException) {
+		if (throwable instanceof PortalException) {
 			return true;
 		}
 
@@ -620,29 +630,29 @@ public class LiferayPortlet extends GenericPortlet {
 
 	protected void writeJSON(
 			PortletRequest portletRequest, ActionResponse actionResponse,
-			Object jsonObj)
+			Object object)
 		throws IOException {
 
 		HttpServletResponse httpServletResponse =
 			PortalUtil.getHttpServletResponse(actionResponse);
 
-		httpServletResponse.setContentType(getJSONContentType(portletRequest));
+		httpServletResponse.setContentType(ContentTypes.APPLICATION_JSON);
 
 		ServletResponseUtil.write(
-			httpServletResponse, _toXSSSafeJSON(jsonObj.toString()));
+			httpServletResponse, _toXSSSafeJSON(object.toString()));
 
 		httpServletResponse.flushBuffer();
 	}
 
 	protected void writeJSON(
 			PortletRequest portletRequest, MimeResponse mimeResponse,
-			Object jsonObj)
+			Object object)
 		throws IOException {
 
-		mimeResponse.setContentType(getJSONContentType(portletRequest));
+		mimeResponse.setContentType(ContentTypes.APPLICATION_JSON);
 
 		PortletResponseUtil.write(
-			mimeResponse, _toXSSSafeJSON(jsonObj.toString()));
+			mimeResponse, _toXSSSafeJSON(object.toString()));
 
 		mimeResponse.flushBuffer();
 	}

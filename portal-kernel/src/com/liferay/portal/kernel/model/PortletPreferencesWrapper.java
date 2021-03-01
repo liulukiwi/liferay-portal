@@ -50,7 +50,6 @@ public class PortletPreferencesWrapper
 		attributes.put("ownerType", getOwnerType());
 		attributes.put("plid", getPlid());
 		attributes.put("portletId", getPortletId());
-		attributes.put("preferences", getPreferences());
 
 		return attributes;
 	}
@@ -104,12 +103,6 @@ public class PortletPreferencesWrapper
 
 		if (portletId != null) {
 			setPortletId(portletId);
-		}
-
-		String preferences = (String)attributes.get("preferences");
-
-		if (preferences != null) {
-			setPreferences(preferences);
 		}
 	}
 
@@ -194,16 +187,6 @@ public class PortletPreferencesWrapper
 	}
 
 	/**
-	 * Returns the preferences of this portlet preferences.
-	 *
-	 * @return the preferences of this portlet preferences
-	 */
-	@Override
-	public String getPreferences() {
-		return model.getPreferences();
-	}
-
-	/**
 	 * Returns the primary key of this portlet preferences.
 	 *
 	 * @return the primary key of this portlet preferences
@@ -213,11 +196,6 @@ public class PortletPreferencesWrapper
 		return model.getPrimaryKey();
 	}
 
-	/**
-	 * NOTE FOR DEVELOPERS:
-	 *
-	 * Never modify or reference this class directly. All methods that expect a portlet preferences model instance should use the <code>PortletPreferences</code> interface instead.
-	 */
 	@Override
 	public void persist() {
 		model.persist();
@@ -301,16 +279,6 @@ public class PortletPreferencesWrapper
 	@Override
 	public void setPortletPreferencesId(long portletPreferencesId) {
 		model.setPortletPreferencesId(portletPreferencesId);
-	}
-
-	/**
-	 * Sets the preferences of this portlet preferences.
-	 *
-	 * @param preferences the preferences of this portlet preferences
-	 */
-	@Override
-	public void setPreferences(String preferences) {
-		model.setPreferences(preferences);
 	}
 
 	/**

@@ -15,6 +15,8 @@
 package com.liferay.portal.dependency.manager.component.executor.factory.internal;
 
 import com.liferay.portal.kernel.dependency.manager.DependencyManagerSync;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.NamedThreadFactory;
 
@@ -81,7 +83,10 @@ public class ComponentExecutorFactoryBundleActivator
 		try {
 			_serviceRegistration.unregister();
 		}
-		catch (IllegalStateException ise) {
+		catch (IllegalStateException illegalStateException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(illegalStateException, illegalStateException);
+			}
 
 			// Concurrent unregister, no need to do anything.
 
@@ -90,12 +95,18 @@ public class ComponentExecutorFactoryBundleActivator
 		try {
 			_dependencyManagerSyncServiceRegistration.unregister();
 		}
-		catch (IllegalStateException ise) {
+		catch (IllegalStateException illegalStateException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(illegalStateException, illegalStateException);
+			}
 
 			// Concurrent unregister, no need to do anything.
 
 		}
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		ComponentExecutorFactoryBundleActivator.class);
 
 	private ServiceRegistration<DependencyManagerSync>
 		_dependencyManagerSyncServiceRegistration;

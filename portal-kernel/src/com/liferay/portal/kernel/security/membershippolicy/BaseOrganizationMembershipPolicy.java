@@ -16,6 +16,8 @@ package com.liferay.portal.kernel.security.membershippolicy;
 
 import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Organization;
 import com.liferay.portal.kernel.model.Role;
@@ -25,7 +27,6 @@ import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.service.OrganizationLocalServiceUtil;
 import com.liferay.portal.kernel.service.RoleLocalServiceUtil;
 import com.liferay.portal.kernel.service.UserGroupRoleLocalServiceUtil;
-import com.liferay.portal.kernel.service.persistence.UserGroupRolePK;
 
 import java.io.Serializable;
 
@@ -55,7 +56,11 @@ public abstract class BaseOrganizationMembershipPolicy
 			checkMembership(
 				new long[] {userId}, new long[] {organizationId}, null);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
+
 			return false;
 		}
 
@@ -109,7 +114,11 @@ public abstract class BaseOrganizationMembershipPolicy
 			checkMembership(
 				new long[] {userId}, null, new long[] {organizationId});
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
+
 			return true;
 		}
 
@@ -125,18 +134,23 @@ public abstract class BaseOrganizationMembershipPolicy
 		Organization organization =
 			OrganizationLocalServiceUtil.getOrganization(organizationId);
 
-		UserGroupRolePK userGroupRolePK = new UserGroupRolePK(
-			userId, organization.getGroupId(), roleId);
-
 		UserGroupRole userGroupRole =
-			UserGroupRoleLocalServiceUtil.createUserGroupRole(userGroupRolePK);
+			UserGroupRoleLocalServiceUtil.createUserGroupRole(0);
+
+		userGroupRole.setUserId(userId);
+		userGroupRole.setGroupId(organization.getGroupId());
+		userGroupRole.setRoleId(roleId);
 
 		userGroupRoles.add(userGroupRole);
 
 		try {
 			checkRoles(userGroupRoles, null);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
+
 			return false;
 		}
 
@@ -186,18 +200,23 @@ public abstract class BaseOrganizationMembershipPolicy
 		Organization organization =
 			OrganizationLocalServiceUtil.getOrganization(organizationId);
 
-		UserGroupRolePK userGroupRolePK = new UserGroupRolePK(
-			userId, organization.getGroupId(), roleId);
-
 		UserGroupRole userGroupRole =
-			UserGroupRoleLocalServiceUtil.createUserGroupRole(userGroupRolePK);
+			UserGroupRoleLocalServiceUtil.createUserGroupRole(0);
+
+		userGroupRole.setUserId(userId);
+		userGroupRole.setGroupId(organization.getGroupId());
+		userGroupRole.setRoleId(roleId);
 
 		userGroupRoles.add(userGroupRole);
 
 		try {
 			checkRoles(null, userGroupRoles);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
+
 			return true;
 		}
 
@@ -248,5 +267,8 @@ public abstract class BaseOrganizationMembershipPolicy
 		Role role, Role oldRole,
 		Map<String, Serializable> oldExpandoAttributes) {
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		BaseOrganizationMembershipPolicy.class);
 
 }

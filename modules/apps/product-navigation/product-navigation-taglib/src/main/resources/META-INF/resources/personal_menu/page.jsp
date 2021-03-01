@@ -20,9 +20,9 @@
 String namespace = StringUtil.randomId() + StringPool.UNDERLINE;
 
 long color = (long)request.getAttribute("liferay-product-navigation:personal-menu:color");
-boolean expanded = (boolean)request.getAttribute("liferay-product-navigation:personal-menu:expanded");
 String label = (String)request.getAttribute("liferay-product-navigation:personal-menu:label");
 String size = (String)request.getAttribute("liferay-product-navigation:personal-menu:size");
+User user2 = (User)request.getAttribute("liferay-product-navigation:personal-menu:user");
 
 String userStickerCssClasses = "sticker";
 
@@ -55,20 +55,22 @@ if (size != null) {
 	}
 </style>
 
-<div class="personal-menu-dropdown" id="<%= namespace + "personal_menu_dropdown" %>">
+<div class="personal-menu-dropdown" id="<%= namespace %>personal_menu_dropdown">
 	<c:choose>
 		<c:when test="<%= Validator.isNotNull(label) %>">
 			<div><%= label %></div>
 		</c:when>
 		<c:otherwise>
-			<button aria-expanded="true" aria-haspopup="true" class="btn btn-unstyled dropdown-toggle" id="<%= namespace + "personal_menu_dropdown_toggle" %>" ref="triggerButton" type="button">
+			<button aria-expanded="true" aria-haspopup="true" class="btn btn-unstyled dropdown-toggle" id="<%= namespace %>personal_menu_dropdown_toggle" ref="triggerButton" type="button">
 				<span class="<%= userStickerCssClasses %>">
-					<span class="<%= userStickerCssClasses + " sticker-circle user-icon-color-" + color %>">
-						<aui:icon image="user" markupView="lexicon" />
-					</span>
+					<liferay-ui:user-portrait
+						cssClass="sticker-user-icon"
+						size="<%= size %>"
+						user="<%= user2 %>"
+					/>
 
 					<c:if test="<%= themeDisplay.isImpersonated() %>">
-						<span class="<%= impersonateStickerCssClasses + " sticker-bottom-right sticker-circle sticker-outside sticker-user-icon" %>" id="impersonate-user-sticker">
+						<span class="<%= impersonateStickerCssClasses %> sticker-bottom-right sticker-circle sticker-outside sticker-user-icon" id="impersonate-user-sticker">
 							<span class="sticker-overlay">
 								<aui:icon id="impersonate-user-icon" image="user" markupView="lexicon" />
 							</span>
@@ -84,19 +86,27 @@ if (size != null) {
 
 	resourceURL.setParameter("currentURL", themeDisplay.getURLCurrent());
 	resourceURL.setParameter("portletId", themeDisplay.getPpid());
-	resourceURL.setResourceID("/get_personal_menu_items");
+	resourceURL.setResourceID("/product_navigation_personal_menu/get_personal_menu_items");
 
-	Map<String, Object> data = new HashMap<>();
+	Map<String, Object> props = HashMapBuilder.<String, Object>put(
+		"color", color
+	).put(
+		"isImpersonated", themeDisplay.isImpersonated()
+	).put(
+		"itemsURL", resourceURL.toString()
+	).put(
+		"label", label
+	).put(
+		"size", size
+	).build();
 
-	data.put("color", color);
-	data.put("isImpersonated", themeDisplay.isImpersonated());
-	data.put("itemsURL", resourceURL.toString());
-	data.put("label", label);
-	data.put("size", size);
+	if (user2.getPortraitId() > 0) {
+		props.put("userPortraitURL", user2.getPortraitURL(themeDisplay));
+	}
 	%>
 
 	<react:component
-		data="<%= data %>"
 		module="personal_menu/js/PersonalMenu.es"
+		props="<%= props %>"
 	/>
 </div>

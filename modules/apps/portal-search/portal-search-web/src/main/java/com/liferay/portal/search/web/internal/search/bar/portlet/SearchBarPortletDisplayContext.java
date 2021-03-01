@@ -14,6 +14,8 @@
 
 package com.liferay.portal.search.web.internal.search.bar.portlet;
 
+import com.liferay.portal.search.web.internal.search.bar.portlet.configuration.SearchBarPortletInstanceConfiguration;
+
 /**
  * @author André de Oliveira
  */
@@ -23,8 +25,16 @@ public class SearchBarPortletDisplayContext {
 		return _currentSiteSearchScopeParameterString;
 	}
 
+	public long getDisplayStyleGroupId() {
+		return _displayStyleGroupId;
+	}
+
 	public String getEverythingSearchScopeParameterString() {
 		return _everythingSearchScopeParameterString;
+	}
+
+	public String getInputPlaceholder() {
+		return _inputPlaceholder;
 	}
 
 	public String getKeywords() {
@@ -47,6 +57,12 @@ public class SearchBarPortletDisplayContext {
 		return _scopeParameterValue;
 	}
 
+	public SearchBarPortletInstanceConfiguration
+		getSearchBarPortletInstanceConfiguration() {
+
+		return _searchBarPortletInstanceConfiguration;
+	}
+
 	public String getSearchURL() {
 		return _searchURL;
 	}
@@ -57,6 +73,10 @@ public class SearchBarPortletDisplayContext {
 
 	public boolean isDestinationUnreachable() {
 		return _destinationUnreachable;
+	}
+
+	public boolean isDisplayWarningIgnoredConfiguration() {
+		return _displayWarningIgnoredConfiguration;
 	}
 
 	public boolean isEmptySearchEnabled() {
@@ -96,6 +116,17 @@ public class SearchBarPortletDisplayContext {
 		_destinationUnreachable = destinationUnreachable;
 	}
 
+	public void setDisplayStyleGroupId(long displayStyleGroupId) {
+		_displayStyleGroupId = displayStyleGroupId;
+	}
+
+	public void setDisplayWarningIgnoredConfiguration(
+		boolean displayWarningIgnoredConfiguration) {
+
+		_displayWarningIgnoredConfiguration =
+			displayWarningIgnoredConfiguration;
+	}
+
 	public void setEmptySearchEnabled(boolean emptySearchEnabled) {
 		_emptySearchEnabled = emptySearchEnabled;
 	}
@@ -105,6 +136,10 @@ public class SearchBarPortletDisplayContext {
 
 		_everythingSearchScopeParameterString =
 			searchScopeEverythingParameterString;
+	}
+
+	public void setInputPlaceholder(String inputPlaceholder) {
+		_inputPlaceholder = inputPlaceholder;
 	}
 
 	public void setKeywords(String keywords) {
@@ -139,6 +174,14 @@ public class SearchBarPortletDisplayContext {
 		_scopeParameterValue = scopeParameterValue;
 	}
 
+	public void setSearchBarPortletInstanceConfiguration(
+		SearchBarPortletInstanceConfiguration
+			searchBarPortletInstanceConfiguration) {
+
+		_searchBarPortletInstanceConfiguration =
+			searchBarPortletInstanceConfiguration;
+	}
+
 	public void setSearchURL(String searchURL) {
 		_searchURL = searchURL;
 	}
@@ -158,8 +201,11 @@ public class SearchBarPortletDisplayContext {
 	private boolean _availableEverythingSearchScope;
 	private String _currentSiteSearchScopeParameterString;
 	private boolean _destinationUnreachable;
+	private long _displayStyleGroupId;
+	private boolean _displayWarningIgnoredConfiguration;
 	private boolean _emptySearchEnabled;
 	private String _everythingSearchScopeParameterString;
+	private String _inputPlaceholder;
 	private String _keywords;
 	private String _keywordsParameterName;
 	private boolean _letTheUserChooseTheSearchScope;
@@ -167,6 +213,8 @@ public class SearchBarPortletDisplayContext {
 	private boolean _renderNothing;
 	private String _scopeParameterName;
 	private String _scopeParameterValue;
+	private SearchBarPortletInstanceConfiguration
+		_searchBarPortletInstanceConfiguration;
 	private String _searchURL;
 	private boolean _selectedCurrentSiteSearchScope;
 	private boolean _selectedEverythingSearchScope;

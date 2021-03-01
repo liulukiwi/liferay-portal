@@ -50,7 +50,7 @@ import org.osgi.service.component.annotations.Reference;
 	immediate = true,
 	property = {
 		"javax.portlet.name=" + ReportsEngineConsolePortletKeys.REPORTS_ADMIN,
-		"mvc.command.name=editDefinition"
+		"mvc.command.name=/reports_admin/edit_definition"
 	},
 	service = MVCActionCommand.class
 )
@@ -101,8 +101,11 @@ public class EditDefinitionMVCActionCommand extends BaseMVCActionCommand {
 					serviceContext);
 			}
 		}
-		catch (DefinitionFileException.InvalidDefinitionFile dfe) {
-			SessionErrors.add(actionRequest, dfe.getClass());
+		catch (DefinitionFileException.InvalidDefinitionFile
+					definitionFileException) {
+
+			SessionErrors.add(
+				actionRequest, definitionFileException.getClass());
 
 			SessionMessages.add(
 				actionRequest,

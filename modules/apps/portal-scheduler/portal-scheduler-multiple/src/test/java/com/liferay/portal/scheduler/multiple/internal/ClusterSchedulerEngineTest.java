@@ -97,7 +97,7 @@ public class ClusterSchedulerEngineTest {
 
 	@Before
 	public void setUp() throws Exception {
-		setUpProps();
+		setUpPropsUtil();
 
 		setUpSchedulerEngineHelperUtil();
 		setUpClusterSchedulerEngine();
@@ -1710,10 +1710,10 @@ public class ClusterSchedulerEngineTest {
 
 			Assert.fail();
 		}
-		catch (SchedulerException se) {
+		catch (SchedulerException schedulerException) {
 			Assert.assertEquals(
 				"Unable to update trigger for memory clustered job",
-				se.getMessage());
+				schedulerException.getMessage());
 		}
 
 		// Test 3, with not existed job name
@@ -1728,10 +1728,10 @@ public class ClusterSchedulerEngineTest {
 
 			Assert.fail();
 		}
-		catch (SchedulerException se) {
+		catch (SchedulerException schedulerException) {
 			Assert.assertEquals(
 				"Unable to update trigger for memory clustered job",
-				se.getMessage());
+				schedulerException.getMessage());
 		}
 	}
 
@@ -1805,11 +1805,7 @@ public class ClusterSchedulerEngineTest {
 
 		ObjectValuePair<SchedulerResponse, TriggerState> objectValuePair =
 			_memoryClusteredJobs.get(
-				groupName.concat(
-					StringPool.PERIOD
-				).concat(
-					jobName
-				));
+				StringBundler.concat(groupName, StringPool.PERIOD, jobName));
 
 		if (objectValuePair == null) {
 			return null;
@@ -1871,7 +1867,7 @@ public class ClusterSchedulerEngineTest {
 			_clusterSchedulerEngine, "_memoryClusteredJobs");
 	}
 
-	protected void setUpProps() {
+	protected void setUpPropsUtil() {
 		_props = PropsTestUtil.setProps(
 			PropsKeys.CLUSTERABLE_ADVICE_CALL_MASTER_TIMEOUT, "100");
 	}

@@ -58,7 +58,7 @@ public class BlogsAdminPortletDataHandler extends BasePortletDataHandler {
 
 	public static final String NAMESPACE = "blogs";
 
-	public static final String SCHEMA_VERSION = "1.0.0";
+	public static final String SCHEMA_VERSION = "4.0.0";
 
 	@Override
 	public String[] getClassNames() {
@@ -68,6 +68,11 @@ public class BlogsAdminPortletDataHandler extends BasePortletDataHandler {
 	@Override
 	public String getNamespace() {
 		return NAMESPACE;
+	}
+
+	@Override
+	public String getResourceName() {
+		return BlogsConstants.RESOURCE_NAME;
 	}
 
 	@Override

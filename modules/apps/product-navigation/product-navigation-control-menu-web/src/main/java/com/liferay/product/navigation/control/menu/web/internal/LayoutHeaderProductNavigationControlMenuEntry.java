@@ -16,16 +16,11 @@ package com.liferay.product.navigation.control.menu.web.internal;
 
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Layout;
-import com.liferay.portal.kernel.model.LayoutConstants;
-import com.liferay.portal.kernel.security.permission.ActionKeys;
-import com.liferay.portal.kernel.service.permission.LayoutPermissionUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.product.navigation.control.menu.BaseJSPProductNavigationControlMenuEntry;
 import com.liferay.product.navigation.control.menu.ProductNavigationControlMenuEntry;
 import com.liferay.product.navigation.control.menu.constants.ProductNavigationControlMenuCategoryKeys;
-
-import java.util.Objects;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -64,20 +59,6 @@ public class LayoutHeaderProductNavigationControlMenuEntry
 		Layout layout = themeDisplay.getLayout();
 
 		if (layout.isTypeControlPanel()) {
-			return false;
-		}
-
-		if (!(themeDisplay.isShowLayoutTemplatesIcon() ||
-			  themeDisplay.isShowPageSettingsIcon() ||
-			  ((Objects.equals(
-				  layout.getType(), LayoutConstants.TYPE_CONTENT) ||
-				Objects.equals(
-					layout.getType(), LayoutConstants.TYPE_ASSET_DISPLAY)) &&
-			   LayoutPermissionUtil.contains(
-				   themeDisplay.getPermissionChecker(),
-				   themeDisplay.getLayout(),
-				   ActionKeys.UPDATE_LAYOUT_CONTENT)))) {
-
 			return false;
 		}
 

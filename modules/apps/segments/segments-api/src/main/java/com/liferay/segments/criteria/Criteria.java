@@ -92,6 +92,10 @@ public final class Criteria implements Serializable {
 		return _filterStrings.get(type.getValue());
 	}
 
+	public Map<String, String> getFilterStrings() {
+		return _filterStrings;
+	}
+
 	public Conjunction getTypeConjunction(Type type) {
 		Collection<Criterion> criteria = _criteria.values();
 
@@ -225,7 +229,7 @@ public final class Criteria implements Serializable {
 		return sb.toString();
 	}
 
-	private Map<String, Criterion> _criteria = new HashMap<>();
-	private Map<String, String> _filterStrings = new HashMap<>();
+	private final Map<String, Criterion> _criteria = new HashMap<>();
+	private final Map<String, String> _filterStrings = new HashMap<>();
 
 }

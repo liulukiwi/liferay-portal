@@ -46,7 +46,7 @@ public abstract class AccountEntryServiceBaseImpl
 	extends BaseServiceImpl
 	implements AccountEntryService, AopService, IdentifiableOSGiService {
 
-	/**
+	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this class directly. Use <code>AccountEntryService</code> via injection or a <code>org.osgi.util.tracker.ServiceTracker</code> or use <code>com.liferay.account.service.AccountEntryServiceUtil</code>.
@@ -100,8 +100,8 @@ public abstract class AccountEntryServiceBaseImpl
 
 			sqlUpdate.update();
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 	}
 
@@ -126,6 +126,14 @@ public abstract class AccountEntryServiceBaseImpl
 	protected com.liferay.portal.kernel.service.GroupService groupService;
 
 	@Reference
+	protected com.liferay.portal.kernel.service.OrganizationLocalService
+		organizationLocalService;
+
+	@Reference
+	protected com.liferay.portal.kernel.service.OrganizationService
+		organizationService;
+
+	@Reference
 	protected com.liferay.portal.kernel.service.ResourceLocalService
 		resourceLocalService;
 
@@ -135,5 +143,17 @@ public abstract class AccountEntryServiceBaseImpl
 
 	@Reference
 	protected com.liferay.portal.kernel.service.UserService userService;
+
+	@Reference
+	protected com.liferay.asset.kernel.service.AssetEntryLocalService
+		assetEntryLocalService;
+
+	@Reference
+	protected com.liferay.asset.kernel.service.AssetEntryService
+		assetEntryService;
+
+	@Reference
+	protected com.liferay.expando.kernel.service.ExpandoRowLocalService
+		expandoRowLocalService;
 
 }

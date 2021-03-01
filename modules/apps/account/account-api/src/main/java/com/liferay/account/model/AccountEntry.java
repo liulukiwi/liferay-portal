@@ -31,7 +31,7 @@ import org.osgi.annotation.versioning.ProviderType;
 @ProviderType
 public interface AccountEntry extends AccountEntryModel, PersistedModel {
 
-	/**
+	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify this interface directly. Add methods to <code>com.liferay.account.model.impl.AccountEntryImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
@@ -59,5 +59,11 @@ public interface AccountEntry extends AccountEntryModel, PersistedModel {
 	public com.liferay.portal.kernel.model.Group getAccountEntryGroup();
 
 	public long getAccountEntryGroupId();
+
+	public com.liferay.portal.kernel.model.Address getDefaultBillingAddress();
+
+	public com.liferay.portal.kernel.model.Address getDefaultShippingAddress();
+
+	public String[] getDomainsArray();
 
 }

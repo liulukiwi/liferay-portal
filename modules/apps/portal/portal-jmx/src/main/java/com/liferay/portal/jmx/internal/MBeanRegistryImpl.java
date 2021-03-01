@@ -84,7 +84,13 @@ public class MBeanRegistryImpl implements MBeanRegistry {
 		try {
 			register(objectCacheKey, object, objectName);
 		}
-		catch (InstanceAlreadyExistsException iaee) {
+		catch (InstanceAlreadyExistsException instanceAlreadyExistsException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(
+					instanceAlreadyExistsException,
+					instanceAlreadyExistsException);
+			}
+
 			unregister(objectCacheKey, objectName);
 
 			register(objectCacheKey, object, objectName);
@@ -107,10 +113,11 @@ public class MBeanRegistryImpl implements MBeanRegistry {
 					_mBeanServer.unregisterMBean(objectName);
 				}
 			}
-			catch (InstanceNotFoundException infe) {
+			catch (InstanceNotFoundException instanceNotFoundException) {
 				if (_log.isInfoEnabled()) {
 					_log.info(
-						"Unable to unregister " + defaultObjectName, infe);
+						"Unable to unregister " + defaultObjectName,
+						instanceNotFoundException);
 				}
 			}
 		}
@@ -136,12 +143,12 @@ public class MBeanRegistryImpl implements MBeanRegistry {
 				try {
 					_mBeanServer.unregisterMBean(objectName);
 				}
-				catch (Exception e) {
+				catch (Exception exception) {
 					if (_log.isWarnEnabled()) {
 						_log.warn(
 							"Unable to unregister mbean" +
 								objectName.getCanonicalName(),
-							e);
+							exception);
 					}
 				}
 			}
@@ -180,9 +187,9 @@ public class MBeanRegistryImpl implements MBeanRegistry {
 				return register(
 					objectNameCacheKey, service, new ObjectName(objectName));
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 				if (_log.isWarnEnabled()) {
-					_log.warn("Unable to register mbean", e);
+					_log.warn("Unable to register mbean", exception);
 				}
 			}
 
@@ -213,9 +220,9 @@ public class MBeanRegistryImpl implements MBeanRegistry {
 			try {
 				unregister(objectNameCacheKey, new ObjectName(objectName));
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 				if (_log.isWarnEnabled()) {
-					_log.warn("Unable to register mbean", e);
+					_log.warn("Unable to register mbean", exception);
 				}
 			}
 		}

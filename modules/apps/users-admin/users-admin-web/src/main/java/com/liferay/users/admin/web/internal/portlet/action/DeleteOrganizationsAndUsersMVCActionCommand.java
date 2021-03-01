@@ -14,9 +14,11 @@
 
 package com.liferay.users.admin.web.internal.portlet.action;
 
+import com.liferay.petra.lang.SafeClosable;
 import com.liferay.portal.kernel.exception.NoSuchOrganizationException;
 import com.liferay.portal.kernel.exception.RequiredOrganizationException;
 import com.liferay.portal.kernel.exception.RequiredUserException;
+import com.liferay.portal.kernel.messaging.proxy.ProxyModeThreadLocal;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
@@ -75,21 +77,25 @@ public class DeleteOrganizationsAndUsersMVCActionCommand
 		throws Exception {
 
 		try {
-			deleteOrganizations(actionRequest);
-			deleteUsers(actionRequest);
-		}
-		catch (Exception e) {
-			if (e instanceof NoSuchOrganizationException ||
-				e instanceof PrincipalException) {
+			try (SafeClosable safeClosable =
+					ProxyModeThreadLocal.setWithSafeClosable(true)) {
 
-				SessionErrors.add(actionRequest, e.getClass());
+				deleteOrganizations(actionRequest);
+				deleteUsers(actionRequest);
+			}
+		}
+		catch (Exception exception) {
+			if (exception instanceof NoSuchOrganizationException ||
+				exception instanceof PrincipalException) {
+
+				SessionErrors.add(actionRequest, exception.getClass());
 
 				actionResponse.setRenderParameter("mvcPath", "/error.jsp");
 			}
-			else if (e instanceof RequiredOrganizationException ||
-					 e instanceof RequiredUserException) {
+			else if (exception instanceof RequiredOrganizationException ||
+					 exception instanceof RequiredUserException) {
 
-				SessionErrors.add(actionRequest, e.getClass());
+				SessionErrors.add(actionRequest, exception.getClass());
 
 				String redirect = _portal.escapeRedirect(
 					ParamUtil.getString(actionRequest, "onErrorRedirect"));
@@ -99,7 +105,7 @@ public class DeleteOrganizationsAndUsersMVCActionCommand
 				}
 			}
 			else {
-				throw e;
+				throw exception;
 			}
 		}
 	}

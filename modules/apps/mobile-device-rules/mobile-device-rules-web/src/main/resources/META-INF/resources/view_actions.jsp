@@ -20,11 +20,6 @@
 MDRActionDisplayContext mdrActionDisplayContext = new MDRActionDisplayContext(renderRequest, renderResponse, resourceBundle);
 %>
 
-<clay:navigation-bar
-	inverted="<%= true %>"
-	navigationItems="<%= mdrActionDisplayContext.getActionNavigationItems() %>"
-/>
-
 <liferay-frontend:management-bar
 	includeCheckBox="<%= true %>"
 	searchContainerId="actionActions"
@@ -69,7 +64,7 @@ MDRActionDisplayContext mdrActionDisplayContext = new MDRActionDisplayContext(re
 PortletURL portletURL = mdrActionDisplayContext.getPortletURL();
 %>
 
-<aui:form action="<%= deleteURL.toString() %>" cssClass="container-fluid-1280" method="post" name="fm">
+<aui:form action="<%= deleteURL.toString() %>" cssClass="container-fluid container-fluid-max-xl" method="post" name="fm">
 	<aui:input name="<%= Constants.CMD %>" type="hidden" value="<%= Constants.DELETE %>" />
 	<aui:input name="redirect" type="hidden" value="<%= portletURL.toString() %>" />
 
@@ -136,11 +131,6 @@ PortletURL portletURL = mdrActionDisplayContext.getPortletURL();
 					/>
 				</c:when>
 				<c:when test='<%= Objects.equals(mdrActionDisplayContext.getDisplayStyle(), "icon") %>'>
-
-					<%
-					row.setCssClass("entry-card lfr-asset-item");
-					%>
-
 					<liferay-ui:search-container-column-text>
 						<liferay-frontend:icon-vertical-card
 							actionJsp="/action_actions.jsp"
@@ -177,13 +167,13 @@ PortletURL portletURL = mdrActionDisplayContext.getPortletURL();
 </aui:form>
 
 <script>
-	(function() {
+	(function () {
 		var deleteActionsButton = document.getElementById(
 			'<portlet:namespace />deleteActions'
 		);
 
 		if (deleteActionsButton) {
-			deleteActionsButton.addEventListener('click', function() {
+			deleteActionsButton.addEventListener('click', () => {
 				if (
 					confirm(
 						'<%= UnicodeLanguageUtil.get(resourceBundle, "are-you-sure-you-want-to-delete-this") %>'

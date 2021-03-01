@@ -15,11 +15,17 @@
 package com.liferay.layout.admin.web.internal.product.navigation.control.menu;
 
 import com.liferay.layout.admin.constants.LayoutAdminPortletKeys;
+import com.liferay.layout.page.template.admin.constants.LayoutPageTemplateAdminPortletKeys;
+import com.liferay.layout.page.template.constants.LayoutPageTemplateEntryTypeConstants;
+import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
+import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalService;
 import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.model.Layout;
+import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.service.LayoutLocalService;
+import com.liferay.portal.kernel.service.permission.LayoutPermission;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.Html;
@@ -99,12 +105,19 @@ public class ManageLayoutProductNavigationControlMenuEntry
 			httpServletRequest, LayoutAdminPortletKeys.GROUP_PAGES,
 			PortletRequest.RENDER_PHASE);
 
-		editPageURL.setParameter("mvcRenderCommandName", "/layout/edit_layout");
+		editPageURL.setParameter(
+			"mvcRenderCommandName", "/layout_admin/edit_layout");
 
 		String currentURL = _portal.getCurrentURL(httpServletRequest);
 
 		editPageURL.setParameter("redirect", currentURL);
 		editPageURL.setParameter("backURL", currentURL);
+
+		if (layout.isSystem()) {
+			editPageURL.setParameter(
+				"portletResource",
+				LayoutPageTemplateAdminPortletKeys.LAYOUT_PAGE_TEMPLATES);
+		}
 
 		editPageURL.setParameter(
 			"groupId", String.valueOf(layout.getGroupId()));
@@ -142,8 +155,8 @@ public class ManageLayoutProductNavigationControlMenuEntry
 			values.put(
 				"layoutUpdatedMessage", successTag.doTagAsString(pageContext));
 		}
-		catch (JspException je) {
-			ReflectionUtil.throwException(je);
+		catch (JspException jspException) {
+			ReflectionUtil.throwException(jspException);
 		}
 
 		Writer writer = httpServletResponse.getWriter();
@@ -167,6 +180,10 @@ public class ManageLayoutProductNavigationControlMenuEntry
 			return false;
 		}
 
+		if (_isMasterLayout(layout)) {
+			return false;
+		}
+
 		if (isEmbeddedPersonalApplicationLayout(layout)) {
 			return false;
 		}
@@ -177,7 +194,39 @@ public class ManageLayoutProductNavigationControlMenuEntry
 			return false;
 		}
 
+		if (layout.isSystem() && layout.isTypeContent()) {
+			layout = _layoutLocalService.getLayout(layout.getClassPK());
+
+			return _layoutPermission.contains(
+				themeDisplay.getPermissionChecker(), layout, ActionKeys.UPDATE);
+		}
+
 		return super.isShow(httpServletRequest);
+	}
+
+	private boolean _isMasterLayout(Layout layout) {
+		if (layout.getMasterLayoutPlid() > 0) {
+			return false;
+		}
+
+		LayoutPageTemplateEntry layoutPageTemplateEntry =
+			_layoutPageTemplateEntryLocalService.
+				fetchLayoutPageTemplateEntryByPlid(layout.getPlid());
+
+		if (layoutPageTemplateEntry == null) {
+			layoutPageTemplateEntry =
+				_layoutPageTemplateEntryLocalService.
+					fetchLayoutPageTemplateEntryByPlid(layout.getClassPK());
+		}
+
+		if ((layoutPageTemplateEntry == null) ||
+			(layoutPageTemplateEntry.getType() !=
+				LayoutPageTemplateEntryTypeConstants.TYPE_MASTER_LAYOUT)) {
+
+			return false;
+		}
+
+		return true;
 	}
 
 	private static final String _TMPL_CONTENT = StringUtil.read(
@@ -193,6 +242,13 @@ public class ManageLayoutProductNavigationControlMenuEntry
 
 	@Reference
 	private LayoutLocalService _layoutLocalService;
+
+	@Reference
+	private LayoutPageTemplateEntryLocalService
+		_layoutPageTemplateEntryLocalService;
+
+	@Reference
+	private LayoutPermission _layoutPermission;
 
 	@Reference
 	private Portal _portal;

@@ -21,10 +21,10 @@ SelectUsersDisplayContext selectUsersDisplayContext = new SelectUsersDisplayCont
 %>
 
 <clay:management-toolbar
-	displayContext="<%= new SelectUsersManagementToolbarDisplayContext(liferayPortletRequest, liferayPortletResponse, request, selectUsersDisplayContext) %>"
+	managementToolbarDisplayContext="<%= new SelectUsersManagementToolbarDisplayContext(request, liferayPortletRequest, liferayPortletResponse, selectUsersDisplayContext) %>"
 />
 
-<aui:form cssClass="container-fluid-1280 portlet-site-memberships-select-users" name="fm">
+<aui:form cssClass="container-fluid container-fluid-max-xl portlet-site-memberships-select-users" name="fm">
 	<liferay-ui:membership-policy-error />
 
 	<liferay-ui:search-container
@@ -58,14 +58,14 @@ SelectUsersDisplayContext selectUsersDisplayContext = new SelectUsersDisplayCont
 <aui:script use="liferay-search-container">
 	var searchContainer = Liferay.SearchContainer.get('<portlet:namespace />users');
 
-	searchContainer.on('rowToggled', function(event) {
+	searchContainer.on('rowToggled', (event) => {
 		var result = {};
 
 		var data = event.elements.allSelectedElements.getDOMNodes();
 
 		if (data.length) {
 			result = {
-				data: data
+				data: data,
 			};
 		}
 

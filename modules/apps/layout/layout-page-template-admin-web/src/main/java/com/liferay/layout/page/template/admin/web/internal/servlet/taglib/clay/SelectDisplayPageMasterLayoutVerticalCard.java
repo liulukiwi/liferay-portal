@@ -18,11 +18,8 @@ import com.liferay.frontend.taglib.clay.servlet.taglib.soy.VerticalCard;
 import com.liferay.layout.page.template.constants.LayoutPageTemplateEntryTypeConstants;
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
-import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.WebKeys;
-
-import java.util.Map;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.PortletURL;
@@ -48,13 +45,12 @@ public class SelectDisplayPageMasterLayoutVerticalCard implements VerticalCard {
 			WebKeys.THEME_DISPLAY);
 	}
 
-	@Override
-	public Map<String, String> getData() {
+	public String getAddDisplayPageURL() {
 		PortletURL addDisplayPageURL = _renderResponse.createActionURL();
 
 		addDisplayPageURL.setParameter(
 			ActionRequest.ACTION_NAME,
-			"/layout_page_template/add_display_page");
+			"/layout_page_template_admin/add_display_page");
 		addDisplayPageURL.setParameter(
 			"redirect", _themeDisplay.getURLCurrent());
 		addDisplayPageURL.setParameter(
@@ -65,15 +61,12 @@ public class SelectDisplayPageMasterLayoutVerticalCard implements VerticalCard {
 			"masterLayoutPlid",
 			String.valueOf(_layoutPageTemplateEntry.getPlid()));
 
-		return HashMapBuilder.put(
-			"add-display-page-url", addDisplayPageURL.toString()
-		).build();
+		return addDisplayPageURL.toString();
 	}
 
 	@Override
-	public String getElementClasses() {
-		return "add-master-page-action-option card-interactive " +
-			"card-interactive-primary";
+	public String getCssClass() {
+		return "card-interactive card-interactive-primary";
 	}
 
 	@Override

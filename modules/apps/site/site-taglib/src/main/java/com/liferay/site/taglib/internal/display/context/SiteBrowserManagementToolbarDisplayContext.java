@@ -31,13 +31,13 @@ public class SiteBrowserManagementToolbarDisplayContext
 	extends SearchContainerManagementToolbarDisplayContext {
 
 	public SiteBrowserManagementToolbarDisplayContext(
+		HttpServletRequest httpServletRequest,
 		LiferayPortletRequest liferayPortletRequest,
 		LiferayPortletResponse liferayPortletResponse,
-		HttpServletRequest httpServletRequest,
 		SiteBrowserDisplayContext siteBrowserDisplayContext) {
 
 		super(
-			liferayPortletRequest, liferayPortletResponse, httpServletRequest,
+			httpServletRequest, liferayPortletRequest, liferayPortletResponse,
 			siteBrowserDisplayContext.getSearchContainer());
 
 		_siteBrowserDisplayContext = siteBrowserDisplayContext;
@@ -67,7 +67,8 @@ public class SiteBrowserManagementToolbarDisplayContext
 	@Override
 	public Boolean isShowSearch() {
 		return GetterUtil.getBoolean(
-			request.getAttribute("liferay-site:site-browser:showSearch"));
+			httpServletRequest.getAttribute(
+				"liferay-site:site-browser:showSearch"));
 	}
 
 	@Override

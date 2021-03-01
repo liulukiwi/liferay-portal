@@ -50,8 +50,9 @@ public class CentralGitSubrepository {
 		try {
 			buildProperties = JenkinsResultsParserUtil.getBuildProperties();
 		}
-		catch (IOException ioe) {
-			throw new RuntimeException("Unable to get build properties", ioe);
+		catch (IOException ioException) {
+			throw new RuntimeException(
+				"Unable to get build properties", ioException);
 		}
 
 		sb.append(buildProperties.getProperty("base.repository.dir"));
@@ -64,11 +65,11 @@ public class CentralGitSubrepository {
 
 		_gitSubrepositoryDirectory = sb.toString();
 
-		_gitSubrepositoryUpstreamBranchName =
-			_getGitSubrepositoryUpstreamBranchName();
+		_gitSubrepositoryUpstreamBranchName = _centralUpstreamBranchName;
 		_gitSubrepositoryUsername = _getGitSubrepositoryUsername();
 
-		String tempBranchName = "temp-" + System.currentTimeMillis();
+		String tempBranchName =
+			"temp-" + JenkinsResultsParserUtil.getCurrentTimeMillis();
 
 		GitWorkingDirectory gitWorkingDirectory =
 			GitWorkingDirectoryFactory.newGitWorkingDirectory(
@@ -115,7 +116,7 @@ public class CentralGitSubrepository {
 
 			_ciProperties.load(new FileInputStream(ciPropertiesFile));
 		}
-		catch (FileNotFoundException fnfe) {
+		catch (FileNotFoundException fileNotFoundException) {
 			System.out.println(
 				"Unable to find ci.properties in " +
 					_gitSubrepositoryDirectory);
@@ -180,31 +181,6 @@ public class CentralGitSubrepository {
 		return remote.substring(x, y);
 	}
 
-	private String _getGitSubrepositoryUpstreamBranchName() {
-		String remote = _gitrepoProperties.getProperty("remote");
-
-		String gitSubrepositoryUpstreamBranchName = _centralUpstreamBranchName;
-
-		if (gitSubrepositoryUpstreamBranchName.contains("7.0")) {
-			gitSubrepositoryUpstreamBranchName = "7.0.x";
-		}
-		else if (gitSubrepositoryUpstreamBranchName.contains("7.1")) {
-			gitSubrepositoryUpstreamBranchName = "7.1.x";
-		}
-		else if (gitSubrepositoryUpstreamBranchName.contains("7.2")) {
-			gitSubrepositoryUpstreamBranchName = "7.2.x";
-		}
-		else if (gitSubrepositoryUpstreamBranchName.contains("master")) {
-			gitSubrepositoryUpstreamBranchName = "master";
-		}
-
-		if (remote.contains("-private")) {
-			gitSubrepositoryUpstreamBranchName += "-private";
-		}
-
-		return gitSubrepositoryUpstreamBranchName;
-	}
-
 	private String _getGitSubrepositoryUpstreamCommit() throws IOException {
 		String path = JenkinsResultsParserUtil.combine(
 			"git/refs/heads/", _gitSubrepositoryUpstreamBranchName);
@@ -237,11 +213,10 @@ public class CentralGitSubrepository {
 			_gitSubrepositoryName, _gitSubrepositoryUsername, path);
 
 		for (int i = 0; i < 15; i++) {
-			JSONArray statusesJSONArray = new JSONArray(
-				JenkinsResultsParserUtil.toString(
-					JenkinsResultsParserUtil.combine(
-						url, "?page=", String.valueOf(i + 1)),
-					true));
+			JSONArray statusesJSONArray = JenkinsResultsParserUtil.toJSONArray(
+				JenkinsResultsParserUtil.combine(
+					url, "?page=", String.valueOf(i + 1)),
+				true);
 
 			if ((statusesJSONArray == null) ||
 				(statusesJSONArray.length() == 0)) {

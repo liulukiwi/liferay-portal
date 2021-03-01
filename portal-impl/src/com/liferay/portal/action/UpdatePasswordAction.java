@@ -18,6 +18,8 @@ import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.exception.NoSuchUserException;
 import com.liferay.portal.kernel.exception.UserLockoutException;
 import com.liferay.portal.kernel.exception.UserPasswordException;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.CompanyConstants;
 import com.liferay.portal.kernel.model.Ticket;
@@ -65,10 +67,6 @@ public class UpdatePasswordAction implements Action {
 			HttpServletResponse httpServletResponse)
 		throws Exception {
 
-		ThemeDisplay themeDisplay =
-			(ThemeDisplay)httpServletRequest.getAttribute(
-				WebKeys.THEME_DISPLAY);
-
 		Ticket ticket = getTicket(httpServletRequest);
 
 		if ((ticket != null) &&
@@ -94,13 +92,19 @@ public class UpdatePasswordAction implements Action {
 					UserLocalServiceUtil.updatePasswordReset(
 						user.getUserId(), true);
 				}
-				catch (UserLockoutException ule) {
-					SessionErrors.add(httpServletRequest, ule.getClass(), ule);
+				catch (UserLockoutException userLockoutException) {
+					SessionErrors.add(
+						httpServletRequest, userLockoutException.getClass(),
+						userLockoutException);
 				}
 			}
 
 			return actionMapping.getActionForward("portal.update_password");
 		}
+
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
 
 		try {
 			updatePassword(
@@ -121,21 +125,23 @@ public class UpdatePasswordAction implements Action {
 
 			return null;
 		}
-		catch (Exception e) {
-			if (e instanceof UserPasswordException) {
-				SessionErrors.add(httpServletRequest, e.getClass(), e);
+		catch (Exception exception) {
+			if (exception instanceof UserPasswordException) {
+				SessionErrors.add(
+					httpServletRequest, exception.getClass(), exception);
 
 				return actionMapping.getActionForward("portal.update_password");
 			}
-			else if (e instanceof NoSuchUserException ||
-					 e instanceof PrincipalException) {
+			else if (exception instanceof NoSuchUserException ||
+					 exception instanceof PrincipalException) {
 
-				SessionErrors.add(httpServletRequest, e.getClass());
+				SessionErrors.add(httpServletRequest, exception.getClass());
 
 				return actionMapping.getActionForward("portal.error");
 			}
 
-			PortalUtil.sendError(e, httpServletRequest, httpServletResponse);
+			PortalUtil.sendError(
+				exception, httpServletRequest, httpServletResponse);
 
 			return null;
 		}
@@ -163,7 +169,10 @@ public class UpdatePasswordAction implements Action {
 
 			TicketLocalServiceUtil.deleteTicket(ticket);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
 		}
 
 		return null;
@@ -201,7 +210,7 @@ public class UpdatePasswordAction implements Action {
 		Map<String, String[]> parameterMap =
 			httpServletRequest.getParameterMap();
 
-		StringBundler sb = new StringBundler(7 + parameterMap.size() * 5);
+		StringBundler sb = new StringBundler(7 + (parameterMap.size() * 5));
 
 		sb.append("<html><body onload=\"document.fm.submit();\">");
 		sb.append("<form action=\"");
@@ -292,5 +301,8 @@ public class UpdatePasswordAction implements Action {
 			httpServletRequest, httpServletResponse, login, password1, false,
 			null);
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		UpdatePasswordAction.class);
 
 }

@@ -32,16 +32,10 @@ import org.osgi.util.tracker.ServiceTracker;
  */
 public class MBMessageServiceUtil {
 
-	/**
+	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify this class directly. Add custom service methods to <code>com.liferay.message.boards.service.impl.MBMessageServiceImpl</code> and rerun ServiceBuilder to regenerate this class.
-	 */
-
-	/**
-	 * NOTE FOR DEVELOPERS:
-	 *
-	 * Never modify or reference this interface directly. Always use {@link MBMessageServiceUtil} to access the message-boards message remote service. Add custom service methods to <code>com.liferay.message.boards.service.impl.MBMessageServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
 	 */
 	public static com.liferay.message.boards.model.MBMessage
 			addDiscussionMessage(
@@ -55,6 +49,12 @@ public class MBMessageServiceUtil {
 			body, serviceContext);
 	}
 
+	/**
+	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link
+	 #addMessage(String, long, String, String, String, List,
+	 boolean, double, boolean, ServiceContext)}
+	 */
+	@Deprecated
 	public static com.liferay.message.boards.model.MBMessage addMessage(
 			long groupId, long categoryId, String subject, String body,
 			String format,
@@ -70,6 +70,12 @@ public class MBMessageServiceUtil {
 			anonymous, priority, allowPingbacks, serviceContext);
 	}
 
+	/**
+	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link
+	 #addMessage(String, long, String, String, String, List,
+	 boolean, double, boolean, ServiceContext)}
+	 */
+	@Deprecated
 	public static com.liferay.message.boards.model.MBMessage addMessage(
 			long groupId, long categoryId, String subject, String body,
 			String format, String fileName, java.io.File file,
@@ -83,6 +89,12 @@ public class MBMessageServiceUtil {
 			anonymous, priority, allowPingbacks, serviceContext);
 	}
 
+	/**
+	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link
+	 #addMessage(String, long, String, String, String, List,
+	 boolean, double, boolean, ServiceContext)}
+	 */
+	@Deprecated
 	public static com.liferay.message.boards.model.MBMessage addMessage(
 			long categoryId, String subject, String body,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
@@ -92,6 +104,12 @@ public class MBMessageServiceUtil {
 			categoryId, subject, body, serviceContext);
 	}
 
+	/**
+	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link
+	 #addMessage(String, long, String, String, String, List,
+	 boolean, double, boolean, ServiceContext)}
+	 */
+	@Deprecated
 	public static com.liferay.message.boards.model.MBMessage addMessage(
 			long parentMessageId, String subject, String body, String format,
 			java.util.List
@@ -104,6 +122,22 @@ public class MBMessageServiceUtil {
 		return getService().addMessage(
 			parentMessageId, subject, body, format, inputStreamOVPs, anonymous,
 			priority, allowPingbacks, serviceContext);
+	}
+
+	public static com.liferay.message.boards.model.MBMessage addMessage(
+			String externalReferenceCode, long parentMessageId, String subject,
+			String body, String format,
+			java.util.List
+				<com.liferay.portal.kernel.util.ObjectValuePair
+					<String, java.io.InputStream>> inputStreamOVPs,
+			boolean anonymous, double priority, boolean allowPingbacks,
+			com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().addMessage(
+			externalReferenceCode, parentMessageId, subject, body, format,
+			inputStreamOVPs, anonymous, priority, allowPingbacks,
+			serviceContext);
 	}
 
 	public static void addMessageAttachment(
@@ -160,6 +194,13 @@ public class MBMessageServiceUtil {
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		getService().emptyMessageAttachments(messageId);
+	}
+
+	public static com.liferay.message.boards.model.MBMessage
+			fetchMBMessageByUrlSubject(long groupId, String urlSubject)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().fetchMBMessageByUrlSubject(groupId, urlSubject);
 	}
 
 	public static java.util.List<com.liferay.message.boards.model.MBMessage>

@@ -12,7 +12,7 @@
  * details.
  */
 
-import {isObject} from 'metal';
+import isObject from './is_object';
 
 /**
  * Returns a FormData containing serialized object.
@@ -33,7 +33,8 @@ export default function objectToURLSearchParams(obj) {
 			for (let i = 0; i < value.length; i++) {
 				urlSearchParams.append(key, value[i]);
 			}
-		} else {
+		}
+		else {
 			urlSearchParams.append(key, value);
 		}
 	});

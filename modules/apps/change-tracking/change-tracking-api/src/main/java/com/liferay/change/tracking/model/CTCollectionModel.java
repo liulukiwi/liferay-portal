@@ -38,7 +38,7 @@ import org.osgi.annotation.versioning.ProviderType;
 public interface CTCollectionModel
 	extends BaseModel<CTCollection>, MVCCModel, ShardedModel {
 
-	/**
+	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this interface directly. All methods that expect a ct collection model instance should use the {@link CTCollection} interface instead.
@@ -159,6 +159,20 @@ public interface CTCollectionModel
 	 * @param modifiedDate the modified date of this ct collection
 	 */
 	public void setModifiedDate(Date modifiedDate);
+
+	/**
+	 * Returns the schema version ID of this ct collection.
+	 *
+	 * @return the schema version ID of this ct collection
+	 */
+	public long getSchemaVersionId();
+
+	/**
+	 * Sets the schema version ID of this ct collection.
+	 *
+	 * @param schemaVersionId the schema version ID of this ct collection
+	 */
+	public void setSchemaVersionId(long schemaVersionId);
 
 	/**
 	 * Returns the name of this ct collection.

@@ -17,7 +17,7 @@
 <%@ include file="/facets/init.jsp" %>
 
 <%
-AssetCategoriesSearchFacetDisplayBuilder assetCategoriesSearchFacetDisplayBuilder = new AssetCategoriesSearchFacetDisplayBuilder();
+AssetCategoriesSearchFacetDisplayBuilder assetCategoriesSearchFacetDisplayBuilder = new AssetCategoriesSearchFacetDisplayBuilder(renderRequest);
 
 assetCategoriesSearchFacetDisplayBuilder.setAssetCategoryLocalService(AssetCategoryLocalServiceUtil.getService());
 assetCategoriesSearchFacetDisplayBuilder.setAssetCategoryPermissionChecker(new AssetCategoryPermissionCheckerImpl(themeDisplay.getPermissionChecker()));
@@ -29,6 +29,7 @@ assetCategoriesSearchFacetDisplayBuilder.setLocale(locale);
 assetCategoriesSearchFacetDisplayBuilder.setMaxTerms(dataJSONObject.getInt("maxTerms", 10));
 assetCategoriesSearchFacetDisplayBuilder.setParameterName(facet.getFieldId());
 assetCategoriesSearchFacetDisplayBuilder.setParameterValue(fieldParam);
+assetCategoriesSearchFacetDisplayBuilder.setPortal(PortalUtil.getPortal());
 
 AssetCategoriesSearchFacetDisplayContext assetCategoriesSearchFacetDisplayContext = assetCategoriesSearchFacetDisplayBuilder.build();
 %>
@@ -38,7 +39,7 @@ AssetCategoriesSearchFacetDisplayContext assetCategoriesSearchFacetDisplayContex
 		<aui:input autocomplete="off" name="<%= HtmlUtil.escapeAttribute(assetCategoriesSearchFacetDisplayContext.getParameterName()) %>" type="hidden" value="<%= assetCategoriesSearchFacetDisplayContext.getParameterValue() %>" />
 	</c:when>
 	<c:otherwise>
-		<div class="panel panel-default">
+		<div class="panel panel-secondary">
 			<div class="panel-heading">
 				<div class="panel-title">
 					<liferay-ui:message key="categories" />

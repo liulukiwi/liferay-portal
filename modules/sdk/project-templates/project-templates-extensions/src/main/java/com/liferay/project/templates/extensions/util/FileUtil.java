@@ -64,7 +64,7 @@ public class FileUtil {
 
 				@Override
 				public FileVisitResult postVisitDirectory(
-						Path dirPath, IOException ioe)
+						Path dirPath, IOException ioException)
 					throws IOException {
 
 					Files.delete(dirPath);
@@ -145,9 +145,7 @@ public class FileUtil {
 						Path path, BasicFileAttributes basicFileAttributes)
 					throws IOException {
 
-					Path fileNamePath = path.getFileName();
-
-					String fileName = fileNamePath.toString();
+					String fileName = String.valueOf(path.getFileName());
 
 					Matcher matcher = pattern.matcher(fileName);
 
@@ -185,8 +183,8 @@ public class FileUtil {
 					try {
 						Files.copy(inputStream, destinationPath);
 					}
-					catch (Throwable th) {
-						throw new RuntimeException(th);
+					catch (Throwable throwable) {
+						throw new RuntimeException(throwable);
 					}
 				}
 				else {
@@ -221,9 +219,7 @@ public class FileUtil {
 			while (iterator.hasNext()) {
 				Path path = iterator.next();
 
-				Path fileNamePath = path.getFileName();
-
-				String fileName = fileNamePath.toString();
+				String fileName = String.valueOf(path.getFileName());
 
 				if (fileName.matches(regex)) {
 					return path;
@@ -235,9 +231,7 @@ public class FileUtil {
 	}
 
 	public static Path getJarPath() throws URISyntaxException {
-		URI jarUri = _getJarUri();
-
-		return Paths.get(jarUri);
+		return Paths.get(_getJarURI());
 	}
 
 	public static String getManifestProperty(File file, String name)
@@ -290,7 +284,7 @@ public class FileUtil {
 		try {
 			Files.setPosixFilePermissions(path, posixFilePermissions);
 		}
-		catch (UnsupportedOperationException uoe) {
+		catch (UnsupportedOperationException unsupportedOperationException) {
 		}
 	}
 
@@ -332,10 +326,10 @@ public class FileUtil {
 						pathMap.putAll(_getFilesFromClasspath(pathString));
 					}
 					else {
-						InputStream is = FileUtil.class.getResourceAsStream(
-							pathString);
+						InputStream inputStream =
+							FileUtil.class.getResourceAsStream(pathString);
 
-						pathMap.put(pathString, is);
+						pathMap.put(pathString, inputStream);
 					}
 				}
 			}
@@ -350,10 +344,8 @@ public class FileUtil {
 					Path folderNamePath = Paths.get(dirPathString);
 					Path relativeDirPath = path.relativize(dirPath);
 
-					Path pathToResolve = folderNamePath.resolve(
-						relativeDirPath);
-
-					String pathToResolveString = pathToResolve.toString();
+					String pathToResolveString = String.valueOf(
+						folderNamePath.resolve(relativeDirPath));
 
 					if (Files.isDirectory(dirPath)) {
 						pathMap.put(pathToResolveString + File.separator, null);
@@ -373,25 +365,21 @@ public class FileUtil {
 		return pathMap;
 	}
 
-	private static FileSystem _getJarFileSystem()
-		throws IOException, URISyntaxException {
-
-		URI jarUri = _getJarUri();
-
-		Path jarPath = Paths.get(jarUri);
+	private static FileSystem _getJarFileSystem() throws Exception {
+		Path jarPath = Paths.get(_getJarURI());
 
 		return FileSystems.newFileSystem(jarPath, null);
 	}
 
-	private static URI _getJarUri() throws URISyntaxException {
+	private static URI _getJarURI() throws URISyntaxException {
 		ProtectionDomain protectionDomain =
 			FileUtil.class.getProtectionDomain();
 
 		CodeSource codeSource = protectionDomain.getCodeSource();
 
-		URL jarUrl = codeSource.getLocation();
+		URL jarURL = codeSource.getLocation();
 
-		return jarUrl.toURI();
+		return jarURL.toURI();
 	}
 
 }

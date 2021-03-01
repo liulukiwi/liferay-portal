@@ -14,6 +14,8 @@
 
 package com.liferay.saml.persistence.internal.upgrade.v1_1_0;
 
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.upgrade.UpgradeProcess;
 import com.liferay.saml.persistence.internal.upgrade.v1_1_0.util.SamlSpSessionTable;
 
@@ -29,19 +31,25 @@ public class UpgradeSamlSpSession extends UpgradeProcess {
 	protected void doUpgrade() throws Exception {
 		try {
 			runSQL(
-				"alter_column_type SamlSpSession samlSpSessionKey " +
-					"VARCHAR(75) null");
-			runSQL("alter_column_type SamlSpSession assertionXml TEXT null");
+				"alter_column_type SamlSpSession nameIdFormat VARCHAR(1024) " +
+					"null");
 			runSQL(
-				"alter_column_type SamlSpSession sessionIndex VARCHAR(75) " +
+				"alter_column_type SamlSpSession nameIdValue VARCHAR(1024) " +
 					"null");
 		}
-		catch (SQLException sqle) {
+		catch (SQLException sqlException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(sqlException, sqlException);
+			}
+
 			upgradeTable(
 				SamlSpSessionTable.TABLE_NAME, SamlSpSessionTable.TABLE_COLUMNS,
 				SamlSpSessionTable.TABLE_SQL_CREATE,
 				SamlSpSessionTable.TABLE_SQL_ADD_INDEXES);
 		}
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		UpgradeSamlSpSession.class);
 
 }

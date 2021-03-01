@@ -19,7 +19,7 @@
 <%
 UADExportProcessDisplayContext uadExportProcessDisplayContext = new UADExportProcessDisplayContext(request, renderResponse);
 
-UADExportProcessManagementToolbarDisplayContext uadExportProcessManagementToolbarDisplayContext = new UADExportProcessManagementToolbarDisplayContext(liferayPortletRequest, liferayPortletResponse, request, uadExportProcessDisplayContext.getSearchContainer());
+UADExportProcessManagementToolbarDisplayContext uadExportProcessManagementToolbarDisplayContext = new UADExportProcessManagementToolbarDisplayContext(request, liferayPortletRequest, liferayPortletResponse, uadExportProcessDisplayContext.getSearchContainer());
 
 portletDisplay.setShowBackIcon(true);
 
@@ -38,19 +38,18 @@ renderResponse.setTitle(StringBundler.concat(selectedUser.getFullName(), " - ", 
 				add(
 					navigationItem -> {
 						navigationItem.setActive(true);
-						navigationItem.setHref(StringPool.BLANK);
-						navigationItem.setLabel(LanguageUtil.get(request, "export-processes"));
+						navigationItem.setLabel(LanguageUtil.get(httpServletRequest, "export-processes"));
 					});
 			}
 		}
 	%>'
 />
 
-<clay:management-toolbar
+<clay:management-toolbar-v2
 	displayContext="<%= uadExportProcessManagementToolbarDisplayContext %>"
 />
 
-<aui:form cssClass="container-fluid-1280">
+<aui:form cssClass="container-fluid container-fluid-max-xl">
 	<div id="<portlet:namespace />exportProcesses">
 
 		<%
@@ -62,7 +61,7 @@ renderResponse.setTitle(StringBundler.concat(selectedUser.getFullName(), " - ", 
 </aui:form>
 
 <aui:script use="liferay-uad-export">
-	<portlet:resourceURL id="/get_export_processes" var="exportProcessesURL">
+	<portlet:resourceURL id="/user_associated_data/get_export_processes" var="exportProcessesURL">
 		<portlet:param name="p_u_i_d" value="<%= String.valueOf(selectedUser.getUserId()) %>" />
 		<portlet:param name="<%= SearchContainer.DEFAULT_CUR_PARAM %>" value="<%= ParamUtil.getString(request, SearchContainer.DEFAULT_CUR_PARAM) %>" />
 		<portlet:param name="<%= SearchContainer.DEFAULT_DELTA_PARAM %>" value="<%= ParamUtil.getString(request, SearchContainer.DEFAULT_DELTA_PARAM) %>" />
@@ -71,6 +70,6 @@ renderResponse.setTitle(StringBundler.concat(selectedUser.getFullName(), " - ", 
 	new Liferay.UADExport({
 		exportProcessesNode: '#exportProcesses',
 		exportProcessesResourceURL: '<%= exportProcessesURL.toString() %>',
-		namespace: '<portlet:namespace />'
+		namespace: '<portlet:namespace />',
 	});
 </aui:script>

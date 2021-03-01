@@ -91,7 +91,11 @@ public class SimilarResultsDocumentDisplayContextBuilder {
 
 			return build(className, classPK);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
+
 			return buildTemporarilyUnavailable();
 		}
 	}
@@ -370,11 +374,12 @@ public class SimilarResultsDocumentDisplayContextBuilder {
 						_themeDisplay);
 				}
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 				if (_log.isWarnEnabled()) {
 					_log.warn(
 						"Blogs entry thumbnail URL exception and contains " +
-							"blogs entry ID " + blogsEntry.getEntryId());
+							"blogs entry ID " + blogsEntry.getEntryId(),
+						exception);
 				}
 			}
 
@@ -395,11 +400,12 @@ public class SimilarResultsDocumentDisplayContextBuilder {
 				similarResultsDocumentDisplayContext.setThumbnailURLString(
 					thumbnailURLString);
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 				if (_log.isWarnEnabled()) {
 					_log.warn(
 						"Journal article thumbnail URL exception and " +
-							"contains journal article class PK " + classPK);
+							"contains journal article class PK " + classPK,
+						exception);
 				}
 			}
 
@@ -416,37 +422,40 @@ public class SimilarResultsDocumentDisplayContextBuilder {
 
 		assetClassName = DLFileEntry.class.getName();
 
-		if (assetClassName.equals(className)) {
-			Object assetObject = assetRenderer.getAssetObject();
+		if (!assetClassName.equals(className)) {
+			return;
+		}
 
-			if (assetObject instanceof FileEntry) {
-				FileEntry fileEntry = (FileEntry)assetObject;
+		Object assetObject = assetRenderer.getAssetObject();
 
-				similarResultsDocumentDisplayContext.setIconId(
-					fileEntry.getIconCssClass());
+		if (assetObject instanceof FileEntry) {
+			FileEntry fileEntry = (FileEntry)assetObject;
 
-				try {
-					thumbnailURLString = DLURLHelperUtil.getThumbnailSrc(
-						fileEntry, _themeDisplay);
-				}
-				catch (Exception e) {
-					if (_log.isWarnEnabled()) {
-						_log.warn(
-							"File entry thumbnail url exception and contains " +
-								"file classPK " + classPK);
-					}
-				}
+			similarResultsDocumentDisplayContext.setIconId(
+				fileEntry.getIconCssClass());
 
-				similarResultsDocumentDisplayContext.setThumbnailURLString(
-					thumbnailURLString);
+			try {
+				thumbnailURLString = DLURLHelperUtil.getThumbnailSrc(
+					fileEntry, _themeDisplay);
 			}
-			else {
-				DLFileEntry dlFileEntry =
-					(DLFileEntry)assetRenderer.getAssetObject();
-
-				similarResultsDocumentDisplayContext.setIconId(
-					dlFileEntry.getIconCssClass());
+			catch (Exception exception) {
+				if (_log.isWarnEnabled()) {
+					_log.warn(
+						"File entry thumbnail url exception and contains " +
+							"file classPK " + classPK,
+						exception);
+				}
 			}
+
+			similarResultsDocumentDisplayContext.setThumbnailURLString(
+				thumbnailURLString);
+		}
+		else {
+			DLFileEntry dlFileEntry =
+				(DLFileEntry)assetRenderer.getAssetObject();
+
+			similarResultsDocumentDisplayContext.setIconId(
+				dlFileEntry.getIconCssClass());
 		}
 	}
 
@@ -491,12 +500,12 @@ public class SimilarResultsDocumentDisplayContextBuilder {
 		try {
 			return assetRendererFactory.getAssetRenderer(classPK);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			throw new IllegalStateException(
 				StringBundler.concat(
 					"Unable to get asset renderer for class ", className,
 					" with primary key ", classPK),
-				e);
+				exception);
 		}
 	}
 
@@ -533,11 +542,12 @@ public class SimilarResultsDocumentDisplayContextBuilder {
 		try {
 			fileEntry = DLAppLocalServiceUtil.getFileEntry(fileEntryId);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isWarnEnabled()) {
 				_log.warn(
 					"Documents and Media search index is stale and contains " +
-						"file entry " + fileEntryId);
+						"file entry " + fileEntryId,
+					exception);
 			}
 		}
 
@@ -670,9 +680,10 @@ public class SimilarResultsDocumentDisplayContextBuilder {
 		try {
 			return dateFormat.parse(dateStringFieldValue);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			throw new IllegalArgumentException(
-				"Unable to parse date string: " + dateStringFieldValue, e);
+				"Unable to parse date string: " + dateStringFieldValue,
+				exception);
 		}
 	}
 

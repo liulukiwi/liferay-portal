@@ -18,6 +18,8 @@ import com.liferay.asset.kernel.model.BaseJSPAssetRenderer;
 import com.liferay.microblogs.constants.MicroblogsPortletKeys;
 import com.liferay.microblogs.model.MicroblogsEntry;
 import com.liferay.microblogs.web.internal.util.WebKeys;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
@@ -47,10 +49,12 @@ public class MicroblogsEntryAssetRenderer
 
 	public MicroblogsEntryAssetRenderer(
 		MicroblogsEntry entry,
-		ModelResourcePermission<MicroblogsEntry> modelResourcePermission) {
+		ModelResourcePermission<MicroblogsEntry>
+			microblogsEntryModelResourcePermission) {
 
 		_entry = entry;
-		_microblogsEntryModelResourcePermission = modelResourcePermission;
+		_microblogsEntryModelResourcePermission =
+			microblogsEntryModelResourcePermission;
 	}
 
 	@Override
@@ -76,7 +80,10 @@ public class MicroblogsEntryAssetRenderer
 
 			return group.getGroupId();
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
 		}
 
 		return 0;
@@ -136,7 +143,10 @@ public class MicroblogsEntryAssetRenderer
 
 			return portletURL.toString();
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
 		}
 
 		return null;
@@ -163,7 +173,10 @@ public class MicroblogsEntryAssetRenderer
 			return _microblogsEntryModelResourcePermission.contains(
 				permissionChecker, _entry, ActionKeys.VIEW);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
 		}
 
 		return false;
@@ -179,6 +192,9 @@ public class MicroblogsEntryAssetRenderer
 
 		return super.include(httpServletRequest, httpServletResponse, template);
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		MicroblogsEntryAssetRenderer.class);
 
 	private final MicroblogsEntry _entry;
 	private final ModelResourcePermission<MicroblogsEntry>

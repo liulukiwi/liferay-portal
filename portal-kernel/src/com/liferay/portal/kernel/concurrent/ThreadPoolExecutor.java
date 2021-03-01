@@ -79,6 +79,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
 		_rejectedExecutionHandler = rejectedExecutionHandler;
 		_threadFactory = threadFactory;
 		_threadPoolHandler = threadPoolHandler;
+
 		_taskQueue = new TaskQueue<>(maxQueueSize);
 		_workerTasks = new HashSet<>();
 	}
@@ -577,7 +578,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
 					_mainLock.unlock();
 				}
 			}
-			catch (InterruptedException ie) {
+			catch (InterruptedException interruptedException) {
 			}
 		}
 	}
@@ -753,10 +754,10 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
 
 					_localCompletedTaskCount++;
 				}
-				catch (RuntimeException re) {
-					throwable = re;
+				catch (RuntimeException runtimeException) {
+					throwable = runtimeException;
 
-					throw re;
+					throw runtimeException;
 				}
 				finally {
 					_threadPoolHandler.afterExecute(task, throwable);

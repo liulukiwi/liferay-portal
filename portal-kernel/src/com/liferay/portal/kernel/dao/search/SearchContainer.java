@@ -95,7 +95,6 @@ public class SearchContainer<R> {
 		_portletRequest = portletRequest;
 		_displayTerms = displayTerms;
 		_searchTerms = searchTerms;
-
 		_curParam = curParam;
 
 		boolean resetCur = ParamUtil.getBoolean(portletRequest, "resetCur");
@@ -118,8 +117,7 @@ public class SearchContainer<R> {
 		}
 
 		if (!_curParam.equals(DEFAULT_CUR_PARAM)) {
-			String s = StringUtil.replace(
-				_curParam, DEFAULT_CUR_PARAM, StringPool.BLANK);
+			String s = StringUtil.removeSubstring(_curParam, DEFAULT_CUR_PARAM);
 
 			_deltaParam = DEFAULT_DELTA_PARAM + s;
 		}
@@ -218,6 +216,10 @@ public class SearchContainer<R> {
 
 	public List<String> getHeaderNames() {
 		return _headerNames;
+	}
+
+	public Map<String, String> getHelpMessages() {
+		return _helpMessages;
 	}
 
 	public String getId(
@@ -432,6 +434,10 @@ public class SearchContainer<R> {
 		_buildNormalizedHeaderNames(headerNames);
 	}
 
+	public void setHelpMessages(Map<String, String> helpMessages) {
+		_helpMessages = helpMessages;
+	}
+
 	public void setHover(boolean hover) {
 		_hover = hover;
 	}
@@ -573,6 +579,7 @@ public class SearchContainer<R> {
 	private int _end;
 	private boolean _forcePost = DEFAULT_FORCE_POST;
 	private List<String> _headerNames;
+	private Map<String, String> _helpMessages;
 	private boolean _hover = true;
 	private String _id;
 	private PortletURL _iteratorURL;

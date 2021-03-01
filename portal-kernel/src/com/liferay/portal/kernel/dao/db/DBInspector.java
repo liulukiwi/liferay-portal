@@ -15,6 +15,7 @@
 package com.liferay.portal.kernel.dao.db;
 
 import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.upgrade.UpgradeException;
@@ -29,6 +30,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -49,9 +51,9 @@ public class DBInspector {
 		try {
 			return _connection.getSchema();
 		}
-		catch (Throwable t) {
+		catch (Throwable throwable) {
 			if (_log.isDebugEnabled()) {
-				_log.debug(t, t);
+				_log.debug(throwable, throwable);
 			}
 
 			return null;
@@ -73,8 +75,8 @@ public class DBInspector {
 
 			return true;
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 
 		return false;
@@ -159,8 +161,8 @@ public class DBInspector {
 				}
 			}
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 
 		return false;
@@ -190,6 +192,31 @@ public class DBInspector {
 		return false;
 	}
 
+	public boolean isNullable(String tableName, String columnName)
+		throws SQLException {
+
+		DatabaseMetaData databaseMetaData = _connection.getMetaData();
+
+		try (ResultSet rs = databaseMetaData.getColumns(
+				getCatalog(), getSchema(),
+				normalizeName(tableName, databaseMetaData),
+				normalizeName(columnName, databaseMetaData))) {
+
+			if (!rs.next()) {
+				throw new SQLException(
+					StringBundler.concat(
+						"Column ", tableName, StringPool.PERIOD, columnName,
+						" does not exist"));
+			}
+
+			if (rs.getInt("NULLABLE") == DatabaseMetaData.columnNullable) {
+				return true;
+			}
+
+			return false;
+		}
+	}
+
 	public String normalizeName(String name) throws SQLException {
 		return normalizeName(name, _connection.getMetaData());
 	}
@@ -206,6 +233,31 @@ public class DBInspector {
 		}
 
 		return name;
+	}
+
+	protected boolean hasIndex(String tableName, String indexName)
+		throws Exception {
+
+		DatabaseMetaData databaseMetaData = _connection.getMetaData();
+
+		try (ResultSet rs = databaseMetaData.getIndexInfo(
+				_connection.getCatalog(), _connection.getSchema(),
+				normalizeName(tableName, databaseMetaData), false, false)) {
+
+			while (rs.next()) {
+				if (Objects.equals(
+						normalizeName(indexName, databaseMetaData),
+						rs.getString("index_name"))) {
+
+					return true;
+				}
+			}
+		}
+		catch (Exception exception) {
+			_log.error(exception, exception);
+		}
+
+		return false;
 	}
 
 	private Integer _getColumnDataType(String columnType) {
@@ -233,12 +285,12 @@ public class DBInspector {
 			try {
 				return Integer.parseInt(columnSize);
 			}
-			catch (NumberFormatException nfe) {
+			catch (NumberFormatException numberFormatException) {
 				throw new UpgradeException(
 					StringBundler.concat(
 						"Column type ", columnType,
 						" has an invalid column size ", columnSize),
-					nfe);
+					numberFormatException);
 			}
 		}
 
@@ -262,17 +314,9 @@ public class DBInspector {
 	private boolean _isColumnNullable(String typeName) {
 		typeName = typeName.trim();
 
-		int i = typeName.indexOf("null");
+		typeName = StringUtil.toLowerCase(typeName);
 
-		if (i == -1) {
-			return false;
-		}
-
-		if ((i > 0) && !Character.isSpaceChar(typeName.charAt(i - 1))) {
-			return false;
-		}
-
-		if ((i + 4) < typeName.length()) {
+		if (typeName.endsWith("not null")) {
 			return false;
 		}
 

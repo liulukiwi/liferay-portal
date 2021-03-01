@@ -21,6 +21,8 @@ import com.liferay.document.library.kernel.model.DLFolderConstants;
 import com.liferay.document.library.kernel.service.DLAppServiceUtil;
 import com.liferay.document.library.kernel.service.DLFolderLocalServiceUtil;
 import com.liferay.document.library.kernel.service.DLTrashServiceUtil;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.BaseModel;
 import com.liferay.portal.kernel.model.ClassedModel;
 import com.liferay.portal.kernel.model.Group;
@@ -152,7 +154,13 @@ public class DLFolderTrashHandlerTest
 		try {
 			super.testTrashParentAndBaseModel();
 		}
-		catch (com.liferay.trash.kernel.exception.TrashEntryException tee) {
+		catch (com.liferay.trash.kernel.exception.TrashEntryException
+					trashEntryException) {
+
+			if (_log.isDebugEnabled()) {
+				_log.debug(trashEntryException, trashEntryException);
+			}
+
 			throw new TrashEntryException();
 		}
 	}
@@ -163,7 +171,13 @@ public class DLFolderTrashHandlerTest
 		try {
 			super.testTrashParentAndRestoreParentAndBaseModel();
 		}
-		catch (com.liferay.trash.kernel.exception.RestoreEntryException ree) {
+		catch (com.liferay.trash.kernel.exception.RestoreEntryException
+					restoreEntryException) {
+
+			if (_log.isDebugEnabled()) {
+				_log.debug(restoreEntryException, restoreEntryException);
+			}
+
 			throw new RestoreEntryException();
 		}
 	}
@@ -278,9 +292,7 @@ public class DLFolderTrashHandlerTest
 	protected String getUniqueTitle(BaseModel<?> baseModel) {
 		DLFolder dlFolder = (DLFolder)baseModel;
 
-		String name = dlFolder.getName();
-
-		return _trashHelper.getOriginalTitle(name);
+		return _trashHelper.getOriginalTitle(dlFolder.getName());
 	}
 
 	@Override
@@ -291,6 +303,9 @@ public class DLFolderTrashHandlerTest
 	private static final String _FOLDER_NAME = RandomTestUtil.randomString(100);
 
 	private static final int _FOLDER_NAME_MAX_LENGTH = 100;
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		DLFolderTrashHandlerTest.class);
 
 	@Inject
 	private TrashHelper _trashHelper;

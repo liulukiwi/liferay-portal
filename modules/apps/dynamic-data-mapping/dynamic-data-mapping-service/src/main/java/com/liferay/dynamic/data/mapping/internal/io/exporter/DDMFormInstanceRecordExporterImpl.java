@@ -35,25 +35,28 @@ import com.liferay.dynamic.data.mapping.service.DDMFormInstanceRecordLocalServic
 import com.liferay.dynamic.data.mapping.service.DDMFormInstanceVersionLocalService;
 import com.liferay.dynamic.data.mapping.storage.DDMFormFieldValue;
 import com.liferay.dynamic.data.mapping.storage.DDMFormValues;
+import com.liferay.dynamic.data.mapping.util.comparator.FormInstanceVersionVersionComparator;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.language.LanguageUtil;
+import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
+import com.liferay.portal.kernel.util.ListUtil;
+import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
+import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.time.format.FormatStyle;
+import java.text.Format;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.osgi.service.component.annotations.Component;
@@ -100,27 +103,11 @@ public class DDMFormInstanceRecordExporterImpl
 
 			builder = builder.withContent(content);
 		}
-		catch (Exception e) {
-			throw new FormInstanceRecordExporterException(e);
+		catch (Exception exception) {
+			throw new FormInstanceRecordExporterException(exception);
 		}
 
 		return builder.build();
-	}
-
-	protected String formatDate(
-		Date date, DateTimeFormatter dateTimeFormatter) {
-
-		LocalDateTime localDateTime = LocalDateTime.ofInstant(
-			date.toInstant(), ZoneId.systemDefault());
-
-		return dateTimeFormatter.format(localDateTime);
-	}
-
-	protected DateTimeFormatter getDateTimeFormatter(Locale locale) {
-		DateTimeFormatter dateTimeFormatter =
-			DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT);
-
-		return dateTimeFormatter.withLocale(locale);
 	}
 
 	protected Map<String, String> getDDMFormFieldsLabel(
@@ -137,13 +124,18 @@ public class DDMFormInstanceRecordExporterImpl
 				LocalizedValue localizedValue = field.getLabel();
 
 				ddmFormFieldsLabel.put(
-					field.getName(), localizedValue.getString(locale));
+					field.getFieldReference(),
+					localizedValue.getString(locale));
 			});
 
-		ddmFormFieldsLabel.put(_STATUS, LanguageUtil.get(locale, _STATUS));
 		ddmFormFieldsLabel.put(
-			_MODIFIED_DATE, LanguageUtil.get(locale, "modified-date"));
-		ddmFormFieldsLabel.put(_AUTHOR, LanguageUtil.get(locale, _AUTHOR));
+			_KEY_AUTHOR, LanguageUtil.get(locale, _KEY_AUTHOR));
+		ddmFormFieldsLabel.put(
+			_KEY_LANGUAGE_ID, LanguageUtil.get(locale, "default-language"));
+		ddmFormFieldsLabel.put(
+			_KEY_MODIFIED_DATE, LanguageUtil.get(locale, "modified-date"));
+		ddmFormFieldsLabel.put(
+			_KEY_STATUS, LanguageUtil.get(locale, _KEY_STATUS));
 
 		return ddmFormFieldsLabel;
 	}
@@ -154,15 +146,25 @@ public class DDMFormInstanceRecordExporterImpl
 		Locale locale) {
 
 		List<DDMFormFieldValue> ddmFormFieldValues = ddmFormFieldValueMap.get(
-			ddmFormField.getName());
+			ddmFormField.getFieldReference());
 
 		DDMFormFieldValueRenderer ddmFormFieldValueRenderer =
 			ddmFormFieldTypeServicesTracker.getDDMFormFieldValueRenderer(
 				ddmFormField.getType());
 
-		return HtmlUtil.render(
-			ddmFormFieldValueRenderer.render(
-				ddmFormFieldValues.get(0), locale));
+		Stream<DDMFormFieldValue> stream = ddmFormFieldValues.stream();
+
+		return HtmlUtil.extractText(
+			StringUtil.merge(
+				stream.map(
+					ddmForFieldValue -> ddmFormFieldValueRenderer.render(
+						ddmForFieldValue, locale)
+				).filter(
+					Validator::isNotNull
+				).collect(
+					Collectors.toList()
+				),
+				StringPool.COMMA_AND_SPACE));
 	}
 
 	protected List<Map<String, String>> getDDMFormFieldValues(
@@ -170,9 +172,9 @@ public class DDMFormInstanceRecordExporterImpl
 			List<DDMFormInstanceRecord> ddmFormInstanceRecords, Locale locale)
 		throws Exception {
 
-		DateTimeFormatter dateTimeFormatter = getDateTimeFormatter(locale);
-
 		List<Map<String, String>> ddmFormFieldValues = new ArrayList<>();
+
+		Format dateTimeFormat = FastDateFormatFactoryUtil.getDateTime(locale);
 
 		for (DDMFormInstanceRecord ddmFormInstanceRecord :
 				ddmFormInstanceRecords) {
@@ -181,7 +183,7 @@ public class DDMFormInstanceRecordExporterImpl
 				ddmFormInstanceRecord.getDDMFormValues();
 
 			Map<String, List<DDMFormFieldValue>> ddmFormFieldValuesMap =
-				ddmFormValues.getDDMFormFieldValuesMap();
+				ddmFormValues.getDDMFormFieldValuesReferencesMap(true);
 
 			Map<String, String> ddmFormFieldsValue = new LinkedHashMap<>();
 
@@ -195,7 +197,8 @@ public class DDMFormInstanceRecordExporterImpl
 					ddmFormFieldsValue.put(
 						entry.getKey(),
 						getDDMFormFieldValue(
-							entry.getValue(), ddmFormFieldValuesMap, locale));
+							entry.getValue(), ddmFormFieldValuesMap,
+							ddmFormValues.getDefaultLocale()));
 				}
 			}
 
@@ -203,18 +206,19 @@ public class DDMFormInstanceRecordExporterImpl
 				ddmFormInstanceRecord.getFormInstanceRecordVersion();
 
 			ddmFormFieldsValue.put(
-				_STATUS,
+				_KEY_AUTHOR, ddmFormInstanceRecordVersion.getUserName());
+
+			ddmFormFieldsValue.put(
+				_KEY_LANGUAGE_ID,
+				LocaleUtil.toLanguageId(ddmFormValues.getDefaultLocale()));
+			ddmFormFieldsValue.put(
+				_KEY_MODIFIED_DATE,
+				dateTimeFormat.format(
+					ddmFormInstanceRecordVersion.getStatusDate()));
+			ddmFormFieldsValue.put(
+				_KEY_STATUS,
 				getStatusMessage(
 					ddmFormInstanceRecordVersion.getStatus(), locale));
-
-			ddmFormFieldsValue.put(
-				_MODIFIED_DATE,
-				formatDate(
-					ddmFormInstanceRecordVersion.getStatusDate(),
-					dateTimeFormatter));
-
-			ddmFormFieldsValue.put(
-				_AUTHOR, ddmFormInstanceRecordVersion.getUserName());
 
 			ddmFormFieldValues.add(ddmFormFieldsValue);
 		}
@@ -234,20 +238,23 @@ public class DDMFormInstanceRecordExporterImpl
 		Stream<DDMStructureVersion> stream = ddmStructureVersions.stream();
 
 		stream.map(
-			this::getNontransientDDMFormFieldsMap
+			this::getNontransientDDMFormFieldsReferencesMap
 		).forEach(
-			ddmFormFields::putAll
+			map -> map.forEach(
+				(key, ddmFormField) -> ddmFormFields.putIfAbsent(
+					key, ddmFormField))
 		);
 
 		return ddmFormFields;
 	}
 
-	protected Map<String, DDMFormField> getNontransientDDMFormFieldsMap(
-		DDMStructureVersion ddmStructureVersion) {
+	protected Map<String, DDMFormField>
+		getNontransientDDMFormFieldsReferencesMap(
+			DDMStructureVersion ddmStructureVersion) {
 
 		DDMForm ddmForm = ddmStructureVersion.getDDMForm();
 
-		return ddmForm.getNontransientDDMFormFieldsMap(true);
+		return ddmForm.getNontransientDDMFormFieldsReferencesMap(true);
 	}
 
 	protected String getStatusMessage(int status, Locale locale) {
@@ -262,6 +269,10 @@ public class DDMFormInstanceRecordExporterImpl
 		List<DDMFormInstanceVersion> ddmFormInstanceVersions =
 			ddmFormInstanceVersionLocalService.getFormInstanceVersions(
 				ddmFormInstanceId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
+
+		ddmFormInstanceVersions = ListUtil.sort(
+			ddmFormInstanceVersions,
+			new FormInstanceVersionVersionComparator());
 
 		List<DDMStructureVersion> ddmStructureVersions = new ArrayList<>();
 
@@ -314,10 +325,12 @@ public class DDMFormInstanceRecordExporterImpl
 	protected DDMFormInstanceVersionLocalService
 		ddmFormInstanceVersionLocalService;
 
-	private static final String _AUTHOR = "author";
+	private static final String _KEY_AUTHOR = "author";
 
-	private static final String _MODIFIED_DATE = "modifiedDate";
+	private static final String _KEY_LANGUAGE_ID = "languageId";
 
-	private static final String _STATUS = "status";
+	private static final String _KEY_MODIFIED_DATE = "modifiedDate";
+
+	private static final String _KEY_STATUS = "status";
 
 }

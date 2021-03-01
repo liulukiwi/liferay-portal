@@ -17,7 +17,7 @@
 <%@ include file="/facets/init.jsp" %>
 
 <%
-AssetTagsSearchFacetDisplayBuilder assetTagsSearchFacetDisplayBuilder = new AssetTagsSearchFacetDisplayBuilder();
+AssetTagsSearchFacetDisplayBuilder assetTagsSearchFacetDisplayBuilder = new AssetTagsSearchFacetDisplayBuilder(renderRequest);
 
 assetTagsSearchFacetDisplayBuilder.setDisplayStyle(dataJSONObject.getString("displayStyle", "cloud"));
 assetTagsSearchFacetDisplayBuilder.setFacet(facet);
@@ -35,7 +35,7 @@ AssetTagsSearchFacetDisplayContext assetTagsSearchFacetDisplayContext = assetTag
 		<aui:input autocomplete="off" name="<%= HtmlUtil.escapeAttribute(assetTagsSearchFacetDisplayContext.getParameterName()) %>" type="hidden" value="<%= assetTagsSearchFacetDisplayContext.getParameterValue() %>" />
 	</c:when>
 	<c:otherwise>
-		<div class="panel panel-default">
+		<div class="panel panel-secondary">
 			<div class="panel-heading">
 				<div class="panel-title">
 					<liferay-ui:message key="tags" />

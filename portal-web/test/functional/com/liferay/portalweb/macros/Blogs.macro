@@ -26,11 +26,20 @@ definition {
 		BlogsNavigator.gotoAddEntry();
 
 		BlogsEntry.addEntryContent(
+			depotName = "${depotName}",
 			embedVideo = "${embedVideo}",
 			entryContent = "${entryContent}",
 			entrySubtitle = "${entrySubtitle}",
 			entryTitle = "${entryTitle}",
-			videoService = "${videoService}");
+			extractedVideoShortcutTitle = "${extractedVideoShortcutTitle}",
+			navTab = "${navTab}",
+			videoName = "${videoName}",
+			videoService = "${videoService}",
+			videoShortcutDescription = "${videoShortcutDescription}",
+			videoShortcutPreview = "${videoShortcutPreview}",
+			videoShortcutTitle = "${videoShortcutTitle}",
+			videoURL = "${videoURL}",
+			viewInternalVideoPreview = "${viewInternalVideoPreview}");
 
 		if (isSet(readingTime)) {
 			var key_readingTime = "${readingTime}";
@@ -149,8 +158,6 @@ definition {
 	macro addEntryWithUploadedCoverImage {
 		BlogsNavigator.gotoAddEntry();
 
-		Pause(locator1 = "5000");
-
 		BlogsNavigator.gotoSelectFile();
 
 		ItemSelector.uploadFile(
@@ -158,8 +165,6 @@ definition {
 			uploadFileName = "${uploadFileName}");
 
 		Pause(locator1 = "5000");
-
-		BlogsEntry.addTitle(entryTitle = "${entryTitle}");
 
 		BlogsEntry.addEntryContent(
 			entryContent = "${entryContent}",
@@ -174,9 +179,9 @@ definition {
 	macro addViaAP {
 		AssetPublisherPortlet.addAsset(assetType = "Blogs Entry");
 
-		AlloyEditor.addTitleAndContent(
-			content = "${entryContent}",
-			title = "${entryTitle}");
+		BlogsEntry.addTitle(entryTitle = "${entryTitle}");
+
+		AlloyEditor.addContent(content = "${entryContent}");
 
 		AssertClick(
 			locator1 = "Button#PUBLISH",
@@ -202,9 +207,9 @@ definition {
 			assetType = "Blogs Entry",
 			siteScope = "${siteScope}");
 
-		AlloyEditor.addTitleAndContent(
-			content = "${entryContent}",
-			title = "${entryTitle}");
+		BlogsEntry.addTitle(entryTitle = "${entryTitle}");
+
+		AlloyEditor.addContent(content = "${entryContent}");
 
 		AssertClick(
 			locator1 = "Button#PUBLISH",
@@ -304,9 +309,9 @@ definition {
 	macro addWithWorkflowViaAP {
 		AssetPublisherPortlet.addAsset(assetType = "Blogs Entry");
 
-		AlloyEditor.addTitleAndContent(
-			content = "${entryContent}",
-			title = "${entryTitle}");
+		BlogsEntry.addTitle(entryTitle = "${entryTitle}");
+
+		AlloyEditor.addContent(content = "${entryContent}");
 
 		AssertClick(
 			locator1 = "Button#SUBMIT_FOR_PUBLICATION",
@@ -338,6 +343,12 @@ definition {
 	}
 
 	macro clickEllipsisItemPG {
+		if (isSet(entryContent)) {
+			Click(
+				key_entryContent = "Blogs Entry Content",
+				locator1 = "BlogsEntry#CONTENT");
+		}
+
 		Click(
 			key_entryTitle = "${entryTitle}",
 			locator1 = "Blogs#WIDGET_VIEW_ENTRY_ELLIPSIS");
@@ -430,7 +441,7 @@ definition {
 	macro publishDraftCP {
 		BlogsNavigator.gotoEditCP(entryTitle = "${entryTitle}");
 
-		BlogsEntry.viewEntry(
+		BlogsEntry.viewEntryCP(
 			entryContent = "${entryContent}",
 			entrySubtitle = "${entrySubtitle}",
 			entryTitle = "${entryTitle}");
@@ -473,9 +484,11 @@ definition {
 
 		BlogsNavigator.gotoConfigurationSetupPG();
 
-		BlogsNavigator.gotoConfigurationScopePG();
+		Navigator.gotoPage(pageName = "${pageName}");
 
-		BlogsConfiguration.selectScopePG(scopeSelection = "Liferay");
+		Portlet.selectScopePG(
+			portletName = "Blogs",
+			scope = "Liferay");
 	}
 
 	macro tearDownCP {
@@ -483,7 +496,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Blogs");
 
 		if (IsElementPresent.isVisible(locator1 = "Blogs#ENTRY_TABLE_ALL_CHECKBOX")) {
@@ -491,14 +503,13 @@ definition {
 
 			Click(locator1 = "Button#MOVE_TO_RECYCLE_BIN");
 
-			AssertElementPresent(locator1 = "Message#SUCCESS");
+			VerifyElementPresent(locator1 = "Message#SUCCESS");
 		}
 
 		Navigator.openURL();
 
 		ProductMenu.gotoPortlet(
 			category = "Recycle Bin",
-			panel = "Site Administration",
 			portlet = "Recycle Bin");
 
 		RecycleBin.emptyCP();

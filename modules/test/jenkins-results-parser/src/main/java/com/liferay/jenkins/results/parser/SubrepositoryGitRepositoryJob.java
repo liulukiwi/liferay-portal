@@ -29,21 +29,6 @@ public class SubrepositoryGitRepositoryJob
 	extends GitRepositoryJob implements SubrepositoryTestClassJob {
 
 	@Override
-	public Set<String> getBatchNames() {
-		Properties jobProperties = getJobProperties();
-
-		String testBatchNames = JenkinsResultsParserUtil.getProperty(
-			jobProperties, "test.batch.names[" + getBranchName() + "]");
-
-		if (testBatchNames == null) {
-			testBatchNames = JenkinsResultsParserUtil.getProperty(
-				jobProperties, "test.batch.names");
-		}
-
-		return getSetFromString(testBatchNames);
-	}
-
-	@Override
 	public Set<String> getDistTypes() {
 		String distTypes = JenkinsResultsParserUtil.getProperty(
 			getJobProperties(), "subrepo.dist.app.servers");
@@ -92,8 +77,9 @@ public class SubrepositoryGitRepositoryJob
 		return (SubrepositoryGitWorkingDirectory)gitWorkingDirectory;
 	}
 
-	public boolean getTestRunValidation() {
-		return testRunValidation;
+	@Override
+	public boolean isValidationRequired() {
+		return validationRequired;
 	}
 
 	@Override
@@ -110,9 +96,9 @@ public class SubrepositoryGitRepositoryJob
 	}
 
 	protected SubrepositoryGitRepositoryJob(
-		String jobName, String repositoryName) {
+		String jobName, BuildProfile buildProfile, String repositoryName) {
 
-		super(jobName);
+		super(jobName, buildProfile);
 
 		gitWorkingDirectory =
 			GitWorkingDirectoryFactory.newSubrepositoryGitWorkingDirectory(
@@ -127,8 +113,9 @@ public class SubrepositoryGitRepositoryJob
 		try {
 			buildProperties = JenkinsResultsParserUtil.getBuildProperties();
 		}
-		catch (IOException ioe) {
-			throw new RuntimeException("Unable to get build properties", ioe);
+		catch (IOException ioException) {
+			throw new RuntimeException(
+				"Unable to get build properties", ioException);
 		}
 
 		jobPropertiesFiles.add(new File(gitRepositoryDir, "test.properties"));
@@ -143,7 +130,22 @@ public class SubrepositoryGitRepositoryJob
 		readJobProperties();
 	}
 
+	@Override
+	protected Set<String> getRawBatchNames() {
+		Properties jobProperties = getJobProperties();
+
+		String batchNames = JenkinsResultsParserUtil.getProperty(
+			jobProperties, "test.batch.names[" + getBranchName() + "]");
+
+		if (batchNames == null) {
+			batchNames = JenkinsResultsParserUtil.getProperty(
+				jobProperties, "test.batch.names");
+		}
+
+		return getSetFromString(batchNames);
+	}
+
 	protected PortalGitWorkingDirectory portalGitWorkingDirectory;
-	protected boolean testRunValidation;
+	protected boolean validationRequired;
 
 }

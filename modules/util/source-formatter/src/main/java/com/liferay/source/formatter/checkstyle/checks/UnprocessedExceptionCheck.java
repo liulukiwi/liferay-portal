@@ -14,12 +14,11 @@
 
 package com.liferay.source.formatter.checkstyle.checks;
 
-import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.io.unsync.UnsyncStringReader;
-import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.source.formatter.checks.util.JavaSourceUtil;
-import com.liferay.source.formatter.checkstyle.util.DetailASTUtil;
 import com.liferay.source.formatter.util.ThreadSafeSortedClassLibraryBuilder;
 
 import com.puppycrawl.tools.checkstyle.api.DetailAST;
@@ -52,18 +51,17 @@ public class UnprocessedExceptionCheck extends BaseCheck {
 
 	@Override
 	protected void doVisitToken(DetailAST detailAST) {
-		FileContents fileContents = getFileContents();
+		String absolutePath = getAbsolutePath();
 
-		String fileName = StringUtil.replace(
-			fileContents.getFileName(), CharPool.BACK_SLASH, CharPool.SLASH);
-
-		if (fileName.contains("/test/") ||
-			fileName.contains("/testIntegration/")) {
+		if (absolutePath.contains("/test/") ||
+			absolutePath.contains("/testIntegration/")) {
 
 			return;
 		}
 
 		if (detailAST.getType() == TokenTypes.LITERAL_CATCH) {
+			FileContents fileContents = getFileContents();
+
 			FileText fileText = fileContents.getText();
 
 			_checkUnprocessedException(
@@ -220,7 +218,7 @@ public class UnprocessedExceptionCheck extends BaseCheck {
 	private boolean _containsVariable(
 		DetailAST detailAST, String variableName) {
 
-		List<DetailAST> nameDetailASTList = DetailASTUtil.getAllChildTokens(
+		List<DetailAST> nameDetailASTList = getAllChildTokens(
 			detailAST, true, TokenTypes.IDENT);
 
 		for (DetailAST nameDetailAST : nameDetailASTList) {
@@ -272,7 +270,11 @@ public class UnprocessedExceptionCheck extends BaseCheck {
 		try {
 			javaProjectBuilder.addSource(new UnsyncStringReader(content));
 		}
-		catch (ParseException pe) {
+		catch (ParseException parseException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(parseException, parseException);
+			}
+
 			return null;
 		}
 
@@ -299,5 +301,8 @@ public class UnprocessedExceptionCheck extends BaseCheck {
 
 	private static final String _MSG_UNPROCESSED_EXCEPTION =
 		"exception.unprocessed";
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		UnprocessedExceptionCheck.class);
 
 }

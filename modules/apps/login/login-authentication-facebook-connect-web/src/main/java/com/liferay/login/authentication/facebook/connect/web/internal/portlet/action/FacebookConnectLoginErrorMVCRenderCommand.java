@@ -17,7 +17,7 @@ package com.liferay.login.authentication.facebook.connect.web.internal.portlet.a
 import com.liferay.portal.kernel.exception.UserEmailAddressException;
 import com.liferay.portal.kernel.facebook.FacebookConnect;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCRenderCommand;
-import com.liferay.portal.kernel.portlet.bridges.mvc.MVCRenderConstants;
+import com.liferay.portal.kernel.portlet.bridges.mvc.constants.MVCRenderConstants;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.servlet.SessionErrors;
@@ -51,7 +51,7 @@ import org.osgi.service.component.annotations.Reference;
 	property = {
 		"javax.portlet.name=" + PortletKeys.FAST_LOGIN,
 		"javax.portlet.name=" + PortletKeys.LOGIN,
-		"mvc.command.name=/login/facebook_connect_login_error"
+		"mvc.command.name=/login_authentication_facebook_connect/facebook_connect_login_error"
 	},
 	service = MVCRenderCommand.class
 )
@@ -94,8 +94,9 @@ public class FacebookConnectLoginErrorMVCRenderCommand
 
 			requestDispatcher.forward(httpServletRequest, httpServletResponse);
 		}
-		catch (Exception e) {
-			throw new PortletException("Unable to include error.jsp", e);
+		catch (Exception exception) {
+			throw new PortletException(
+				"Unable to include error.jsp", exception);
 		}
 
 		return MVCRenderConstants.MVC_PATH_VALUE_SKIP_DISPATCH;

@@ -19,6 +19,8 @@ import com.liferay.asset.kernel.model.AssetEntry;
 import com.liferay.asset.kernel.model.AssetRenderer;
 import com.liferay.asset.kernel.model.AssetRendererFactory;
 import com.liferay.portal.kernel.exception.NoSuchModelException;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
@@ -107,7 +109,11 @@ public class AssetPublisherViewContentDisplayContext {
 				return true;
 			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
+
 			SessionErrors.add(
 				_renderRequest,
 				PrincipalException.MustHavePermission.class.getName());
@@ -117,9 +123,7 @@ public class AssetPublisherViewContentDisplayContext {
 	}
 
 	public boolean isShowBackURL() {
-		boolean print = getPrint();
-
-		return !print;
+		return !getPrint();
 	}
 
 	private long _getAssetEntryId() {
@@ -191,11 +195,18 @@ public class AssetPublisherViewContentDisplayContext {
 					_assetRenderer.getClassPK());
 			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
+
 			SessionErrors.add(
 				_renderRequest, NoSuchModelException.class.getName());
 		}
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		AssetPublisherViewContentDisplayContext.class);
 
 	private AssetEntry _assetEntry;
 	private Long _assetEntryId;

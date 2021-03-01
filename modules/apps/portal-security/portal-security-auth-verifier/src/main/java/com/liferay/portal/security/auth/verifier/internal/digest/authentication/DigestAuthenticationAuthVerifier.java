@@ -29,9 +29,12 @@ import java.util.Properties;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.osgi.service.component.annotations.Component;
+
 /**
  * @author Tomas Polesovsky
  */
+@Component(service = AuthVerifier.class)
 public class DigestAuthenticationAuthVerifier implements AuthVerifier {
 
 	@Override
@@ -84,11 +87,11 @@ public class DigestAuthenticationAuthVerifier implements AuthVerifier {
 
 			return authVerifierResult;
 		}
-		catch (PortalException pe) {
-			throw new AuthException(pe);
+		catch (PortalException portalException) {
+			throw new AuthException(portalException);
 		}
-		catch (SystemException se) {
-			throw new AuthException(se);
+		catch (SystemException systemException) {
+			throw new AuthException(systemException);
 		}
 	}
 

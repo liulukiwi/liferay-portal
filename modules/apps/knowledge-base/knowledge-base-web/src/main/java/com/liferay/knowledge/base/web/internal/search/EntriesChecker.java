@@ -25,6 +25,8 @@ import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.search.EmptyOnClickRowChecker;
 import com.liferay.portal.kernel.dao.search.RowChecker;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
@@ -80,12 +82,12 @@ public class EntriesChecker extends EmptyOnClickRowChecker {
 			kbArticle = KBArticleServiceUtil.getLatestKBArticle(
 				entryId, WorkflowConstants.STATUS_ANY);
 		}
-		catch (Exception e) {
-			if (e instanceof NoSuchArticleException) {
+		catch (Exception exception1) {
+			if (exception1 instanceof NoSuchArticleException) {
 				try {
 					kbFolder = KBFolderServiceUtil.getKBFolder(entryId);
 				}
-				catch (Exception e1) {
+				catch (Exception exception2) {
 					return StringPool.BLANK;
 				}
 			}
@@ -108,7 +110,10 @@ public class EntriesChecker extends EmptyOnClickRowChecker {
 					showInput = true;
 				}
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(exception, exception);
+				}
 			}
 		}
 		else {
@@ -121,7 +126,10 @@ public class EntriesChecker extends EmptyOnClickRowChecker {
 					showInput = true;
 				}
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(exception, exception);
+				}
 			}
 		}
 
@@ -155,6 +163,8 @@ public class EntriesChecker extends EmptyOnClickRowChecker {
 
 		return sb.toString();
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(EntriesChecker.class);
 
 	private final LiferayPortletResponse _liferayPortletResponse;
 	private final PermissionChecker _permissionChecker;

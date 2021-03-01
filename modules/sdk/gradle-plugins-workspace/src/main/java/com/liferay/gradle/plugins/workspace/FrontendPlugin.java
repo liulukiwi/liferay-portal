@@ -91,10 +91,8 @@ public class FrontendPlugin implements Plugin<Project> {
 	private void _configureArtifacts(final Project project) {
 		ArtifactHandler artifacts = project.getArtifacts();
 
-		File jarFile = _getJarFile(project);
-
 		artifacts.add(
-			Dependency.ARCHIVES_CONFIGURATION, jarFile,
+			Dependency.ARCHIVES_CONFIGURATION, _getJarFile(project),
 			new Closure<Void>(project) {
 
 				@SuppressWarnings("unused")
@@ -140,8 +138,9 @@ public class FrontendPlugin implements Plugin<Project> {
 				nodeExtension.setNodeVersion(nodeVersion);
 			}
 		}
-		catch (Exception e) {
-			throw new GradleException("Unable to parse node version", e);
+		catch (Exception exception) {
+			throw new GradleException(
+				"Unable to parse node version", exception);
 		}
 
 		String npmVersion = nodeExtension.getNpmVersion();
@@ -155,8 +154,8 @@ public class FrontendPlugin implements Plugin<Project> {
 				nodeExtension.setNpmVersion(npmVersion);
 			}
 		}
-		catch (Exception e) {
-			throw new GradleException("Unable to parse npm version", e);
+		catch (Exception exception) {
+			throw new GradleException("Unable to parse npm version", exception);
 		}
 	}
 

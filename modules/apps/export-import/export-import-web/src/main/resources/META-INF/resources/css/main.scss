@@ -123,10 +123,6 @@
 }
 
 .lfr-export-dialog {
-	.portlet-data-section .flex-container {
-		margin-bottom: 1em;
-	}
-
 	.portlet-data-section,
 	.portlet-type-data-section {
 		.control-label {
@@ -154,10 +150,6 @@
 		legend {
 			display: none;
 		}
-	}
-
-	.upload-list li {
-		list-style: disc inside;
 	}
 
 	.upload-list .error-info {
@@ -196,20 +188,6 @@
 .lfr-tree-loading-icon {
 	margin: 0 auto;
 	padding-top: 5px;
-}
-
-.list-group-item-content h6.background-task-status-row {
-	display: inline;
-	margin-right: 1%;
-
-	a {
-		color: #65b6f0;
-	}
-
-	a:hover {
-		color: #65b6f0;
-		text-decoration: none;
-	}
 }
 
 .pages-selector {
@@ -276,6 +254,11 @@
 			}
 		}
 	}
+}
+
+.publish-navbar .navbar-header-right {
+	margin-bottom: auto;
+	margin-top: auto;
 }
 
 .publish-simple-help-text {

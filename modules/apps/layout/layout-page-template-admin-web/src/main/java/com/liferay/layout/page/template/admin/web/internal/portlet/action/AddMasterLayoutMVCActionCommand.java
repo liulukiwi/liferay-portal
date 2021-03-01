@@ -54,7 +54,7 @@ import org.osgi.service.component.annotations.Reference;
 	immediate = true,
 	property = {
 		"javax.portlet.name=" + LayoutPageTemplateAdminPortletKeys.LAYOUT_PAGE_TEMPLATES,
-		"mvc.command.name=/layout_page_template/add_master_layout"
+		"mvc.command.name=/layout_page_template_admin/add_master_layout"
 	},
 	service = MVCActionCommand.class
 )
@@ -88,14 +88,15 @@ public class AddMasterLayoutMVCActionCommand extends BaseMVCActionCommand {
 			JSONPortletResponseUtil.writeJSON(
 				actionRequest, actionResponse, jsonObject);
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			SessionErrors.add(
 				actionRequest, "layoutPageTemplateEntryNameInvalid");
 
 			hideDefaultErrorMessage(actionRequest);
 
 			_layoutPageTemplateEntryExceptionRequestHandler.
-				handlePortalException(actionRequest, actionResponse, pe);
+				handlePortalException(
+					actionRequest, actionResponse, portalException);
 		}
 	}
 
@@ -104,11 +105,8 @@ public class AddMasterLayoutMVCActionCommand extends BaseMVCActionCommand {
 			LayoutPageTemplateEntry layoutPageTemplateEntry)
 		throws PortalException {
 
-		Layout layout = _layoutLocalService.getLayout(
+		Layout draftLayout = _layoutLocalService.fetchDraftLayout(
 			layoutPageTemplateEntry.getPlid());
-
-		Layout draftLayout = _layoutLocalService.fetchLayout(
-			_portal.getClassNameId(Layout.class), layout.getPlid());
 
 		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
