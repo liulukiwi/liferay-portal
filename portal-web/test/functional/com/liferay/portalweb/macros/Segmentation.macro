@@ -21,6 +21,16 @@ definition {
 			value1 = "${propertyOption}");
 	}
 
+	macro changeCriterionInput {
+		var key_criterionInputOption = "${criterionInputOption}";
+
+		Click(locator1 = "Segmentation#CRITERION_INPUT");
+
+		Click(
+			locator1 = "Segmentation#CRITERION_INPUT_OPTION",
+			value1 = "${criterionInputOption}");
+	}
+
 	macro changeCriterionInputDate {
 		Click(
 			key_criterion = "date",
@@ -46,16 +56,6 @@ definition {
 			value1 = "\RIGHT");
 
 		RobotType(locator1 = "${day}");
-	}
-
-	macro changeCriterionInputEmailAddress {
-		var key_criterionInputOption = "${criterionInputOption}";
-
-		Click(locator1 = "Segmentation#CRITERION_INPUT");
-
-		Click(
-			locator1 = "Segmentation#CRITERION_INPUT_OPTION",
-			value1 = "${criterionInputOption}");
 	}
 
 	macro clickAssignSiteRolesOption {

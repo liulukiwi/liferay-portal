@@ -142,7 +142,7 @@ definition {
 
 		Segmentation.fillTitle(titleField = "Segment Email Liferay");
 
-		Segmentation.changeCriterionInputEmailAddress(criterionInputOption = "Contains");
+		Segmentation.changeCriterionInput(criterionInputOption = "Contains");
 
 		Segmentation.fillProperty(propertyField = "liferay");
 
