@@ -347,7 +347,7 @@ definition {
 	@description = "This is a test for LPS-130320."
 	@priority = "5"
 	test AddSegmentBySessionLastSignInDate {
-		property portal.acceptance = "false";
+		property portal.acceptance = "fiona";
 
 		LexiconEntry.gotoAdd();
 
@@ -358,6 +358,34 @@ definition {
 		Segmentation.fillTitle(titleField = "AddSegmentBySessionLastSignInDate Test");
 
 		Segmentation.changeCriterionInputDate(
+			day = "31",
+			month = "03",
+			year = "2021");
+
+		Button.clickSave();
+
+		Alert.viewSuccessMessage();
+
+		Segmentation.editSegment(entry = "AddSegmentBySessionLastSignInDate Test");
+
+		Segmentation.viewSegment(date = "2021-03-31");
+	}
+
+	@description = "This is a test for LPS-130320."
+	@priority = "5"
+	
+	test AddSegmentBySessionLastSignInDateSecond {
+		property portal.acceptance = "fiona";
+
+		LexiconEntry.gotoAdd();
+
+		Segmentation.selectSession();
+
+		Segmentation.addProperties(propertyOption = "Last Sign In Date");
+
+		Segmentation.fillTitle(titleField = "AddSegmentBySessionLastSignInDate Test");
+
+		Segmentation.changeCriterionInputDateSecond(
 			day = "31",
 			month = "03",
 			year = "2021");

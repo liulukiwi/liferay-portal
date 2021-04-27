@@ -36,26 +36,65 @@ definition {
 			key_criterion = "date",
 			locator1 = "Segmentation#CRITERION_INPUT_FORM_CONTROL");
 
+		takeScreenshot();
+
 		KeyPress(
 			key_criterion = "date",
 			locator1 = "Segmentation#CRITERION_INPUT_FORM_CONTROL",
 			value1 = "\BACK_SPACE");
 
+		takeScreenshot();
+
 		RobotType(locator1 = "${year}");
+
+		takeScreenshot();
 
 		KeyPress(
 			key_criterion = "date",
 			locator1 = "Segmentation#CRITERION_INPUT_FORM_CONTROL",
 			value1 = "\RIGHT");
+
+		takeScreenshot();
 
 		RobotType(locator1 = "${month}");
 
+		takeScreenshot();
+
 		KeyPress(
 			key_criterion = "date",
 			locator1 = "Segmentation#CRITERION_INPUT_FORM_CONTROL",
 			value1 = "\RIGHT");
 
+		takeScreenshot();
+
 		RobotType(locator1 = "${day}");
+	}
+
+	macro changeCriterionInputDateSecond {
+		Click(
+			key_criterion = "date",
+			locator1 = "Segmentation#CRITERION_INPUT_FORM_CONTROL");
+
+		takeScreenshot();
+
+		KeyPress(
+			key_criterion = "date",
+			locator1 = "Segmentation#CRITERION_INPUT_FORM_CONTROL",
+			value1 = "\BACK_SPACE");
+
+		takeScreenshot();
+
+		RobotType(locator1 = "${month}");
+
+		takeScreenshot();
+
+		RobotType(locator1 = "${day}");
+
+		takeScreenshot();
+
+		RobotType(locator1 = "${year}");
+
+		takeScreenshot();
 	}
 
 	macro clickAssignSiteRolesOption {
