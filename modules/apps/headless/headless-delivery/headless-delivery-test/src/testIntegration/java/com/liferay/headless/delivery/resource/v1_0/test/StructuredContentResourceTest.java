@@ -35,8 +35,6 @@ import com.liferay.headless.delivery.client.dto.v1_0.Geo;
 import com.liferay.headless.delivery.client.dto.v1_0.StructuredContent;
 import com.liferay.headless.delivery.client.dto.v1_0.StructuredContentLink;
 import com.liferay.headless.delivery.client.http.HttpInvoker;
-import com.liferay.headless.delivery.client.pagination.Page;
-import com.liferay.headless.delivery.client.permission.Permission;
 import com.liferay.headless.delivery.client.resource.v1_0.StructuredContentResource;
 import com.liferay.headless.delivery.client.serdes.v1_0.StructuredContentSerDes;
 import com.liferay.journal.constants.JournalFolderConstants;
@@ -378,20 +376,6 @@ public class StructuredContentResourceTest
 
 	@Override
 	@Test
-	public void testGetStructuredContentPermissionsPage() throws Exception {
-		StructuredContent postStructuredContent =
-			testPostSiteStructuredContent_addStructuredContent(
-				randomStructuredContent());
-
-		Page<Permission> page =
-			structuredContentResource.getStructuredContentPermissionsPage(
-				postStructuredContent.getId(), RoleConstants.GUEST);
-
-		Assert.assertNotNull(page);
-	}
-
-	@Override
-	@Test
 	public void testGetStructuredContentRenderedContentByDisplayPageDisplayPageKey()
 		throws Exception {
 
@@ -601,6 +585,20 @@ public class StructuredContentResourceTest
 
 		return super.testPostAssetLibraryStructuredContent_addStructuredContent(
 			structuredContent);
+	}
+
+	@Override
+	protected StructuredContent
+			testPutAssetLibraryStructuredContentPermission_addStructuredContent()
+		throws Exception {
+
+		StructuredContent structuredContent = randomStructuredContent();
+
+		structuredContent.setContentStructureId(
+			_depotDDMStructure.getStructureId());
+
+		return structuredContentResource.postAssetLibraryStructuredContent(
+			testDepotEntry.getDepotEntryId(), structuredContent);
 	}
 
 	private DDMStructure _addDDMStructure(Group group, String fileName)

@@ -648,13 +648,7 @@ definition {
 
 		Staging.publishToLive(remoteStaging = "true");
 
-		Navigator.gotoSitePage(
-			pageName = "Test Page",
-			siteName = "Site Name");
-
-		ProductMenu.gotoPortlet(
-			category = "Configuration",
-			portlet = "Site Settings");
+		Site.openSiteConfigurationAdmin(siteURLKey = "site-name");
 
 		Panel.expandPanel(panel = "Open Graph");
 
@@ -691,6 +685,10 @@ definition {
 			category = "Configuration",
 			portlet = "Site Settings");
 
+		Click(
+			key_url = "site-configuration",
+			locator1 = "ListGroupItem#CONFIGURATION_ITEM_LINK");
+
 		Panel.expandPanel(panel = "Open Graph");
 
 		AssertVisible(
@@ -718,13 +716,7 @@ definition {
 
 		Staging.publishToLive(remoteStaging = "true");
 
-		Navigator.gotoSitePage(
-			pageName = "Test Page",
-			siteName = "Site Name");
-
-		ProductMenu.gotoPortlet(
-			category = "Configuration",
-			portlet = "Site Settings");
+		Site.openSiteConfigurationAdmin(siteURLKey = "site-name");
 
 		Panel.expandPanel(panel = "Open Graph");
 
@@ -753,6 +745,10 @@ definition {
 		ProductMenu.gotoPortlet(
 			category = "Configuration",
 			portlet = "Site Settings");
+
+		Click(
+			key_url = "site-configuration",
+			locator1 = "ListGroupItem#CONFIGURATION_ITEM_LINK");
 
 		Panel.expandPanel(panel = "Open Graph");
 
@@ -1866,13 +1862,7 @@ definition {
 
 		Staging.publishToLive(remoteStaging = "true");
 
-		Navigator.gotoSitePage(
-			pageName = "Test Page",
-			siteName = "Site Name");
-
-		ProductMenu.gotoPortlet(
-			category = "Configuration",
-			portlet = "Site Settings");
+		Site.openSiteConfigurationAdmin(siteURLKey = "site-name");
 
 		Panel.expandPanel(panel = "Open Graph");
 
@@ -1909,6 +1899,10 @@ definition {
 			category = "Configuration",
 			portlet = "Site Settings");
 
+		Click(
+			key_url = "site-configuration",
+			locator1 = "ListGroupItem#CONFIGURATION_ITEM_LINK");
+
 		Panel.expandPanel(panel = "Open Graph");
 
 		AssertVisible(
@@ -1920,13 +1914,7 @@ definition {
 			password = "test",
 			userEmailAddress = "test@liferay.com");
 
-		Navigator.gotoSitePage(
-			pageName = "Test Page",
-			siteName = "Site Name");
-
-		ProductMenu.gotoPortlet(
-			category = "Configuration",
-			portlet = "Site Settings");
+		Site.openSiteConfigurationAdmin(siteURLKey = "site-name");
 
 		Panel.expandPanel(panel = "Open Graph");
 
@@ -1963,6 +1951,10 @@ definition {
 		ProductMenu.gotoPortlet(
 			category = "Configuration",
 			portlet = "Site Settings");
+
+		Click(
+			key_url = "site-configuration",
+			locator1 = "ListGroupItem#CONFIGURATION_ITEM_LINK");
 
 		Panel.expandPanel(panel = "Open Graph");
 

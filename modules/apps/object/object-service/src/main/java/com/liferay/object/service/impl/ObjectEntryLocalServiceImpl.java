@@ -31,13 +31,13 @@ import com.liferay.petra.sql.dsl.Column;
 import com.liferay.petra.sql.dsl.DSLQueryFactoryUtil;
 import com.liferay.petra.sql.dsl.expression.Expression;
 import com.liferay.petra.sql.dsl.expression.Predicate;
+import com.liferay.petra.sql.dsl.query.DSLQuery;
+import com.liferay.petra.sql.dsl.spi.ast.DefaultASTNodeListener;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.aop.AopService;
 import com.liferay.portal.dao.jdbc.postgresql.PostgreSQLJDBCUtil;
 import com.liferay.portal.kernel.dao.jdbc.CurrentConnectionUtil;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
-import com.liferay.portal.kernel.dao.orm.SQLQuery;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
@@ -80,6 +80,7 @@ import java.math.BigDecimal;
 import java.sql.Blob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
@@ -209,36 +210,26 @@ public class ObjectEntryLocalServiceImpl
 			_getDynamicObjectDefinitionTable(
 				objectEntry.getObjectDefinitionId());
 
-		Session session = objectEntryPersistence.openSession();
+		List<Object[]> rows = _list(
+			DSLQueryFactoryUtil.selectDistinct(
+				dynamicObjectDefinitionTable.getSelectExpressions()
+			).from(
+				dynamicObjectDefinitionTable
+			).where(
+				dynamicObjectDefinitionTable.getPrimaryKeyColumn(
+				).eq(
+					objectEntry.getObjectEntryId()
+				)
+			),
+			dynamicObjectDefinitionTable);
 
-		try {
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(
-				DSLQueryFactoryUtil.selectDistinct(
-					dynamicObjectDefinitionTable.getSelectExpressions()
-				).from(
-					dynamicObjectDefinitionTable
-				).where(
-					dynamicObjectDefinitionTable.getPrimaryKeyColumn(
-					).eq(
-						objectEntry.getObjectEntryId()
-					)
-				));
-
-			List<Object[]> rows = (List<Object[]>)QueryUtil.list(
-				sqlQuery, objectEntryPersistence.getDialect(),
-				QueryUtil.ALL_POS, QueryUtil.ALL_POS);
-
-			if (ListUtil.isEmpty(rows)) {
-				throw new ObjectEntryValuesException(
-					"No values exist for object entry " +
-						objectEntry.getObjectEntryId());
-			}
-
-			return _getValues(dynamicObjectDefinitionTable, rows.get(0));
+		if (ListUtil.isEmpty(rows)) {
+			throw new ObjectEntryValuesException(
+				"No values exist for object entry " +
+					objectEntry.getObjectEntryId());
 		}
-		finally {
-			objectEntryPersistence.closeSession(session);
-		}
+
+		return _getValues(dynamicObjectDefinitionTable, rows.get(0));
 	}
 
 	@Override
@@ -249,60 +240,49 @@ public class ObjectEntryLocalServiceImpl
 		DynamicObjectDefinitionTable dynamicObjectDefinitionTable =
 			_getDynamicObjectDefinitionTable(objectDefinitionId);
 
-		Session session = objectEntryPersistence.openSession();
+		Predicate predicate = ObjectEntryTable.INSTANCE.objectDefinitionId.eq(
+			objectDefinitionId);
 
-		try {
-			Predicate predicate =
-				ObjectEntryTable.INSTANCE.objectDefinitionId.eq(
-					objectDefinitionId);
-
-			if (!ArrayUtil.isEmpty(statuses)) {
-				predicate = predicate.and(
-					ObjectEntryTable.INSTANCE.status.in(
-						ArrayUtil.toArray(statuses)));
-			}
-
-			if (PermissionThreadLocal.getPermissionChecker() != null) {
-				predicate.and(
-					_inlineSQLHelper.getPermissionWherePredicate(
-						dynamicObjectDefinitionTable.getName(),
-						dynamicObjectDefinitionTable.getPrimaryKeyColumn()));
-			}
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(
-				DSLQueryFactoryUtil.selectDistinct(
-					dynamicObjectDefinitionTable.getSelectExpressions()
-				).from(
-					dynamicObjectDefinitionTable
-				).innerJoinON(
-					ObjectEntryTable.INSTANCE,
-					ObjectEntryTable.INSTANCE.objectEntryId.eq(
-						dynamicObjectDefinitionTable.getPrimaryKeyColumn())
-				).where(
-					predicate
-				));
-
-			List<Object[]> rows = (List<Object[]>)QueryUtil.list(
-				sqlQuery, objectEntryPersistence.getDialect(), start, end);
-
-			List<Map<String, Serializable>> valuesList = new ArrayList<>(
-				rows.size());
-
-			for (Object[] objects : rows) {
-				Map<String, Serializable> values = _getValues(
-					dynamicObjectDefinitionTable, objects);
-
-				valuesList.add(values);
-			}
-
-			return valuesList;
+		if (!ArrayUtil.isEmpty(statuses)) {
+			predicate = predicate.and(
+				ObjectEntryTable.INSTANCE.status.in(
+					ArrayUtil.toArray(statuses)));
 		}
-		catch (Exception exception) {
-			throw new SystemException(exception);
+
+		if (PermissionThreadLocal.getPermissionChecker() != null) {
+			predicate.and(
+				_inlineSQLHelper.getPermissionWherePredicate(
+					dynamicObjectDefinitionTable.getName(),
+					dynamicObjectDefinitionTable.getPrimaryKeyColumn()));
 		}
-		finally {
-			objectEntryPersistence.closeSession(session);
+
+		List<Object[]> rows = _list(
+			DSLQueryFactoryUtil.selectDistinct(
+				dynamicObjectDefinitionTable.getSelectExpressions()
+			).from(
+				dynamicObjectDefinitionTable
+			).innerJoinON(
+				ObjectEntryTable.INSTANCE,
+				ObjectEntryTable.INSTANCE.objectEntryId.eq(
+					dynamicObjectDefinitionTable.getPrimaryKeyColumn())
+			).where(
+				predicate
+			).limit(
+				start, end
+			),
+			dynamicObjectDefinitionTable);
+
+		List<Map<String, Serializable>> valuesList = new ArrayList<>(
+			rows.size());
+
+		for (Object[] objects : rows) {
+			Map<String, Serializable> values = _getValues(
+				dynamicObjectDefinitionTable, objects);
+
+			valuesList.add(values);
 		}
+
+		return valuesList;
 	}
 
 	@Override
@@ -483,6 +463,46 @@ public class ObjectEntryLocalServiceImpl
 		return groupId;
 	}
 
+	/**
+	 * @see com.liferay.portal.upgrade.util.Table#getValue
+	 */
+	private Object _getValue(ResultSet resultSet, String name, int sqlType)
+		throws Exception {
+
+		if (sqlType == Types.BIGINT) {
+			return resultSet.getLong(name);
+		}
+		else if (sqlType == Types.BLOB) {
+			if (PostgreSQLJDBCUtil.isPGStatement(resultSet.getStatement())) {
+				return PostgreSQLJDBCUtil.getLargeObject(resultSet, name);
+			}
+
+			return resultSet.getBytes(name);
+		}
+		else if (sqlType == Types.BOOLEAN) {
+			return resultSet.getBoolean(name);
+		}
+		else if (sqlType == Types.DATE) {
+			return resultSet.getTimestamp(name);
+		}
+		else if (sqlType == Types.DECIMAL) {
+			return resultSet.getBigDecimal(name);
+		}
+		else if (sqlType == Types.DOUBLE) {
+			return resultSet.getDouble(name);
+		}
+		else if (sqlType == Types.INTEGER) {
+			return resultSet.getInt(name);
+		}
+		else if (sqlType == Types.VARCHAR) {
+			return resultSet.getString(name);
+		}
+		else {
+			throw new IllegalArgumentException(
+				"Unable to get value with SQL type " + sqlType);
+		}
+	}
+
 	private Map<String, Serializable> _getValues(
 		DynamicObjectDefinitionTable dynamicObjectDefinitionTable,
 		Object[] objects) {
@@ -598,6 +618,72 @@ public class ObjectEntryLocalServiceImpl
 		}
 	}
 
+	private void _list(
+			Connection connection, DSLQuery dslQuery,
+			DynamicObjectDefinitionTable dynamicObjectDefinitionTable,
+			List<Object[]> results)
+		throws SQLException {
+
+		DefaultASTNodeListener defaultASTNodeListener =
+			new DefaultASTNodeListener();
+
+		try (PreparedStatement preparedStatement = connection.prepareStatement(
+				dslQuery.toSQL(defaultASTNodeListener))) {
+
+			List<Object> scalarValues =
+				defaultASTNodeListener.getScalarValues();
+
+			for (int i = 0; i < scalarValues.size(); i++) {
+				preparedStatement.setObject(i + 1, scalarValues.get(i));
+			}
+
+			Expression<?>[] selectExpressions =
+				dynamicObjectDefinitionTable.getSelectExpressions();
+
+			try (ResultSet resultSet = preparedStatement.executeQuery()) {
+				while (resultSet.next()) {
+					Object[] result = new Object[selectExpressions.length];
+
+					for (int i = 0; i < selectExpressions.length; i++) {
+						Column<?, ?> column =
+							(Column<?, ?>)selectExpressions[i];
+
+						String columnName = column.getName();
+
+						result[i] = _getValue(
+							resultSet, columnName, column.getSQLType());
+					}
+
+					results.add(result);
+				}
+			}
+		}
+		catch (Exception exception) {
+			throw new SQLException(exception);
+		}
+	}
+
+	private List<Object[]> _list(
+		DSLQuery dslQuery,
+		DynamicObjectDefinitionTable dynamicObjectDefinitionTable) {
+
+		List<Object[]> results = new ArrayList<>();
+
+		Session session = objectEntryPersistence.openSession();
+
+		try {
+			session.apply(
+				connection -> _list(
+					connection, dslQuery, dynamicObjectDefinitionTable,
+					results));
+		}
+		finally {
+			objectEntryPersistence.closeSession(session);
+		}
+
+		return results;
+	}
+
 	private void _putValue(
 		Column<?, ?> column, String name, Object object,
 		Map<String, Serializable> values) {
@@ -705,7 +791,7 @@ public class ObjectEntryLocalServiceImpl
 		}
 		else {
 			throw new IllegalArgumentException(
-				"Unknown class " + clazz.getName());
+				"Unable to put value with class " + clazz.getName());
 		}
 	}
 
@@ -752,7 +838,8 @@ public class ObjectEntryLocalServiceImpl
 			preparedStatement.setString(index, String.valueOf(value));
 		}
 		else {
-			throw new IllegalArgumentException("Unknown SQL type " + sqlType);
+			throw new IllegalArgumentException(
+				"Unable to set column with SQL type " + sqlType);
 		}
 	}
 

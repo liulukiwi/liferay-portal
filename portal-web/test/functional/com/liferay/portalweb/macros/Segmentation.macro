@@ -113,16 +113,10 @@ definition {
 		Click(locator1 = "Segmentation#DELETE_SEGMENT");
 	}
 
-	macro editSegment {
-		Click.waitForMenuToggleJSClick(
-			key_tableEntry = "${entry}",
-			locator1 = "LexiconTable#TABLE_ENTRY_ELLIPSIS");
-
-		MenuItem.clickNoError(menuItem = "Edit");
-	}
-
-	macro enableAssingRolesBySegmentsCheckbox {
-		Click(locator1 = "Segmentation#ENABLE_ASSIGN_ROLES_SEGMENTS_CHECKBOX");
+	macro disableAssingRolesBySegmentsCheckbox {
+		if (IsChecked(locator1 = "Segmentation#ENABLE_ASSIGN_ROLES_SEGMENTS_CHECKBOX")) {
+			Click.javaScriptClick(locator1 = "Segmentation#ENABLE_ASSIGN_ROLES_SEGMENTS_CHECKBOX");
+		}
 
 		if (IsElementPresent(locator1 = "Button#SAVE")) {
 			Click(locator1 = "Button#SAVE");
@@ -132,7 +126,31 @@ definition {
 			Click(locator1 = "Button#UPDATE");
 		}
 
-		Pause(locator1 = "3000");
+		AssertNotChecked.assertNotCheckedNotVisible(locator1 = "Segmentation#ENABLE_ASSIGN_ROLES_SEGMENTS_CHECKBOX");
+	}
+
+	macro editSegment {
+		Click.waitForMenuToggleJSClick(
+			key_tableEntry = "${entry}",
+			locator1 = "LexiconTable#TABLE_ENTRY_ELLIPSIS");
+
+		MenuItem.clickNoError(menuItem = "Edit");
+	}
+
+	macro enableAssingRolesBySegmentsCheckbox {
+		if (IsNotChecked.isNotCheckedNotVisible(locator1 = "Segmentation#ENABLE_ASSIGN_ROLES_SEGMENTS_CHECKBOX")) {
+			Click.javaScriptClick(locator1 = "Segmentation#ENABLE_ASSIGN_ROLES_SEGMENTS_CHECKBOX");
+		}
+
+		if (IsElementPresent(locator1 = "Button#SAVE")) {
+			Click(locator1 = "Button#SAVE");
+		}
+
+		if (IsElementPresent(locator1 = "Button#UPDATE")) {
+			Click(locator1 = "Button#UPDATE");
+		}
+
+		AssertChecked.assertCheckedNotVisible(locator1 = "Segmentation#ENABLE_ASSIGN_ROLES_SEGMENTS_CHECKBOX");
 	}
 
 	macro fillProperty {
@@ -171,6 +189,16 @@ definition {
 	}
 
 	macro openSegmentOptions {
+		Click(locator1 = "Segmentation#SEARCH_FIELD");
+
+		Type(
+			locator1 = "Segmentation#SEARCH_FIELD",
+			value1 = "${segmentName}");
+
+		KeyPress(
+			locator1 = "Segmentation#SEARCH_FIELD",
+			value1 = "\ENTER");
+
 		if (IsElementPresent(locator1 = "Icon#BODY_VERTICAL_ELLIPSIS")) {
 			Click(locator1 = "Icon#BODY_VERTICAL_ELLIPSIS");
 		}

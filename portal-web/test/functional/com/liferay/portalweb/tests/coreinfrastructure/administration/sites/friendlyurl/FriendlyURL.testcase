@@ -103,21 +103,25 @@ definition {
 				widgetName = "Language Selector");
 		}
 
-		Site.openSiteSettingsAdmin(siteURLKey = "france-site-name");
+		Site.openSiteConfigurationAdmin(siteURLKey = "france-site-name");
 
 		Site.configureCurrentLanguagesCP(defaultSiteLanguage = "French (France)");
 
-		Navigator.gotoNavTab(navTab = "General");
+		Click(
+			key_itemName = "General",
+			locator1 = "Panel#PANEL_NAV_ITEM_LINK");
 
 		PortletEntry.inputName(name = "France Site Name");
 
 		PortletEntry.save();
 
-		Site.openSiteSettingsAdmin(siteURLKey = "canada-site-name");
+		Site.openSiteConfigurationAdmin(siteURLKey = "canada-site-name");
 
 		Site.configureCurrentLanguagesCP(defaultSiteLanguage = "French (Canada)");
 
-		Navigator.gotoNavTab(navTab = "General");
+		Click(
+			key_itemName = "General",
+			locator1 = "Panel#PANEL_NAV_ITEM_LINK");
 
 		PortletEntry.inputName(name = "Canada Site Name");
 

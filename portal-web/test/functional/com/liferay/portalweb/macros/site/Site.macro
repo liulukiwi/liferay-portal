@@ -59,6 +59,10 @@ definition {
 			PortletEntry.inputName(name = "${siteName}");
 
 			Modal.save();
+
+			Click(
+				key_url = "site-configuration",
+				locator1 = "ListGroupItem#CONFIGURATION_ITEM_LINK");
 		}
 
 		if ("${siteType}" == "Site Template") {
@@ -128,6 +132,10 @@ definition {
 		PortletEntry.inputName(name = "${siteName}");
 
 		Modal.save();
+
+		Click(
+			key_url = "site-configuration",
+			locator1 = "ListGroupItem#CONFIGURATION_ITEM_LINK");
 
 		AssertTextEquals(
 			locator1 = "SitesEditSite#DETAILS_NAME",
@@ -716,6 +724,10 @@ definition {
 			category = "Configuration",
 			portlet = "Site Settings");
 
+		Click(
+			key_url = "site-configuration",
+			locator1 = "ListGroupItem#CONFIGURATION_ITEM_LINK");
+
 		AssertElementPresent(locator1 = "SitesEditSite#SITE_ID");
 
 		var siteId = selenium.getElementValue("SitesEditSite#SITE_ID");
@@ -886,6 +898,10 @@ definition {
 			category = "Configuration",
 			portlet = "Site Settings");
 
+		Click(
+			key_url = "site-configuration",
+			locator1 = "ListGroupItem#CONFIGURATION_ITEM_LINK");
+
 		Pause(locator1 = "5000");
 
 		if ("${selectMembershipType}" == "true") {
@@ -906,6 +922,10 @@ definition {
 		}
 
 		PortletEntry.save();
+	}
+
+	macro openSiteConfigurationAdmin {
+		Navigator.openWithAppendToBaseURL(urlAppend = "group/${siteURLKey}/~/control_panel/manage/-/site/settings?_com_liferay_configuration_admin_web_portlet_SiteSettingsPortlet_mvcRenderCommandName=%2Fconfiguration_admin%2Fview_configuration_screen&_com_liferay_configuration_admin_web_portlet_SiteSettingsPortlet_configurationScreenKey=site-configuration-general");
 	}
 
 	macro openSiteMembershipsAdmin {
@@ -1433,7 +1453,9 @@ definition {
 	}
 
 	macro viewSiteClonedFromSiteTemplateCP {
-		Navigator.gotoNavTab(navTab = "General");
+		Click(
+			key_itemName = "General",
+			locator1 = "Panel#PANEL_NAV_ITEM_LINK");
 
 		Panel.expandPanel(panel = "Site Template");
 
