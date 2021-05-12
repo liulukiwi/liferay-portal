@@ -299,7 +299,7 @@ definition {
 	@description = "This is a test for LPS-130279."
 	@priority = "5"
 	test AddSegmentByOrganizationParentOrganization {
-		property portal.acceptance = "false";
+		property portal.acceptance = "fiona";
 
 		JSONUser.addUser(
 			userEmailAddress = "userea@liferay.com",
@@ -514,7 +514,7 @@ definition {
 	@description = "This is a test for LPS-130345."
 	@priority = "5"
 	test AddSegmentByOtherSegments {
-		property portal.acceptance = "false";
+		property portal.acceptance = "fiona";
 
 		JSONUser.addUser(
 			userEmailAddress = "userea1@liferay.com",
@@ -1043,7 +1043,7 @@ definition {
 	@description = "This is a test for LPS-130285."
 	@priority = "5"
 	test AddSegmentByUserDateOfBirth {
-		property portal.acceptance = "false";
+		property portal.acceptance = "fiona";
 
 		JSONUser.addUser(
 			userEmailAddress = "userea@liferay.com",
