@@ -1158,7 +1158,9 @@ definition {
 
 		Button.clickSave();
 
-		Navigator.openSpecificURL(url = "http://www.able.com:8080/experience-content-page");
+		Navigator.openSpecificURL(url = "http://www.able.com:8080");
+
+		Navigator._gotoPage(pageName = "Experience Content Page");
 
 		ContentPages.clickPencil();
 
