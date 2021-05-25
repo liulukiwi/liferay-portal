@@ -1136,6 +1136,8 @@ definition {
 
 		ContentPages.addPage(pageName = "Experience Content Page");
 
+		PageEditor.clickPublish();
+
 		Navigator.openSpecificURL(url = "http://www.able.com:8080");
 
 		ProductMenu.gotoPortlet(
