@@ -1115,7 +1115,7 @@ definition {
 	@description = "This is a test for LPS-130333."
 	@priority = "5"
 	test AddNewExperienceSessionHostnameSegment {
-		property portal.acceptance = "false";
+		property portal.acceptance = "fiona";
 		property test.name.skip.portal.instance = "ExperienceCreateExperience#AddNewExperienceSessionHostnameSegment";
 
 		HeadlessPortalInstanceAPI.addPortalInstance(
