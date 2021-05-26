@@ -1174,7 +1174,11 @@ definition {
 
 		Button.clickPublish();
 
-		Navigator.openSpecificURL(url = "http://www.able.com:8080/experience-content-page?p_l_mode=edit");
+		Navigator.openSpecificURL(url = "http://www.able.com:8080");
+
+		Navigator._gotoPage(pageName = "Experience Content Page");
+
+		ContentPages.clickPencil();
 
 		PageEditor.changeExperience(newExperience = "New Experience");
 
