@@ -21,27 +21,22 @@ import com.liferay.fragment.renderer.FragmentRenderer;
 import com.liferay.fragment.renderer.FragmentRendererContext;
 import com.liferay.fragment.renderer.collection.filter.internal.configuration.FFFragmentRendererCollectionFilterConfiguration;
 import com.liferay.fragment.util.configuration.FragmentEntryConfigurationParser;
-import com.liferay.petra.string.StringPool;
+import com.liferay.frontend.taglib.servlet.taglib.ComponentTag;
+import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
-import com.liferay.portal.kernel.json.JSONArray;
-import com.liferay.portal.kernel.json.JSONException;
-import com.liferay.portal.kernel.json.JSONFactoryUtil;
-import com.liferay.portal.kernel.json.JSONObject;
-import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.language.LanguageUtil;
-import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.ResourceBundleUtil;
-import com.liferay.portal.kernel.util.StringUtil;
-import com.liferay.portal.kernel.util.Validator;
+import com.liferay.taglib.servlet.PageContextFactoryUtil;
 
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 import java.util.ResourceBundle;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.jsp.PageContext;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Modified;
@@ -59,44 +54,6 @@ public class CollectionFilterFragmentRenderer implements FragmentRenderer {
 	@Override
 	public String getCollectionKey() {
 		return "content-display";
-	}
-
-	@Override
-	public String getConfiguration(
-		FragmentRendererContext fragmentRendererContext) {
-
-		ResourceBundle resourceBundle = ResourceBundleUtil.getBundle(
-			"content.Language", fragmentRendererContext.getLocale(),
-			getClass());
-
-		try {
-			String json = StringUtil.read(
-				getClass(),
-				"/com/liferay/fragment/renderer/collection/filter/internal" +
-					"/dependencies/configuration.json");
-
-			JSONObject configurationJSONObject =
-				JSONFactoryUtil.createJSONObject(json);
-
-			String filterPlaceholder = _getFilterPlaceholder(
-				json, fragmentRendererContext, resourceBundle);
-
-			JSONObject filterTypeOptionsJSONObject =
-				_filterTypeOptionsJSONObject(configurationJSONObject);
-
-			if ((filterPlaceholder != null) &&
-				(filterTypeOptionsJSONObject != null)) {
-
-				filterTypeOptionsJSONObject.put(
-					"placeholder", filterPlaceholder);
-			}
-
-			return _fragmentEntryConfigurationParser.translateConfiguration(
-				configurationJSONObject, resourceBundle);
-		}
-		catch (JSONException jsonException) {
-			return StringPool.BLANK;
-		}
 	}
 
 	@Override
@@ -129,10 +86,38 @@ public class CollectionFilterFragmentRenderer implements FragmentRenderer {
 
 		FragmentCollectionFilter fragmentCollectionFilter =
 			_fragmentCollectionFilterTracker.getFragmentCollectionFilter(
-				"category");
+				_getInfoFilterKey(fragmentRendererContext));
+
+		if (fragmentCollectionFilter == null) {
+			return;
+		}
 
 		fragmentCollectionFilter.render(
 			fragmentRendererContext, httpServletRequest, httpServletResponse);
+
+		try {
+			ComponentTag componentTag = new ComponentTag();
+
+			componentTag.setContext(
+				HashMapBuilder.<String, Object>put(
+					"fragmentEntryLinkId",
+					() -> {
+						FragmentEntryLink fragmentEntryLink =
+							fragmentRendererContext.getFragmentEntryLink();
+
+						return fragmentEntryLink.getFragmentEntryLinkId();
+					}
+				).build());
+			componentTag.setModule("js/CollectionFilterRegister");
+
+			PageContext pageContext = PageContextFactoryUtil.create(
+				httpServletRequest, httpServletResponse);
+
+			componentTag.doTag(pageContext);
+		}
+		catch (Exception exception) {
+			ReflectionUtil.throwException(exception);
+		}
 	}
 
 	@Modified
@@ -143,66 +128,15 @@ public class CollectionFilterFragmentRenderer implements FragmentRenderer {
 				properties);
 	}
 
-	private JSONObject _filterTypeOptionsJSONObject(
-		JSONObject configurationJSONObject) {
-
-		JSONArray fieldSetsJSONArray = configurationJSONObject.getJSONArray(
-			"fieldSets");
-
-		if (fieldSetsJSONArray == null) {
-			return null;
-		}
-
-		JSONObject fieldSetsJSONObject = fieldSetsJSONArray.getJSONObject(0);
-
-		JSONArray fieldsJSONArray = fieldSetsJSONObject.getJSONArray("fields");
-
-		if (fieldsJSONArray == null) {
-			return null;
-		}
-
-		for (int j = 0; j < fieldsJSONArray.length(); j++) {
-			JSONObject fieldJSONObject = fieldsJSONArray.getJSONObject(j);
-
-			if (Objects.equals(fieldJSONObject.getString("name"), "label") &&
-				fieldJSONObject.has("typeOptions")) {
-
-				return fieldJSONObject.getJSONObject("typeOptions");
-			}
-		}
-
-		return null;
-	}
-
-	private String _getFilterPlaceholder(
-		String configuration, FragmentRendererContext fragmentRendererContext,
-		ResourceBundle resourceBundle) {
+	private String _getInfoFilterKey(
+		FragmentRendererContext fragmentRendererContext) {
 
 		FragmentEntryLink fragmentEntryLink =
 			fragmentRendererContext.getFragmentEntryLink();
 
-		if (fragmentEntryLink == null) {
-			return null;
-		}
-
-		String source = GetterUtil.getString(
-			_fragmentEntryConfigurationParser.getFieldValue(
-				configuration, fragmentEntryLink.getEditableValues(),
-				resourceBundle.getLocale(), "source"));
-
-		if (Validator.isNull(source) || !JSONUtil.isValid(source)) {
-			return null;
-		}
-
-		try {
-			JSONObject sourceJSONObject = JSONFactoryUtil.createJSONObject(
-				source);
-
-			return sourceJSONObject.getString("title");
-		}
-		catch (JSONException jsonException) {
-			return null;
-		}
+		return (String)
+			_fragmentEntryConfigurationParser.getConfigurationFieldValue(
+				fragmentEntryLink.getEditableValues(), "string", "filterKey");
 	}
 
 	private volatile FFFragmentRendererCollectionFilterConfiguration
