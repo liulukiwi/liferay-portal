@@ -91,6 +91,7 @@ definition {
 
 	@priority = "3"
 	test AddWebContentExpirationDate {
+		property portal.acceptance = "fiona";`
 		property testray.component.names = "Web Content Administration";
 
 		WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
