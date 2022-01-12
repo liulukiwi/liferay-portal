@@ -651,6 +651,8 @@ definition {
 	@description = "This is a test for LPS-100547. Can add support to select and display existing custom content in the Content Display fragment."
 	@priority = "4"
 	test ViewBoookmarksEntryFromCustomItemSelectorViaContentDisplayFragment {
+		property portal.acceptance = "fiona";
+		
 		task ("Deploy the bookmarks module with custom changes of item selector") {
 			for (var specific.app.file.name : list "com.liferay.bookmarks.api-7.2.0.jar,com.liferay.bookmarks.item.selector.web-1.0.0.jar,com.liferay.bookmarks.web-5.0.19.jar,com.liferay.bookmarks.web-5.0.19.jar") {
 				AntCommand(
