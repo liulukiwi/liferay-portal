@@ -658,6 +658,7 @@ definition {
 				AntCommand(
 				locator1 = "build-test.xml",
 				value1 = "deploy-modified-module-to-specific-bundle -DliferayHome=${liferayHome} -D${specific.app.file.name}");
+			}
 		}
 
 		task ("Add a bookmarks entry") {
