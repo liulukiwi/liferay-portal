@@ -656,19 +656,16 @@ definition {
 		task ("Deploy the bookmarks module with custom changes of item selector") {
 			AntCommand(
 				locator1 = "build-test.xml",
-				value1 = "deploy-modified-module-to-specific-bundle -DliferayHome=${liferayHome} -Dspecific.app.file.name=com.liferay.bookmarks.api-7.2.0.jar");
+				value1 = "deploy-osgi-module-to-specific-bundle -DliferayHome=${liferayHome} Dmodule.base.dir=modules/app/bookmarks");	
 
-			AntCommand(
-				locator1 = "build-test.xml",
-				value1 = "deploy-modified-module-to-specific-bundle -DliferayHome=${liferayHome} -Dspecific.app.file.name=com.liferay.bookmarks.item.selector.web-1.0.0.jar");
-	
-			AntCommand(
-				locator1 = "build-test.xml",
-				value1 = "deploy-modified-module-to-specific-bundle -DliferayHome=${liferayHome} -Dspecific.app.file.name=com.liferay.bookmarks.web-5.0.19.jar");
-	
-			AntCommand(
-				locator1 = "build-test.xml",
-				value1 = "deploy-modified-module-to-specific-bundle -DliferayHome=${liferayHome} -Dspecific.app.file.name=com.liferay.bookmarks.web-5.0.19.jar");	
+			FileInstall.deployFileOnServer(jarFile = "com.liferay.bookmarks.api-7.2.0.jar ");
+
+			FileInstall.deployFileOnServer(jarFile = "com.liferay.bookmarks.item.selector.api-1.0.0.jar");
+
+			FileInstall.deployFileOnServer(jarFile = "com.liferay.bookmarks.item.selector.web-1.0.0.jar ");
+
+			FileInstall.deployFileOnServer(jarFile = "com.liferay.bookmarks.web-5.0.19.jar");
+
 		}
 
 		task ("Add a bookmarks entry") {
