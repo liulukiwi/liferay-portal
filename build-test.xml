@@ -7532,7 +7532,7 @@ virtualHostname="localhost"
 		</gradle-execute>
 
 		<copy
-			file="${project.dir}/portal-web/test/functional/com/liferay/portalweb/tests/enduser/wem/fragment/dependencies/${specific.app.file.name}"
+			file="${project.dir}/portal-web/test/functional/com/liferay/portalweb/tests/enduser/wem/fragment/dependencies/bookmarks/${specific.app.file.name}"
 			tofile="${liferay.home}/deploy"
 		/>
 	</target>
