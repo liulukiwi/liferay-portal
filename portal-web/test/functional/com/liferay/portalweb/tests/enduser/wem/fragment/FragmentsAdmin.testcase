@@ -648,6 +648,58 @@ definition {
 		}
 	}
 
+	@description = "This is a test for LPS-100547. Can add support to select and display existing custom content in the Content Display fragment."
+	@priority = "4"
+	test ViewBoookmarksEntryFromCustomItemSelectorViaContentDisplayFragment {
+		property portal.acceptance = "fiona";
+		
+		task ("Deploy the bookmarks module with custom changes of item selector") {
+			AntCommand(
+				locator1 = "build-test.xml",
+				value1 = "deploy-osgi-module-to-specific-bundle -DliferayHome=${liferayHome} Dmodule.base.dir=modules/app/bookmarks");	
+
+			FileInstall.deployFileOnServer(jarFile = "com.liferay.bookmarks.api-7.2.0.jar ");
+
+			FileInstall.deployFileOnServer(jarFile = "com.liferay.bookmarks.item.selector.api-1.0.0.jar");
+
+			FileInstall.deployFileOnServer(jarFile = "com.liferay.bookmarks.item.selector.web-1.0.0.jar ");
+
+			FileInstall.deployFileOnServer(jarFile = "com.liferay.bookmarks.web-5.0.19.jar");
+
+		}
+
+		task ("Add a bookmarks entry") {
+			JSONBookmarks.addBookmarks(
+				description = "Test Bookmark Description",
+				groupName = "Test Site Name",
+				name = "Test Bookmark Name",
+				url = "https://www.liferay.com");
+		}
+
+		task ("Add a content page") {
+			JSONLayout.addPublicLayout(
+				groupName = "Test Site Name",
+				layoutName = "Content Page Name",
+				type = "content");
+		}
+
+		task ("Add a Content Display fragment to the page") {
+			ContentPagesNavigator.openEditContentPage(
+				pageName = "Content Page Name",
+				siteName = "Test Site Name");
+
+			PageEditor.addFragment(
+				collectionName = "Content Display",
+				fragmentName = "Content Display");
+		}
+
+		task ("Navigate to the fragment collection") {
+			FragmentsAdminNavigator.openFragmentsAdmin(siteURLKey = "test-site-name");
+
+			FragmentsAdminNavigator.gotoCollection(collectionName = "Collection Name");
+		}
+	}
+
 	@description = "This is a test for LPS-89115. Can see contributed fragment collections in fragment administration"
 	@priority = "5"
 	@uitest
