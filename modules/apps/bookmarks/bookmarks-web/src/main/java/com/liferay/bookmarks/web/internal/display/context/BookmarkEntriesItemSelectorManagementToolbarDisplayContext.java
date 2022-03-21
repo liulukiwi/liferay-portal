@@ -29,9 +29,9 @@ public class BookmarkEntriesItemSelectorManagementToolbarDisplayContext
 	extends SearchContainerManagementToolbarDisplayContext {
 
 	public BookmarkEntriesItemSelectorManagementToolbarDisplayContext(
+		HttpServletRequest httpServletRequest,
 		LiferayPortletRequest liferayPortletRequest,
 		LiferayPortletResponse liferayPortletResponse,
-		HttpServletRequest httpServletRequest,
 		SearchContainer<BookmarksEntry> searchContainer) {
 
 		super(

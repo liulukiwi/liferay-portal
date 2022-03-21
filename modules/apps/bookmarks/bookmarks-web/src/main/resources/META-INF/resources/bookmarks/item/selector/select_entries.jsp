@@ -95,10 +95,6 @@ BookmarkEntriesItemSelectorDisplayContext bookmarkEntriesItemSelectorDisplayCont
 						name="name"
 						value="<%= entry.getName() %>"
 					/>
-
-					<%
-					AssetEntry assetEntry = AssetEntryLocalServiceUtil.getEntry(BookmarksEntry.class.getName(), entry.getEntryId());
-					%>
 				</c:otherwise>
 			</c:choose>
 		</liferay-ui:search-container-row>
