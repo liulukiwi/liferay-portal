@@ -118,7 +118,7 @@ definition {
 		property app.server.bundles.size = "1";
 		property custom.properties = "tunneling.servlet.shared.secret=1234567890123456${line.separator}auth.verifier.TunnelAuthVerifier.hosts.allowed=${line.separator}configuration.override.com.liferay.asset.publisher.web.internal.configuration.AssetPublisherSelectionStyleConfiguration_defaultSelectionStyle=&quot;dynamic&quot;";
 		property databases.size = "1";
-		property test.name.skip.portal.instance = "DisplayPageTemplatesWithRemoteStaging#PublishDisplayPageTemplateWithAssetPublisherToLive";
+		property test.name.skip.portal.instance = "DisplayPageTemplatesWithRemoteStaging#PublishDisplayPageTemplateWithAssetPublisherToLive1";
 		property portal.acceptance = "fiona";
 
 		task ("Add a web content and select the display page template") {
@@ -193,7 +193,7 @@ definition {
 		property app.server.bundles.size = "1";
 		property custom.properties = "tunneling.servlet.shared.secret=1234567890123456${line.separator}auth.verifier.TunnelAuthVerifier.hosts.allowed=${line.separator}configuration.override.com.liferay.asset.publisher.web.internal.configuration.AssetPublisherSelectionStyleConfiguration_defaultSelectionStyle=&quot;dynamic&quot;";
 		property databases.size = "1";
-		property test.name.skip.portal.instance = "DisplayPageTemplatesWithRemoteStaging#PublishDisplayPageTemplateWithAssetPublisherToLive";
+		property test.name.skip.portal.instance = "DisplayPageTemplatesWithRemoteStaging#PublishDisplayPageTemplateWithAssetPublisherToLive2";
 		property portal.acceptance = "fiona";
 
 		task ("Add a web content and select the display page template") {
@@ -268,7 +268,7 @@ definition {
 		property app.server.bundles.size = "1";
 		property custom.properties = "tunneling.servlet.shared.secret=1234567890123456${line.separator}auth.verifier.TunnelAuthVerifier.hosts.allowed=${line.separator}configuration.override.com.liferay.asset.publisher.web.internal.configuration.AssetPublisherSelectionStyleConfiguration_defaultSelectionStyle=&quot;dynamic&quot;";
 		property databases.size = "1";
-		property test.name.skip.portal.instance = "DisplayPageTemplatesWithRemoteStaging#PublishDisplayPageTemplateWithAssetPublisherToLive";
+		property test.name.skip.portal.instance = "DisplayPageTemplatesWithRemoteStaging#PublishDisplayPageTemplateWithAssetPublisherToLive3";
 		property portal.acceptance = "fiona";
 
 		task ("Add a web content and select the display page template") {
@@ -343,7 +343,7 @@ definition {
 		property app.server.bundles.size = "1";
 		property custom.properties = "tunneling.servlet.shared.secret=1234567890123456${line.separator}auth.verifier.TunnelAuthVerifier.hosts.allowed=${line.separator}configuration.override.com.liferay.asset.publisher.web.internal.configuration.AssetPublisherSelectionStyleConfiguration_defaultSelectionStyle=&quot;dynamic&quot;";
 		property databases.size = "1";
-		property test.name.skip.portal.instance = "DisplayPageTemplatesWithRemoteStaging#PublishDisplayPageTemplateWithAssetPublisherToLive";
+		property test.name.skip.portal.instance = "DisplayPageTemplatesWithRemoteStaging#PublishDisplayPageTemplateWithAssetPublisherToLive4";
 		property portal.acceptance = "fiona";
 
 		task ("Add a web content and select the display page template") {
@@ -418,7 +418,7 @@ definition {
 		property app.server.bundles.size = "1";
 		property custom.properties = "tunneling.servlet.shared.secret=1234567890123456${line.separator}auth.verifier.TunnelAuthVerifier.hosts.allowed=${line.separator}configuration.override.com.liferay.asset.publisher.web.internal.configuration.AssetPublisherSelectionStyleConfiguration_defaultSelectionStyle=&quot;dynamic&quot;";
 		property databases.size = "1";
-		property test.name.skip.portal.instance = "DisplayPageTemplatesWithRemoteStaging#PublishDisplayPageTemplateWithAssetPublisherToLive";
+		property test.name.skip.portal.instance = "DisplayPageTemplatesWithRemoteStaging#PublishDisplayPageTemplateWithAssetPublisherToLive5";
 		property portal.acceptance = "fiona";
 
 		task ("Add a web content and select the display page template") {
@@ -493,7 +493,7 @@ definition {
 		property app.server.bundles.size = "1";
 		property custom.properties = "tunneling.servlet.shared.secret=1234567890123456${line.separator}auth.verifier.TunnelAuthVerifier.hosts.allowed=${line.separator}configuration.override.com.liferay.asset.publisher.web.internal.configuration.AssetPublisherSelectionStyleConfiguration_defaultSelectionStyle=&quot;dynamic&quot;";
 		property databases.size = "1";
-		property test.name.skip.portal.instance = "DisplayPageTemplatesWithRemoteStaging#PublishDisplayPageTemplateWithAssetPublisherToLive";
+		property test.name.skip.portal.instance = "DisplayPageTemplatesWithRemoteStaging#PublishDisplayPageTemplateWithAssetPublisherToLive6";
 		property portal.acceptance = "fiona";
 
 		task ("Add a web content and select the display page template") {
@@ -568,7 +568,7 @@ definition {
 		property app.server.bundles.size = "1";
 		property custom.properties = "tunneling.servlet.shared.secret=1234567890123456${line.separator}auth.verifier.TunnelAuthVerifier.hosts.allowed=${line.separator}configuration.override.com.liferay.asset.publisher.web.internal.configuration.AssetPublisherSelectionStyleConfiguration_defaultSelectionStyle=&quot;dynamic&quot;";
 		property databases.size = "1";
-		property test.name.skip.portal.instance = "DisplayPageTemplatesWithRemoteStaging#PublishDisplayPageTemplateWithAssetPublisherToLive";
+		property test.name.skip.portal.instance = "DisplayPageTemplatesWithRemoteStaging#PublishDisplayPageTemplateWithAssetPublisherToLive7";
 		property portal.acceptance = "fiona";
 
 		task ("Add a web content and select the display page template") {
@@ -643,7 +643,7 @@ definition {
 		property app.server.bundles.size = "1";
 		property custom.properties = "tunneling.servlet.shared.secret=1234567890123456${line.separator}auth.verifier.TunnelAuthVerifier.hosts.allowed=${line.separator}configuration.override.com.liferay.asset.publisher.web.internal.configuration.AssetPublisherSelectionStyleConfiguration_defaultSelectionStyle=&quot;dynamic&quot;";
 		property databases.size = "1";
-		property test.name.skip.portal.instance = "DisplayPageTemplatesWithRemoteStaging#PublishDisplayPageTemplateWithAssetPublisherToLive";
+		property test.name.skip.portal.instance = "DisplayPageTemplatesWithRemoteStaging#PublishDisplayPageTemplateWithAssetPublisherToLive8";
 		property portal.acceptance = "fiona";
 
 		task ("Add a web content and select the display page template") {
@@ -718,7 +718,7 @@ definition {
 		property app.server.bundles.size = "1";
 		property custom.properties = "tunneling.servlet.shared.secret=1234567890123456${line.separator}auth.verifier.TunnelAuthVerifier.hosts.allowed=${line.separator}configuration.override.com.liferay.asset.publisher.web.internal.configuration.AssetPublisherSelectionStyleConfiguration_defaultSelectionStyle=&quot;dynamic&quot;";
 		property databases.size = "1";
-		property test.name.skip.portal.instance = "DisplayPageTemplatesWithRemoteStaging#PublishDisplayPageTemplateWithAssetPublisherToLive";
+		property test.name.skip.portal.instance = "DisplayPageTemplatesWithRemoteStaging#PublishDisplayPageTemplateWithAssetPublisherToLive9";
 		property portal.acceptance = "fiona";
 
 		task ("Add a web content and select the display page template") {
@@ -793,7 +793,7 @@ definition {
 		property app.server.bundles.size = "1";
 		property custom.properties = "tunneling.servlet.shared.secret=1234567890123456${line.separator}auth.verifier.TunnelAuthVerifier.hosts.allowed=${line.separator}configuration.override.com.liferay.asset.publisher.web.internal.configuration.AssetPublisherSelectionStyleConfiguration_defaultSelectionStyle=&quot;dynamic&quot;";
 		property databases.size = "1";
-		property test.name.skip.portal.instance = "DisplayPageTemplatesWithRemoteStaging#PublishDisplayPageTemplateWithAssetPublisherToLive";
+		property test.name.skip.portal.instance = "DisplayPageTemplatesWithRemoteStaging#PublishDisplayPageTemplateWithAssetPublisherToLive10";
 		property portal.acceptance = "fiona";
 
 		task ("Add a web content and select the display page template") {
@@ -868,7 +868,7 @@ definition {
 		property app.server.bundles.size = "1";
 		property custom.properties = "tunneling.servlet.shared.secret=1234567890123456${line.separator}auth.verifier.TunnelAuthVerifier.hosts.allowed=${line.separator}configuration.override.com.liferay.asset.publisher.web.internal.configuration.AssetPublisherSelectionStyleConfiguration_defaultSelectionStyle=&quot;dynamic&quot;";
 		property databases.size = "1";
-		property test.name.skip.portal.instance = "DisplayPageTemplatesWithRemoteStaging#PublishDisplayPageTemplateWithAssetPublisherToLive";
+		property test.name.skip.portal.instance = "DisplayPageTemplatesWithRemoteStaging#PublishDisplayPageTemplateWithAssetPublisherToLive11";
 		property portal.acceptance = "fiona";
 
 		task ("Add a web content and select the display page template") {
@@ -943,7 +943,7 @@ definition {
 		property app.server.bundles.size = "1";
 		property custom.properties = "tunneling.servlet.shared.secret=1234567890123456${line.separator}auth.verifier.TunnelAuthVerifier.hosts.allowed=${line.separator}configuration.override.com.liferay.asset.publisher.web.internal.configuration.AssetPublisherSelectionStyleConfiguration_defaultSelectionStyle=&quot;dynamic&quot;";
 		property databases.size = "1";
-		property test.name.skip.portal.instance = "DisplayPageTemplatesWithRemoteStaging#PublishDisplayPageTemplateWithAssetPublisherToLive";
+		property test.name.skip.portal.instance = "DisplayPageTemplatesWithRemoteStaging#PublishDisplayPageTemplateWithAssetPublisherToLive12";
 		property portal.acceptance = "fiona";
 
 		task ("Add a web content and select the display page template") {
@@ -1018,7 +1018,7 @@ definition {
 		property app.server.bundles.size = "1";
 		property custom.properties = "tunneling.servlet.shared.secret=1234567890123456${line.separator}auth.verifier.TunnelAuthVerifier.hosts.allowed=${line.separator}configuration.override.com.liferay.asset.publisher.web.internal.configuration.AssetPublisherSelectionStyleConfiguration_defaultSelectionStyle=&quot;dynamic&quot;";
 		property databases.size = "1";
-		property test.name.skip.portal.instance = "DisplayPageTemplatesWithRemoteStaging#PublishDisplayPageTemplateWithAssetPublisherToLive";
+		property test.name.skip.portal.instance = "DisplayPageTemplatesWithRemoteStaging#PublishDisplayPageTemplateWithAssetPublisherToLive13";
 		property portal.acceptance = "fiona";
 
 		task ("Add a web content and select the display page template") {
@@ -1093,7 +1093,7 @@ definition {
 		property app.server.bundles.size = "1";
 		property custom.properties = "tunneling.servlet.shared.secret=1234567890123456${line.separator}auth.verifier.TunnelAuthVerifier.hosts.allowed=${line.separator}configuration.override.com.liferay.asset.publisher.web.internal.configuration.AssetPublisherSelectionStyleConfiguration_defaultSelectionStyle=&quot;dynamic&quot;";
 		property databases.size = "1";
-		property test.name.skip.portal.instance = "DisplayPageTemplatesWithRemoteStaging#PublishDisplayPageTemplateWithAssetPublisherToLive";
+		property test.name.skip.portal.instance = "DisplayPageTemplatesWithRemoteStaging#PublishDisplayPageTemplateWithAssetPublisherToLive14";
 		property portal.acceptance = "fiona";
 
 		task ("Add a web content and select the display page template") {
@@ -1168,7 +1168,7 @@ definition {
 		property app.server.bundles.size = "1";
 		property custom.properties = "tunneling.servlet.shared.secret=1234567890123456${line.separator}auth.verifier.TunnelAuthVerifier.hosts.allowed=${line.separator}configuration.override.com.liferay.asset.publisher.web.internal.configuration.AssetPublisherSelectionStyleConfiguration_defaultSelectionStyle=&quot;dynamic&quot;";
 		property databases.size = "1";
-		property test.name.skip.portal.instance = "DisplayPageTemplatesWithRemoteStaging#PublishDisplayPageTemplateWithAssetPublisherToLive";
+		property test.name.skip.portal.instance = "DisplayPageTemplatesWithRemoteStaging#PublishDisplayPageTemplateWithAssetPublisherToLive15";
 		property portal.acceptance = "fiona";
 
 		task ("Add a web content and select the display page template") {
@@ -1243,7 +1243,7 @@ definition {
 		property app.server.bundles.size = "1";
 		property custom.properties = "tunneling.servlet.shared.secret=1234567890123456${line.separator}auth.verifier.TunnelAuthVerifier.hosts.allowed=${line.separator}configuration.override.com.liferay.asset.publisher.web.internal.configuration.AssetPublisherSelectionStyleConfiguration_defaultSelectionStyle=&quot;dynamic&quot;";
 		property databases.size = "1";
-		property test.name.skip.portal.instance = "DisplayPageTemplatesWithRemoteStaging#PublishDisplayPageTemplateWithAssetPublisherToLive";
+		property test.name.skip.portal.instance = "DisplayPageTemplatesWithRemoteStaging#PublishDisplayPageTemplateWithAssetPublisherToLive16";
 		property portal.acceptance = "fiona";
 
 		task ("Add a web content and select the display page template") {
@@ -1318,7 +1318,7 @@ definition {
 		property app.server.bundles.size = "1";
 		property custom.properties = "tunneling.servlet.shared.secret=1234567890123456${line.separator}auth.verifier.TunnelAuthVerifier.hosts.allowed=${line.separator}configuration.override.com.liferay.asset.publisher.web.internal.configuration.AssetPublisherSelectionStyleConfiguration_defaultSelectionStyle=&quot;dynamic&quot;";
 		property databases.size = "1";
-		property test.name.skip.portal.instance = "DisplayPageTemplatesWithRemoteStaging#PublishDisplayPageTemplateWithAssetPublisherToLive";
+		property test.name.skip.portal.instance = "DisplayPageTemplatesWithRemoteStaging#PublishDisplayPageTemplateWithAssetPublisherToLive17";
 		property portal.acceptance = "fiona";
 
 		task ("Add a web content and select the display page template") {
@@ -1393,7 +1393,7 @@ definition {
 		property app.server.bundles.size = "1";
 		property custom.properties = "tunneling.servlet.shared.secret=1234567890123456${line.separator}auth.verifier.TunnelAuthVerifier.hosts.allowed=${line.separator}configuration.override.com.liferay.asset.publisher.web.internal.configuration.AssetPublisherSelectionStyleConfiguration_defaultSelectionStyle=&quot;dynamic&quot;";
 		property databases.size = "1";
-		property test.name.skip.portal.instance = "DisplayPageTemplatesWithRemoteStaging#PublishDisplayPageTemplateWithAssetPublisherToLive";
+		property test.name.skip.portal.instance = "DisplayPageTemplatesWithRemoteStaging#PublishDisplayPageTemplateWithAssetPublisherToLive18";
 		property portal.acceptance = "fiona";
 
 		task ("Add a web content and select the display page template") {
@@ -1468,7 +1468,7 @@ definition {
 		property app.server.bundles.size = "1";
 		property custom.properties = "tunneling.servlet.shared.secret=1234567890123456${line.separator}auth.verifier.TunnelAuthVerifier.hosts.allowed=${line.separator}configuration.override.com.liferay.asset.publisher.web.internal.configuration.AssetPublisherSelectionStyleConfiguration_defaultSelectionStyle=&quot;dynamic&quot;";
 		property databases.size = "1";
-		property test.name.skip.portal.instance = "DisplayPageTemplatesWithRemoteStaging#PublishDisplayPageTemplateWithAssetPublisherToLive";
+		property test.name.skip.portal.instance = "DisplayPageTemplatesWithRemoteStaging#PublishDisplayPageTemplateWithAssetPublisherToLive19";
 		property portal.acceptance = "fiona";
 
 		task ("Add a web content and select the display page template") {
@@ -1543,7 +1543,7 @@ definition {
 		property app.server.bundles.size = "1";
 		property custom.properties = "tunneling.servlet.shared.secret=1234567890123456${line.separator}auth.verifier.TunnelAuthVerifier.hosts.allowed=${line.separator}configuration.override.com.liferay.asset.publisher.web.internal.configuration.AssetPublisherSelectionStyleConfiguration_defaultSelectionStyle=&quot;dynamic&quot;";
 		property databases.size = "1";
-		property test.name.skip.portal.instance = "DisplayPageTemplatesWithRemoteStaging#PublishDisplayPageTemplateWithAssetPublisherToLive";
+		property test.name.skip.portal.instance = "DisplayPageTemplatesWithRemoteStaging#PublishDisplayPageTemplateWithAssetPublisherToLive20";
 		property portal.acceptance = "fiona";
 
 		task ("Add a web content and select the display page template") {
@@ -1618,7 +1618,7 @@ definition {
 		property app.server.bundles.size = "1";
 		property custom.properties = "tunneling.servlet.shared.secret=1234567890123456${line.separator}auth.verifier.TunnelAuthVerifier.hosts.allowed=${line.separator}configuration.override.com.liferay.asset.publisher.web.internal.configuration.AssetPublisherSelectionStyleConfiguration_defaultSelectionStyle=&quot;dynamic&quot;";
 		property databases.size = "1";
-		property test.name.skip.portal.instance = "DisplayPageTemplatesWithRemoteStaging#PublishDisplayPageTemplateWithAssetPublisherToLive";
+		property test.name.skip.portal.instance = "DisplayPageTemplatesWithRemoteStaging#PublishDisplayPageTemplateWithAssetPublisherToLive21";
 		property portal.acceptance = "fiona";
 
 		task ("Add a web content and select the display page template") {
@@ -1693,7 +1693,7 @@ definition {
 		property app.server.bundles.size = "1";
 		property custom.properties = "tunneling.servlet.shared.secret=1234567890123456${line.separator}auth.verifier.TunnelAuthVerifier.hosts.allowed=${line.separator}configuration.override.com.liferay.asset.publisher.web.internal.configuration.AssetPublisherSelectionStyleConfiguration_defaultSelectionStyle=&quot;dynamic&quot;";
 		property databases.size = "1";
-		property test.name.skip.portal.instance = "DisplayPageTemplatesWithRemoteStaging#PublishDisplayPageTemplateWithAssetPublisherToLive";
+		property test.name.skip.portal.instance = "DisplayPageTemplatesWithRemoteStaging#PublishDisplayPageTemplateWithAssetPublisherToLive22";
 		property portal.acceptance = "fiona";
 
 		task ("Add a web content and select the display page template") {
@@ -1768,7 +1768,7 @@ definition {
 		property app.server.bundles.size = "1";
 		property custom.properties = "tunneling.servlet.shared.secret=1234567890123456${line.separator}auth.verifier.TunnelAuthVerifier.hosts.allowed=${line.separator}configuration.override.com.liferay.asset.publisher.web.internal.configuration.AssetPublisherSelectionStyleConfiguration_defaultSelectionStyle=&quot;dynamic&quot;";
 		property databases.size = "1";
-		property test.name.skip.portal.instance = "DisplayPageTemplatesWithRemoteStaging#PublishDisplayPageTemplateWithAssetPublisherToLive";
+		property test.name.skip.portal.instance = "DisplayPageTemplatesWithRemoteStaging#PublishDisplayPageTemplateWithAssetPublisherToLive23";
 		property portal.acceptance = "fiona";
 
 		task ("Add a web content and select the display page template") {
@@ -1843,7 +1843,7 @@ definition {
 		property app.server.bundles.size = "1";
 		property custom.properties = "tunneling.servlet.shared.secret=1234567890123456${line.separator}auth.verifier.TunnelAuthVerifier.hosts.allowed=${line.separator}configuration.override.com.liferay.asset.publisher.web.internal.configuration.AssetPublisherSelectionStyleConfiguration_defaultSelectionStyle=&quot;dynamic&quot;";
 		property databases.size = "1";
-		property test.name.skip.portal.instance = "DisplayPageTemplatesWithRemoteStaging#PublishDisplayPageTemplateWithAssetPublisherToLive";
+		property test.name.skip.portal.instance = "DisplayPageTemplatesWithRemoteStaging#PublishDisplayPageTemplateWithAssetPublisherToLive24";
 		property portal.acceptance = "fiona";
 
 		task ("Add a web content and select the display page template") {
@@ -1918,7 +1918,7 @@ definition {
 		property app.server.bundles.size = "1";
 		property custom.properties = "tunneling.servlet.shared.secret=1234567890123456${line.separator}auth.verifier.TunnelAuthVerifier.hosts.allowed=${line.separator}configuration.override.com.liferay.asset.publisher.web.internal.configuration.AssetPublisherSelectionStyleConfiguration_defaultSelectionStyle=&quot;dynamic&quot;";
 		property databases.size = "1";
-		property test.name.skip.portal.instance = "DisplayPageTemplatesWithRemoteStaging#PublishDisplayPageTemplateWithAssetPublisherToLive";
+		property test.name.skip.portal.instance = "DisplayPageTemplatesWithRemoteStaging#PublishDisplayPageTemplateWithAssetPublisherToLive25";
 		property portal.acceptance = "fiona";
 
 		task ("Add a web content and select the display page template") {
@@ -1993,7 +1993,7 @@ definition {
 		property app.server.bundles.size = "1";
 		property custom.properties = "tunneling.servlet.shared.secret=1234567890123456${line.separator}auth.verifier.TunnelAuthVerifier.hosts.allowed=${line.separator}configuration.override.com.liferay.asset.publisher.web.internal.configuration.AssetPublisherSelectionStyleConfiguration_defaultSelectionStyle=&quot;dynamic&quot;";
 		property databases.size = "1";
-		property test.name.skip.portal.instance = "DisplayPageTemplatesWithRemoteStaging#PublishDisplayPageTemplateWithAssetPublisherToLive";
+		property test.name.skip.portal.instance = "DisplayPageTemplatesWithRemoteStaging#PublishDisplayPageTemplateWithAssetPublisherToLive26";
 		property portal.acceptance = "fiona";
 
 		task ("Add a web content and select the display page template") {
@@ -2068,7 +2068,7 @@ definition {
 		property app.server.bundles.size = "1";
 		property custom.properties = "tunneling.servlet.shared.secret=1234567890123456${line.separator}auth.verifier.TunnelAuthVerifier.hosts.allowed=${line.separator}configuration.override.com.liferay.asset.publisher.web.internal.configuration.AssetPublisherSelectionStyleConfiguration_defaultSelectionStyle=&quot;dynamic&quot;";
 		property databases.size = "1";
-		property test.name.skip.portal.instance = "DisplayPageTemplatesWithRemoteStaging#PublishDisplayPageTemplateWithAssetPublisherToLive";
+		property test.name.skip.portal.instance = "DisplayPageTemplatesWithRemoteStaging#PublishDisplayPageTemplateWithAssetPublisherToLive27";
 		property portal.acceptance = "fiona";
 
 		task ("Add a web content and select the display page template") {
@@ -2143,7 +2143,7 @@ definition {
 		property app.server.bundles.size = "1";
 		property custom.properties = "tunneling.servlet.shared.secret=1234567890123456${line.separator}auth.verifier.TunnelAuthVerifier.hosts.allowed=${line.separator}configuration.override.com.liferay.asset.publisher.web.internal.configuration.AssetPublisherSelectionStyleConfiguration_defaultSelectionStyle=&quot;dynamic&quot;";
 		property databases.size = "1";
-		property test.name.skip.portal.instance = "DisplayPageTemplatesWithRemoteStaging#PublishDisplayPageTemplateWithAssetPublisherToLive";
+		property test.name.skip.portal.instance = "DisplayPageTemplatesWithRemoteStaging#PublishDisplayPageTemplateWithAssetPublisherToLive28";
 		property portal.acceptance = "fiona";
 
 		task ("Add a web content and select the display page template") {
@@ -2218,7 +2218,7 @@ definition {
 		property app.server.bundles.size = "1";
 		property custom.properties = "tunneling.servlet.shared.secret=1234567890123456${line.separator}auth.verifier.TunnelAuthVerifier.hosts.allowed=${line.separator}configuration.override.com.liferay.asset.publisher.web.internal.configuration.AssetPublisherSelectionStyleConfiguration_defaultSelectionStyle=&quot;dynamic&quot;";
 		property databases.size = "1";
-		property test.name.skip.portal.instance = "DisplayPageTemplatesWithRemoteStaging#PublishDisplayPageTemplateWithAssetPublisherToLive";
+		property test.name.skip.portal.instance = "DisplayPageTemplatesWithRemoteStaging#PublishDisplayPageTemplateWithAssetPublisherToLive29";
 		property portal.acceptance = "fiona";
 
 		task ("Add a web content and select the display page template") {
@@ -2293,7 +2293,7 @@ definition {
 		property app.server.bundles.size = "1";
 		property custom.properties = "tunneling.servlet.shared.secret=1234567890123456${line.separator}auth.verifier.TunnelAuthVerifier.hosts.allowed=${line.separator}configuration.override.com.liferay.asset.publisher.web.internal.configuration.AssetPublisherSelectionStyleConfiguration_defaultSelectionStyle=&quot;dynamic&quot;";
 		property databases.size = "1";
-		property test.name.skip.portal.instance = "DisplayPageTemplatesWithRemoteStaging#PublishDisplayPageTemplateWithAssetPublisherToLive";
+		property test.name.skip.portal.instance = "DisplayPageTemplatesWithRemoteStaging#PublishDisplayPageTemplateWithAssetPublisherToLive30";
 		property portal.acceptance = "fiona";
 
 		task ("Add a web content and select the display page template") {
@@ -2368,7 +2368,7 @@ definition {
 		property app.server.bundles.size = "1";
 		property custom.properties = "tunneling.servlet.shared.secret=1234567890123456${line.separator}auth.verifier.TunnelAuthVerifier.hosts.allowed=${line.separator}configuration.override.com.liferay.asset.publisher.web.internal.configuration.AssetPublisherSelectionStyleConfiguration_defaultSelectionStyle=&quot;dynamic&quot;";
 		property databases.size = "1";
-		property test.name.skip.portal.instance = "DisplayPageTemplatesWithRemoteStaging#PublishDisplayPageTemplateWithAssetPublisherToLive";
+		property test.name.skip.portal.instance = "DisplayPageTemplatesWithRemoteStaging#PublishDisplayPageTemplateWithAssetPublisherToLive31";
 		property portal.acceptance = "fiona";
 
 		task ("Add a web content and select the display page template") {
