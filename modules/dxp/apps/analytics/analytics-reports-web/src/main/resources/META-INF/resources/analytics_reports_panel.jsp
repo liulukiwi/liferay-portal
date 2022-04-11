@@ -19,9 +19,10 @@
 <%
 AnalyticsReportsDisplayContext analyticsReportsDisplayContext = (AnalyticsReportsDisplayContext)request.getAttribute(AnalyticsReportsWebKeys.ANALYTICS_REPORTS_DISPLAY_CONTEXT);
 %>
-
-<span aria-hidden="true" className="loading-animation loading-animation-sm" />
-
+<span
+	aria-hidden="true"
+	className="loading-animation loading-animation-sm"
+></span>
 <react:component
 	module="js/AnalyticsReportsApp"
 	props="<%= analyticsReportsDisplayContext.getData() %>"
