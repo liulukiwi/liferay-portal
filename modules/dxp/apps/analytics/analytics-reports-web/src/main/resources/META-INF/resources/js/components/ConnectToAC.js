@@ -91,7 +91,6 @@ export default function ConnectToAC({
 					<ClayLink
 						className="d-block font-weight-bold mb-2 mt-5"
 						onClick={onHideAnalyticsReportsPanelClick}
-						tabIndex="0"
 					>
 						{Liferay.Language.get('do-not-show-me-this-again')}
 					</ClayLink>
