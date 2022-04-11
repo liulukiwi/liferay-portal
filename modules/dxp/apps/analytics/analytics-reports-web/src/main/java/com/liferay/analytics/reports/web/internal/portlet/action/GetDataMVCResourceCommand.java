@@ -51,7 +51,6 @@ import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.ObjectValuePair;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
-import com.liferay.portal.kernel.util.PrefsPropsUtil;
 import com.liferay.portal.kernel.util.ResourceBundleUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
@@ -339,8 +338,6 @@ public class GetDataMVCResourceCommand extends BaseMVCResourceCommand {
 				AnalyticsReportsPortletKeys.ANALYTICS_REPORTS)
 		).put(
 			"page", JSONUtil.put("plid", layout.getPlid())
-		).put(
-			"pathToAssets", _portal.getPathContext(resourceRequest)
 		).put(
 			"publishDate",
 			DateTimeFormatter.ISO_DATE.format(
