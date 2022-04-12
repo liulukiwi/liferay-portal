@@ -51,30 +51,6 @@ export default function AnalyticsReportsApp({context, portletNamespace}) {
 
 	const [isPanelStateOpen] = useInitialPanelState();
 
-	useEffect(() => {
-		const sidenavInstance = Liferay.SideNavigation.initialize(
-			analyticsReportsPanelToggle
-		);
-
-		sidenavInstance.on('open.lexicon.sidenav', () => {
-			Liferay.Util.Session.set(
-				'com.liferay.analytics.reports.web_panelState',
-				'open'
-			);
-		});
-
-		sidenavInstance.on('closed.lexicon.sidenav', () => {
-			Liferay.Util.Session.set(
-				'com.liferay.analytics.reports.web_panelState',
-				'closed'
-			);
-		});
-
-		Liferay.once('screenLoad', () => {
-			Liferay.SideNavigation.destroy(analyticsReportsPanelToggle);
-		});
-	}, [analyticsReportsPanelToggle, portletNamespace]);
-
 	useEventListener(
 		'mouseenter',
 		() => setHoverOrFocusEventTriggered(true),
@@ -90,13 +66,11 @@ export default function AnalyticsReportsApp({context, portletNamespace}) {
 	);
 
 	return (
-		<div id={`${portletNamespace}-analytics-reports-root`}>
-			<AnalyticsReports
-				analyticsReportsDataURL={analyticsReportsDataURL}
-				hoverOrFocusEventTriggered={hoverOrFocusEventTriggered}
-				isPanelStateOpen={isPanelStateOpen}
-			/>
-		</div>
+		<AnalyticsReports
+			analyticsReportsDataURL={analyticsReportsDataURL}
+			hoverOrFocusEventTriggered={hoverOrFocusEventTriggered}
+			isPanelStateOpen={isPanelStateOpen}
+		/>
 	);
 }
 

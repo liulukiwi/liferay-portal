@@ -20,7 +20,6 @@ import {ChartStateContextProvider} from '../context/ChartStateContext';
 import ConnectionContext from '../context/ConnectionContext';
 import {StoreContextProvider} from '../context/StoreContext';
 import {dataReducer, initialState} from '../context/dataReducer';
-import ConnectToAC from './ConnectToAC';
 import Navigation from './Navigation';
 
 import '../../css/analytics-reports-app.scss';
@@ -110,8 +109,7 @@ export default function AnalyticsReports({
 		data && (
 			<ConnectionContext.Provider
 				value={{
-					validAnalyticsConnection:
-						data?.analyticsData.hasValidConnection,
+					validAnalyticsConnection: data?.validAnalyticsConnection,
 				}}
 			>
 				<StoreContextProvider
@@ -128,35 +126,19 @@ export default function AnalyticsReports({
 						timeRange={data?.timeRange}
 						timeSpanKey={data?.timeSpanKey}
 					>
-						{data?.analyticsData.isSynced ? (
-							<div className="analytics-reports-app">
-								<Navigation
-									author={data?.author}
-									canonicalURL={data?.canonicalURL}
-									onSelectedLanguageClick={
-										handleSelectedLanguageClick
-									}
-									pagePublishDate={data?.publishDate}
-									pageTitle={data?.title}
-									timeSpanOptions={data?.timeSpans}
-									viewURLs={data?.viewURLs}
-								/>
-							</div>
-						) : (
-							<ConnectToAC
-								analyticsCloudTrialURL={
-									data?.analyticsData.cloudTrialURL
+						<div className="analytics-reports-app">
+							<Navigation
+								author={data?.author}
+								canonicalURL={data?.canonicalURL}
+								onSelectedLanguageClick={
+									handleSelectedLanguageClick
 								}
-								analyticsURL={data?.analyticsData.url}
-								hideAnalyticsReportsPanelURL={
-									data?.hideAnalyticsReportsPanelURL
-								}
-								isAnalyticsConnected={
-									data?.analyticsData.hasValidConnection
-								}
-								pathToAssets={data?.pathToAssets}
+								pagePublishDate={data?.publishDate}
+								pageTitle={data?.title}
+								timeSpanOptions={data?.timeSpans}
+								viewURLs={data?.viewURLs}
 							/>
-						)}
+						</div>
 					</ChartStateContextProvider>
 				</StoreContextProvider>
 			</ConnectionContext.Provider>
