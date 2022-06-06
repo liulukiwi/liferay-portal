@@ -66,8 +66,6 @@ definition {
 		property database.types = "db2,mariadb,mysql,oracle,postgresql,sybase";
 		property portal.version = "7.3.0";
 
-		Upgrade.viewDefaultPage();
-
 		Upgrade.viewAssetPublisher(categoryName = "Category Name");
 	}
 
@@ -76,8 +74,6 @@ definition {
 		property data.archive.type = "data-archive-asset-publisher";
 		property database.types = "db2,mariadb,mysql,oracle,postgresql,sybase";
 		property portal.version = "7.3.10";
-
-		Upgrade.viewDefaultPage();
 
 		Upgrade.viewAssetPublisher(categoryName = "Category Name");
 	}
