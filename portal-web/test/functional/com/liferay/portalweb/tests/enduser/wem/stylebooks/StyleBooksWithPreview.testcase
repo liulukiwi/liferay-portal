@@ -449,6 +449,7 @@ definition {
 	@description = "This is a test for LPS-140774. The user can preview the effects on default fragments in styles book editor."
 	@priority = "4"
 	test PreviewEffectOnDefaultFragment {
+		property portal.acceptance = "fiona";
 		property portal.release = "false";
 
 		task ("Add a style book") {
