@@ -1083,6 +1083,8 @@ definition {
 	@description = "This is a test for LPS-113996. The user could filter documents by field in Asset Publisher."
 	@priority = "4"
 	test FilterDocumentsByField {
+		property portal.acceptance = "fiona";
+
 		task ("Add a document type with a Select from List field") {
 			DMDocument.openDocumentsAndMediaAdmin(siteURLKey = "test-site-name");
 
