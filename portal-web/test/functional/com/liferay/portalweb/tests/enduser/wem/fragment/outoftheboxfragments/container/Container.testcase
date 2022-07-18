@@ -181,7 +181,7 @@ definition {
 
 			takeScreenshot();
 
-			var screenWidth = selenium.getElementWidth("KaleoDesignerEditWorkflow#BODY");
+			var screenWidth = selenium.getElementWidth("//div[contains(@class,'layout-content')]");
 			var containerWidth = selenium.getElementWidth("PageEditor#CONTAINER");
 
 			TestUtils.assertNotEquals(
