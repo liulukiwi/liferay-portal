@@ -679,7 +679,7 @@
 
 <tr>
 	<td>CONTAINER</td>
-	<td>//div[contains(@class,'lfr-layout-structure-item-container')]</td>
+	<td>//div[contains(@class,'layout-content')]//div[contains(@class,'lfr-layout-structure-item-container')]</td>
 	<td></td>
 </tr>
 <tr>
