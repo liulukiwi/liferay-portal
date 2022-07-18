@@ -179,8 +179,10 @@ definition {
 				pageName = "Content Page Name",
 				siteName = "Test Site Name");
 
-			var screenWidth = selenium.getElementWidth("//body");
-			var containerWidth = selenium.getElementWidth("//div[contains(@class,'lfr-layout-structure-item-container')]");
+			takeScreenshot();
+
+			var screenWidth = selenium.getElementWidth("KaleoDesignerEditWorkflow#BODY");
+			var containerWidth = selenium.getElementWidth("PageEditor#CONTAINER");
 
 			TestUtils.assertNotEquals(
 				actual = "${containerWidth}",
