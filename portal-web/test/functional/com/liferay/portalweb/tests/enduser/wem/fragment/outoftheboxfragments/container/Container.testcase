@@ -179,10 +179,10 @@ definition {
 				pageName = "Content Page Name",
 				siteName = "Test Site Name");
 
-			takeScreenshot();
+			SelectFrameTop();
 
-			var screenWidth = selenium.getElementWidth("//div[contains(@class,'layout-content')]");
-			var containerWidth = selenium.getElementWidth("PageEditor#CONTAINER");
+			var screenWidth = selenium.getElementWidth("//body");
+			var containerWidth = selenium.getElementWidth("//div[contains(@class,'lfr-layout-structure-item-container')]");
 
 			TestUtils.assertNotEquals(
 				actual = "${containerWidth}",
