@@ -678,6 +678,11 @@
 <!--LAYOUT ELEMENTS-->
 
 <tr>
+	<td>CONTAINER</td>
+	<td>//div[contains(@class,'layout-content')]//div[contains(@class,'lfr-layout-structure-item-container')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>CONTAINER_CONTAINER</td>
 	<td>xpath=(//div[@aria-label='Container'])[${key_position}]/div[contains(@class,'page-editor__topper__content')]/div[contains(@class,'page-editor__container')]</td>
 	<td></td>
