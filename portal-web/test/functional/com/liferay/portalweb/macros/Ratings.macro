@@ -89,9 +89,11 @@ definition {
 			AssertElementPresent(locator1 = "Ratings#YOUR_RATING_STAR_DELETE_DISABLE");
 		}
 
-		Click.clickNoMouseOver(
+		Click.javaScriptClick(
 			key_ratingStarCount = "${ratingStarCount}",
 			locator1 = "Ratings#YOUR_RATING_STAR_COUNT");
+
+		MouseOver(locator1 = "AP#ASSET_ABSTRACT_DETAIL_CONTENT");
 
 		AssertElementPresent(
 			key_ratingStarCount = "${ratingStarCount}",
