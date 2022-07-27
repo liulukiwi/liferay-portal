@@ -32,6 +32,8 @@ definition {
 	@description = "View rating score in Highest Rated Assets widget."
 	@priority = "4"
 	test ViewHighestRatedAsset {
+		property portal.acceptance = "fiona";
+
 		task ("Add two widget pages") {
 			for (var i : list "1,2") {
 				JSONLayout.addPublicLayout(
