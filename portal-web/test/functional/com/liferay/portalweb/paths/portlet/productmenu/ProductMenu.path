@@ -42,7 +42,7 @@
 </tr>
 <tr>
 	<td>PRODUCT_MENU_OPENED</td>
-	<td>//div[contains(@id,'sidenavSliderId') and contains(@class,'open') and not(contains(@class,'sidenav-transition')) and not(contains(@class,'closed'))]</td>
+	<td>//div[contains(@class,'sidebar__content') and contains(@class,'open') and not(contains(@class,'sidenav-transition')) and not(contains(@class,'closed'))]</td>
 	<td></td>
 </tr>
 <tr>
