@@ -684,6 +684,8 @@ definition {
 
 		PageEditor.gotoTab(tabName = "Fragments and Widgets");
 
+		takeScreenshot();
+
 		if (!(isSet(displayStyle))) {
 			var displayStyle = "list";
 		}
@@ -700,7 +702,7 @@ definition {
 		}
 
 		if (IsElementNotPresent(key_switchTo = "${switchTo}", locator1 = "PageEditor#FRAGMENTS_AND_WIDGETS_DISPLAY_STYLE_BUTTON")) {
-			Click.clickNoMouseOver(
+			Click.javaScriptClick(
 				key_switchTo = "",
 				locator1 = "PageEditor#FRAGMENTS_AND_WIDGETS_DISPLAY_STYLE_BUTTON");
 		}
