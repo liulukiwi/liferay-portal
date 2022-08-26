@@ -686,6 +686,8 @@ definition {
 
 		takeScreenshot();
 
+		WaitForPageLoad();
+
 		if (!(isSet(displayStyle))) {
 			var displayStyle = "list";
 		}
@@ -702,6 +704,8 @@ definition {
 		}
 
 		if (IsElementNotPresent(key_switchTo = "${switchTo}", locator1 = "PageEditor#FRAGMENTS_AND_WIDGETS_DISPLAY_STYLE_BUTTON")) {
+			takeScreenshot();
+
 			Click.javaScriptClick(
 				key_switchTo = "",
 				locator1 = "PageEditor#FRAGMENTS_AND_WIDGETS_DISPLAY_STYLE_BUTTON");
