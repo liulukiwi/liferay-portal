@@ -684,6 +684,8 @@ definition {
 
 		PageEditor.gotoTab(tabName = "Fragments and Widgets");
 
+		takeScreenshot();
+
 		if (!(isSet(displayStyle))) {
 			var displayStyle = "list";
 		}
@@ -700,6 +702,8 @@ definition {
 		}
 
 		if (IsElementNotPresent(key_switchTo = "${switchTo}", locator1 = "PageEditor#FRAGMENTS_AND_WIDGETS_DISPLAY_STYLE_BUTTON")) {
+			takeScreenshot();
+
 			Click(
 				key_switchTo = "",
 				locator1 = "PageEditor#FRAGMENTS_AND_WIDGETS_DISPLAY_STYLE_BUTTON");
@@ -3819,6 +3823,8 @@ return	Array.from(getWebElement("(//div[@aria-label='${fragmentName}'])[${index}
 			Click(
 				key_tabName = "${tabName}",
 				locator1 = "PageEditor#FRAGMENT_SIDEBAR_TAB_BUTTON");
+			
+			WaitForVisible(locator1 = "Sidebar#PANEL_OPEN");
 		}
 		else {
 			WaitForVisible(locator1 = "Sidebar#PANEL_OPEN");
