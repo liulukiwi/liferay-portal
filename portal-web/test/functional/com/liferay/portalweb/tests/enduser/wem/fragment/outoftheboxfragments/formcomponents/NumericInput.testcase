@@ -16,6 +16,13 @@ definition {
 		task ("Add a new site") {
 			JSONGroup.addGroup(groupName = "Test Site Name");
 		}
+
+		task ("Add a company Object") {
+			ObjectAdmin.addObjectViaAPI(
+				labelName = "Purchase Order",
+				objectName = "PurchaseOrder",
+				pluralLabelName = "Purchase Orders");
+		}
 	}
 
 	tearDown {
@@ -35,12 +42,7 @@ definition {
 	@priority = "4"
 	test ConfigureNumericInput {
 		task ("Given a page creator has a Form Container mapped to an entity with Integer field") {
-			task ("Add a company Object with a Long Integer, Integer, Precision Decimal and Decimal fields") {
-				ObjectAdmin.addObjectViaAPI(
-					labelName = "Purchase Order",
-					objectName = "PurchaseOrder",
-					pluralLabelName = "Purchase Orders");
-
+			task ("Add a Long Integer, Integer, Precision Decimal and Decimal fields to Object") {
 				ObjectAdmin.addObjectFieldViaAPI(
 					fieldBusinessType = "LongInteger",
 					fieldLabelName = "Amount",
@@ -188,12 +190,7 @@ definition {
 	@priority = "4"
 	test SubmitFormWithNumericInput {
 		task ("Given a user has a content page with Numeric Input fragments inside Form Container") {
-			task ("Add a company Object with a Long Integer, Integer, Precision Decimal and Decimal fields") {
-				ObjectAdmin.addObjectViaAPI(
-					labelName = "Purchase Order",
-					objectName = "PurchaseOrder",
-					pluralLabelName = "Purchase Orders");
-
+			task ("Add a Long Integer, Integer, Precision Decimal and Decimal fields to Object") {
 				ObjectAdmin.addObjectFieldViaAPI(
 					fieldBusinessType = "LongInteger",
 					fieldLabelName = "Amount",
@@ -376,12 +373,7 @@ definition {
 		property portal.acceptance = "fiona";
 
 		task ("Given a user has a content page with a Numeric Input inside Form Container") {
-			task ("Add a company Object with a Long Integer, Integer, Precision Decimal and Decimal fields") {
-				ObjectAdmin.addObjectViaAPI(
-					labelName = "Purchase Order",
-					objectName = "PurchaseOrder",
-					pluralLabelName = "Purchase Orders");
-
+			task ("Add a Long Integer, Integer, Precision Decimal and Decimal fields to Object") {
 				ObjectAdmin.addObjectFieldViaAPI(
 					fieldBusinessType = "LongInteger",
 					fieldLabelName = "Amount",
@@ -570,12 +562,7 @@ definition {
 	@priority = "4"
 	test ViewErrorMessageWhenSubmitFormWithValueExceedingTheMaxOrMinValueOfField {
 		task ("Given a user has a content page where a Numeric Input and Submit Button fragments are inside a Form Container") {
-			task ("Add a company Object with a Long Integer, Integer, Precision Decimal and Decimal fields") {
-				ObjectAdmin.addObjectViaAPI(
-					labelName = "Purchase Order",
-					objectName = "PurchaseOrder",
-					pluralLabelName = "Purchase Orders");
-
+			task ("Add a Long Integer, Integer, Precision Decimal and Decimal fields to Object") {
 				ObjectAdmin.addObjectFieldViaAPI(
 					fieldBusinessType = "LongInteger",
 					fieldLabelName = "Amount",
@@ -711,12 +698,7 @@ definition {
 		property portal.acceptance = "fiona";
 
 		task ("Given a page creator has a content page with a Numeric Input inside Form Container") {
-			task ("Add a company Object with a Long Integer, Integer, Precision Decimal and Decimal fields") {
-				ObjectAdmin.addObjectViaAPI(
-					labelName = "Purchase Order",
-					objectName = "PurchaseOrder",
-					pluralLabelName = "Purchase Orders");
-
+			task ("Add a Long Integer, Integer, Precision Decimal and Decimal fields to Object") {
 				ObjectAdmin.addObjectFieldViaAPI(
 					fieldBusinessType = "LongInteger",
 					fieldLabelName = "Amount",
