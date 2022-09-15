@@ -16,47 +16,6 @@ definition {
 		task ("Add a new site") {
 			JSONGroup.addGroup(groupName = "Test Site Name");
 		}
-
-		task ("Add a company Object with a Long Integer, Integer, Precision Decimal and Decimal fields") {
-			ObjectAdmin.addObjectViaAPI(
-				labelName = "Purchase Order",
-				objectName = "PurchaseOrder",
-				pluralLabelName = "Purchase Orders");
-
-			ObjectAdmin.addObjectFieldViaAPI(
-				fieldBusinessType = "LongInteger",
-				fieldLabelName = "Amount",
-				fieldName = "amount",
-				fieldType = "Long",
-				isRequired = "false",
-				objectName = "PurchaseOrder");
-
-			ObjectAdmin.addObjectFieldViaAPI(
-				fieldBusinessType = "Integer",
-				fieldLabelName = "Ticket Number",
-				fieldName = "ticketNumber",
-				fieldType = "Integer",
-				isRequired = "false",
-				objectName = "PurchaseOrder");
-
-			ObjectAdmin.addObjectFieldViaAPI(
-				fieldBusinessType = "PrecisionDecimal",
-				fieldLabelName = "Price",
-				fieldName = "price",
-				fieldType = "BigDecimal",
-				isRequired = "false",
-				objectName = "PurchaseOrder");
-
-			ObjectAdmin.addObjectFieldViaAPI(
-				fieldBusinessType = "Decimal",
-				fieldLabelName = "Tax",
-				fieldName = "tax",
-				fieldType = "Double",
-				isRequired = "false",
-				objectName = "PurchaseOrder");
-
-			ObjectAdmin.publishObjectViaAPI(objectName = "PurchaseOrder");
-		}
 	}
 
 	tearDown {
@@ -76,6 +35,47 @@ definition {
 	@priority = "4"
 	test ConfigureNumericInput {
 		task ("Given a page creator has a Form Container mapped to an entity with Integer field") {
+			task ("Add a company Object with a Long Integer, Integer, Precision Decimal and Decimal fields") {
+				ObjectAdmin.addObjectViaAPI(
+					labelName = "Purchase Order",
+					objectName = "PurchaseOrder",
+					pluralLabelName = "Purchase Orders");
+
+				ObjectAdmin.addObjectFieldViaAPI(
+					fieldBusinessType = "LongInteger",
+					fieldLabelName = "Amount",
+					fieldName = "amount",
+					fieldType = "Long",
+					isRequired = "false",
+					objectName = "PurchaseOrder");
+
+				ObjectAdmin.addObjectFieldViaAPI(
+					fieldBusinessType = "Integer",
+					fieldLabelName = "Ticket Number",
+					fieldName = "ticketNumber",
+					fieldType = "Integer",
+					isRequired = "false",
+					objectName = "PurchaseOrder");
+
+				ObjectAdmin.addObjectFieldViaAPI(
+					fieldBusinessType = "PrecisionDecimal",
+					fieldLabelName = "Price",
+					fieldName = "price",
+					fieldType = "BigDecimal",
+					isRequired = "false",
+					objectName = "PurchaseOrder");
+
+				ObjectAdmin.addObjectFieldViaAPI(
+					fieldBusinessType = "Decimal",
+					fieldLabelName = "Tax",
+					fieldName = "tax",
+					fieldType = "Double",
+					isRequired = "false",
+					objectName = "PurchaseOrder");
+
+				ObjectAdmin.publishObjectViaAPI(objectName = "PurchaseOrder");
+			}
+
 			task ("Add a Form Container framgment to content page") {
 				JSONLayout.addPublicLayout(
 					groupName = "Test Site Name",
@@ -188,6 +188,47 @@ definition {
 	@priority = "4"
 	test SubmitFormWithNumericInput {
 		task ("Given a user has a content page with Numeric Input fragments inside Form Container") {
+			task ("Add a company Object with a Long Integer, Integer, Precision Decimal and Decimal fields") {
+				ObjectAdmin.addObjectViaAPI(
+					labelName = "Purchase Order",
+					objectName = "PurchaseOrder",
+					pluralLabelName = "Purchase Orders");
+
+				ObjectAdmin.addObjectFieldViaAPI(
+					fieldBusinessType = "LongInteger",
+					fieldLabelName = "Amount",
+					fieldName = "amount",
+					fieldType = "Long",
+					isRequired = "false",
+					objectName = "PurchaseOrder");
+
+				ObjectAdmin.addObjectFieldViaAPI(
+					fieldBusinessType = "Integer",
+					fieldLabelName = "Ticket Number",
+					fieldName = "ticketNumber",
+					fieldType = "Integer",
+					isRequired = "false",
+					objectName = "PurchaseOrder");
+
+				ObjectAdmin.addObjectFieldViaAPI(
+					fieldBusinessType = "PrecisionDecimal",
+					fieldLabelName = "Price",
+					fieldName = "price",
+					fieldType = "BigDecimal",
+					isRequired = "false",
+					objectName = "PurchaseOrder");
+
+				ObjectAdmin.addObjectFieldViaAPI(
+					fieldBusinessType = "Decimal",
+					fieldLabelName = "Tax",
+					fieldName = "tax",
+					fieldType = "Double",
+					isRequired = "false",
+					objectName = "PurchaseOrder");
+
+				ObjectAdmin.publishObjectViaAPI(objectName = "PurchaseOrder");
+			}
+
 			task ("Add a Form Container framgment to content page") {
 				JSONLayout.addPublicLayout(
 					groupName = "Test Site Name",
@@ -335,6 +376,47 @@ definition {
 		property portal.acceptance = "true";
 
 		task ("Given a user has a content page with a Numeric Input inside Form Container") {
+			task ("Add a company Object with a Long Integer, Integer, Precision Decimal and Decimal fields") {
+				ObjectAdmin.addObjectViaAPI(
+					labelName = "Purchase Order",
+					objectName = "PurchaseOrder",
+					pluralLabelName = "Purchase Orders");
+
+				ObjectAdmin.addObjectFieldViaAPI(
+					fieldBusinessType = "LongInteger",
+					fieldLabelName = "Amount",
+					fieldName = "amount",
+					fieldType = "Long",
+					isRequired = "false",
+					objectName = "PurchaseOrder");
+
+				ObjectAdmin.addObjectFieldViaAPI(
+					fieldBusinessType = "Integer",
+					fieldLabelName = "Ticket Number",
+					fieldName = "ticketNumber",
+					fieldType = "Integer",
+					isRequired = "false",
+					objectName = "PurchaseOrder");
+
+				ObjectAdmin.addObjectFieldViaAPI(
+					fieldBusinessType = "PrecisionDecimal",
+					fieldLabelName = "Price",
+					fieldName = "price",
+					fieldType = "BigDecimal",
+					isRequired = "false",
+					objectName = "PurchaseOrder");
+
+				ObjectAdmin.addObjectFieldViaAPI(
+					fieldBusinessType = "Decimal",
+					fieldLabelName = "Tax",
+					fieldName = "tax",
+					fieldType = "Double",
+					isRequired = "false",
+					objectName = "PurchaseOrder");
+
+				ObjectAdmin.publishObjectViaAPI(objectName = "PurchaseOrder");
+			}
+
 			task ("Add a Form Container framgment to content page") {
 				JSONLayout.addPublicLayout(
 					groupName = "Test Site Name",
@@ -488,6 +570,47 @@ definition {
 	@priority = "4"
 	test ViewErrorMessageWhenSubmitFormWithValueExceedingTheMaxOrMinValueOfField {
 		task ("Given a user has a content page where a Numeric Input and Submit Button fragments are inside a Form Container") {
+			task ("Add a company Object with a Long Integer, Integer, Precision Decimal and Decimal fields") {
+				ObjectAdmin.addObjectViaAPI(
+					labelName = "Purchase Order",
+					objectName = "PurchaseOrder",
+					pluralLabelName = "Purchase Orders");
+
+				ObjectAdmin.addObjectFieldViaAPI(
+					fieldBusinessType = "LongInteger",
+					fieldLabelName = "Amount",
+					fieldName = "amount",
+					fieldType = "Long",
+					isRequired = "false",
+					objectName = "PurchaseOrder");
+
+				ObjectAdmin.addObjectFieldViaAPI(
+					fieldBusinessType = "Integer",
+					fieldLabelName = "Ticket Number",
+					fieldName = "ticketNumber",
+					fieldType = "Integer",
+					isRequired = "false",
+					objectName = "PurchaseOrder");
+
+				ObjectAdmin.addObjectFieldViaAPI(
+					fieldBusinessType = "PrecisionDecimal",
+					fieldLabelName = "Price",
+					fieldName = "price",
+					fieldType = "BigDecimal",
+					isRequired = "false",
+					objectName = "PurchaseOrder");
+
+				ObjectAdmin.addObjectFieldViaAPI(
+					fieldBusinessType = "Decimal",
+					fieldLabelName = "Tax",
+					fieldName = "tax",
+					fieldType = "Double",
+					isRequired = "false",
+					objectName = "PurchaseOrder");
+
+				ObjectAdmin.publishObjectViaAPI(objectName = "PurchaseOrder");
+			}
+
 			task ("Add a Form Container framgment to content page") {
 				JSONLayout.addPublicLayout(
 					groupName = "Test Site Name",
@@ -588,6 +711,47 @@ definition {
 		property portal.acceptance = "true";
 
 		task ("Given a page creator has a content page with a Numeric Input inside Form Container") {
+			task ("Add a company Object with a Long Integer, Integer, Precision Decimal and Decimal fields") {
+				ObjectAdmin.addObjectViaAPI(
+					labelName = "Purchase Order",
+					objectName = "PurchaseOrder",
+					pluralLabelName = "Purchase Orders");
+
+				ObjectAdmin.addObjectFieldViaAPI(
+					fieldBusinessType = "LongInteger",
+					fieldLabelName = "Amount",
+					fieldName = "amount",
+					fieldType = "Long",
+					isRequired = "false",
+					objectName = "PurchaseOrder");
+
+				ObjectAdmin.addObjectFieldViaAPI(
+					fieldBusinessType = "Integer",
+					fieldLabelName = "Ticket Number",
+					fieldName = "ticketNumber",
+					fieldType = "Integer",
+					isRequired = "false",
+					objectName = "PurchaseOrder");
+
+				ObjectAdmin.addObjectFieldViaAPI(
+					fieldBusinessType = "PrecisionDecimal",
+					fieldLabelName = "Price",
+					fieldName = "price",
+					fieldType = "BigDecimal",
+					isRequired = "false",
+					objectName = "PurchaseOrder");
+
+				ObjectAdmin.addObjectFieldViaAPI(
+					fieldBusinessType = "Decimal",
+					fieldLabelName = "Tax",
+					fieldName = "tax",
+					fieldType = "Double",
+					isRequired = "false",
+					objectName = "PurchaseOrder");
+
+				ObjectAdmin.publishObjectViaAPI(objectName = "PurchaseOrder");
+			}
+
 			task ("Add a Form Container framgment to content page") {
 				JSONLayout.addPublicLayout(
 					groupName = "Test Site Name",

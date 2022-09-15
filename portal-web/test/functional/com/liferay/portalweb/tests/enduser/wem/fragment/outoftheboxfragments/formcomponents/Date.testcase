@@ -16,23 +16,6 @@ definition {
 		task ("Add a new site") {
 			JSONGroup.addGroup(groupName = "Test Site Name");
 		}
-
-		task ("Add a company Object with a Boolean field") {
-			ObjectAdmin.addObjectViaAPI(
-				labelName = "Purchase Order",
-				objectName = "PurchaseOrder",
-				pluralLabelName = "Purchase Orders");
-
-			ObjectAdmin.addObjectFieldViaAPI(
-				fieldBusinessType = "Date",
-				fieldLabelName = "Purchase Date",
-				fieldName = "purchaseDate",
-				fieldType = "Date",
-				isRequired = "false",
-				objectName = "PurchaseOrder");
-
-			ObjectAdmin.publishObjectViaAPI(objectName = "PurchaseOrder");
-		}
 	}
 
 	tearDown {
@@ -54,6 +37,23 @@ definition {
 		property portal.acceptance = "true";
 
 		task ("Given a page creator has a Form Container mapped to an entity with date field") {
+			task ("Add a company Object with a Boolean field") {
+				ObjectAdmin.addObjectViaAPI(
+					labelName = "Purchase Order",
+					objectName = "PurchaseOrder",
+					pluralLabelName = "Purchase Orders");
+
+				ObjectAdmin.addObjectFieldViaAPI(
+					fieldBusinessType = "Date",
+					fieldLabelName = "Purchase Date",
+					fieldName = "purchaseDate",
+					fieldType = "Date",
+					isRequired = "false",
+					objectName = "PurchaseOrder");
+
+				ObjectAdmin.publishObjectViaAPI(objectName = "PurchaseOrder");
+			}
+
 			task ("Add a Form Container framgment to content page") {
 				JSONLayout.addPublicLayout(
 					groupName = "Test Site Name",
