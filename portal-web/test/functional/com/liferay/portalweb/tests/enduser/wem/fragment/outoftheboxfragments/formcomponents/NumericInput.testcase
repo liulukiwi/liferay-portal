@@ -332,7 +332,7 @@ definition {
 	@description = "This is a test for LPS-155169. The Numeric Input only allow numbers and some special characters."
 	@priority = "5"
 	test ViewAllowedCharacters {
-		property portal.acceptance = "true";
+		property portal.acceptance = "fiona";
 
 		task ("Given a user has a content page with a Numeric Input inside Form Container") {
 			task ("Add a Form Container framgment to content page") {
@@ -585,7 +585,7 @@ definition {
 	@description = "This is a test for LPS-155169. The Numeric Input could be mapped to Long Integer, Integer, Precision Decimal and Decimal fields."
 	@priority = "5"
 	test ViewMappableFields {
-		property portal.acceptance = "true";
+		property portal.acceptance = "fiona";
 
 		task ("Given a page creator has a content page with a Numeric Input inside Form Container") {
 			task ("Add a Form Container framgment to content page") {
