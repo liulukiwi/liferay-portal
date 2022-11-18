@@ -33,6 +33,8 @@ definition {
 	@priority = "4"
 	@uitest
 	test AddWidgetTemplateInStagingSite {
+		property portal.acceptance = "fiona";
+
 		task ("Add a widget templates in staging site") {
 			ApplicationDisplayTemplates.openWidgetTemplatesAdmin(siteURLKey = "test-site-name-staging");
 
@@ -44,7 +46,308 @@ definition {
 		task ("Publish to Live") {
 			Staging.openStagingAdmin(siteURLKey = "test-site-name-staging");
 
-			Staging.publishCustomPublication(checkContentNameList = "Templates");
+			Staging.addCustomPublication();
+
+			Check.checkNotVisible(
+				key_contentName = "Templates",
+				locator1 = "Staging#STAGING_CONTENT_CHECKBOX");
+
+			ScrollWebElementIntoView(locator1 = "Staging#STAGING_CONTENT_INFO");
+
+			AssertTextEquals(
+				locator1 = "Staging#STAGING_CONTENT_INFO",
+				value1 = "Asset Publisher Template (1)");
+
+			Staging.clickPublishToLiveButton();
+
+			Staging.viewProcessResult();
+		}
+
+		task ("View the widget template in live site") {
+			ApplicationDisplayTemplates.openWidgetTemplatesAdmin(siteURLKey = "test-site-name");
+
+			ApplicationDisplayTemplates.viewTemplate(adtType = "Asset Publisher");
+		}
+	}
+
+	@description = "Add a widget template in staging site."
+	@priority = "4"
+	@uitest
+	test AddWidgetTemplateInStagingSite2 {
+		property portal.acceptance = "fiona";
+
+		task ("Add a widget templates in staging site") {
+			ApplicationDisplayTemplates.openWidgetTemplatesAdmin(siteURLKey = "test-site-name-staging");
+
+			ApplicationDisplayTemplates.addCP(
+				adtFile = "adt_asset_publisher_rich_summary.ftl",
+				adtType = "Asset Publisher");
+		}
+
+		task ("Publish to Live") {
+			Staging.openStagingAdmin(siteURLKey = "test-site-name-staging");
+
+			Staging.addCustomPublication();
+
+			Check.checkNotVisible(
+				key_contentName = "Templates",
+				locator1 = "Staging#STAGING_CONTENT_CHECKBOX");
+
+			ScrollWebElementIntoView(locator1 = "Staging#STAGING_CONTENT_INFO");
+
+			AssertTextEquals(
+				locator1 = "Staging#STAGING_CONTENT_INFO",
+				value1 = "Asset Publisher Template (1)");
+
+			Staging.clickPublishToLiveButton();
+
+			Staging.viewProcessResult();
+		}
+
+		task ("View the widget template in live site") {
+			ApplicationDisplayTemplates.openWidgetTemplatesAdmin(siteURLKey = "test-site-name");
+
+			ApplicationDisplayTemplates.viewTemplate(adtType = "Asset Publisher");
+		}
+	}
+
+	@description = "Add a widget template in staging site."
+	@priority = "4"
+	@uitest
+	test AddWidgetTemplateInStagingSite3 {
+		property portal.acceptance = "fiona";
+
+		task ("Add a widget templates in staging site") {
+			ApplicationDisplayTemplates.openWidgetTemplatesAdmin(siteURLKey = "test-site-name-staging");
+
+			ApplicationDisplayTemplates.addCP(
+				adtFile = "adt_asset_publisher_rich_summary.ftl",
+				adtType = "Asset Publisher");
+		}
+
+		task ("Publish to Live") {
+			Staging.openStagingAdmin(siteURLKey = "test-site-name-staging");
+
+			Staging.addCustomPublication();
+
+			Check.checkNotVisible(
+				key_contentName = "Templates",
+				locator1 = "Staging#STAGING_CONTENT_CHECKBOX");
+
+			ScrollWebElementIntoView(locator1 = "Staging#STAGING_CONTENT_INFO");
+
+			AssertTextEquals(
+				locator1 = "Staging#STAGING_CONTENT_INFO",
+				value1 = "Asset Publisher Template (1)");
+
+			Staging.clickPublishToLiveButton();
+
+			Staging.viewProcessResult();
+		}
+
+		task ("View the widget template in live site") {
+			ApplicationDisplayTemplates.openWidgetTemplatesAdmin(siteURLKey = "test-site-name");
+
+			ApplicationDisplayTemplates.viewTemplate(adtType = "Asset Publisher");
+		}
+	}
+
+	@description = "Add a widget template in staging site."
+	@priority = "4"
+	@uitest
+	test AddWidgetTemplateInStagingSite4 {
+		property portal.acceptance = "fiona";
+
+		task ("Add a widget templates in staging site") {
+			ApplicationDisplayTemplates.openWidgetTemplatesAdmin(siteURLKey = "test-site-name-staging");
+
+			ApplicationDisplayTemplates.addCP(
+				adtFile = "adt_asset_publisher_rich_summary.ftl",
+				adtType = "Asset Publisher");
+		}
+
+		task ("Publish to Live") {
+			Staging.openStagingAdmin(siteURLKey = "test-site-name-staging");
+
+			Staging.addCustomPublication();
+
+			Check.checkNotVisible(
+				key_contentName = "Templates",
+				locator1 = "Staging#STAGING_CONTENT_CHECKBOX");
+
+			ScrollWebElementIntoView(locator1 = "Staging#STAGING_CONTENT_INFO");
+
+			AssertTextEquals(
+				locator1 = "Staging#STAGING_CONTENT_INFO",
+				value1 = "Asset Publisher Template (1)");
+
+			Staging.clickPublishToLiveButton();
+
+			Staging.viewProcessResult();
+		}
+
+		task ("View the widget template in live site") {
+			ApplicationDisplayTemplates.openWidgetTemplatesAdmin(siteURLKey = "test-site-name");
+
+			ApplicationDisplayTemplates.viewTemplate(adtType = "Asset Publisher");
+		}
+	}
+
+	@description = "Add a widget template in staging site."
+	@priority = "4"
+	@uitest
+	test AddWidgetTemplateInStagingSite5 {
+		property portal.acceptance = "fiona";
+
+		task ("Add a widget templates in staging site") {
+			ApplicationDisplayTemplates.openWidgetTemplatesAdmin(siteURLKey = "test-site-name-staging");
+
+			ApplicationDisplayTemplates.addCP(
+				adtFile = "adt_asset_publisher_rich_summary.ftl",
+				adtType = "Asset Publisher");
+		}
+
+		task ("Publish to Live") {
+			Staging.openStagingAdmin(siteURLKey = "test-site-name-staging");
+
+			Staging.addCustomPublication();
+
+			Check.checkNotVisible(
+				key_contentName = "Templates",
+				locator1 = "Staging#STAGING_CONTENT_CHECKBOX");
+
+			ScrollWebElementIntoView(locator1 = "Staging#STAGING_CONTENT_INFO");
+
+			AssertTextEquals(
+				locator1 = "Staging#STAGING_CONTENT_INFO",
+				value1 = "Asset Publisher Template (1)");
+
+			Staging.clickPublishToLiveButton();
+
+			Staging.viewProcessResult();
+		}
+
+		task ("View the widget template in live site") {
+			ApplicationDisplayTemplates.openWidgetTemplatesAdmin(siteURLKey = "test-site-name");
+
+			ApplicationDisplayTemplates.viewTemplate(adtType = "Asset Publisher");
+		}
+	}
+
+	@description = "Add a widget template in staging site."
+	@priority = "4"
+	@uitest
+	test AddWidgetTemplateInStagingSite6 {
+		property portal.acceptance = "fiona";
+
+		task ("Add a widget templates in staging site") {
+			ApplicationDisplayTemplates.openWidgetTemplatesAdmin(siteURLKey = "test-site-name-staging");
+
+			ApplicationDisplayTemplates.addCP(
+				adtFile = "adt_asset_publisher_rich_summary.ftl",
+				adtType = "Asset Publisher");
+		}
+
+		task ("Publish to Live") {
+			Staging.openStagingAdmin(siteURLKey = "test-site-name-staging");
+
+			Staging.addCustomPublication();
+
+			Check.checkNotVisible(
+				key_contentName = "Templates",
+				locator1 = "Staging#STAGING_CONTENT_CHECKBOX");
+
+			ScrollWebElementIntoView(locator1 = "Staging#STAGING_CONTENT_INFO");
+
+			AssertTextEquals(
+				locator1 = "Staging#STAGING_CONTENT_INFO",
+				value1 = "Asset Publisher Template (1)");
+
+			Staging.clickPublishToLiveButton();
+
+			Staging.viewProcessResult();
+		}
+
+		task ("View the widget template in live site") {
+			ApplicationDisplayTemplates.openWidgetTemplatesAdmin(siteURLKey = "test-site-name");
+
+			ApplicationDisplayTemplates.viewTemplate(adtType = "Asset Publisher");
+		}
+	}
+
+	@description = "Add a widget template in staging site."
+	@priority = "4"
+	@uitest
+	test AddWidgetTemplateInStagingSite7 {
+		property portal.acceptance = "fiona";
+
+		task ("Add a widget templates in staging site") {
+			ApplicationDisplayTemplates.openWidgetTemplatesAdmin(siteURLKey = "test-site-name-staging");
+
+			ApplicationDisplayTemplates.addCP(
+				adtFile = "adt_asset_publisher_rich_summary.ftl",
+				adtType = "Asset Publisher");
+		}
+
+		task ("Publish to Live") {
+			Staging.openStagingAdmin(siteURLKey = "test-site-name-staging");
+
+			Staging.addCustomPublication();
+
+			Check.checkNotVisible(
+				key_contentName = "Templates",
+				locator1 = "Staging#STAGING_CONTENT_CHECKBOX");
+
+			ScrollWebElementIntoView(locator1 = "Staging#STAGING_CONTENT_INFO");
+
+			AssertTextEquals(
+				locator1 = "Staging#STAGING_CONTENT_INFO",
+				value1 = "Asset Publisher Template (1)");
+
+			Staging.clickPublishToLiveButton();
+
+			Staging.viewProcessResult();
+		}
+
+		task ("View the widget template in live site") {
+			ApplicationDisplayTemplates.openWidgetTemplatesAdmin(siteURLKey = "test-site-name");
+
+			ApplicationDisplayTemplates.viewTemplate(adtType = "Asset Publisher");
+		}
+	}
+
+	@description = "Add a widget template in staging site."
+	@priority = "4"
+	@uitest
+	test AddWidgetTemplateInStagingSite8 {
+		property portal.acceptance = "fiona";
+
+		task ("Add a widget templates in staging site") {
+			ApplicationDisplayTemplates.openWidgetTemplatesAdmin(siteURLKey = "test-site-name-staging");
+
+			ApplicationDisplayTemplates.addCP(
+				adtFile = "adt_asset_publisher_rich_summary.ftl",
+				adtType = "Asset Publisher");
+		}
+
+		task ("Publish to Live") {
+			Staging.openStagingAdmin(siteURLKey = "test-site-name-staging");
+
+			Staging.addCustomPublication();
+
+			Check.checkNotVisible(
+				key_contentName = "Templates",
+				locator1 = "Staging#STAGING_CONTENT_CHECKBOX");
+
+			ScrollWebElementIntoView(locator1 = "Staging#STAGING_CONTENT_INFO");
+
+			AssertTextEquals(
+				locator1 = "Staging#STAGING_CONTENT_INFO",
+				value1 = "Asset Publisher Template (1)");
+
+			Staging.clickPublishToLiveButton();
+
+			Staging.viewProcessResult();
 		}
 
 		task ("View the widget template in live site") {
