@@ -557,7 +557,7 @@ definition {
 	@description = "LPS-135400 - Verify it is possible to add many relations through the Relationship tab"
 	@priority = "5"
 	test CanAddRelationOnRelationshipTab {
-		property portal.acceptance = "true";
+		property portal.acceptance = "fiona";
 
 		ObjectAdmin.addObjectViaAPI(
 			labelName = "Custom Object 10",
