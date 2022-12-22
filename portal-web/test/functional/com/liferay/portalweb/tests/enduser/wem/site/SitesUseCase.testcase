@@ -14,6 +14,10 @@ definition {
 	tearDown {
 		var testPortalInstance = PropsUtil.get("test.portal.instance");
 
+		AntCommand(
+			locator1 = "build-test.xml",
+			value1 = "stop-test-smtp-server");
+
 		if ("${testPortalInstance}" == "true") {
 			PortalInstances.tearDownCP();
 		}
