@@ -7327,6 +7327,22 @@ ${docker.start.error}</fail>
 		</sequential>
 	</macrodef>
 
+	<macrodef name="stop-test-smtp-server">
+		<sequential>
+			<exec executable="/bin/bash" outputproperty="java.pid">
+				<arg value="-c" />
+				<arg value="netstat -nlp | grep 8282 | cut -d/ -f1 | awk '{print $7}'" />
+			</exec>
+
+			<echo>java.pid is${java.pid}</echo>
+
+			<exec executable="/bin/bash">
+				<arg value="-c" />
+				<arg value="kill -9 ${java.pid}" />
+			</exec>
+		</sequential>
+	</macrodef>
+
 	<macrodef name="stop-app-server">
 		<attribute default="0" name="app.server.bundle.index" />
 		<attribute default="0" name="app.server.explicit.stop.count" />
@@ -16130,6 +16146,16 @@ url=${short.hostname}:8080</echo>
 
 	<target name="start-test-smtp-server">
 		<start-test-smtp-server />
+	</target>
+
+	<target name="stop-test-smtp-server">
+		<get-testcase-property property.name="test.smtp.server.enabled" />
+		<if>
+			<equals arg1="${test.smtp.server.enabled}" arg2="true" />
+			<then>
+				<stop-test-smtp-server />
+			</then>
+		</if>
 	</target>
 
 	<target name="stop-app-server">
