@@ -527,6 +527,191 @@ definition {
 	@priority = "3"
 	test ReturnWrongLayoutForSignedInUserWithVirtualHostsConfigured {
 		property custom.properties = "layout.default.template.id=2_columns_iii${line.separator}layout.user.private.layouts.enabled=false${line.separator}layout.user.private.layouts.auto.create=false${line.separator}layout.user.private.layouts.power.user.required=true${line.separator}layout.user.public.layouts.enabled=false${line.separator}layout.user.public.layouts.auto.create=false${line.separator}layout.user.public.layouts.power.user.required=true";
+		property portal.acceptance = "fiona";
+		property test.smtp.server.enabled = "true";
+
+		task ("Restart SMPT server if it is running before") {
+			AntCommand(
+				locator1 = "build-test.xml",
+				value1 = "restart-test-smtp-server");
+		}
+
+		task ("Add a site and a public page in it") {
+			JSONGroup.addGroup(groupName = "Site Name");
+
+			JSONLayout.addPublicLayout(
+				groupName = "Site Name",
+				layoutName = "Site Page Name");
+		}
+
+		task ("Edit virtual instance in instance settings") {
+			PortalSettings.gotoConfiguration(
+				configurationCategory = "Instance Configuration",
+				configurationName = "General",
+				configurationScope = "Virtual Instance Scope");
+
+			PortalSettings.editVirtualHostCP(virtualHostName = "www.able.com");
+		}
+
+		task ("Enable require strangers in instance settings") {
+			PortalSettings.gotoConfiguration(
+				configurationCategory = "User Authentication",
+				configurationName = "General",
+				configurationScope = "Virtual Instance Scope");
+
+			PortalSettings.editConfigurationAuthenticationGeneral(enableRequireStrangers = "true");
+		}
+
+		task ("Edit Email Verification Notification in instance settings") {
+			PortalSettings.editConfigurationUsersEmailNotificationsCP(
+				configurationName = "Email Verification Notification",
+				notificationsBody = "[$EMAIL_VERIFICATION_CODE$]");
+		}
+
+		task ("Add a virtual instance for public page") {
+			Site.openSiteSettingsAdmin(siteURLKey = "site-name");
+
+			Site.addVirtualHostsURLCP(
+				pageVirtualHosts = "true",
+				pageVirtualHostURL = "www.baker.com");
+		}
+
+		task ("Log in public page in virtual host") {
+			User.firstLoginUI(specificURL = "http://www.baker.com:8080");
+		}
+
+		task ("Add a user and set require password reset") {
+			ApplicationsMenu.gotoPortlet(
+				category = "Users",
+				panel = "Control Panel",
+				portlet = "Users and Organizations");
+
+			User.addCP(
+				userEmailAddress = "user1@liferay.com",
+				userFirstName = "user1",
+				userLastName = "user1",
+				userScreenName = "user1");
+
+			User.editPassword(requirePasswordReset = "true");
+		}
+
+		task ("Log out and log in as created user") {
+			UserBar.signOut();
+
+			User.firstLoginUI(
+				password = "password",
+				specificURL = "http://www.baker.com:8080",
+				userEmailAddress = "user1@liferay.com");
+		}
+
+		task ("Click Send New Verification Code") {
+			Button.click(button = "Send New Verification Code");
+		}
+
+		task ("Get New Verification Code from email") {
+			var emailVerification = MockMock.getHTMLBodyFormattedText(
+				newTab = "true",
+				recipient = "user1@",
+				sender = "Joe Bloggs",
+				subject = "http://www.baker.com:8080: Email Address Verification");
+
+			Close.closeWindow();
+		}
+
+		task ("Fill New Verification Code and reset password") {
+			Type(
+				locator1 = "SignInCreateAccount#EMAIL_VERIFICATION_CODE_FIELD",
+				value1 = "${emailVerification}");
+
+			Button.clickVerifyButton();
+
+			User.resetPassword();
+		}
+
+		task ("Fill password reminder and assert sign in") {
+			User.answerPasswordReminder();
+
+			AssertElementPresent(locator1 = "UserBar#USER_AVATAR_IMAGE");
+		}
+
+		task ("Log out") {
+			UserBar.signOut();
+		}
+
+		task ("Delete New Verification Code email") {
+			MockMock.deleteMail(
+				asset = "http://www.baker.com:8080: Email Address Verification",
+				newTab = "true");
+
+			Close.closeWindow();
+		}
+
+		task ("Log in instance in virtual host") {
+			User.firstLoginUI(specificURL = "http://www.able.com:8080");
+		}
+
+		task ("Edit Email Verification Notification in instance settings") {
+			ApplicationsMenu.gotoPortlet(
+				category = "Configuration",
+				panel = "Control Panel",
+				portlet = "Instance Settings");
+
+			SystemSettings.gotoConfiguration(
+				configurationCategory = "Email",
+				configurationName = "Email Verification Notification",
+				configurationScope = "Virtual Instance Scope");
+
+			Type.typeCKEditor(
+				locator1 = "CKEditor#BODY_FIELD",
+				value1 = "[$EMAIL_VERIFICATION_URL$]");
+
+			PortletEntry.save();
+		}
+
+		task ("Log out and log in as created user") {
+			UserBar.signOut();
+
+			User.firstLoginUI(
+				specificURL = "http://www.baker.com:8080",
+				userEmailAddress = "user1@liferay.com");
+		}
+
+		task ("Edit user email address for email notification") {
+			Navigator.gotoAccountSettings();
+
+			User.editUserInformation(userEmailAddressEdit = "user2@liferay.com");
+		}
+
+		task ("Get Email Address Verification URL from email") {
+			var emailAddressVerificationURL = MockMock.getHTMLBodyFormattedText(
+				newTab = "true",
+				recipient = "user2@",
+				sender = "Joe Bloggs",
+				subject = "http://www.baker.com:8080: Email Address Verification");
+
+			Close.closeWindow();
+		}
+
+		task ("Open Email Address Verification URL and verify it") {
+			Navigator.openSpecificURL(url = "${emailAddressVerificationURL}");
+
+			Button.clickVerifyButton();
+		}
+
+		task ("Fill password reminder and assert sign in") {
+			AssertElementPresent(locator1 = "UserBar#USER_AVATAR_IMAGE");
+		}
+
+		task ("Delete Email Address Verification URL email") {
+			MockMock.deleteMail(asset = "http://www.baker.com:8080: Email Address Verification");
+		}
+	}
+
+	@description = "Assert user can't assign user group with regular role with assign members."
+	@priority = "3"
+	test ReturnWrongLayoutForSignedInUserWithVirtualHostsConfigured2 {
+		property custom.properties = "layout.default.template.id=2_columns_iii${line.separator}layout.user.private.layouts.enabled=false${line.separator}layout.user.private.layouts.auto.create=false${line.separator}layout.user.private.layouts.power.user.required=true${line.separator}layout.user.public.layouts.enabled=false${line.separator}layout.user.public.layouts.auto.create=false${line.separator}layout.user.public.layouts.power.user.required=true";
+		property portal.acceptance = "fiona";
 		property test.smtp.server.enabled = "true";
 
 		task ("Restart SMPT server if it is running before") {
