@@ -16145,10 +16145,12 @@ url=${short.hostname}:8080</echo>
 	</target>
 
 	<target name="start-test-smtp-server">
+		<start-test-smtp-server />
 		<exec executable="/bin/bash" outputproperty="output">
 			<arg value="-c" />
 			<arg value="netstat -nlp | grep 8282" />
 		</exec>
+		<echo>output is${output}</echo>
 		<if>
 			<not>
 				<equals arg1="${output}" arg2="null" />
