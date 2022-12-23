@@ -345,6 +345,7 @@ definition {
 	test OnlySiteOwnersCanAssignSiteRolesToUserGroups {
 		property custom.properties = "jsonws.web.service.paths.excludes=";
 		property testray.component.names = "Site Administration,User Groups";
+		property portal.acceptance = "fiona";
 
 		task ("Get site name") {
 			var siteName = TestCase.getSiteName(siteName = "${siteName}");
@@ -457,6 +458,7 @@ definition {
 		property osgi.module.configurations = "promptEnabled=\"true\"";
 		property release.feature.flags.disable.DISABLE_PRIVATE_LAYOUTS = "true";
 		property testray.component.names = "Site Administration";
+		property portal.acceptance = "fiona";
 
 		task ("Get site name") {
 			var siteName = TestCase.getSiteName(siteName = "${siteName}");
@@ -711,6 +713,7 @@ definition {
 	test SiteFriendlyURLLayoutImporter {
 		property custom.properties = "jsonws.web.service.paths.excludes=";
 		property testray.component.names = "Site Administration";
+		property portal.acceptance = "fiona";
 
 		var portalURL = PropsUtil.get("portal.url");
 
@@ -1139,6 +1142,8 @@ definition {
 	@description = "This is a test for LPS-102711. The changes of site scope configuration in Instance Settings should be applied to the site."
 	@priority = "4"
 	test ViewChangesOfSiteScopeConfigurationDefinedInInstanceSettings {
+		property portal.acceptance = "fiona";
+
 		task ("Add a new site") {
 			JSONGroup.addGroup(groupName = "Test Site Name");
 		}
@@ -1195,6 +1200,7 @@ definition {
 	@priority = "4"
 	test ViewSiteLogo {
 		property portal.upstream = "true";
+		property portal.acceptance = "fiona";
 
 		task ("Add a new site and a public page in it") {
 			JSONGroup.addGroup(groupName = "Site Name");
