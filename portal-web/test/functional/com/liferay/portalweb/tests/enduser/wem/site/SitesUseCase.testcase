@@ -532,7 +532,7 @@ definition {
 
 		AntCommand(
 			locator1 = "build-test.xml",
-			value1 = "start-test-smtp-server");
+			value1 = "restart-test-smtp-server");
 
 		task ("Add a site and a public page in it") {
 			JSONGroup.addGroup(groupName = "Site Name");
@@ -714,7 +714,7 @@ definition {
 
 		AntCommand(
 			locator1 = "build-test.xml",
-			value1 = "start-test-smtp-server");
+			value1 = "restart-test-smtp-server");
 
 		task ("Add a site and a public page in it") {
 			JSONGroup.addGroup(groupName = "Site Name");
