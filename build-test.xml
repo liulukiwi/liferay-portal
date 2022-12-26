@@ -16179,10 +16179,11 @@ url=${short.hostname}:8080</echo>
 				<stop-test-smtp-server />
 				<start-test-smtp-server />
 			</then>
-		</if>
 		<else>
 			<start-test-smtp-server />
 		</else>
+		</if>
+
 	</target>
 
 	<target name="stop-app-server">
