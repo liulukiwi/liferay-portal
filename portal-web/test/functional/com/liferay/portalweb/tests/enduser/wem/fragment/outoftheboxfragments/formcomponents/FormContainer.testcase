@@ -1048,7 +1048,7 @@ definition {
 	@description = "This is a test for LPS-157739. The page creator could receive an object entry after submitting form."
 	@priority = "5"
 	test ViewCreatedObjectEntryAfterSubmitForm {
-		property portal.acceptance = "true";
+		property portal.acceptance = "fiona";
 
 		task ("Given a page creator has a Form Container on a content page") {
 			task ("Add a Text field to object") {

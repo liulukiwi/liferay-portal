@@ -66,7 +66,7 @@ definition {
 	@description = "This is a test for LPS-151159. The page designer map the Select from List fragment to objects fields on content pages."
 	@priority = "5"
 	test MapPicklistFieldOnContentPage {
-		property portal.acceptance = "true";
+		property portal.acceptance = "fiona";
 
 		task ("Given a page designer has a mapped Form Container on content page") {
 			JSONLayout.addPublicLayout(
