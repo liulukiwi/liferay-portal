@@ -169,7 +169,7 @@ public class EditLayoutMVCActionCommand extends BaseMVCActionCommand {
 				groupId, layout.isPrivateLayout(), layout.getLayoutId(),
 				layout.getParentLayoutId(), nameMap, layout.getTitleMap(),
 				layout.getDescriptionMap(), layout.getKeywordsMap(),
-				layout.getRobotsMap(), type, hidden, friendlyURLMap,
+				layout.getRobotsMap(), type, !hidden, friendlyURLMap,
 				!deleteLogo, iconBytes, styleBookEntryId, faviconFileEntryId,
 				masterLayoutPlid, serviceContext);
 
