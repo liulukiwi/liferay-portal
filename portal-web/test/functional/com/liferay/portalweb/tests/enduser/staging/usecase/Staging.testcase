@@ -552,6 +552,7 @@ definition {
 	@description = "This is a use case for LPS-92039 and LPS-92636."
 	@priority = 3
 	test CreateWidgetTemplateWhenNotStagedADT {
+		property portal.acceptance = "fiona";
 		property test.name.skip.portal.instance = "Staging#CreateWidgetTemplateWhenNotStagedADT";
 
 		ApplicationDisplayTemplates.openWidgetTemplatesAdmin(siteURLKey = "site-name");
