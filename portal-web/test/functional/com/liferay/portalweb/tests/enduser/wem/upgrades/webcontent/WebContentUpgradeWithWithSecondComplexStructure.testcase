@@ -79,6 +79,7 @@ definition {
 
 			AssertTextEquals(
 				key_localizedLanguage = "zh-CN",
+				key_portlet = "JournalPortlet",
 				locator1 = "Translation#TRANSLATION_STATUS_TITLE",
 				value1 = "Translated");
 		}
@@ -171,6 +172,8 @@ definition {
 	@description = "This is a use case for LRQA-61632."
 	@priority = 3
 	test CanCopyWebContentAndWebContentStructure {
+		property test.name.skip.portal.instance = "WebContentUpgradeWithWithSecondComplexStructure#CanCopyWebContentAndWebContentStructure";
+
 		task ("Copy Article successfully") {
 			WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
 
@@ -185,14 +188,6 @@ definition {
 			WebContentStructures.copyCP(
 				structureCopyName = "WC Structure Copy Name",
 				structureName = "WC Structure Name");
-		}
-
-		task ("Delete web content from this instance") {
-			NavItem.gotoWebContent();
-
-			WebContent.deleteCP(
-				siteURLKey = "test-site-name",
-				webContentTitle = "Web Content Complex Title 1 Duplicate 1");
 		}
 	}
 
@@ -410,6 +405,21 @@ definition {
 	@description = "This is a use case for LRQA-61632. Preview fields entered."
 	@priority = 3
 	test CanPreviewWebContent {
+		task ("Select WC Template Name as template, save as draft and publish.") {
+			WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
+
+			WebContentNavigator.gotoEditCP(webContentTitle = "Web Content Complex Title 1");
+
+			WebContent.selectTemplateCP(
+				confirm = "false",
+				structureName = "WC Structure Name",
+				templateName = "WC Template Name");
+
+			Button.clickSaveAsDraft();
+
+			PortletEntry.publish();
+		}
+
 		WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
 
 		WebContentNavigator.gotoPreviewEntryCP(webContentTitle = "Web Content Complex Title 1");

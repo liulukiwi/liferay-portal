@@ -75,6 +75,7 @@ definition {
 
 			AssertTextEquals(
 				key_localizedLanguage = "zh-CN",
+				key_portlet = "JournalPortlet",
 				locator1 = "Translation#TRANSLATION_STATUS_TITLE",
 				value1 = "Translated");
 		}
