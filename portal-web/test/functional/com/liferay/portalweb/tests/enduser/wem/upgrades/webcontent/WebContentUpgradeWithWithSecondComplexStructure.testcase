@@ -1,6 +1,7 @@
 @component-name = "portal-upgrades"
 definition {
 
+	property ci.retries.disabled = "true";
 	property data.archive.type = "data-archive-web-content-second-complex-fields";
 	property database.types = "db2,mariadb,mysql,oracle,postgresql,sybase";
 	property portal.acceptance = "fiona";
@@ -103,10 +104,7 @@ definition {
 
 			Click.clickNoMouseOver(locator1 = "Button#LOCALIZATION_GENERIC");
 
-			AssertTextEquals(
-				key_localizedLanguage = "zh-CN",
-				locator1 = "Translation#TRANSLATION_STATUS_TITLE",
-				value1 = "Not Translated");
+			Translations.viewUntranslatedStatus(locale = "zh-CN");
 		}
 
 		task ("View Translation while Editing article") {
@@ -187,6 +185,14 @@ definition {
 			WebContentStructures.copyCP(
 				structureCopyName = "WC Structure Copy Name",
 				structureName = "WC Structure Name");
+		}
+
+		task ("Delete web content from this instance") {
+			NavItem.gotoWebContent();
+
+			WebContent.deleteCP(
+				siteURLKey = "test-site-name",
+				webContentTitle = "Web Content Complex Title 1 Duplicate 1");
 		}
 	}
 
@@ -314,7 +320,7 @@ definition {
 					key_fieldName = ${fieldName},
 					key_repeatableFieldNumber = 1);
 
-				DataEngine.assertFieldRepeated(
+				DataEngine.assertFieldInFieldsGroupRepeated(
 					fieldName = ${fieldName},
 					index = 2);
 			}
@@ -385,6 +391,8 @@ definition {
 	@description = "This is a use case for LRQA-61632."
 	@priority = 3
 	test CanMoveWebContentToFolder {
+		property test.name.skip.portal.instance = "WebContentUpgradeWithWithSecondComplexStructure#CanMoveWebContentToFolder";
+
 		JSONWebcontent.addFolder(
 			folderDescription = "WC Folder Description",
 			folderName = "WC Folder Name",
@@ -458,6 +466,8 @@ definition {
 	@description = "This is a use case for LRQA-61632."
 	@priority = 3
 	test CanSelectAndViewWebContentInWCD {
+		property test.name.skip.portal.instance = "WebContentUpgradeWithWithSecondComplexStructure#CanSelectAndViewWebContentInWCD";
+
 		task ("Add a widget page and WCD to widget page") {
 			JSONLayout.addPublicLayout(
 				groupName = "Test Site Name",
@@ -467,6 +477,21 @@ definition {
 				groupName = "Test Site Name",
 				layoutName = "Web Content Display Page",
 				widgetName = "Web Content Display");
+		}
+
+		task ("Select WC Template Name as template, save as draft and publish.") {
+			WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
+
+			WebContentNavigator.gotoEditCP(webContentTitle = "Web Content Complex Title 1");
+
+			WebContent.selectTemplateCP(
+				confirm = "false",
+				structureName = "WC Structure Name",
+				templateName = "WC Template Name");
+
+			Button.clickSaveAsDraft();
+
+			PortletEntry.publish();
 		}
 
 		task ("Display in Web Content Display widget") {
@@ -490,23 +515,6 @@ definition {
 
 			AssertElementPresent(locator1 = "//img[contains(@src,'Document_1.jpg')]");
 		}
-	}
-
-	@description = "This is a use case for LRQA-61632. Select WC Template Name as template, save as draft and publish."
-	@priority = 3
-	test CanSelectTemplateAndPulishDraftTemplate {
-		WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
-
-		WebContentNavigator.gotoEditCP(webContentTitle = "Web Content Complex Title 1");
-
-		WebContent.selectTemplateCP(
-			confirm = "false",
-			structureName = "WC Structure Name",
-			templateName = "WC Template Name");
-
-		Button.clickSaveAsDraft();
-
-		PortletEntry.publish();
 	}
 
 	@description = "This is a use case for LRQA-61632. Enable Staging,Publish to live site, assert value entered persists,including images and links."
