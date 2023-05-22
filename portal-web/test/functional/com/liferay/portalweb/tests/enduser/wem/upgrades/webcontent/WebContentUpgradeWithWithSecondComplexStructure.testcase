@@ -307,6 +307,8 @@ definition {
 	@description = "This is a use case for LRQA-61632."
 	@priority = 3
 	test CanDuplicateRepeatableFieldsAndRemoveThem {
+		property test.name.skip.portal.instance = "WebContentUpgradeWithWithSecondComplexStructure#CanDuplicateRepeatableFieldsAndRemoveThem";
+
 		task ("Duplicate all fields that can be duplicated, 1-4 times") {
 			WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
 
@@ -357,6 +359,8 @@ definition {
 	@description = "This is a use case for LRQA-61632. Set all fields to Required and check submission."
 	@priority = 3
 	test CanEditWebContentStructureFieldsToReqiredFields {
+		property test.name.skip.portal.instance = "WebContentUpgradeWithWithSecondComplexStructure#CanEditWebContentStructureFieldsToReqiredFields";
+
 		WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
 
 		NavItem.gotoStructures();
