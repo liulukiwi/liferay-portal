@@ -105,7 +105,11 @@ definition {
 
 			Click.clickNoMouseOver(locator1 = "Button#LOCALIZATION_GENERIC");
 
-			Translations.viewUntranslatedStatus(locale = "zh-CN");
+			AssertTextEquals(
+				key_localizedLanguage = "zh-CN",
+				key_portlet = "JournalPortlet",
+				locator1 = "Translation#TRANSLATION_STATUS_TITLE",
+				value1 = "Not Translated");
 		}
 
 		task ("View Translation while Editing article") {
