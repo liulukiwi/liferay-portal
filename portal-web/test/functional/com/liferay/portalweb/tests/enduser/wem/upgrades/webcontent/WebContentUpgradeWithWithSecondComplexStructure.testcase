@@ -175,28 +175,6 @@ definition {
 
 	@description = "This is a use case for LRQA-61632."
 	@priority = 3
-	test CanCopyWebContentAndWebContentStructure {
-		property test.name.skip.portal.instance = "WebContentUpgradeWithWithSecondComplexStructure#CanCopyWebContentAndWebContentStructure";
-
-		task ("Copy Article successfully") {
-			WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
-
-			WebContent.copyCP(webContentTitle = "Web Content Complex Title 1");
-		}
-
-		task ("Copy Structure successfully") {
-			WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
-
-			NavItem.gotoStructures();
-
-			WebContentStructures.copyCP(
-				structureCopyName = "WC Structure Copy Name",
-				structureName = "WC Structure Name");
-		}
-	}
-
-	@description = "This is a use case for LRQA-61632."
-	@priority = 3
 	test CanDisableSearchableInTextField {
 		WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
 
@@ -220,6 +198,8 @@ definition {
 	@description = "This is a use case for LRQA-61632."
 	@priority = 3
 	test CanDuplicateFieldGroupWithNestedFieldsAndMoveNestedField {
+		property test.name.skip.portal.instance = "WebContentUpgradeWithWithSecondComplexStructure#CanDuplicateFieldGroupWithNestedFieldsAndMoveNestedField";
+
 		task ("Duplicate the last field group with many nested fields, 10 times, and save") {
 			WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
 
@@ -356,10 +336,26 @@ definition {
 		}
 	}
 
-	@description = "This is a use case for LRQA-61632. Set all fields to Required and check submission."
+	@description = "This is a use case for LRQA-61632. Can copy web content and web content structure. Set all fields to Required and check submission."
 	@priority = 3
 	test CanEditWebContentStructureFieldsToReqiredFields {
 		property test.name.skip.portal.instance = "WebContentUpgradeWithWithSecondComplexStructure#CanEditWebContentStructureFieldsToReqiredFields";
+
+		task ("Copy Article successfully") {
+			WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
+
+			WebContent.copyCP(webContentTitle = "Web Content Complex Title 1");
+		}
+
+		task ("Copy Structure successfully") {
+			WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
+
+			NavItem.gotoStructures();
+
+			WebContentStructures.copyCP(
+				structureCopyName = "WC Structure Copy Name",
+				structureName = "WC Structure Name");
+		}
 
 		WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
 
@@ -413,6 +409,8 @@ definition {
 	@description = "This is a use case for LRQA-61632. Preview fields entered."
 	@priority = 3
 	test CanPreviewWebContent {
+		property test.name.skip.portal.instance = "WebContentUpgradeWithWithSecondComplexStructure#CanPreviewWebContent";
+
 		task ("Select WC Template Name as template, save as draft and publish.") {
 			WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
 
