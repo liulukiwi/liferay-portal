@@ -294,6 +294,10 @@ definition {
 
 			WebContentNavigator.gotoEditCP(webContentTitle = "Web Content Complex Title 1");
 
+			WaitForVisible(
+				key_fieldFieldLabel = "Estado",
+				locator1 = "DDMEditStructure#FORM_FIELD_CONTAINER_LABEL");
+
 			for (var fieldName : list "ItemUFComunicado,ItemDoParagrafoBanner,ListaDDI,ItensDeGenero,Estado,ItemPais") {
 				FormFields.addRepeatableField(
 					fieldName = ${fieldName},
@@ -448,6 +452,8 @@ definition {
 	@description = "This is a use case for LRQA-61632."
 	@priority = 3
 	test CanPulishDraftWebContentAndViewOtherVersions {
+		property test.name.skip.portal.instance = "WebContentUpgradeWithWithSecondComplexStructure#CanPulishDraftWebContentAndViewOtherVersions";
+
 		task ("Save as Draft, and then preview other versions") {
 			WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
 
