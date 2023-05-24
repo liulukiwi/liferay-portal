@@ -332,7 +332,8 @@ definition {
 			for (var fieldName : list "ItemUFComunicado,ItemDoParagrafoBanner,ListaDDI,ItensDeGenero,Estado") {
 				Click(
 					key_fieldName = ${fieldName},
-					locator1 = "DDMField#REMOVE_REPEATED_FIELD");
+					key_index = 2,
+					locator1 = "DDMField#REMOVE_REPEATED_FIELD_N");
 			}
 
 			for (var fieldName : list "ItemUFComunicado,ItemDoParagrafoBanner,ListaDDI,ItensDeGenero,Estado,ItemPais") {
@@ -354,10 +355,6 @@ definition {
 			WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
 
 			WebContent.copyCP(webContentTitle = "Web Content Complex Title 1");
-		}
-
-		task ("Remove copied article") {
-			WebContent.moveToRecycleBinCP(webContentTitle = "Web Content Complex Title 1 Duplicar");
 		}
 
 		task ("Copy Structure successfully") {
@@ -468,7 +465,7 @@ definition {
 
 			WebContentNavigator.gotoEditCP(webContentTitle = "Web Content Complex Title 1");
 
-			Button.clickSaveAsDraft();
+			PortletEntry.saveAsDraft();
 
 			WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
 

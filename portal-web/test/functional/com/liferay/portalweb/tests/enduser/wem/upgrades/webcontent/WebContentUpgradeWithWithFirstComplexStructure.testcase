@@ -24,6 +24,8 @@ definition {
 	@description = "This is a use case for LRQA-61632."
 	@priority = 3
 	test CanAddAndRemoveTranslationToWebContentStructure {
+		property test.name.skip.portal.instance = "WebContentUpgradeWithWithFirstComplexStructure#CanAddAndRemoveTranslationToWebContentStructure";
+
 		task ("Translate labels") {
 			WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
 
@@ -130,6 +132,8 @@ definition {
 	@description = "This is a use case for LRQA-61632."
 	@priority = 3
 	test CanCopyAndDeleteWebContentStructure {
+		property test.name.skip.portal.instance = "WebContentUpgradeWithWithFirstComplexStructure#CanCopyAndDeleteWebContentStructure";
+
 		WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
 
 		NavItem.gotoStructures();
@@ -146,6 +150,8 @@ definition {
 	@description = "This is a use case for LRQA-61632."
 	@priority = 3
 	test CanDisableSearchableInTextField {
+		property test.name.skip.portal.instance = "WebContentUpgradeWithWithFirstComplexStructure#CanDisableSearchableInTextField";
+
 		WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
 
 		NavItem.gotoStructures();
@@ -168,6 +174,8 @@ definition {
 	@description = "This is a use case for LRQA-61632."
 	@priority = 3
 	test CanDuplicateFieldGroupWithNestedFieldsAndMoveNestedField {
+		property test.name.skip.portal.instance = "WebContentUpgradeWithWithFirstComplexStructure#CanDuplicateFieldGroupWithNestedFieldsAndMoveNestedField";
+
 		task ("Duplicate the last field group with many nested fields, 10 times, and save") {
 			WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
 
@@ -218,6 +226,8 @@ definition {
 	@description = "This is a use case for LRQA-61632."
 	@priority = 3
 	test CanDuplicateRepeatableFieldsAndRemoveThem {
+		property test.name.skip.portal.instance = "WebContentUpgradeWithWithFirstComplexStructure#CanDuplicateRepeatableFieldsAndRemoveThem";
+
 		task ("Duplicate all fields that can be duplicated, 1-4 times") {
 			WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
 
@@ -244,13 +254,15 @@ definition {
 			for (var fieldName : list "Logo,Beneficio,Companhia,JeitoIdentificar,CompanhiaOperadora") {
 				Click(
 					key_fieldName = ${fieldName},
-					locator1 = "DDMField#REMOVE_REPEATED_FIELD");
+					key_index = 2,
+					locator1 = "DDMField#REMOVE_REPEATED_FIELD_N");
 			}
 
 			for (var fieldName : list "Destino,DescricaoOpPar") {
 				Click(
 					key_fieldName = ${fieldName},
-					locator1 = "DDMField#REMOVE_REPEATED_FIELD");
+					key_index = 2,
+					locator1 = "DDMField#REMOVE_REPEATED_FIELD_N");
 			}
 
 			for (var fieldName : list "Logo,Beneficio,Companhia,JeitoIdentificar,CompanhiaOperadora,DescricaoOpPar,Destino") {
@@ -264,6 +276,8 @@ definition {
 	@description = "This is a use case for LRQA-61632. Preview fields entered."
 	@priority = 3
 	test CanPreviewWebContent {
+		property test.name.skip.portal.instance = "WebContentUpgradeWithWithFirstComplexStructure#CanPreviewWebContent";
+
 		WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
 
 		WebContentNavigator.gotoPreviewEntryCP(webContentTitle = "Web Content Complex Title 1");
@@ -342,6 +356,8 @@ definition {
 	@description = "This is a use case for LRQA-61632. Select WC Template Name as template, save as draft and publish."
 	@priority = 3
 	test CanSelectTemplateAndPulishDraftTemplate {
+		property test.name.skip.portal.instance = "WebContentUpgradeWithWithFirstComplexStructure#CanSelectTemplateAndPulishDraftTemplate";
+
 		WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
 
 		WebContentNavigator.gotoEditCP(webContentTitle = "Web Content Complex Title 1");
@@ -359,6 +375,8 @@ definition {
 	@description = "This is a use case for LRQA-61632. Assert Images added in one field is not available in the next image field before article is submitted."
 	@priority = 3
 	test ViewNoDocumentFromOtherImageField {
+		property test.name.skip.portal.instance = "WebContentUpgradeWithWithFirstComplexStructure#ViewNoDocumentFromOtherImageField";
+
 		WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
 
 		WebContentNavigator.gotoAddWithStructureCP(structureName = "WC Structure Name");
@@ -391,6 +409,8 @@ definition {
 	@description = "This is a use case for LRQA-61632. Enable Staging,Publish to live site, assert value entered persists,including images and links."
 	@priority = 3
 	test ViewWebcontentInStaging {
+		property test.name.skip.portal.instance = "WebContentUpgradeWithWithFirstComplexStructure#ViewWebcontentInStaging";
+
 		Staging.openStagingAdmin(siteURLKey = "test-site-name");
 
 		Staging.activateStagingCP(siteName = "Test Site Name");
