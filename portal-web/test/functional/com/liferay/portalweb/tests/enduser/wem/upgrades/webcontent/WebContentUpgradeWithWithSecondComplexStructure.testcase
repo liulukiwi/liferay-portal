@@ -324,6 +324,10 @@ definition {
 
 			WebContentNavigator.gotoEditCP(webContentTitle = "Web Content Complex Title 1");
 
+			WaitForVisible(
+				key_fieldFieldLabel = "Estado",
+				locator1 = "DDMEditStructure#FORM_FIELD_CONTAINER_LABEL");
+
 			Click(
 				key_fieldName = "ItemPais",
 				key_index = 4,
