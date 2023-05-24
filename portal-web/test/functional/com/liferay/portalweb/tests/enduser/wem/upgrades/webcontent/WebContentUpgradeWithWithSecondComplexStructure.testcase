@@ -356,6 +356,10 @@ definition {
 			WebContent.copyCP(webContentTitle = "Web Content Complex Title 1");
 		}
 
+		task ("Remove copied article") {
+			WebContent.moveToRecycleBinCP(webContentTitle = "Web Content Complex Title 1 Duplicar");
+		}
+
 		task ("Copy Structure successfully") {
 			WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
 
@@ -386,7 +390,7 @@ definition {
 			structureName = "WC Structure Copy Name",
 			webContentTitle = "Web Content Complex Title 2");
 
-		PortletEntry.publish();
+		Button.clickPublish();
 
 		for (var fieldName : list "Label UF Comunicado,Lista UF Comunicado,Mensagem de erro de timeout,Titulo Mobile,Titulo,Informativo Formulario Cadastro,Titulo Programa Milhas,Texo Box Programa Amigo,Informe Programa Milhas,Footer Cadastro,Botao Cadastrar,Footer Cadastro Mobile,Botao Cadastrar Mobile,Informe Programa Amigo,Botao Quero Participar,Botao Quero Participar Mobile,Nacionalidade,Rotulo - Primeiro Nome,Título do banner,Rótulo - Nome do meio,Rótulo - Sobrenome,Rótulo - Email,Rótulo - Confirmação Email,Rótulo - Senha,Rótulo - Confirmação Senha,DDI,CPF,Passaporte,Celular,Data de Nascimento,Gênero,País de residência,UF,CEP,Cidade,Bairro,Endereço,Número,Complemento,Texto Box Amigo,País") {
 			AssertTextEquals(
