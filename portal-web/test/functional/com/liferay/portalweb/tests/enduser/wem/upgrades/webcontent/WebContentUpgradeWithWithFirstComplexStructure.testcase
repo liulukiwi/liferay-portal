@@ -174,14 +174,16 @@ definition {
 	@description = "This is a use case for LRQA-61632."
 	@priority = 3
 	test CanDuplicateFieldGroupWithNestedFieldsAndMoveNestedField {
-		property test.name.skip.portal.instance = "WebContentUpgradeWithWithFirstComplexStructure#CanDuplicateFieldGroupWithNestedFieldsAndMoveNestedField";
-
 		task ("Duplicate the last field group with many nested fields, 10 times, and save") {
 			WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
 
 			NavItem.gotoStructures();
 
 			WebContentNavigator.gotoEditStructure(structureName = "WC Structure Name");
+
+			WaitForVisible(
+				key_fieldFieldLabel = "PaginaOrigem",
+				locator1 = "DDMEditStructure#FORM_FIELD_CONTAINER_LABEL");
 
 			for (var i : list "1,2,3,4,5,6,7,8,9,10") {
 				Click(
@@ -226,12 +228,14 @@ definition {
 	@description = "This is a use case for LRQA-61632."
 	@priority = 3
 	test CanDuplicateRepeatableFieldsAndRemoveThem {
-		property test.name.skip.portal.instance = "WebContentUpgradeWithWithFirstComplexStructure#CanDuplicateRepeatableFieldsAndRemoveThem";
-
 		task ("Duplicate all fields that can be duplicated, 1-4 times") {
 			WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
 
 			WebContentNavigator.gotoEditCP(webContentTitle = "Web Content Complex Title 1");
+
+			WaitForVisible(
+				key_fieldFieldLabel = "PaginaOrigem",
+				locator1 = "DDMEditStructure#FORM_FIELD_CONTAINER_LABEL");
 
 			for (var fieldName : list "Logo,Beneficio,Companhia,JeitoIdentificar,Destino,DescricaoOpPar,CompanhiaOperadora") {
 				FormFields.addRepeatableField(
@@ -276,8 +280,6 @@ definition {
 	@description = "This is a use case for LRQA-61632. Preview fields entered."
 	@priority = 3
 	test CanPreviewWebContent {
-		property test.name.skip.portal.instance = "WebContentUpgradeWithWithFirstComplexStructure#CanPreviewWebContent";
-
 		WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
 
 		WebContentNavigator.gotoPreviewEntryCP(webContentTitle = "Web Content Complex Title 1");
