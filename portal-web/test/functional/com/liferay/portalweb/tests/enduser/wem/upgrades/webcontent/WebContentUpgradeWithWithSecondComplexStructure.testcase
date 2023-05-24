@@ -2,12 +2,9 @@
 definition {
 
 	property ci.retries.disabled = "true";
-	property data.archive.type = "data-archive-web-content-second-complex-fields";
-	property database.types = "db2,mariadb,mysql,oracle,postgresql,sybase";
 	property portal.acceptance = "fiona";
 	property portal.release = "true";
 	property portal.upstream = "true";
-	property portal.version = "7.3.10.1";
 	property testray.component.names = "Upgrades WEM,Web Content Administration";
 	property testray.main.component.name = "Upgrades WEM";
 
@@ -24,7 +21,9 @@ definition {
 	@description = "This is a use case for LRQA-61632."
 	@priority = 3
 	test CanAddAndRemoveTranslationToWebContentStructure {
-		property test.name.skip.portal.instance = "WebContentUpgradeWithWithSecondComplexStructure#CanAddAndRemoveTranslationToWebContentStructure";
+		property data.archive.type = "data-archive-web-content-second-complex-fields";
+		property database.types = "db2,mariadb,mysql,oracle,postgresql,sybase";
+		property portal.version = "7.3.10.1";
 
 		task ("Add translation labels") {
 			WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
@@ -136,7 +135,9 @@ definition {
 	@description = "This is a use case for LRQA-61632."
 	@priority = 3
 	test CanAddDefaultValueToWebContentStructure {
-		property test.name.skip.portal.instance = "WebContentUpgradeWithWithSecondComplexStructure#CanAddDefaultValueToWebContentStructure";
+		property data.archive.type = "data-archive-web-content-second-complex-fields";
+		property database.types = "db2,mariadb,mysql,oracle,postgresql,sybase";
+		property portal.version = "7.3.10.1";
 
 		WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
 
@@ -180,7 +181,9 @@ definition {
 	@description = "This is a use case for LRQA-61632."
 	@priority = 3
 	test CanDisableSearchableInTextField {
-		property test.name.skip.portal.instance = "WebContentUpgradeWithWithSecondComplexStructure#CanDisableSearchableInTextField";
+		property data.archive.type = "data-archive-web-content-second-complex-fields";
+		property database.types = "db2,mariadb,mysql,oracle,postgresql,sybase";
+		property portal.version = "7.3.10.1";
 
 		WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
 
@@ -204,7 +207,9 @@ definition {
 	@description = "This is a use case for LRQA-61632."
 	@priority = 3
 	test CanDuplicateFieldGroupWithNestedFieldsAndMoveNestedField {
-		property test.name.skip.portal.instance = "WebContentUpgradeWithWithSecondComplexStructure#CanDuplicateFieldGroupWithNestedFieldsAndMoveNestedField";
+		property data.archive.type = "data-archive-web-content-second-complex-fields";
+		property database.types = "db2,mariadb,mysql,oracle,postgresql,sybase";
+		property portal.version = "7.3.10.1";
 
 		task ("Duplicate the last field group with many nested fields, 10 times, and save") {
 			WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
@@ -293,7 +298,9 @@ definition {
 	@description = "This is a use case for LRQA-61632."
 	@priority = 3
 	test CanDuplicateRepeatableFieldsAndRemoveThem {
-		property test.name.skip.portal.instance = "WebContentUpgradeWithWithSecondComplexStructure#CanDuplicateRepeatableFieldsAndRemoveThem";
+		property data.archive.type = "data-archive-web-content-second-complex-fields";
+		property database.types = "db2,mariadb,mysql,oracle,postgresql,sybase";
+		property portal.version = "7.3.10.1";
 
 		task ("Duplicate all fields that can be duplicated, 1-4 times") {
 			WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
@@ -353,7 +360,9 @@ definition {
 	@description = "This is a use case for LRQA-61632. Can copy web content and web content structure. Set all fields to Required and check submission."
 	@priority = 3
 	test CanEditWebContentStructureFieldsToReqiredFields {
-		property test.name.skip.portal.instance = "WebContentUpgradeWithWithSecondComplexStructure#CanEditWebContentStructureFieldsToReqiredFields";
+		property data.archive.type = "data-archive-web-content-second-complex-fields";
+		property database.types = "db2,mariadb,mysql,oracle,postgresql,sybase";
+		property portal.version = "7.3.10.1";
 
 		task ("Copy Article successfully") {
 			WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
@@ -404,7 +413,9 @@ definition {
 	@description = "This is a use case for LRQA-61632."
 	@priority = 3
 	test CanMoveWebContentToFolder {
-		property test.name.skip.portal.instance = "WebContentUpgradeWithWithSecondComplexStructure#CanMoveWebContentToFolder";
+		property data.archive.type = "data-archive-web-content-second-complex-fields";
+		property database.types = "db2,mariadb,mysql,oracle,postgresql,sybase";
+		property portal.version = "7.3.10.1";
 
 		JSONWebcontent.addFolder(
 			folderDescription = "WC Folder Description",
@@ -423,7 +434,9 @@ definition {
 	@description = "This is a use case for LRQA-61632. Preview fields entered."
 	@priority = 3
 	test CanPreviewWebContent {
-		property test.name.skip.portal.instance = "WebContentUpgradeWithWithSecondComplexStructure#CanPreviewWebContent";
+		property data.archive.type = "data-archive-web-content-second-complex-fields";
+		property database.types = "db2,mariadb,mysql,oracle,postgresql,sybase";
+		property portal.version = "7.3.10.1";
 
 		task ("Select WC Template Name as template, save as draft and publish.") {
 			WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
@@ -462,7 +475,9 @@ definition {
 	@description = "This is a use case for LRQA-61632."
 	@priority = 3
 	test CanPulishDraftWebContentAndViewOtherVersions {
-		property test.name.skip.portal.instance = "WebContentUpgradeWithWithSecondComplexStructure#CanPulishDraftWebContentAndViewOtherVersions";
+		property data.archive.type = "data-archive-web-content-second-complex-fields";
+		property database.types = "db2,mariadb,mysql,oracle,postgresql,sybase";
+		property portal.version = "7.3.10.1";
 
 		task ("Save as Draft, and then preview other versions") {
 			WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
@@ -498,7 +513,9 @@ definition {
 	@description = "This is a use case for LRQA-61632."
 	@priority = 3
 	test CanSelectAndViewWebContentInWCD {
-		property test.name.skip.portal.instance = "WebContentUpgradeWithWithSecondComplexStructure#CanSelectAndViewWebContentInWCD";
+		property data.archive.type = "data-archive-web-content-second-complex-fields";
+		property database.types = "db2,mariadb,mysql,oracle,postgresql,sybase";
+		property portal.version = "7.3.10.1";
 
 		task ("Add a widget page and WCD to widget page") {
 			JSONLayout.addPublicLayout(
@@ -552,7 +569,9 @@ definition {
 	@description = "This is a use case for LRQA-61632. Enable Staging,Publish to live site, assert value entered persists,including images and links."
 	@priority = 3
 	test ViewWebcontentInStaging {
-		property test.name.skip.portal.instance = "WebContentUpgradeWithWithSecondComplexStructure#ViewWebcontentInStaging";
+		property data.archive.type = "data-archive-web-content-second-complex-fields";
+		property database.types = "db2,mariadb,mysql,oracle,postgresql,sybase";
+		property portal.version = "7.3.10.1";
 
 		Staging.openStagingAdmin(siteURLKey = "test-site-name");
 
