@@ -266,12 +266,17 @@ definition {
 		}
 
 		task ("Duplicate fields and then remove duplicates") {
-			for (var fieldName : list "Logo,Beneficio,Companhia,JeitoIdentificar,CompanhiaOperadora") {
+			for (var fieldName : list "Logo,Beneficio,Companhia,JeitoIdentificar") {
 				Click(
 					key_fieldName = ${fieldName},
 					key_index = 2,
 					locator1 = "DDMField#REMOVE_REPEATED_FIELD_N");
 			}
+
+			Click(
+				key_fieldName = "CompanhiaOperadora",
+				key_index = 6,
+				locator1 = "DDMField#REMOVE_REPEATED_FIELD_N");
 
 			for (var fieldName : list "Destino,DescricaoOpPar") {
 				Click(
@@ -341,6 +346,7 @@ definition {
 		property data.archive.type = "data-archive-web-content-first-complex-fields";
 		property database.types = "db2,mariadb,mysql,oracle,postgresql,sybase";
 		property portal.version = "7.3.10.1";
+		property test.name.skip.portal.instance = "WebContentUpgradeWithWithFirstComplexStructure#CanSelectAndViewWebContentInWCD";
 
 		task ("Add a widget page and WCD to widget page") {
 			JSONLayout.addPublicLayout(

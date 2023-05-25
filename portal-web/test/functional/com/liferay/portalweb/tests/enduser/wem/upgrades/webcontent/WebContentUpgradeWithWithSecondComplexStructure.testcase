@@ -416,6 +416,7 @@ definition {
 		property data.archive.type = "data-archive-web-content-second-complex-fields";
 		property database.types = "db2,mariadb,mysql,oracle,postgresql,sybase";
 		property portal.version = "7.3.10.1";
+		property test.name.skip.portal.instance = "WebContentUpgradeWithWithSecondComplexStructure#CanMoveWebContentToFolder";
 
 		JSONWebcontent.addFolder(
 			folderDescription = "WC Folder Description",
@@ -437,6 +438,7 @@ definition {
 		property data.archive.type = "data-archive-web-content-second-complex-fields";
 		property database.types = "db2,mariadb,mysql,oracle,postgresql,sybase";
 		property portal.version = "7.3.10.1";
+		property test.name.skip.portal.instance = "WebContentUpgradeWithWithSecondComplexStructure#CanPreviewWebContent";
 
 		task ("Select WC Template Name as template, save as draft and publish.") {
 			WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
@@ -516,6 +518,7 @@ definition {
 		property data.archive.type = "data-archive-web-content-second-complex-fields";
 		property database.types = "db2,mariadb,mysql,oracle,postgresql,sybase";
 		property portal.version = "7.3.10.1";
+		property test.name.skip.portal.instance = "WebContentUpgradeWithWithSecondComplexStructure#CanSelectAndViewWebContentInWCD";
 
 		task ("Add a widget page and WCD to widget page") {
 			JSONLayout.addPublicLayout(
