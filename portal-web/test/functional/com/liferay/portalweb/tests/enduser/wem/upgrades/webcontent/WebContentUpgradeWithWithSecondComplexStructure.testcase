@@ -347,6 +347,8 @@ definition {
 	@description = "This is a use case for LRQA-61632. Can copy web content and web content structure. Set all fields to Required and check submission."
 	@priority = 3
 	test CanEditWebContentStructureFieldsToReqiredFields {
+		property test.name.skip.portal.instance = "WebContentUpgradeWithWithSecondComplexStructure#CanEditWebContentStructureFieldsToReqiredFields";
+
 		task ("Copy Article successfully") {
 			WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
 
