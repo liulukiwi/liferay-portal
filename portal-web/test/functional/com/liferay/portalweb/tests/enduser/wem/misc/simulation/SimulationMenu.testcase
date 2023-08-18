@@ -290,6 +290,8 @@ definition {
 		}
 
 		task ("Then the site administrator sees the info message shown on preview window") {
+			AssertElementNotPresent(locator1 = "IFrame#LOADING_MESSAGE");
+
 			Alert.viewInfoMessageSpecific(infoMessage = "Showing content for the segment \"Anyone\".");
 		}
 
@@ -345,6 +347,8 @@ definition {
 		}
 
 		task ("Then the site administrator sees the info message shown on preview window") {
+			AssertElementNotPresent(locator1 = "IFrame#LOADING_MESSAGE");
+
 			Alert.viewInfoMessageSpecific(infoMessage = "Showing content for the segment \"Anyone\".");
 		}
 

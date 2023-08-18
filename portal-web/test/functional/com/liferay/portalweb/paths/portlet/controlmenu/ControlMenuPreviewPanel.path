@@ -35,6 +35,11 @@
 	<td>//div[contains(@class,'simulation-preview')]//iframe</td>
 	<td></td>
 </tr>
+<tr>
+	<td>PREVIEW_PAGE_CONTENT</td>
+	<td>//label[normalize-space()='${key_fieldLabel}']/..//button[contains(@class,'btn')]</td>
+	<td></td>
+</tr>
 </tbody>
 </table>
 </body>

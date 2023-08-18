@@ -65,7 +65,7 @@ definition {
 		if (isSet(previewBy)) {
 			Click(
 				key_fieldLabel = "Preview By",
-				locator1 = "Dropdown#DROPDOWN_TOGGLE_BUTTON_WITH_LABEL");
+				locator1 = "ControlMenuPreviewPanel#PREVIEW_PAGE_CONTENT");
 
 			DropdownMenuItem.click(menuItem = ${previewBy});
 		}
@@ -73,7 +73,7 @@ definition {
 		if (isSet(experience)) {
 			Click(
 				key_fieldLabel = "Experience",
-				locator1 = "Dropdown#DROPDOWN_TOGGLE_BUTTON_WITH_LABEL");
+				locator1 = "ControlMenuPreviewPanel#PREVIEW_PAGE_CONTENT");
 
 			DropdownMenuItem.click(menuItem = ${experience});
 		}
@@ -81,7 +81,7 @@ definition {
 		if (isSet(segment)) {
 			Click(
 				key_fieldLabel = "Segment",
-				locator1 = "Dropdown#DROPDOWN_TOGGLE_BUTTON_WITH_LABEL");
+				locator1 = "ControlMenuPreviewPanel#PREVIEW_PAGE_CONTENT");
 
 			DropdownMenuItem.click(menuItem = ${segment});
 		}
