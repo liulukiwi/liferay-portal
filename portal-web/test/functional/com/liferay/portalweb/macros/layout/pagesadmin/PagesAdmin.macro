@@ -1064,7 +1064,7 @@ definition {
 
 		AssertVisible(locator1 = "Message#EMPTY_INFO_TAGLIB");
 
-		Click.waitForMenuToggleJSClick(locator1 = "Dropdown#EMPTY_MESSAGE_DROPDOWN");
+		Click(locator1 = "Dropdown#EMPTY_MESSAGE_DROPDOWN");
 
 		Click(locator1 = "MenuItem#DROPDOWN_MENU_ITEM");
 	}
