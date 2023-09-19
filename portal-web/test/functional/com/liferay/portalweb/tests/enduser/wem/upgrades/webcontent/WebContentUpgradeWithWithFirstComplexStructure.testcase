@@ -222,6 +222,8 @@ definition {
 	@description = "This is a use case for LRQA-61632."
 	@priority = 3
 	test CanDuplicateRepeatableFieldsAndRemoveThem {
+		property portal.acceptance = "fiona";
+
 		task ("Duplicate all fields that can be duplicated, 1-4 times") {
 			WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
 
@@ -249,6 +251,10 @@ definition {
 		}
 
 		task ("Duplicate fields and then remove duplicates") {
+			ScrollWebElementIntoView(
+				key_fieldName = "Logo",
+				locator1 = "DDMField#REMOVE_REPEATED_FIELD");
+
 			for (var fieldName : list "Logo,Beneficio,Companhia,JeitoIdentificar") {
 				Click(
 					key_fieldName = ${fieldName},
