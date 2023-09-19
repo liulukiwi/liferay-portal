@@ -183,6 +183,8 @@ definition {
 				category = "Design",
 				portlet = "Fragments");
 
+			Refresh();
+
 			FragmentsAdmin.viewEntryPresent(entry = "Content");
 
 			FragmentsAdmin.viewEntryPresent(entry = "Image");
