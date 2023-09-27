@@ -469,6 +469,7 @@ definition {
 	@priority = 4
 	test ViewBreadcrumbWhenNavigateToPageViaIPAddress {
 		var portalURL = PropsUtil.get("portal.url");
+		property portal.acceptance = "fiona";
 
 		task ("Add a Breadcrumb widget to page") {
 			JSONLayout.addWidgetToPublicLayout(
