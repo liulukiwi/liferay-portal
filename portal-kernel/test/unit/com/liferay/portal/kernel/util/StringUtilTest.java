@@ -721,6 +721,14 @@ public class StringUtilTest {
 		Assert.assertEquals("hijk", lines[2]);
 		Assert.assertEquals("", lines[3]);
 		Assert.assertEquals("lmn", lines[4]);
+
+		String splitByIndentation = "    hello\n    world";
+
+		lines = StringUtil.splitLines(splitByIndentation);
+
+		Assert.assertEquals(Arrays.toString(lines), 2, lines.length);
+		Assert.assertEquals("    hello", lines[0]);
+		Assert.assertEquals("    world", lines[1]);
 	}
 
 	@Test(timeout = 1000)
