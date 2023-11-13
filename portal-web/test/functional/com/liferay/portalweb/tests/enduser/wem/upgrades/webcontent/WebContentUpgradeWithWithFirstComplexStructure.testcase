@@ -255,6 +255,8 @@ definition {
 
 		task ("Duplicate fields and then remove duplicates") {
 			for (var fieldName : list "Logo,Beneficio,Companhia,JeitoIdentificar") {
+				Pause(locator1 = 5000);
+
 				Click(
 					key_fieldName = ${fieldName},
 					key_index = 2,
