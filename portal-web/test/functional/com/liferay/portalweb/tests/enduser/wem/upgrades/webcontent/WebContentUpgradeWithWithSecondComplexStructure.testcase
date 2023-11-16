@@ -152,10 +152,14 @@ definition {
 			locator1 = "WCEditWebContent#TEXT_INPUT",
 			value1 = "Edited LabelUFComunicado Field");
 
+		takeScreenshot();
+
 		Type(
 			key_fieldFieldLabel = "Lista UF Comunicado",
 			locator1 = "WCEditWebContent#TEXT_INPUT",
 			value1 = "Edited ListaUFComunidado Field");
+
+		takeScreenshot();
 
 		WebContentStructures.saveCP();
 
