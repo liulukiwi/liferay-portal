@@ -234,7 +234,7 @@ definition {
 	@description = "This is a test for LPS-202016. Can configure required vocabulary in an asset library on the site connected."
 	@priority = 4
 	test CanConfigureRequiredVocabularyInAnAssetLibraryOnTheSiteConnected {
-		task ("WHen adding a vocabulary in asset libraray") {
+		task ("When adding a vocabulary in asset libraray") {
 			task ("Add an asset library and connect it to the created site") {
 				JSONDepot.addDepot(depotName = "Test Depot Name");
 
